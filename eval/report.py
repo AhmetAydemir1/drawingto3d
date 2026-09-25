@@ -10,6 +10,7 @@ A case with no reference STEP is reading-only; a case with no built part says so
 from __future__ import annotations
 
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -75,25 +76,37 @@ def _reading(case: dict) -> dict:
         candidates = [{value, round(value * IN_MM, 3)} for value in printed]
     else:
         candidates = [{float(value)} for value in printed]
+    callouts = [_squash(item) for item in case.get("callouts") or []]
     records = data.get("records") or []
     found: list[float] = []
     noise: list[dict] = []
+    named: list[str] = []
     for record in records:
         value = float(record["value"])
         hit = next((printed[index] for index, group in enumerate(candidates) if _in(value, group)), None)
-        if hit is None:
-            noise.append({"text": record["text"], "value": value, "role": record["role"]})
-        elif hit not in found:
-            found.append(hit)
+        if hit is not None:
+            if hit not in found:
+                found.append(hit)
+            continue
+        if any(callout.startswith(_squash(record["text"])) for callout in callouts):
+            named.append(record["text"])
+            continue
+        noise.append({"text": record["text"], "value": value, "role": record["role"]})
     return {
         "status": "okundu",
         "records": len(records),
         "seconds": data.get("seconds"),
         "found": sorted(found),
         "missing": sorted(set(printed) - set(found)),
+        "callouts": named,
         "noise": noise,
         "roles": _roles(records),
     }
+
+
+def _squash(text: str) -> str:
+    """`2X 1 1/4` and `2x11/4` are the same callout."""
+    return re.sub(r"[^0-9a-z]", "", text.lower())
 
 
 def _roles(records: list[dict]) -> dict:
@@ -113,13 +126,14 @@ def _key(case: dict) -> str:
 
 
 def _print(rows: list[dict]) -> None:
-    print(f"{'durum':<10} {'durum':<6} {'okunan':<8} {'basılı':<24} {'bulunan':<16} {'eksik':<16} {'gürültü'}")
+    print(f"{'durum':<10} {'durum':<6} {'okunan':<8} {'basılı':<24} {'bulunan':<16} {'eksik':<16} {'gürültü':<24} {'cagri'}")
     for row in rows:
         reading = row["reading"]
         found = metrics._fmt(reading["found"]) if reading["found"] else "-"
         missing = metrics._fmt(reading["missing"]) if reading["missing"] else "-"
         noise = ", ".join(f"{item['text']}->{item['value']:g}" for item in reading.get("noise", [])) or "-"
-        print(f"{row['id']:<28} {reading['status']:<6} {reading.get('records', 0):<8} {metrics._fmt(row['printed']):<24} {found:<16} {missing:<16} {noise}")
+        callouts = ", ".join(reading.get("callouts") or []) or "-"
+        print(f"{row['id']:<28} {reading['status']:<6} {reading.get('records', 0):<8} {metrics._fmt(row['printed']):<24} {found:<16} {missing:<16} {noise:<24} {callouts}")
 
     print("\nkatı:")
     for row in rows:

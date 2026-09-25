@@ -14,6 +14,19 @@ from drawingto3d.schema import BBox, Page, Source, Span, SpanKind, Unit
 RASTER_DPI = 200
 
 
+def apply_sheet_unit(spans: list[Span]) -> None:
+    """One sheet has one unit. If anything on it is marked inches, the unmarked numbers are inches too.
+
+    A catalog drawing prints `0.688in` and `2X 1 1/4`, then `1.5in`; only the pipe-size callout has no
+    mark, and reading that as millimetres would put a 2 mm fitting next to a 39 mm flange.
+    """
+    if not any(span.unit == "in" for span in spans if span.value is not None):
+        return
+    for span in spans:
+        if span.unit == "mm" and span.value is not None:
+            span.unit = "in"
+
+
 def load_page(path: str | Path) -> Page:
     file = Path(path)
     suffix = file.suffix.lower()
@@ -93,32 +106,50 @@ def _vector_spans(page, scale: float) -> list[Span]:
 
 
 def _group_chars(chars: list[tuple[str, float, float, float, float]]) -> list[tuple[str, tuple[float, float, float, float]]]:
-    """A PDF draws `1 1/4` as three words. One dimension is one phrase, so join across small gaps."""
-    groups: list[list[tuple[str, float, float, float, float]]] = []
+    """A PDF draws `1 1/4` as three words. One dimension is one phrase, so join across small gaps.
+
+    Thresholds use the taller of the two glyphs: a decimal point is 1 pt tall next to a 9 pt digit,
+    and judging the gap by the point's own height is what used to split `1.563in` into `1` and `563in`.
+    A gap wide enough to be a printed space is kept as a space so `1 1/4` does not become `11/4`.
+    """
+    phrases: list[tuple[str, tuple[float, float, float, float]]] = []
+    text = ""
+    box: list[float] | None = None
+    last: tuple[str, float, float, float, float] | None = None
     for char in chars:
-        if groups and _joins(groups[-1][-1], char):
-            groups[-1].append(char)
-        else:
-            groups.append([char])
-    phrases = []
-    for group in groups:
-        text = "".join(item[0] for item in group)
-        x0 = min(item[1] for item in group)
-        y0 = min(item[2] for item in group)
-        x1 = max(item[3] for item in group)
-        y1 = max(item[4] for item in group)
-        phrases.append((text, (x0, y0, x1, y1)))
+        joins, spaced = (False, False) if last is None else _joins(last, char)
+        if not joins:
+            _add_phrase(phrases, text, box)
+            text, box = "", None
+            spaced = False
+        if spaced and char[0] not in ".,:;°":
+            text += " "
+        text += char[0]
+        left, bottom, right, top = char[1], char[2], char[3], char[4]
+        box = [left, bottom, right, top] if box is None else [min(box[0], left), min(box[1], bottom), max(box[2], right), max(box[3], top)]
+        last = char
+    _add_phrase(phrases, text, box)
     return phrases
 
 
-def _joins(previous: tuple[str, float, float, float, float], char: tuple[str, float, float, float, float]) -> bool:
+def _add_phrase(phrases: list, text: str, box: list[float] | None) -> None:
+    text = text.strip()
+    if text and box is not None:
+        phrases.append((text, (box[0], box[1], box[2], box[3])))
+
+
+def _joins(previous: tuple[str, float, float, float, float], char: tuple[str, float, float, float, float]) -> tuple[bool, bool]:
+    """Same phrase? And if so, was there a printed space between them?"""
     _pc, _pl, _pb, pr, pt = previous
     _cc, cl, cb, _cr, ct = char
-    height = min(pt - _pb, ct - cb) or 1.0
-    if min(pt, ct) - max(_pb, cb) < 0.6 * height:
-        return False
+    small = min(pt - _pb, ct - cb) or 1.0
+    tall = max(pt - _pb, ct - cb)
+    if min(pt, ct) - max(_pb, cb) < 0.5 * small:
+        return False, False
     gap = cl - pr
-    return -height <= gap <= 0.9 * height
+    if gap > 0.9 * tall or gap < -1.5 * tall:
+        return False, False
+    return True, gap > 0.25 * tall
 
 
 _COUNT_PREFIX = re.compile(r"^\s*(\d{1,2})\s*(?:[xX×]\s*(\d{1,2}))?\s*(?:[-–]\s*|[xX×]\s*)(?=[ØÖ⌀ΦRrCc\d])")

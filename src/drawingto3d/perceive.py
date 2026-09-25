@@ -12,7 +12,7 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-from drawingto3d.ingest import parse_dimension, parse_dimension_unit
+from drawingto3d.ingest import apply_sheet_unit, parse_dimension, parse_dimension_unit
 from drawingto3d.schema import BBox, Page, Primitive, PrimitiveKind, Source, Span, SpanKind, Unit
 
 
@@ -23,6 +23,7 @@ def perceive(page: Page) -> tuple[list[Primitive], list[Span]]:
     spans = list(page.spans)
     if not page.vector_text:
         spans.extend(_oriented_spans(gray))
+    apply_sheet_unit(spans)
     _assign_views(spans, page.views)
     return primitives, _dedupe_spans(spans)
 

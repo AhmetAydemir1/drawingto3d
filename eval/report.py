@@ -73,7 +73,9 @@ def _reading(case: dict) -> dict:
         return {"status": "hata", "records": 0, "found": [], "missing": case["printed"], "noise": [], "error": data["error"]}
     printed = list(case["printed"])
     if case["unit"] == "in":
-        candidates = [{value, round(value * IN_MM, 3)} for value in printed]
+        # A record holds the sheet's value converted to millimetres with the same multiplication, so the
+        # comparison must not round: 0.688 in is 17.475199999999997 mm, not 17.475.
+        candidates = [{value, value * IN_MM} for value in printed]
     else:
         candidates = [{float(value)} for value in printed]
     callouts = [_squash(item) for item in case.get("callouts") or []]
@@ -117,7 +119,9 @@ def _roles(records: list[dict]) -> dict:
 
 
 def _in(value: float, group: set[float]) -> bool:
-    return any(abs(value - option) < 1e-6 for option in group)
+    """Did the reader produce this printed value? A thousandth of the value is tolerance enough for a
+    sheet printed to two decimals, and stops a rounding difference reading as a miss."""
+    return any(abs(value - option) <= max(1e-6, 0.001 * abs(option)) for option in group)
 
 
 def _key(case: dict) -> str:

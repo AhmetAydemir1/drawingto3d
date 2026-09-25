@@ -97,8 +97,8 @@ def _oriented_spans(gray: np.ndarray, reader=None) -> list[Span]:
     segments = lines.thin_segments(binary)
     text_mask = _text_mask(gray)
     gate = _DimensionGate(binary, segments, text_mask)
-    tight = _collect_spans(gray, 0.08, 0.7, 0.08, 0.9, 28, 28, 8, 220, "center", gate, reader)
-    wide = _collect_spans(gray, 0.04, 0.96, 0.04, 0.96, 45, 40, 20, 500, "gap", gate, reader)
+    tight = _collect_spans(gray, 0.08, 0.7, 0.08, 0.9, 45, 8, 220, "center", gate, reader)
+    wide = _collect_spans(gray, 0.04, 0.96, 0.04, 0.96, 60, 20, 500, "gap", gate, reader)
     spans = tight + wide
     for index, span in enumerate(spans):
         span.id = f"ocr-{index}"
@@ -149,7 +149,7 @@ def _text_mask(gray: np.ndarray) -> np.ndarray:
     return cv2.subtract(ink, rules)
 
 
-def _collect_spans(gray, x0, x1, y0, y1, hmax, wmax, amin, amax, mode: str, gate=None, reader=None) -> list[Span]:
+def _collect_spans(gray, x0, x1, y0, y1, longest, amin, amax, mode: str, gate=None, reader=None) -> list[Span]:
     letters = _text_mask(gray)
     count, _, stats, centroids = cv2.connectedComponentsWithStats(letters, 8)
     glyphs = []
@@ -158,7 +158,10 @@ def _collect_spans(gray, x0, x1, y0, y1, hmax, wmax, amin, amax, mode: str, gate
         x, y, w, h, area = [int(value) for value in stats[index]]
         if not (width * x0 < x < width * x1 and height * y0 < y < height * y1):
             continue
-        if 5 <= h <= hmax and 1 <= w <= wmax and amin <= area <= amax:
+        # Judged on the longest side, not the height: text along a vertical dimension is printed a
+        # quarter turn round, so a digit of the same size is as wide as it is tall elsewhere. Filtering
+        # on height threw those digits away as "too wide", which is how a printed 80 became a `0`.
+        if 5 <= min(w, h) and max(w, h) <= longest and amin <= area <= amax:
             glyphs.append((float(centroids[index][0]), float(centroids[index][1]), x, y, w, h))
     spans: list[Span] = []
     for cluster in _cluster_glyphs(glyphs, mode):

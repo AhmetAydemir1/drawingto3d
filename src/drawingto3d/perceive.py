@@ -101,9 +101,31 @@ def _oriented_spans(gray: np.ndarray, reader=None) -> list[Span]:
     # (the digit that looked too wide for that pass), leaving a fragment that then read as a stray digit.
     glyphs = _glyphs(gray, text_mask)
     spans = _collect_spans(gray, glyphs, "center", gate, reader) + _collect_spans(gray, glyphs, "gap", gate, reader)
+    spans = _one_number_per_line(spans)
     for index, span in enumerate(spans):
         span.id = f"ocr-{index}"
     return spans
+
+
+def _one_number_per_line(spans: list[Span], step: float = 8.0) -> list[Span]:
+    """A dimension line carries a single number, so keep the fullest candidate on each line.
+
+    Clustering can still hand back a rotated number as two pieces, and each piece then claims the same
+    line and gets read as a number of its own — that is how a printed 40 turns into a 4 and a 0. The
+    candidate that holds the most ink is the one that is really on that line.
+    """
+    chosen: dict[tuple, Span] = {}
+    for span in spans:
+        if len(span.anchors) != 2:
+            key: tuple = ("unattached", span.id)
+        else:
+            (x0, y0), (x1, y1) = span.anchors
+            key = (round(min(x0, x1) / step), round(min(y0, y1) / step), round(max(x0, x1) / step), round(max(y0, y1) / step))
+        current = chosen.get(key)
+        if current is None or span.bbox.w * span.bbox.h > current.bbox.w * current.bbox.h:
+            chosen[key] = span
+    keep = {id(span) for span in chosen.values()}
+    return [span for span in spans if id(span) in keep]
 
 
 def _glyphs(gray: np.ndarray, text_mask: np.ndarray, longest: int = 60, amin: int = 8, amax: int = 500) -> list[tuple]:
@@ -269,8 +291,14 @@ def _read_cluster(
 
 
 def _centers_near(a: tuple, b: tuple) -> bool:
-    """Two glyphs are part of the same printed number if they sit within one text height of each other."""
-    limit = 0.7 * max(a[5], b[5]) + 6
+    """Two glyphs are part of the same printed number if they sit within one character's reach of each other.
+
+    The reach is measured on the glyph's *longest* side, not its height: a number printed along a vertical
+    dimension line is a quarter turn round, so its digits are wider than they are tall and two of them sit
+    as far apart as two upright digits would — measuring on height split `35` into a `3` and a `5`, each
+    then matched to the same line and read as its own number.
+    """
+    limit = 0.7 * max(a[4], a[5], b[4], b[5]) + 6
     return math.hypot(a[0] - b[0], a[1] - b[1]) < limit
 
 

@@ -1,6 +1,6 @@
 import pytest
 
-from drawingto3d.scale import audit, calibrate
+from drawingto3d.scale import audit, calibrate, consensus
 from drawingto3d.schema import BBox, Span
 
 SHEET = [(50.0, 208.5), (20.0, 83.4), (80.0, 333.6), (35.0, 146.0), (57.0, 237.7)]
@@ -76,3 +76,30 @@ def test_a_leader_is_not_audited_against_a_scale():
     assert calibration is not None
     assert calibration.samples == 4
     assert suspect == []
+
+
+def test_consensus_keeps_the_true_scale_even_when_most_readings_are_wrong():
+    # Three lines read right, six misread: a median fit is dragged off by the wrong majority, while the
+    # scale the three agree on is still the largest group of readings that share one.
+    pairs = [
+        (50.0, 208.5),
+        (20.0, 83.4),
+        (80.0, 333.6),
+        (5.0, 237.7),  # a 57 read as 5
+        (7.0, 146.0),  # a 35 read as 7
+        (3.0, 208.5),
+        (8.0, 83.4),
+        (2.0, 333.6),
+        (4.0, 146.0),
+    ]
+
+    calibration, agreeing = consensus(pairs)
+
+    assert calibration is not None
+    assert calibration.px_per_mm == pytest.approx(4.17, abs=0.02)
+    assert agreeing == [0, 1, 2]
+    assert cal_median() != pytest.approx(4.17, abs=0.5)  # what a median fit would have produced
+
+
+def cal_median() -> float:
+    return calibrate([(5.0, 237.7), (7.0, 146.0), (3.0, 208.5), (8.0, 83.4), (2.0, 333.6)]).px_per_mm

@@ -8,13 +8,14 @@ What "better results" means for this project, in numbers. Two questions per shee
 Run:
 
 ```bash
-PYTHONPATH=src .venv/bin/python out/baseline.py     # reading turn only, one JSON per sheet in out/baseline/
-.venv-cad/bin/python eval/report.py                 # table + out/eval/report.json
+PYTHONPATH=src .venv/bin/python eval/baseline.py     # reading turn over every eval sheet -> out/baseline/<case id>.json
+.venv-cad/bin/python eval/report.py                  # table + out/eval/report.json
 ```
 
-`out/baseline.py` is a script, not a package module: it calls `reason_drawing` with no records and
-keeps whatever the reader produced, including its failures. It needs the vision model (Ollama).
-`eval/report.py` needs the CadQuery interpreter to read reference STEP files.
+`eval/baseline.py` runs the reader as it is and keeps the result, failures included; it needs the
+vision model (Ollama) and takes minutes (one local model call per dimension text — 17 dims on the A4
+sheet). `eval/report.py` needs the CadQuery interpreter to read reference STEP files. Build output
+goes to `out/eval/<case id>/part.step`, which is what the report picks up.
 
 ## Metrics
 

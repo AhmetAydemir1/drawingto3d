@@ -64,7 +64,7 @@ def _case(case: dict) -> dict:
 
 def _reading(case: dict) -> dict:
     """Every record the reader produced, split into 'a printed number' and 'noise'."""
-    path = BASELINE / f"{_key(case)}.json"
+    path = BASELINE / f"{case['id']}.json"
     if not path.is_file():
         return {"status": "okunmadı", "records": 0, "found": [], "missing": case["printed"], "noise": []}
     data = json.loads(path.read_text(encoding="utf-8"))

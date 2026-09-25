@@ -1,0 +1,15 @@
+.venv/
+.venv-cad/
+.cache/
+__pycache__/
+*.pyc
+.pytest_cache/
+out/
+*.step
+*.stl
+.DS_Store
+.cursor/debug-*.log
+
+# Eval ground truth is source data, not build output: keep the example STEP files.
+!examples/**/*.STEP
+!examples/**/*.step

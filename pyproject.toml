@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "drawingto3d"
+version = "0.1.0"
+description = "Offline PDF/PNG technical drawing to STEP"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "build123d>=0.13",
+  "pydantic>=2",
+  "opencv-python-headless>=4.10",
+  "numpy>=2",
+  "pypdfium2>=4",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+# CadQuery pins OpenCascade 7.9. build123d pins 8.x. The runner uses a separate interpreter.
+reason = ["cadquery>=2.5"]
+
+[project.scripts]
+drawingto3d = "drawingto3d.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

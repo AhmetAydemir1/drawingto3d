@@ -24,6 +24,19 @@
       "expect_vector": "measure.txt"
     },
     {
+      "id": "exercise-1",
+      "class": "self-made",
+      "drawing": "examples/pdf with steps/my_part.jpg",
+      "step": "examples/pdf with steps/my_part.STEP",
+      "unit": "mm",
+      "printed": [6, 10, 20, 25, 26, 30, 35, 37, 40, 57, 60, 80],
+      "radius_calls": [20],
+      "diameter_calls": [20, 25, 30, 40],
+      "callouts": [],
+      "part": "A4 pafta, olcek 1:2, iki gorunus (kesitli on/yan + ust) + kucuk golgeli izometrik",
+      "expect_vector": "measure.txt"
+    },
+    {
       "id": "studycadcam-60",
       "class": "practice-sheet",
       "drawing": "examples/504715c44a0f1b2bbb386bb7c387a8db.jpg",
@@ -52,7 +65,8 @@
     }
   ],
   "_classes": {
-    "catalog-fitting": "Vektorel PDF, 2 gorunus + golgeli izometrik, inc olculer, az sayida olcu, standart tablosu bilgisi gerekir.",
-    "practice-sheet": "Raster alistirma paftasi, tam olceklendirilmis 3 gorunus + izometrik, mm, Ø/R/C cagrilari."
+  "catalog-fitting": "Vektorel PDF, 2 gorunus + golgeli izometrik, inc olculer, az sayida olcu, standart tablosu bilgisi gerekir.",
+  "practice-sheet": "Raster alistirma paftasi, tam olceklendirilmis 3 gorunus + izometrik, mm, Ø/R/C cagrilari.",
+  "self-made": "Kullanicinin kendi paftasi + dogru STEP'i: ayni B-rep beklenir, toleranslar sikilastirilabilir."
   }
 }

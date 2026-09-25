@@ -248,7 +248,7 @@ def _read_cluster(
     if reader is not None:
         vertical = bool(anchors) and abs(anchors[0][0] - anchors[1][0]) < abs(anchors[0][1] - anchors[1][1])
         text = read_dimension(reader, crop, vertical)
-        if text:
+        if text and _plausible(text, crop, mode):
             kind, value, unit = _clean_dimension(text)
             if _usable(value):
                 return _make_span(serial, text, kind, value, unit, x0, y0, x1, y1, anchors, mode)
@@ -331,6 +331,22 @@ def _clean_dimension(text: str) -> tuple[SpanKind, float | None, Unit]:
     if kind == SpanKind.text and broken:
         kind, value, unit = parse_dimension_unit(f"{broken.group(1)}.{broken.group(2)}")
     return kind, value, unit
+
+
+def _plausible(text: str, crop: np.ndarray, mode: AnchorMode) -> bool:
+    """Does the answer fit the crop it came from?
+
+    A number read a quarter turn round is two or three characters in a box barely wide enough for one,
+    and a dimension line carries a length, never a radius: both are ways a crop of scrap ink becomes a
+    plausible-looking number the drawing never printed (`R100`, `R105`).
+    """
+    if mode == "dimension" and any(character.isalpha() for character in text):
+        return False
+    digits = [character for character in text if character.isdigit()]
+    if not digits:
+        return False
+    longest = max(crop.shape[0], crop.shape[1])
+    return len(digits) <= max(2.0, longest / 9.0)
 
 
 def _make_span(

@@ -2,38 +2,6 @@
   "_note": "'printed' holds the numbers a human can read on the sheet, in the sheet's own unit. 'step' is the ground truth when one exists. feature_expectations is what the eval has to hold the pipeline to: a functionally equal part, not the same B-rep.",
   "cases": [
     {
-      "id": "mcmaster-2389K26",
-      "class": "catalog-fitting",
-      "drawing": "examples/pdf with steps/2389K26_Aboveground PVC Fitting for Drain, Waste and Vent.PDF",
-      "step": "examples/pdf with steps/2389K26_Aboveground PVC Fitting for Drain, Waste and Vent.STEP",
-      "unit": "in",
-      "printed": [
-        0.688,
-        1.563
-      ],
-      "callouts": [
-        "2X 1 1/4 Pipe Size"
-      ],
-      "part": "90 derece DWV dirsek, 1 1/4 in\u00e7, iki socket",
-      "expect_vector": "measure.txt"
-    },
-    {
-      "id": "mcmaster-2389K39",
-      "class": "catalog-fitting",
-      "drawing": "examples/pdf with steps/2389K39_Aboveground PVC Fitting for Drain, Waste and Vent.PDF",
-      "step": "examples/pdf with steps/2389K39_Aboveground PVC Fitting for Drain, Waste and Vent.STEP",
-      "unit": "in",
-      "printed": [
-        0.766,
-        1.5
-      ],
-      "callouts": [
-        "2X 2 Pipe Size"
-      ],
-      "part": "DWV dirsek, 2 in\u00e7, iki socket",
-      "expect_vector": "measure.txt"
-    },
-    {
       "id": "exercise-1",
       "class": "self-made",
       "drawing": "examples/pdf with steps/my_part.jpg",
@@ -227,7 +195,7 @@
     }
   ],
   "_classes": {
-    "catalog-fitting": "Vektorel PDF, 2 gorunus + golgeli izometrik, inc olculer, az sayida olcu, standart tablosu bilgisi gerekir.",
+    "catalog-fitting": "Vektorel PDF, 2 gorunus + golgeli izometrik, inc olculer, az sayida olcu; standart tablo bilgisi gerekir. Okuma kurali bu sinif icin de gecerli, ama su an eval'de bu sinifi temsil eden pafta yok.",
     "practice-sheet": "Raster alistirma paftasi, tam olceklendirilmis 3 gorunus + izometrik, mm, \u00d8/R/C cagrilari.",
     "self-made": "Kullanicinin kendi paftasi + dogru STEP'i: ayni B-rep beklenir, toleranslar sikilastirilabilir. Vektorel PDF'te metin katmani, raster/PNG'de yalniz geometri ve OCR."
   }

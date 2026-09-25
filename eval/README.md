@@ -45,15 +45,12 @@ Building (`eval/metrics.py`, produced STEP vs reference STEP):
 - **cylinders** (soft, 0.5 mm) — every bore, socket and pipe outside diameter in the reference must
   appear in the produced part. This is the check that catches "right overall size, wrong holes".
 
-A reference STEP is the truth for shape, not for intent: `2389K26` is a cast PVC elbow whose 174
-faces nobody could or would rebuild from a catalog drawing. The eval therefore holds the pipeline to
-a *functionally equal* part — right size, right bores, right wall order — and not to the same B-rep.
+A reference STEP is the truth for shape, not for intent: a cast fitting carries fillets, blends and
+tapers that no drawing dimensions, and a student sheet leaves details to the shop. The eval therefore
+holds the pipeline to a *functionally equal* part — right size, right bores, right wall order — and not
+to the same B-rep.
 
 ## Cases
-
-`catalog-fitting` — McMaster-Carr vector PDFs, inches, two views plus a shaded isometric, 3 dimensions
-total, and the part identity living in a callout (`2X 1 1/4 Pipe Size`) that only a standard table
-resolves.
 
 `practice-sheet` — StudyCADCAM raster sheets, mm, full third-angle views with Ø/R/C callouts and
 hatched sections. Reading-only for now: there is no reference STEP for them, and re-modelling them by
@@ -76,7 +73,6 @@ and building metrics are held to.
 | studycadcam-60 | raster | 6/9 | 6 | 3.312 | 7 |
 | studycadcam-50 | raster | 0/3 | 2 | - | 0 |
 | flange-1 | raster | 3/13 | 1 | - | 0 |
-| mcmaster-2389K26 / K39 | vektör | pafta yok | - | - | - |
 
 The vector numbers are the text layer read through the geometry gate; the raster ones are the same gate
 with tesseract behind it, which is the floor, not the finished reader — `eval/baseline.py` is where the
@@ -120,8 +116,6 @@ vision model enters.
   on `flange-1` when the text layer is absent; on the same sheets with the text layer it finds all of
   them. `eval/frontend.py --as-raster` is the harness for this — it reads a vector sheet's raster with
   the truth known exactly, so the CV reader can be improved without another hand-made example.
-- Two reference pairs (McMaster `2389K26` / `2389K39`) are no longer in `examples/pdf with steps`, so
-  those cases are skipped by every script here.
 - Synthetic sheets (build a part in CadQuery, render the three views, keep the part as truth) are the
   plan for volume; they belong in this folder as `synthetic.py` when Phase 2 lands.
 - Nothing here scores *how much of the drawing was used*. A part built from 2 of 8 records and a part

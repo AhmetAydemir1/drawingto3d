@@ -1,0 +1,6 @@
+# Reference geometry is data, not source: git must hand back the same bytes the CAD tool wrote.
+# core.autocrlf would otherwise store a CRLF STEP file as LF and check out a file that is no longer
+# byte-identical to the reference the eval measures against.
+*.STEP -text
+*.step -text
+*.stl -text

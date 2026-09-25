@@ -56,6 +56,28 @@ class DimensionLine:
         return self.segment.length
 
 
+@dataclass(frozen=True)
+class Leader:
+    """A callout: an arrow touching the feature it names, and the text at the other end of the stroke.
+
+    A leader does not measure a distance between two points the way a dimension line does. Its arrow
+    points at one feature - the circle a Ø belongs to - and the number gives that feature's size.
+    """
+
+    segment: Segment
+    text_box: tuple[float, float, float, float]
+    arrow_end: int
+
+    @property
+    def tip(self) -> tuple[float, float]:
+        """The point on the drawing the arrow touches: the feature this callout is about."""
+        return self.segment.ends()[self.arrow_end]
+
+    @property
+    def tail(self) -> tuple[float, float]:
+        return self.segment.ends()[1 - self.arrow_end]
+
+
 def ink(gray: np.ndarray) -> np.ndarray:
     _threshold, binary = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
     return binary
@@ -139,14 +161,55 @@ def _axis_segments(
 
 
 def _add_segment(segments: list[Segment], group: dict, horizontal: bool, max_thickness: int, max_length: float) -> None:
+    """A stroke's weight is how many rows carry a run of it.
+
+    Measured this way on the practice sheet, the strokes that carry dimensions come out 2-4 px and the
+    outlines and title-block rules 5-6 px. Measuring instead by sampling the ink across the stroke reads
+    a few pixels high on a raster, which shifts the weight of every arrow out of the band that finds it.
+    """
     thickness = float(group["rows"])
     length = float(group["end"] - group["start"])
     if thickness > max_thickness or length > max_length:
         return
     if horizontal:
-        segments.append(Segment(float(group["start"]), float(group["row"] - group["rows"] + 1), float(group["end"]), float(group["row"] + 1), thickness, True))
+        segments.append(
+            Segment(float(group["start"]), float(group["row"] - group["rows"] + 1), float(group["end"]), float(group["row"] + 1), thickness, True)
+        )
     else:
-        segments.append(Segment(float(group["row"] - group["rows"] + 1), float(group["start"]), float(group["row"] + 1), float(group["end"]), thickness, False))
+        segments.append(
+            Segment(float(group["row"] - group["rows"] + 1), float(group["start"]), float(group["row"] + 1), float(group["end"]), thickness, False)
+        )
+
+
+def leader_near(
+    binary: np.ndarray,
+    segments: list[Segment],
+    box: tuple[float, float, float, float],
+    text_mask: np.ndarray | None = None,
+    min_arrow_steps: int = 8,
+) -> Leader | None:
+    """The callout a printed Ø/R belongs to: one arrow, and its text at the far end of the same stroke.
+
+    Only one end carries an arrow - the tip that touches the feature - which is what tells a leader from
+    a dimension line, whose number sits in the middle of a line arrowed at both ends.
+    """
+    centre_x, centre_y = (box[0] + box[2]) / 2, (box[1] + box[3]) / 2
+    best: Leader | None = None
+    for segment in segments:
+        if text_fraction(text_mask, segment) > 0.25:
+            continue
+        arrows = [end for end in (0, 1) if arrow_steps(binary, segment, end) >= min_arrow_steps]
+        if len(arrows) != 1:
+            continue
+        arrow_end = arrows[0]
+        tail_x, tail_y = segment.ends()[1 - arrow_end]
+        reach = max(24.0, 2.5 * segment.thickness + 12.0)
+        gap = ((centre_x - tail_x) ** 2 + (centre_y - tail_y) ** 2) ** 0.5
+        if gap > reach:
+            continue
+        if best is None or segment.length > best.segment.length:
+            best = Leader(segment, box, arrow_end)
+    return best
 
 
 def _run(binary: np.ndarray, x: int, y: int, half: int, vertical: bool) -> int:

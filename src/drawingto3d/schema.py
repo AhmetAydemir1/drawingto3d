@@ -18,6 +18,10 @@ class SpanKind(str, Enum):
 
 Unit = Literal["mm", "in"]
 
+# How a printed number is attached to the drawing: a dimension line measures between its two ends, a
+# leader arrow touches the one feature its number sizes.
+AnchorMode = Literal["dimension", "leader"]
+
 # Every dimension record is held in millimetres; a sheet printed in inches is converted on the way in.
 MM_PER_INCH = 25.4
 
@@ -49,6 +53,7 @@ class Span(BaseModel):
     unit: Unit = "mm"
     bbox: BBox
     anchors: list[list[float]] = Field(default_factory=list)
+    anchor_mode: AnchorMode = "dimension"
     view_id: str | None = None
     source: Source = Source.ocr
 

@@ -15,7 +15,7 @@ import numpy as np
 from drawingto3d import lines
 from drawingto3d.ingest import apply_sheet_unit, parse_dimension, parse_dimension_unit
 from drawingto3d.reader import read_dimension
-from drawingto3d.schema import BBox, Page, Primitive, PrimitiveKind, Source, Span, SpanKind, Unit
+from drawingto3d.schema import AnchorMode, BBox, Page, Primitive, PrimitiveKind, Source, Span, SpanKind, Unit
 
 
 def perceive(page: Page, reader=None) -> tuple[list[Primitive], list[Span]]:
@@ -97,12 +97,28 @@ def _oriented_spans(gray: np.ndarray, reader=None) -> list[Span]:
     segments = lines.thin_segments(binary)
     text_mask = _text_mask(gray)
     gate = _DimensionGate(binary, segments, text_mask)
-    tight = _collect_spans(gray, 0.08, 0.7, 0.08, 0.9, 45, 8, 220, "center", gate, reader)
-    wide = _collect_spans(gray, 0.04, 0.96, 0.04, 0.96, 60, 20, 500, "gap", gate, reader)
-    spans = tight + wide
+    # One glyph list for both passes. Narrow per-pass size limits used to drop half of a rotated number
+    # (the digit that looked too wide for that pass), leaving a fragment that then read as a stray digit.
+    glyphs = _glyphs(gray, text_mask)
+    spans = _collect_spans(gray, glyphs, "center", gate, reader) + _collect_spans(gray, glyphs, "gap", gate, reader)
     for index, span in enumerate(spans):
         span.id = f"ocr-{index}"
     return spans
+
+
+def _glyphs(gray: np.ndarray, text_mask: np.ndarray, longest: int = 60, amin: int = 8, amax: int = 500) -> list[tuple]:
+    count, _, stats, centroids = cv2.connectedComponentsWithStats(text_mask, 8)
+    height, width = gray.shape
+    glyphs = []
+    for index in range(1, count):
+        x, y, w, h, area = [int(value) for value in stats[index]]
+        if not (width * 0.04 < x < width * 0.96 and height * 0.04 < y < height * 0.96):
+            continue
+        # Judged on the longest side, not the height: text along a vertical dimension is printed a
+        # quarter turn round, so a digit of the same size is as wide as it is tall elsewhere.
+        if 5 <= min(w, h) and max(w, h) <= longest and amin <= area <= amax:
+            glyphs.append((float(centroids[index][0]), float(centroids[index][1]), x, y, w, h))
+    return glyphs
 
 
 class _DimensionGate:
@@ -118,14 +134,41 @@ class _DimensionGate:
         self.segments = segments
         self.text_mask = text_mask
         self.anchors: dict[tuple[float, float], list[tuple[float, float]]] = {}
+        self.taken: list[tuple[float, float, float, float]] = []
 
-    def accepts(self, box: tuple[float, float, float, float]) -> tuple[bool, list[list[float]] | None]:
+    def accepts(self, box: tuple[float, float, float, float]) -> tuple[bool, list[list[float]] | None, AnchorMode]:
+        if any(_overlaps(box, taken) for taken in self.taken):
+            return False, None, "dimension"
         found = lines.dimension_line_near(self.binary, self.segments, box, self.text_mask)
-        if found is None:
-            return False, None
-        anchors = [[point[0], point[1]] for point in found.anchors]
+        if found is not None:
+            anchors = [[point[0], point[1]] for point in found.anchors]
+            self.anchors[box] = anchors
+            self.taken.append(box)
+            return True, anchors, "dimension"
+        leader = lines.leader_near(self.binary, self.segments, box, self.text_mask)
+        if leader is None:
+            return False, None, "dimension"
+        # A leader's arrow marks the feature; its tail is only where the text is.
+        anchors = [list(leader.tip), list(leader.tail)]
         self.anchors[box] = anchors
-        return True, anchors
+        self.taken.append(box)
+        return True, anchors, "leader"
+
+
+def _overlaps(a: tuple[float, float, float, float], b: tuple[float, float, float, float], limit: float = 0.3) -> bool:
+    """Do two candidate text boxes claim the same printed characters?
+
+    Glyph clustering is done twice, in two modes, and a rotated number can be found both as a whole and
+    as its fragments; without this a printed 80 arrives once as itself and once as a stray 0, and each
+    copy costs its own read.
+    """
+    left, top = max(a[0], b[0]), max(a[1], b[1])
+    right, bottom = min(a[2], b[2]), min(a[3], b[3])
+    if right <= left or bottom <= top:
+        return False
+    overlap = (right - left) * (bottom - top)
+    smaller = min((a[2] - a[0]) * (a[3] - a[1]), (b[2] - b[0]) * (b[3] - b[1])) or 1.0
+    return overlap / smaller > limit
 
 
 def _cluster_box(glyphs: list[tuple], cluster: list[int]) -> tuple[float, float, float, float]:
@@ -149,31 +192,19 @@ def _text_mask(gray: np.ndarray) -> np.ndarray:
     return cv2.subtract(ink, rules)
 
 
-def _collect_spans(gray, x0, x1, y0, y1, longest, amin, amax, mode: str, gate=None, reader=None) -> list[Span]:
-    letters = _text_mask(gray)
-    count, _, stats, centroids = cv2.connectedComponentsWithStats(letters, 8)
-    glyphs = []
-    height, width = gray.shape
-    for index in range(1, count):
-        x, y, w, h, area = [int(value) for value in stats[index]]
-        if not (width * x0 < x < width * x1 and height * y0 < y < height * y1):
-            continue
-        # Judged on the longest side, not the height: text along a vertical dimension is printed a
-        # quarter turn round, so a digit of the same size is as wide as it is tall elsewhere. Filtering
-        # on height threw those digits away as "too wide", which is how a printed 80 became a `0`.
-        if 5 <= min(w, h) and max(w, h) <= longest and amin <= area <= amax:
-            glyphs.append((float(centroids[index][0]), float(centroids[index][1]), x, y, w, h))
+def _collect_spans(gray: np.ndarray, glyphs: list[tuple], mode: str, gate=None, reader=None) -> list[Span]:
     spans: list[Span] = []
     for cluster in _cluster_glyphs(glyphs, mode):
         if not 1 <= len(cluster) <= 5:
             continue
         box = _cluster_box(glyphs, cluster)
         anchors = None
+        mode: AnchorMode = "dimension"
         if gate is not None:
-            accepted, anchors = gate.accepts(box)
+            accepted, anchors, mode = gate.accepts(box)
             if not accepted:
                 continue
-        span = _read_cluster(gray, glyphs, cluster, len(spans), reader, anchors)
+        span = _read_cluster(gray, glyphs, cluster, len(spans), reader, anchors, mode)
         if span is not None:
             spans.append(span)
     return spans
@@ -205,6 +236,7 @@ def _read_cluster(
     serial: int,
     reader=None,
     anchors: list[list[float]] | None = None,
+    mode: AnchorMode = "dimension",
 ) -> Span | None:
     x0 = min(glyphs[index][2] for index in cluster) - 3
     y0 = min(glyphs[index][3] for index in cluster) - 3
@@ -219,7 +251,7 @@ def _read_cluster(
         if text:
             kind, value, unit = _clean_dimension(text)
             if _usable(value):
-                return _make_span(serial, text, kind, value, unit, x0, y0, x1, y1, anchors)
+                return _make_span(serial, text, kind, value, unit, x0, y0, x1, y1, anchors, mode)
         return None
     angle = _ink_angle(crop)
     text = ""
@@ -227,12 +259,12 @@ def _read_cluster(
         text = _ocr_upright(crop, delta, whitelist=False)
         kind, value, unit = _clean_dimension(text)
         if _usable(value):
-            return _make_span(serial, text, kind, value, unit, x0, y0, x1, y1, anchors)
+            return _make_span(serial, text, kind, value, unit, x0, y0, x1, y1, anchors, mode)
     for delta in (0, 90, -90, -angle):
         text = _ocr_upright(crop, delta, whitelist=True)
         kind, value, unit = _clean_dimension(text)
         if _usable(value):
-            return _make_span(serial, text, kind, value, unit, x0, y0, x1, y1, anchors)
+            return _make_span(serial, text, kind, value, unit, x0, y0, x1, y1, anchors, mode)
     return None
 
 
@@ -312,6 +344,7 @@ def _make_span(
     x1: int,
     y1: int,
     anchors: list[list[float]] | None = None,
+    mode: AnchorMode = "dimension",
 ) -> Span:
     return Span(
         id=f"ocr-{serial}",
@@ -321,6 +354,7 @@ def _make_span(
         unit=unit,
         bbox=BBox(x=float(x0), y=float(y0), w=float(x1 - x0), h=float(y1 - y0)),
         anchors=anchors or [],
+        anchor_mode=mode,
         source=Source.ocr,
     )
 

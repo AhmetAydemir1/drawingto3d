@@ -6,7 +6,7 @@ import cv2
 import numpy as np
 
 from drawingto3d.schema import BBox, Binding, Page, Primitive, PrimitiveKind, Span, SpanKind, View, ViewKind
-from drawingto3d.strategies import graph_from_bindings
+from drawingto3d.legacy.strategies import graph_from_bindings
 
 
 def test_pocket_without_depth_blocks_step_and_keeps_the_l(tmp_path: Path):
@@ -46,7 +46,7 @@ def test_pocket_without_depth_blocks_step_and_keeps_the_l(tmp_path: Path):
 
 
 def test_binder_sees_solid_views_one_at_a_time(tmp_path):
-    from drawingto3d.pipeline import convert_drawing
+    from drawingto3d.legacy.pipeline import convert_drawing
 
     seen: list[bytes | None] = []
 

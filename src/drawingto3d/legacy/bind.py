@@ -8,6 +8,7 @@ import urllib.error
 import urllib.request
 from typing import Protocol
 
+from drawingto3d.errors import UnavailableModel
 from drawingto3d.schema import Binding, Question, Span
 
 FEATURE_KINDS = ("length", "diameter", "radius", "angle", "height", "depth", "other")
@@ -24,10 +25,6 @@ Return JSON with a features list. Each item has role, span_id, value, and kind.
 
 class SemanticBinder(Protocol):
     def bind(self, spans: list[Span], image: bytes | None = None) -> list[Binding]: ...
-
-
-class UnavailableModel(RuntimeError):
-    """Local vision model is not installed. Cloud fallback is not allowed."""
 
 
 class OllamaBinder:
@@ -47,34 +44,13 @@ class OllamaBinder:
             raise UnavailableModel("yerel model yanıt vermiyor; buluta düşülmez")
         try:
             text = self._chat(chosen, spans, image)
-            used = chosen
-        except UnavailableModel as exc:
-            cause = exc.__cause__
-            # #region agent log
-            _dbg("bind.py:bind", "primary model unavailable", {"model": self.model, "error": str(exc), "cause": type(cause).__name__ if cause else None, "cause_msg": str(cause) if cause else None, "span_count": len(spans), "image": bool(image)}, "B")
-            # #endregion
+        except UnavailableModel:
             if self.fallback is None or self.fallback == chosen:
                 raise
-            try:
-                text = self._chat(self.fallback, spans, image)
-            except UnavailableModel as fallback_exc:
-                fallback_cause = fallback_exc.__cause__
-                # #region agent log
-                _dbg("bind.py:bind", "fallback model unavailable", {"model": self.fallback, "error": str(fallback_exc), "cause": type(fallback_cause).__name__ if fallback_cause else None, "cause_msg": str(fallback_cause) if fallback_cause else None}, "B")
-                # #endregion
-                raise
-            used = self.fallback
-        parsed = _parse_model_json(text)
-        kept = validate_bindings(parsed, spans)
-        # #region agent log
-        _dbg("bind.py:bind", "model prompt and output", {"model": used, "prompt": PROMPT, "span_ids": [span.id for span in spans], "span_values": [span.value for span in spans], "raw": text[:4000], "parsed": [item.model_dump() for item in parsed], "kept": [item.model_dump() for item in kept]}, "C")
-        # #endregion
-        return kept
+            text = self._chat(self.fallback, spans, image)
+        return validate_bindings(_parse_model_json(text), spans)
 
     def _chat(self, model: str, spans: list[Span], image: bytes | None) -> str:
-        # #region agent log
-        _dbg("bind.py:_chat", "sending prompt", {"model": model, "host": self.host, "prompt": PROMPT, "span_count": len(spans), "span_values": [span.value for span in spans], "image": bool(image)}, "C")
-        # #endregion
         message: dict = {
             "role": "user",
             "content": PROMPT + "\n" + json.dumps([span.model_dump() for span in spans], ensure_ascii=False),
@@ -102,19 +78,6 @@ class OllamaBinder:
         except (urllib.error.URLError, TimeoutError) as exc:
             raise UnavailableModel("yerel model yanıt vermiyor; buluta düşülmez") from exc
         return {str(item.get("name", "")) for item in body.get("models", [])}
-
-
-def _dbg(location: str, message: str, data: dict, hypothesis_id: str) -> None:
-    # #region agent log
-    import time
-
-    try:
-        line = json.dumps({"sessionId": "23360b", "hypothesisId": hypothesis_id, "location": location, "message": message, "data": data, "timestamp": int(time.time() * 1000), "runId": "fork"}, ensure_ascii=False)
-        with open("/Users/aydemir/Desktop/drawingto3d/.cursor/debug-23360b.log", "a") as handle:
-            handle.write(line + "\n")
-    except OSError:
-        return
-    # #endregion
 
 
 def validate_bindings(proposed: list[Binding], spans: list[Span]) -> list[Binding]:

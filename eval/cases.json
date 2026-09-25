@@ -1,0 +1,58 @@
+{
+  "_note": "'printed' holds the numbers a human can read on the sheet, in the sheet's own unit. 'step' is the ground truth when one exists. feature_expectations is what the eval has to hold the pipeline to: a functionally equal part, not the same B-rep.",
+  "cases": [
+    {
+      "id": "mcmaster-2389K26",
+      "class": "catalog-fitting",
+      "drawing": "examples/pdf with steps/2389K26_Aboveground PVC Fitting for Drain, Waste and Vent.PDF",
+      "step": "examples/pdf with steps/2389K26_Aboveground PVC Fitting for Drain, Waste and Vent.STEP",
+      "unit": "in",
+      "printed": [0.688, 1.563],
+      "callouts": ["2X 1 1/4 Pipe Size"],
+      "part": "90 derece DWV dirsek, 1 1/4 inç, iki socket",
+      "expect_vector": "measure.txt"
+    },
+    {
+      "id": "mcmaster-2389K39",
+      "class": "catalog-fitting",
+      "drawing": "examples/pdf with steps/2389K39_Aboveground PVC Fitting for Drain, Waste and Vent.PDF",
+      "step": "examples/pdf with steps/2389K39_Aboveground PVC Fitting for Drain, Waste and Vent.STEP",
+      "unit": "in",
+      "printed": [0.766, 1.5],
+      "callouts": ["2X 2 Pipe Size"],
+      "part": "DWV dirsek, 2 inç, iki socket",
+      "expect_vector": "measure.txt"
+    },
+    {
+      "id": "studycadcam-60",
+      "class": "practice-sheet",
+      "drawing": "examples/504715c44a0f1b2bbb386bb7c387a8db.jpg",
+      "step": null,
+      "unit": "mm",
+      "printed": [80, 20, 20, 190, 90, 120, 60, 25, 30],
+      "radius_calls": [5, 100, 150, 60],
+      "diameter_calls": [30, 50],
+      "callouts": [],
+      "part": "kavisli kol (3 gorunus + izometrik), okuyucu dogrulugu icin",
+      "expect_vector": null
+    },
+    {
+      "id": "studycadcam-50",
+      "class": "practice-sheet",
+      "drawing": "examples/Teknik Resim Go\u0308ru\u0308nu\u0308s\u0327 C\u0327\u0131karma O\u0308rnekleri 1 - Makine Eg\u0308itimi.jpg",
+      "step": null,
+      "unit": "mm",
+      "printed": [20, 30, 40],
+      "radius_calls": [15, 5, 5],
+      "diameter_calls": [40, 80, 94, 10, 8],
+      "chamfer_calls": [4],
+      "callouts": [],
+      "part": "el carki (ust gorunus + iki kesit + iki izometrik), okuyucu dogrulugu icin",
+      "expect_vector": null
+    }
+  ],
+  "_classes": {
+    "catalog-fitting": "Vektorel PDF, 2 gorunus + golgeli izometrik, inc olculer, az sayida olcu, standart tablosu bilgisi gerekir.",
+    "practice-sheet": "Raster alistirma paftasi, tam olceklendirilmis 3 gorunus + izometrik, mm, Ø/R/C cagrilari."
+  }
+}

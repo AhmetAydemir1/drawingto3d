@@ -1,4 +1,4 @@
-from drawingto3d.bind import reject_invented, validate_bindings
+from drawingto3d.legacy.bind import reject_invented, validate_bindings
 from drawingto3d.schema import BBox, Binding, Span, SpanKind
 
 
@@ -7,7 +7,7 @@ def _span(span_id: str, value: float) -> Span:
 
 
 def test_model_json_drops_numbers_that_were_not_read():
-    from drawingto3d.bind import _parse_model_json
+    from drawingto3d.legacy.bind import _parse_model_json
 
     spans = [_span("s1", 180)]
     proposed = _parse_model_json(

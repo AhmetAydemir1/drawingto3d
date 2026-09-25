@@ -9,7 +9,7 @@ import urllib.error
 import urllib.request
 from urllib.parse import urlparse
 
-from drawingto3d.bind import UnavailableModel
+from drawingto3d.errors import UnavailableModel
 
 PROMPT = (
     "Generate the CADQuery code needed to create the CAD for the provided image. "

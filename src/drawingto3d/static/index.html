@@ -320,28 +320,7 @@ function renderBindings(table) {
 }
 
 document.getElementById("build").onclick = async () => {
-  if (state && state.records && state.records.length) {
-    await buildSolid();
-    return;
-  }
-  const answers = {};
-  for (const input of document.querySelectorAll("input[data-role]")) {
-    if (input.value !== "") answers[input.dataset.role] = Number(input.value);
-  }
-  setBusy(true);
-  showWait("Düzeltmeler gönderiliyor", "Ölçüler yeniden denetleniyor.");
-  const response = await fetch("/api/build", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ token: state.token, answers })
-  });
-  const started = await response.json();
-  if (!started.job) {
-    showWait("Durdu", started.error || "Oturum yok.");
-    setBusy(false);
-    return;
-  }
-  watch(started.job);
+  await buildSolid();
 };
 
 async function buildSolid() {

@@ -7,13 +7,13 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-from drawingto3d.bind import (
+from drawingto3d.errors import UnavailableModel
+from drawingto3d.ingest import load_page
+from drawingto3d.legacy.bind import (
     OllamaBinder,
     SemanticBinder,
-    UnavailableModel,
     validate_bindings,
 )
-from drawingto3d.ingest import load_page
 from drawingto3d.perceive import perceive
 from drawingto3d.schema import (
     BBox,
@@ -25,8 +25,8 @@ from drawingto3d.schema import (
     SpanKind,
     ViewKind,
 )
-from drawingto3d.solid import build_part, measured_length, write_step, write_stl
-from drawingto3d.strategies import audit_from, graph_from_bindings, questions_for
+from drawingto3d.legacy.solid import build_part, measured_length, write_step, write_stl
+from drawingto3d.legacy.strategies import audit_from, graph_from_bindings, questions_for
 from drawingto3d.views import layout_conflict, segment_views
 
 
@@ -52,11 +52,6 @@ def convert_drawing(
     page.primitives = primitives
     page.spans = spans
     tell("Ölçüler okundu", f"{len(spans)} sayı bulundu.")
-    # #region agent log
-    from drawingto3d.bind import _dbg
-
-    _dbg("pipeline.py:perceive", "views and spans", {"views": [{"id": view.id, "kind": view.kind.value, "used": view.used_for_solid, "bbox": view.bbox.model_dump()} for view in page.views], "spans": [{"id": span.id, "text": span.text, "value": span.value, "kind": span.kind.value, "view_id": span.view_id} for span in spans], "primitives": len(primitives)}, "A")
-    # #endregion
     questions: list[Question] = []
     if layout_conflict(page.views):
         questions.append(Question(role="datum", reason="görünüş yerleşimi üçüncü açıya uymuyor"))
@@ -73,9 +68,6 @@ def convert_drawing(
     questions.extend(pending)
     audit = audit_from(bindings, spans, questions, accepted=False)
     if questions:
-        # #region agent log
-        _dbg("pipeline.py:early", "stopped before solid", {"questions": [question.model_dump() for question in questions], "bindings": [item.model_dump() for item in bindings]}, "A")
-        # #endregion
         tell("Durdu", questions[0].reason if questions else "Eksik ölçü var.")
         return ConvertResult(audit=audit, questions=questions, page=page)
     tell("Kontur kuruluyor", "Profil, delik ve cep kaynak ölçülerle eşleniyor.")

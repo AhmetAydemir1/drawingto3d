@@ -9,10 +9,9 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse
 
-from drawingto3d.bind import UnavailableModel
+from drawingto3d.errors import UnavailableModel
 from drawingto3d.cadrun import CadFailure
 from drawingto3d.ingest import load_page
-from drawingto3d.pipeline import convert_drawing
 from drawingto3d.reason import reason_drawing
 from drawingto3d.schema import ROLES, Audit, ConvertResult, DimensionRecord, Source, Span, View
 
@@ -51,9 +50,6 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/api/convert":
             self._convert(body)
             return
-        if path == "/api/build":
-            self._build(body)
-            return
         if path == "/api/solid":
             self._solid(body)
             return
@@ -71,16 +67,6 @@ class Handler(BaseHTTPRequestHandler):
             source = folder / "drawing.pdf"
         source.write_bytes(payload)
         job_id = _start_reason_job(source, folder / "auto")
-        self._send(202, "application/json", json.dumps({"job": job_id}).encode())
-
-    def _build(self, body: bytes) -> None:
-        data = json.loads(body.decode() or "{}")
-        session = SESSIONS.get(data.get("token", "current"))
-        if session is None:
-            self._send(404, "application/json", b'{"error":"oturum yok"}')
-            return
-        answers = {key: float(value) for key, value in data.get("answers", {}).items()}
-        job_id = _start_job(session["source"], Path("out") / "build", answers)
         self._send(202, "application/json", json.dumps({"job": job_id}).encode())
 
     def _solid(self, body: bytes) -> None:
@@ -253,34 +239,6 @@ def _fail(job: dict, message: str) -> None:
         job["events"].append({"title": "Durdu", "detail": message})
         job["error"] = message
         job["done"] = True
-
-
-def _start_job(source, out_dir, answers: dict[str, float] | None) -> str:
-    job_id = uuid.uuid4().hex[:8]
-    job = {"events": [], "done": False, "error": None, "public": None}
-    with LOCK:
-        JOBS[job_id] = job
-
-    def progress(title: str, detail: str) -> None:
-        with LOCK:
-            job["events"].append({"title": title, "detail": detail})
-
-    def run() -> None:
-        try:
-            result = convert_drawing(source, out_dir, answers=answers, progress=progress)
-            _remember(job_id, source, result)
-            with LOCK:
-                job["public"] = _public(result, job_id)
-                job["done"] = True
-        except Exception as exc:
-            with LOCK:
-                job["events"].append({"title": "Durdu", "detail": "İş tamamlanamadı."})
-                job["error"] = "İş tamamlanamadı."
-                job["done"] = True
-            _ = exc
-
-    threading.Thread(target=run, daemon=True).start()
-    return job_id
 
 
 def _file_bytes(body: bytes) -> bytes:

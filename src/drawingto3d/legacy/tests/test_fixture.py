@@ -1,7 +1,18 @@
-from drawingto3d.pipeline import convert_drawing
+"""Retired with the first-generation pipeline. The fixture sheet this module needs is not in the repo.
+
+examples/solidworks-katc4b1-8-1024x729.jpg was deleted before this path was retired; only the
+out/solidworks-katc4b1-8-1024x729/ STEP it once produced is left. Re-draw or re-supply the sheet
+and delete the skip below to use these tests again.
+"""
+
+import pytest
+
+from drawingto3d.legacy.pipeline import convert_drawing
 from drawingto3d.schema import ViewKind
 
 DRAWING = "examples/solidworks-katc4b1-8-1024x729.jpg"
+
+pytestmark = pytest.mark.skip(reason=f"{DRAWING} is not in the repo")
 
 
 def test_sheet_views_keep_isometric_out():
@@ -23,7 +34,7 @@ def test_length_span_scales_the_solid(tmp_path):
     length = next(entry for entry in result.audit.entries if entry.kind == "length")
     assert length.value == 180
     assert length.role != "hex_across_flats"
-    from drawingto3d.solid import measured_length
+    from drawingto3d.legacy.solid import measured_length
     from build123d import import_step
 
     part = import_step(result.step_path)
@@ -49,7 +60,7 @@ def test_missing_model_does_not_invent_roles(tmp_path):
 
 class _DownBinder:
     def bind(self, spans, image=None):
-        from drawingto3d.bind import UnavailableModel
+        from drawingto3d.errors import UnavailableModel
 
         raise UnavailableModel("yerel model yanıt vermiyor; buluta düşülmez")
 

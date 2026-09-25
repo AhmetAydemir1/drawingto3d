@@ -5,7 +5,7 @@ from __future__ import annotations
 import cv2
 import numpy as np
 
-from drawingto3d.contours import view_islands, view_outline
+from drawingto3d.legacy.contours import view_islands, view_outline
 from drawingto3d.schema import (
     Audit,
     AuditEntry,

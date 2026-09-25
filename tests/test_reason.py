@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from drawingto3d.bind import UnavailableModel
+from drawingto3d.errors import UnavailableModel
 from drawingto3d.cadrun import CadFailure, close_code, extract_code, run_program
 from drawingto3d.llama import LlamaCoder, _local_origin
 from drawingto3d.reason import allowed_numbers, reason_drawing

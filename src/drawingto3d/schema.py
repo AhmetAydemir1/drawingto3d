@@ -16,6 +16,12 @@ class SpanKind(str, Enum):
     text = "text"
 
 
+Unit = Literal["mm", "in"]
+
+# Every dimension record is held in millimetres; a sheet printed in inches is converted on the way in.
+MM_PER_INCH = 25.4
+
+
 class Source(str, Enum):
     ocr = "ocr"
     pdf_text = "pdf_text"
@@ -30,10 +36,13 @@ class BBox(BaseModel):
 
 
 class Span(BaseModel):
+    """One text found on the sheet. `value` is what the sheet prints, in `unit`; 1.563in stays 1.563."""
+
     id: str
     text: str
     value: float | None = None
     kind: SpanKind = SpanKind.text
+    unit: Unit = "mm"
     bbox: BBox
     view_id: str | None = None
     source: Source = Source.ocr
@@ -171,12 +180,13 @@ ROLES: tuple[str, ...] = (
 
 
 class DimensionRecord(BaseModel):
-    """One printed dimension and the feature it sizes. The role may be corrected by the user."""
+    """One printed dimension and the feature it sizes. `value` is always millimetres."""
 
     span_id: str
     text: str
     value: float
     unit: Literal["mm"] = "mm"
+    printed_unit: Unit = "mm"
     role: Role = "unknown"
     count: int = 1
     source: Source = Source.ocr

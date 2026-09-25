@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from drawingto3d.ingest import load_page, parse_dimension
+from drawingto3d.ingest import load_page, parse_dimension, parse_dimension_unit
 from drawingto3d.schema import SpanKind
 
 
@@ -9,6 +9,21 @@ def test_parse_diameter_radius_and_angle():
     assert parse_dimension("R29") == (SpanKind.radius, 29.0)
     assert parse_dimension("55°") == (SpanKind.angle, 55.0)
     assert parse_dimension("3.6")[1] == 3.6
+
+
+def test_parse_dimension_reports_the_sheets_unit():
+    assert parse_dimension_unit("1.563in") == (SpanKind.linear, 1.563, "in")
+    assert parse_dimension_unit("0.688in") == (SpanKind.linear, 0.688, "in")
+    assert parse_dimension_unit('1 1/4"') == (SpanKind.linear, 1.25, "in")
+    assert parse_dimension_unit("2X 1 1/4") == (SpanKind.linear, 1.25, "in")
+    assert parse_dimension_unit("Ø20") == (SpanKind.diameter, 20.0, "mm")
+
+
+def test_a_token_with_letters_left_over_is_not_a_dimension():
+    assert parse_dimension_unit("2389K26")[1] is None
+    assert parse_dimension_unit("A4")[1] is None
+    assert parse_dimension_unit("SCALE 1:2")[1] is None
+    assert parse_dimension_unit("M8") == (SpanKind.linear, 8.0, "mm")
 
 
 def test_pdf_vector_text_is_a_span(tmp_path: Path):

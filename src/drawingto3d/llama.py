@@ -102,6 +102,7 @@ def _ollama_chat(
     timeout: float,
     predict: int,
     temperature: float = 0.2,
+    num_ctx: int = 16384,
 ) -> str:
     message: dict = {"role": "user", "content": prompt}
     if image_png is not None:
@@ -111,7 +112,9 @@ def _ollama_chat(
         "stream": False,
         "messages": [message],
         "keep_alive": "5m",
-        "options": {"temperature": temperature, "num_predict": predict},
+        # num_ctx must be set: Ollama's default 4096 is smaller than one whole-sheet image, and the
+        # 400 it returns ("exceeds the available context size") is not a model failure.
+        "options": {"temperature": temperature, "num_predict": predict, "num_ctx": num_ctx},
     }
     request = urllib.request.Request(
         host + "/api/chat",
@@ -122,12 +125,21 @@ def _ollama_chat(
     try:
         with urllib.request.urlopen(request, timeout=timeout) as response:
             body = json.load(response)
+    except urllib.error.HTTPError as exc:
+        detail = exc.read().decode("utf-8", "replace").strip()
+        raise UnavailableModel(f"yerel model isteği reddedildi ({exc.code}): {_short(detail)}") from exc
     except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as exc:
         raise UnavailableModel("yerel model yanıt vermiyor; buluta düşülmez") from exc
     text = str(body.get("message", {}).get("content", ""))
     if not text.strip():
         raise UnavailableModel("yerel model yanıt vermiyor; buluta düşülmez")
     return text
+
+
+def _short(text: str, limit: int = 300) -> str:
+    """One line of the provider's complaint, so a rejected request is not reported as silence."""
+    collapsed = " ".join(text.split())
+    return collapsed[:limit] + ("…" if len(collapsed) > limit else "")
 
 
 class LlamaCoder:

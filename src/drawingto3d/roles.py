@@ -15,7 +15,7 @@ import numpy as np
 
 from drawingto3d.ingest import split_count
 from drawingto3d.perceive import perceive
-from drawingto3d.schema import ROLES, DimensionRecord, Page, Span, SpanKind
+from drawingto3d.schema import MM_PER_INCH, ROLES, DimensionRecord, Page, Span, SpanKind
 
 DIAMETER_ROLES = ("outer_diameter", "inner_diameter", "hole_diameter")
 RADIUS_ROLES = ("bend_radius", "corner_radius", "fillet")
@@ -132,7 +132,8 @@ def read_records(page: Page, reader: RoleReader, progress=None) -> list[Dimensio
             DimensionRecord(
                 span_id=span.id,
                 text=span.text,
-                value=float(span.value),
+                value=_millimetres(span),
+                printed_unit=span.unit,
                 role=role,  # type: ignore[arg-type]
                 count=count,
                 source=span.source,
@@ -140,3 +141,9 @@ def read_records(page: Page, reader: RoleReader, progress=None) -> list[Dimensio
             )
         )
     return records
+
+
+def _millimetres(span: Span) -> float:
+    """The sheet may print inches; the record is always millimetres."""
+    value = float(span.value)
+    return value if span.unit == "mm" else value * MM_PER_INCH

@@ -9,7 +9,7 @@ import cv2
 import numpy as np
 import pypdfium2 as pdfium
 
-from drawingto3d.schema import BBox, Page, Source, Span, SpanKind
+from drawingto3d.schema import BBox, Page, Source, Span, SpanKind, Unit
 
 RASTER_DPI = 200
 
@@ -65,48 +65,68 @@ def _load_pdf(file: Path) -> Page:
 def _vector_spans(page, scale: float) -> list[Span]:
     textpage = page.get_textpage()
     count = textpage.count_chars()
-    spans: list[Span] = []
-    buffer = ""
-    box: list[float] | None = None
+    chars: list[tuple[str, float, float, float, float]] = []
     for index in range(count):
         char = textpage.get_text_range(index, 1)
-        rect = textpage.get_charbox(index)
         if char.isspace():
-            _flush(spans, buffer, box, scale)
-            buffer = ""
-            box = None
             continue
-        buffer += char
-        left, bottom, right, top = rect
-        if box is None:
-            box = [left, bottom, right, top]
-        else:
-            box = [min(box[0], left), min(box[1], bottom), max(box[2], right), max(box[3], top)]
-    _flush(spans, buffer, box, scale)
+        left, bottom, right, top = textpage.get_charbox(index)
+        chars.append((char, float(left), float(bottom), float(right), float(top)))
+    spans: list[Span] = []
+    for text, box in _group_chars(chars):
+        kind, value, unit = parse_dimension_unit(text)
+        if value is None or kind == SpanKind.text:
+            continue
+        x0, y0, x1, y1 = box
+        spans.append(
+            Span(
+                id=f"pdf-{len(spans)}",
+                text=text,
+                value=value,
+                kind=kind,
+                unit=unit,
+                bbox=BBox(x=x0 * scale, y=y0 * scale, w=(x1 - x0) * scale, h=(y1 - y0) * scale),
+                source=Source.pdf_text,
+            )
+        )
     return spans
 
 
-def _flush(spans: list[Span], text: str, box: list[float] | None, scale: float) -> None:
-    text = text.strip()
-    if not text or box is None:
-        return
-    kind, value = parse_dimension(text)
-    if value is None and kind == SpanKind.text:
-        return
-    x0, y0, x1, y1 = box
-    spans.append(
-        Span(
-            id=f"pdf-{len(spans)}",
-            text=text,
-            value=value,
-            kind=kind,
-            bbox=BBox(x=x0 * scale, y=y0 * scale, w=(x1 - x0) * scale, h=(y1 - y0) * scale),
-            source=Source.pdf_text,
-        )
-    )
+def _group_chars(chars: list[tuple[str, float, float, float, float]]) -> list[tuple[str, tuple[float, float, float, float]]]:
+    """A PDF draws `1 1/4` as three words. One dimension is one phrase, so join across small gaps."""
+    groups: list[list[tuple[str, float, float, float, float]]] = []
+    for char in chars:
+        if groups and _joins(groups[-1][-1], char):
+            groups[-1].append(char)
+        else:
+            groups.append([char])
+    phrases = []
+    for group in groups:
+        text = "".join(item[0] for item in group)
+        x0 = min(item[1] for item in group)
+        y0 = min(item[2] for item in group)
+        x1 = max(item[3] for item in group)
+        y1 = max(item[4] for item in group)
+        phrases.append((text, (x0, y0, x1, y1)))
+    return phrases
+
+
+def _joins(previous: tuple[str, float, float, float, float], char: tuple[str, float, float, float, float]) -> bool:
+    _pc, _pl, _pb, pr, pt = previous
+    _cc, cl, cb, _cr, ct = char
+    height = min(pt - _pb, ct - cb) or 1.0
+    if min(pt, ct) - max(_pb, cb) < 0.6 * height:
+        return False
+    gap = cl - pr
+    return -height <= gap <= 0.9 * height
 
 
 _COUNT_PREFIX = re.compile(r"^\s*(\d{1,2})\s*(?:[xX×]\s*(\d{1,2}))?\s*(?:[-–]\s*|[xX×]\s*)(?=[ØÖ⌀ΦRrCc\d])")
+_INCH_MARK = re.compile(r"(?<![A-Za-z])(?:inch(?:es)?|in)(?![A-Za-z])|\"", re.IGNORECASE)
+_MM_MARK = re.compile(r"(?<![A-Za-z])(?:mm|millimet(?:re|er)s?)(?![A-Za-z])", re.IGNORECASE)
+_MIXED = re.compile(r"^(\d+)\s+(\d+)\s*/\s*(\d+)$")
+_FRACTION = re.compile(r"^(\d+)\s*/\s*(\d+)$")
+_LETTERS = re.compile(r"[A-Za-z]")
 
 
 def split_count(text: str) -> tuple[int, str]:
@@ -121,24 +141,73 @@ def split_count(text: str) -> tuple[int, str]:
 
 
 def parse_dimension(text: str) -> tuple[SpanKind, float | None]:
-    _count, text = split_count(text)
-    raw = text.replace(" ", "").replace(",", ".").replace("Ø", "").replace("⌀", "").replace("Φ", "")
+    """Kind and printed number; see parse_dimension_unit for the unit."""
+    kind, value, _unit = parse_dimension_unit(text)
+    return kind, value
+
+
+def parse_dimension_unit(text: str) -> tuple[SpanKind, float | None, Unit]:
+    """Read one printed dimension as a machine value.
+
+    Rules that matter for real sheets:
+      - a trailing in/inch/" or any fraction makes it inches: `1.563in`, `1 1/4` (a bare fraction is
+        never millimetres on these drawings);
+      - a mixed number is one dimension: `1 1/4` is 1.25, not two numbers;
+      - a token with letters left over is not a dimension: `2389K26`, `A4`, `SCALE 1:2` are text;
+      - `Ø`, `⌀`, `Φ`, a leading `R`, a leading `C` (chamfer) and `°` set the kind, not the value.
+    """
+    _count, body = split_count(text)
+    unit = _unit_of(body)
+    head = body.strip()
     kind = SpanKind.linear
-    if text.startswith(("R", "r")) and not text.lower().startswith("ra"):
+    if head[:1] in ("R", "r") and not head.lower().startswith("ra"):
         kind = SpanKind.radius
-        raw = raw[1:]
-    elif "Ø" in text or "⌀" in text or text.lower().startswith("o") and raw[:1].isdigit():
+    elif any(mark in head for mark in ("Ø", "⌀", "Φ", "Ö")) or (head[:1] in ("o", "O") and head[1:2].isdigit()):
         kind = SpanKind.diameter
-    if "°" in text:
+    if "°" in head:
         kind = SpanKind.angle
-        raw = raw.replace("°", "")
-    raw = raw.replace("°", "")
+    raw = _strip_marks(head)
+    if not raw or _LETTERS.search(raw):
+        return SpanKind.text, None, unit
+    value = _number(raw)
+    if value is None:
+        return SpanKind.text, None, unit
+    return kind, value, unit
+
+
+def _unit_of(text: str) -> Unit:
+    if _INCH_MARK.search(text) or "/" in text:
+        return "in"
+    return "mm"
+
+
+def _strip_marks(text: str) -> str:
+    raw = text.replace(",", ".")
+    for mark in ("Ø", "⌀", "Φ", "Ö", "°", '"'):
+        raw = raw.replace(mark, "")
+    raw = re.sub(r"(?<![A-Za-z])(?:inch(?:es)?|in|mm)(?![A-Za-z])", "", raw, flags=re.IGNORECASE)
+    raw = re.sub(r"^[Rr](?=\d)", "", raw)
+    raw = re.sub(r"^[Cc](?=\d)", "", raw)
+    raw = re.sub(r"^[Mm](?=\d)", "", raw)
+    return " ".join(raw.split())
+
+
+def _number(raw: str) -> float | None:
+    mixed = _MIXED.match(raw)
+    if mixed:
+        whole, numerator, denominator = (float(item) for item in mixed.groups())
+        return whole + numerator / denominator if denominator else None
+    tight = raw.replace(" ", "")
+    fraction = _FRACTION.match(tight)
+    if fraction:
+        numerator, denominator = (float(item) for item in fraction.groups())
+        return numerator / denominator if denominator else None
     number = ""
-    for char in raw:
+    for char in tight:
         if char.isdigit() or (char == "." and "." not in number):
             number += char
         elif number:
             break
     if not number or number == ".":
-        return SpanKind.text, None
-    return kind, float(number)
+        return None
+    return float(number)

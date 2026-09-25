@@ -12,8 +12,8 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-from drawingto3d.ingest import parse_dimension
-from drawingto3d.schema import BBox, Page, Primitive, PrimitiveKind, Source, Span, SpanKind
+from drawingto3d.ingest import parse_dimension, parse_dimension_unit
+from drawingto3d.schema import BBox, Page, Primitive, PrimitiveKind, Source, Span, SpanKind, Unit
 
 
 def perceive(page: Page) -> tuple[list[Primitive], list[Span]]:
@@ -140,14 +140,14 @@ def _read_cluster(gray: np.ndarray, glyphs: list[tuple], cluster: list[int], ser
     text = ""
     for delta in (0, -angle, 90, -90):
         text = _ocr_upright(crop, delta, whitelist=False)
-        kind, value = _clean_dimension(text)
-        if _usable(kind, value, text):
-            return _make_span(serial, text, kind, value, x0, y0, x1, y1)
+        kind, value, unit = _clean_dimension(text)
+        if _usable(value):
+            return _make_span(serial, text, kind, value, unit, x0, y0, x1, y1)
     for delta in (0, 90, -90, -angle):
         text = _ocr_upright(crop, delta, whitelist=True)
-        kind, value = _clean_dimension(text)
-        if _usable(kind, value, text):
-            return _make_span(serial, text, kind, value, x0, y0, x1, y1)
+        kind, value, unit = _clean_dimension(text)
+        if _usable(value):
+            return _make_span(serial, text, kind, value, unit, x0, y0, x1, y1)
     return None
 
 
@@ -165,14 +165,13 @@ def _same_word(a: tuple, b: tuple) -> bool:
     return (same_row and gap_x <= 12 and gap_y <= max(ah, bh)) or (same_col and gap_y <= 12 and gap_x <= max(aw, bw))
 
 
-def _usable(kind: SpanKind, value: float | None, text: str) -> bool:
-    if value is None:
-        return False
-    if kind in {SpanKind.radius, SpanKind.diameter, SpanKind.angle}:
-        return True
-    if re.search(r"\d[.,]\d", text):
-        return True
-    return value >= 10
+def _usable(value: float | None) -> bool:
+    """A span with a number is kept whatever its size: a printed 6 is a dimension, not noise.
+
+    Noise is rejected where it can be told apart (letters in the token, a four-digit number that is
+    a part number or a year, the title block, the frame), not by a size threshold.
+    """
+    return value is not None
 
 
 def _ink_angle(crop: np.ndarray) -> float:
@@ -199,28 +198,29 @@ def _ocr_upright(crop: np.ndarray, angle: float, whitelist: bool) -> str:
     return result.stdout.decode("utf-8", "replace").strip()
 
 
-def _clean_dimension(text: str) -> tuple[SpanKind, float | None]:
+def _clean_dimension(text: str) -> tuple[SpanKind, float | None, Unit]:
     stripped = text.strip()
     spaced = re.fullmatch(r"(\d{1,2})\s+(\d)", stripped)
     if spaced:
         stripped = f"{spaced.group(1)}.{spaced.group(2)}"
     cleaned = stripped.replace(",", ".").replace(" ", "")
     cleaned = re.sub(r"[.]+$", "", cleaned)
-    if cleaned.isdigit() and int(cleaned) > 400:
-        return SpanKind.text, None
+    if cleaned.isdigit() and int(cleaned) > 999:
+        return SpanKind.text, None, "mm"
     broken = re.fullmatch(r"(\d{1,3})\.(\d)$", cleaned)
-    kind, value = parse_dimension(cleaned)
+    kind, value, unit = parse_dimension_unit(stripped)
     if kind == SpanKind.text and broken:
-        return parse_dimension(f"{broken.group(1)}.{broken.group(2)}")
-    return kind, value
+        kind, value, unit = parse_dimension_unit(f"{broken.group(1)}.{broken.group(2)}")
+    return kind, value, unit
 
 
-def _make_span(serial: int, text: str, kind: SpanKind, value: float, x0: int, y0: int, x1: int, y1: int) -> Span:
+def _make_span(serial: int, text: str, kind: SpanKind, value: float, unit: Unit, x0: int, y0: int, x1: int, y1: int) -> Span:
     return Span(
         id=f"ocr-{serial}",
         text=text,
         value=value,
         kind=kind,
+        unit=unit,
         bbox=BBox(x=float(x0), y=float(y0), w=float(x1 - x0), h=float(y1 - y0)),
         source=Source.ocr,
     )
@@ -311,7 +311,7 @@ def _spans_from_tsv(text: str) -> list[Span]:
         word = record.get("text", "").strip()
         if not word or word == "-":
             continue
-        kind, value = parse_dimension(word)
+        kind, value, unit = parse_dimension_unit(word)
         if value is None:
             continue
         try:
@@ -326,6 +326,7 @@ def _spans_from_tsv(text: str) -> list[Span]:
                 text=word,
                 value=value,
                 kind=kind,
+                unit=unit,
                 bbox=BBox(
                     x=float(record["left"]),
                     y=float(record["top"]),

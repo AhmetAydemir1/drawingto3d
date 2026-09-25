@@ -3,7 +3,7 @@ import numpy as np
 import pytest
 
 from drawingto3d.app import merge_records
-from drawingto3d.ingest import parse_dimension, split_count
+from drawingto3d.ingest import parse_dimension, parse_dimension_unit, split_count
 from drawingto3d.roles import crop_for_span, parse_role, read_records, role_choices, role_prompt
 from drawingto3d.schema import BBox, DimensionRecord, Page, Source, Span, SpanKind
 
@@ -67,6 +67,14 @@ def test_records_take_roles_from_the_reader_and_keep_spans():
     assert [span.id for span in page.spans] == ["s0", "s1", "s2", "s3"]
 
 
+def test_an_inch_span_becomes_millimetres_in_the_record():
+    page = _page(400, 300, [_span("s0", "1.563in", 100.0, 100.0)])
+    records = read_records(page, _Reader({"1.563in": "edge"}))
+    assert records[0].value == pytest.approx(39.7, abs=0.05)
+    assert records[0].text == "1.563in" and records[0].printed_unit == "in"
+    assert records[0].unit == "mm"
+
+
 def test_user_edits_replace_roles_and_mark_the_source():
 
     current = [
@@ -89,8 +97,8 @@ def _page(width: int, height: int, spans: list[Span]) -> Page:
 
 
 def _span(span_id: str, text: str, x: float, y: float) -> Span:
-    kind, value = parse_dimension(text)
-    return Span(id=span_id, text=text, value=value, kind=kind, bbox=BBox(x=x, y=y, w=30, h=14), source=Source.pdf_text)
+    kind, value, unit = parse_dimension_unit(text)
+    return Span(id=span_id, text=text, value=value, kind=kind, unit=unit, bbox=BBox(x=x, y=y, w=30, h=14), source=Source.pdf_text)
 
 
 class _Reader:

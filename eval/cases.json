@@ -37,6 +37,18 @@
       "expect_vector": "measure.txt"
     },
     {
+      "id": "plate-pocket-1",
+      "class": "self-made",
+      "drawing": "examples/pdf with steps/Plate With A Pocket Drawing.PDF",
+      "step": "examples/pdf with steps/plate with a pocket.STEP",
+      "unit": "mm",
+      "printed": [100, 80, 60, 50, 15, 8, 6.8],
+      "diameter_calls": [6.8],
+      "callouts": ["4 x 6,80 THRU ALL", "M8 - 6H THRU ALL"],
+      "part": "A4 yatay, olcek 1:1, cep ve delikli plaka; ondalik virgul, THRU ALL / M8-6H cagrilari",
+      "expect_vector": "measure.txt"
+    },
+    {
       "id": "studycadcam-60",
       "class": "practice-sheet",
       "drawing": "examples/504715c44a0f1b2bbb386bb7c387a8db.jpg",

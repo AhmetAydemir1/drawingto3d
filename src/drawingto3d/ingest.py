@@ -207,8 +207,13 @@ def parse_dimension_unit(text: str) -> tuple[SpanKind, float | None, Unit]:
 
 
 def _unit_of(text: str) -> Unit:
-    if _INCH_MARK.search(text) or "/" in text:
+    """A fraction is inches by convention (nobody dimensions a millimetre part in sixteenths); otherwise
+    only an explicit mark decides, and the sheet default is millimetres."""
+    if _INCH_MARK.search(text):
         return "in"
+    for pattern in (_MIXED, _FRACTION):
+        if pattern.match(text.strip()):
+            return "in"
     return "mm"
 
 

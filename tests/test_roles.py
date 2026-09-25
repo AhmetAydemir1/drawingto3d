@@ -67,6 +67,13 @@ def test_records_take_roles_from_the_reader_and_keep_spans():
     assert [span.id for span in page.spans] == ["s0", "s1", "s2", "s3"]
 
 
+def test_a_number_in_the_frame_band_is_dropped():
+    # 4% of a 400 px sheet is 16 px: the centre of the first span sits inside that band.
+    page = _page(400, 300, [_span("s0", "20", 0.0, 150.0), _span("s1", "20", 200.0, 150.0)])
+    records = read_records(page, _Reader({"20": "edge"}))
+    assert [record.span_id for record in records] == ["s1"]
+
+
 def test_an_inch_span_becomes_millimetres_in_the_record():
     page = _page(400, 300, [_span("s0", "1.563in", 100.0, 100.0)])
     records = read_records(page, _Reader({"1.563in": "edge"}))

@@ -29,9 +29,9 @@
       "drawing": "examples/pdf with steps/my_part.jpg",
       "step": "examples/pdf with steps/my_part.STEP",
       "unit": "mm",
-      "printed": [6, 10, 20, 25, 26, 30, 35, 37, 40, 57, 60, 80],
+      "printed": [6, 10, 20, 25, 26, 30, 35, 37, 40, 50, 57, 60, 80],
       "radius_calls": [20],
-      "diameter_calls": [20, 25, 30, 40],
+      "diameter_calls": [20, 25, 30, 40, 50],
       "callouts": [],
       "part": "A4 pafta, olcek 1:2, iki gorunus (kesitli on/yan + ust) + kucuk golgeli izometrik",
       "expect_vector": "measure.txt"

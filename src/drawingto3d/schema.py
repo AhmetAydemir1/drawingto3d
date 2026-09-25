@@ -36,7 +36,11 @@ class BBox(BaseModel):
 
 
 class Span(BaseModel):
-    """One text found on the sheet. `value` is what the sheet prints, in `unit`; 1.563in stays 1.563."""
+    """One text found on the sheet. `value` is what the sheet prints, in `unit`; 1.563in stays 1.563.
+
+    `anchors` are the pixel points the dimension line running under this text ends at: the two places on
+    the drawing the number measures between. They turn a printed number into geometry.
+    """
 
     id: str
     text: str
@@ -44,6 +48,7 @@ class Span(BaseModel):
     kind: SpanKind = SpanKind.text
     unit: Unit = "mm"
     bbox: BBox
+    anchors: list[list[float]] = Field(default_factory=list)
     view_id: str | None = None
     source: Source = Source.ocr
 

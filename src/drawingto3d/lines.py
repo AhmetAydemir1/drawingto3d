@@ -181,6 +181,177 @@ def _add_segment(segments: list[Segment], group: dict, horizontal: bool, max_thi
         )
 
 
+@dataclass(frozen=True)
+class Dimension:
+    """The dimension a printed number belongs to, in the sheet's pixels.
+
+    `ends` are the two points on the drawing the number measures between: the extension lines the
+    dimension is drawn to, which are not always the ends of the stroke the number sits next to. Small
+    dimensions are printed with the arrows outside the span and the number beside the line, so anchors
+    taken from the stroke alone put the span in the wrong place — a 0.688 in feature once measured 58 px
+    instead of the 109 px its own extension lines stand.
+    """
+
+    horizontal: bool
+    offset: float
+    ends: tuple[tuple[float, float], tuple[float, float]]
+
+    @property
+    def anchors(self) -> list[tuple[float, float]]:
+        return [self.ends[0], self.ends[1]]
+
+    @property
+    def length(self) -> float:
+        (x0, y0), (x1, y1) = self.ends
+        return float(np.hypot(x1 - x0, y1 - y0))
+
+
+def dimension_for(binary: np.ndarray, segments: list[Segment], box: tuple[float, float, float, float], text_mask: np.ndarray | None = None) -> Dimension | None:
+    """The dimension a printed number belongs to, read as a row rather than as one stroke.
+
+    A drafting office draws a dimension as a row of collinear strokes with the number in it or beside it,
+    ending at the strokes that cross the row: the extension lines of the feature being measured. Two
+    layouts share that shape, and reading the row covers both:
+
+      - the number breaks its dimension line, so the row continues on either side of it (the plate);
+      - the number sits beside a short arrowed line and the span is the empty gap between two facing
+        arrows, with no stroke drawn across it at all (the catalog fitting).
+
+    Everything is measured in the number's own text size, so the same code reads a drawing at any scale.
+    A row with no arrowhead on it is a title-block rule or an outline edge, not a dimension.
+    """
+    reading_across = (box[2] - box[0]) >= (box[3] - box[1])
+    size = max((box[3] - box[1]) if reading_across else (box[2] - box[0]), 1.0)
+    text_span = (box[0], box[2]) if reading_across else (box[1], box[3])
+    text_offset = (box[1] + box[3]) / 2 if reading_across else (box[0] + box[2]) / 2
+
+    row_strokes = [segment for segment in segments if segment.horizontal == reading_across]
+    if not row_strokes:
+        return None
+    reach = 3.0 * size
+    near = [
+        segment
+        for segment in row_strokes
+        if abs(_row_offset(segment, reading_across) - text_offset) <= 1.2 * size
+        and not (_row_end(segment, reading_across) < text_span[0] - reach or _row_start(segment, reading_across) > text_span[1] + reach)
+    ]
+    if not near:
+        return None
+    # A dimension whose line carries an arrow at both ends and passes *under* its number states its own
+    # span: the two arrow tips are the extension lines. A number printed beside such a line instead is a
+    # dimension drawn with its arrows outside the span, and its span has to be found from the extension
+    # lines, so this only applies when the number really sits on the line.
+    arrowed = [
+        segment
+        for segment in near
+        if arrow_steps(binary, segment, 0) >= 8
+        and arrow_steps(binary, segment, 1) >= 8
+        and _row_start(segment, reading_across) - 0.2 * size <= text_span[0]
+        and text_span[1] <= _row_end(segment, reading_across) + 0.2 * size
+    ]
+    if arrowed:
+        chosen = min(arrowed, key=lambda segment: abs(_row_offset(segment, reading_across) - text_offset))
+        start, end = _row_start(chosen, reading_across), _row_end(chosen, reading_across)
+        return Dimension(
+            horizontal=reading_across,
+            offset=_row_offset(chosen, reading_across),
+            ends=((start, _row_offset(chosen, reading_across)), (end, _row_offset(chosen, reading_across)))
+            if reading_across
+            else ((_row_offset(chosen, reading_across), start), (_row_offset(chosen, reading_across), end)),
+        )
+
+    offset = min(
+        (_row_offset(segment, reading_across) for segment in near),
+        key=lambda value: abs(value - text_offset),
+    )
+    row = [segment for segment in near if abs(_row_offset(segment, reading_across) - offset) <= 0.5 * size]
+    if not any(max(arrow_steps(binary, segment, 0), arrow_steps(binary, segment, 1)) >= 8 for segment in row):
+        return None
+
+    row_span = (
+        min(_row_start(segment, reading_across) for segment in row),
+        max(_row_end(segment, reading_across) for segment in row),
+    )
+    crossings = _crossings(segments, reading_across, offset, (row_span[0] - reach, row_span[1] + reach), size)
+    ends = _span_ends(reading_across, offset, crossings, text_span, row_span, size)
+    if ends is None:
+        return None
+    return Dimension(horizontal=reading_across, offset=offset, ends=ends)
+
+
+def _row_offset(segment: Segment, reading_across: bool) -> float:
+    return (segment.y0 + segment.y1) / 2 if reading_across else (segment.x0 + segment.x1) / 2
+
+
+def _row_start(segment: Segment, reading_across: bool) -> float:
+    return segment.x0 if reading_across else segment.y0
+
+
+def _row_end(segment: Segment, reading_across: bool) -> float:
+    return segment.x1 if reading_across else segment.y1
+
+
+def _crossings(segments: list[Segment], reading_across: bool, offset: float, row_span: tuple[float, float], size: float) -> list[float]:
+    """Where the strokes crossing the row meet it: the extension lines a dimension is drawn between."""
+    start, end = row_span
+    found: list[float] = []
+    for segment in segments:
+        if segment.horizontal == reading_across:
+            continue
+        # A crossing stroke runs across the row, so the row reads its position from the axis it does not
+        # run along: a vertical line crossing a horizontal row is at its own x.
+        position = (segment.x0 + segment.x1) / 2 if reading_across else (segment.y0 + segment.y1) / 2
+        if not (start - size <= position <= end + size):
+            continue
+        cross_lo, cross_hi = (segment.y0, segment.y1) if reading_across else (segment.x0, segment.x1)
+        # An extension line stops a hair short of the dimension line it belongs to.
+        if cross_lo - 0.6 * size <= offset <= cross_hi + 0.6 * size:
+            found.append(position)
+    return _merge_close(sorted(found), 0.4 * size)
+
+
+def _merge_close(values: list[float], tolerance: float) -> list[float]:
+    merged: list[float] = []
+    for value in values:
+        if merged and value - merged[-1] <= tolerance:
+            continue
+        merged.append(value)
+    return merged
+
+
+def _span_ends(
+    reading_across: bool,
+    offset: float,
+    crossings: list[float],
+    text_span: tuple[float, float],
+    row_span: tuple[float, float],
+    size: float,
+) -> tuple[tuple[float, float], tuple[float, float]] | None:
+    """The span the number measures: the pair of crossings it sits in, or the pair nearest it."""
+    start, end = row_span
+    if len(crossings) >= 2:
+        pairs = list(zip(crossings, crossings[1:]))
+        containing = [pair for pair in pairs if pair[0] - 0.4 * size <= text_span[0] and text_span[1] <= pair[1] + 0.4 * size]
+        if containing:
+            start, end = min(containing, key=lambda pair: pair[1] - pair[0])
+        else:
+            middle = (text_span[0] + text_span[1]) / 2
+            start, end = min(pairs, key=lambda pair: _distance_to_span(middle, pair))
+    if end - start <= 0.1 * size:
+        return None
+    if reading_across:
+        return ((start, offset), (end, offset))
+    return ((offset, start), (offset, end))
+
+
+def _distance_to_span(position: float, span: tuple[float, float]) -> float:
+    if position < span[0]:
+        return span[0] - position
+    if position > span[1]:
+        return position - span[1]
+    return 0.0
+
+
 def leader_near(
     binary: np.ndarray,
     segments: list[Segment],
@@ -194,6 +365,7 @@ def leader_near(
     a dimension line, whose number sits in the middle of a line arrowed at both ends.
     """
     centre_x, centre_y = (box[0] + box[2]) / 2, (box[1] + box[3]) / 2
+    height = max(min(box[2] - box[0], box[3] - box[1]), 1.0)
     best: Leader | None = None
     for segment in segments:
         if text_fraction(text_mask, segment) > 0.25:
@@ -205,9 +377,11 @@ def leader_near(
         tip_x, tip_y = segment.ends()[arrow_end]
         tail_x, tail_y = segment.ends()[1 - arrow_end]
         # The words sit beside the shaft, close to its blank end, and nearer that end than the arrow: a
-        # blob sitting *on* a stroke is a fragment of the stroke, not a number printed next to it.
-        gap = ((centre_x - tail_x) ** 2 + (centre_y - tail_y) ** 2) ** 0.5
-        if gap > max(40.0, 4.0 * segment.thickness + 24.0):
+        # blob sitting *on* a stroke is a fragment of the stroke, not a number printed next to it. The
+        # gap is measured to the nearest edge of the words, not to their centre: `0.688in` is a wide
+        # block of text and still sits right beside the shaft its arrow belongs to.
+        gap = _distance_to_box(tail_x, tail_y, box)
+        if gap > 2.0 * height:
             continue
         if _distance_to_line(centre_x, centre_y, segment) < 1.5 * segment.thickness:
             continue
@@ -216,6 +390,13 @@ def leader_near(
         if best is None or segment.length > best.segment.length:
             best = Leader(segment, box, arrow_end)
     return best
+
+
+def _distance_to_box(x: float, y: float, box: tuple[float, float, float, float]) -> float:
+    """Distance from a point to the nearest edge of a rectangle (0 inside it)."""
+    dx = max(box[0] - x, 0.0, x - box[2])
+    dy = max(box[1] - y, 0.0, y - box[3])
+    return float(np.hypot(dx, dy))
 
 
 def _distance_to_line(x: float, y: float, segment: Segment) -> float:

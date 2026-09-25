@@ -63,8 +63,8 @@ def _load_pdf(file: Path) -> Page:
     ok, encoded = cv2.imencode(".png", image)
     if not ok:
         raise ValueError("pdf raster kodlanamadı")
-    spans = _vector_spans(page, scale)
     height, width = image.shape[:2]
+    spans = _vector_spans(page, scale, cv2.cvtColor(image, cv2.COLOR_BGR2GRAY))
     return Page(
         path=str(file),
         width=width,
@@ -75,7 +75,16 @@ def _load_pdf(file: Path) -> Page:
     )
 
 
-def _vector_spans(page, scale: float) -> list[Span]:
+def _vector_spans(page, scale: float, gray: np.ndarray) -> list[Span]:
+    """The numbers printed in the file's own text layer, in raster pixels.
+
+    The text layer gives each character's box in PDF points from the bottom-left corner, while everything
+    else in this program works in raster pixels from the top-left. Rather than assume one drawing tool's
+    convention, the sheet itself is asked: the boxes are placed both ways and the placement that lands on
+    the sheet's ink is kept. A sheet whose text is drawn in a bottom-left frame (McMaster's catalog PDFs)
+    is mirrored against the raster; the same code reads a sheet drawn the other way round (the self-made
+    A4 sheets) without a per-file branch.
+    """
     textpage = page.get_textpage()
     count = textpage.count_chars()
     chars: list[tuple[str, float, float, float, float]] = []
@@ -88,13 +97,20 @@ def _vector_spans(page, scale: float) -> list[Span]:
     if not chars:
         return []
     rows = _group_along(chars)
-
-    spans: list[Span] = []
+    boxes: list[tuple[str, tuple[float, float, float, float]]] = []
     for text, box, _members in rows:
         kind, value, unit = parse_dimension_unit(text)
         if value is None or kind == SpanKind.text:
             continue
-        x0, y0, x1, y1 = box
+        boxes.append((text, box))
+    if not boxes:
+        return []
+
+    upright = _upright_placement(boxes, gray, scale, section_height_pt=page.get_size()[1])
+    spans: list[Span] = []
+    for text, box in boxes:
+        kind, value, unit = parse_dimension_unit(text)
+        x, y, w, h = upright(box, scale)
         spans.append(
             Span(
                 id=f"pdf-{len(spans)}",
@@ -102,11 +118,63 @@ def _vector_spans(page, scale: float) -> list[Span]:
                 value=value,
                 kind=kind,
                 unit=unit,
-                bbox=BBox(x=x0 * scale, y=y0 * scale, w=(x1 - x0) * scale, h=(y1 - y0) * scale),
+                bbox=BBox(x=x, y=y, w=w, h=h),
                 source=Source.pdf_text,
             )
         )
     return spans
+
+
+def _upright_placement(boxes, gray: np.ndarray, scale: float, section_height_pt: float):
+    """Which way round a text layer sits on the raster, measured from the ink it must be covering."""
+
+    def mirrored(box, scale: float) -> tuple[float, float, float, float]:
+        left, bottom, right, top = box
+        x0, y0 = left * scale, (section_height_pt - top) * scale
+        return x0, y0, (right - left) * scale, (top - bottom) * scale
+
+    def as_is(box, scale: float) -> tuple[float, float, float, float]:
+        left, bottom, right, top = box
+        x0, y0 = left * scale, bottom * scale
+        return x0, y0, (right - left) * scale, (top - bottom) * scale
+
+    candidates = (mirrored, as_is)
+    scores = [sum(_contrast_under(gray, place(box, scale)) for _text, box in boxes) for place in candidates]
+    if scores[0] == scores[1]:
+        # Nothing on the sheet disagrees: a PDF's own frame starts at the bottom-left, so the plain
+        # reading of a char box is the one that has to be turned over to sit on the raster.
+        return candidates[0]
+    return candidates[int(scores[1] > scores[0])]
+
+
+def _contrast_under(gray: np.ndarray, box: tuple[float, float, float, float]) -> float:
+    """How much darker a placed text box is than the paper around it.
+
+    Counting dark pixels is not enough: a shaded pictorial view is one large dark area, and a box that
+    lands anywhere on it scores full marks (that is how a shaded isometric once decided the orientation
+    of a whole sheet). Printed text is darker than its own surroundings on any sheet, white or grey, so
+    each box is compared with a ring around it instead.
+    """
+    x, y, w, h = box
+    if w <= 0 or h <= 0:
+        return 0.0
+    pad = max(2, int(round(0.75 * max(w, h))))
+    top, bottom = max(int(y) - pad, 0), min(int(y + h) + pad, gray.shape[0])
+    left, right = max(int(x) - pad, 0), min(int(x + w) + pad, gray.shape[1])
+    if bottom <= top or right <= left:
+        return 0.0
+    window = gray[top:bottom, left:right]
+    y0, y1 = max(int(y) - top, 0), min(int(y + h) - top, bottom - top)
+    x0, x1 = max(int(x) - left, 0), min(int(x + w) - left, right - left)
+    inside = window[y0:y1, x0:x1]
+    if inside.size == 0:
+        return 0.0
+    around = np.concatenate(
+        [window[:y0].ravel(), window[y1:].ravel(), window[y0:y1, :x0].ravel(), window[y0:y1, x1:].ravel()]
+    )
+    if around.size == 0:
+        return 0.0
+    return max(0.0, float(around.mean()) - float(inside.mean()))
 
 
 def _group_along(chars: list[tuple[str, float, float, float, float]]) -> list[tuple[str, tuple[float, float, float, float], list[int]]]:

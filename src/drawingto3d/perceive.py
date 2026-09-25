@@ -22,13 +22,45 @@ def perceive(page: Page, reader=None) -> tuple[list[Primitive], list[Span]]:
     image = cv2.imdecode(np.frombuffer(page.image_png, dtype=np.uint8), cv2.IMREAD_COLOR)
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     primitives = _primitives(gray)
-    spans = list(page.spans)
-    if not page.vector_text:
+    if page.vector_text:
+        spans = _gated_text_layer(page, gray)
+    else:
+        spans = list(page.spans)
         spans.extend(_oriented_spans(gray, reader))
     apply_sheet_unit(spans)
     spans = [span for span in spans if _inside_drawing_area(span, page)]
     _assign_views(spans, page.views)
-    return primitives, _dedupe_spans(spans)
+    spans = _dedupe_spans(spans)
+    page.spans = spans
+    return primitives, spans
+
+
+def _gated_text_layer(page: Page, gray: np.ndarray) -> list[Span]:
+    """The sheet's own text layer, kept only where the drawing carries the number.
+
+    A PDF text layer is exact about what is printed and where, which is why it is read instead of OCR;
+    it also contains the title block, the scale note, the part number and the copyright year. Which of
+    those numbers size a feature is decided by the drawing's own geometry — the gate the raster path
+    uses, with the text layer's exact boxes in place of glyph clustering and OCR.
+
+    If no number on the sheet is carried by a dimension, the sheet is kept as it is: a reader that
+    silently returns nothing is worse than one that shows what is printed and admits it has no anchors.
+    """
+    binary = lines.ink(gray)
+    segments = lines.thin_segments(binary)
+    gate = _DimensionGate(binary, segments, _text_mask(gray))
+    kept: list[Span] = []
+    for span in page.spans:
+        if span.value is None or span.kind == SpanKind.text:
+            continue
+        box = (span.bbox.x, span.bbox.y, span.bbox.x + span.bbox.w, span.bbox.y + span.bbox.h)
+        accepted, anchors, mode = gate.accepts(box)
+        if not accepted:
+            continue
+        span.anchors = anchors or []
+        span.anchor_mode = mode
+        kept.append(span)
+    return kept or [span for span in page.spans if span.value is not None]
 
 
 MARGIN_FRACTION = 0.04
@@ -161,7 +193,7 @@ class _DimensionGate:
     def accepts(self, box: tuple[float, float, float, float]) -> tuple[bool, list[list[float]] | None, AnchorMode]:
         if any(_overlaps(box, taken) for taken in self.taken):
             return False, None, "dimension"
-        found = lines.dimension_line_near(self.binary, self.segments, box, self.text_mask)
+        found = lines.dimension_for(self.binary, self.segments, box, self.text_mask)
         if found is not None:
             anchors = [[point[0], point[1]] for point in found.anchors]
             self.anchors[box] = anchors

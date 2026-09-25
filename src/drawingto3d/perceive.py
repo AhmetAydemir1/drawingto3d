@@ -116,7 +116,7 @@ def _glyphs(gray: np.ndarray, text_mask: np.ndarray, longest: int = 60, amin: in
             continue
         # Judged on the longest side, not the height: text along a vertical dimension is printed a
         # quarter turn round, so a digit of the same size is as wide as it is tall elsewhere.
-        if 5 <= min(w, h) and max(w, h) <= longest and amin <= area <= amax:
+        if 8 <= min(w, h) and max(w, h) <= longest and amin <= area <= amax:
             glyphs.append((float(centroids[index][0]), float(centroids[index][1]), x, y, w, h))
     return glyphs
 

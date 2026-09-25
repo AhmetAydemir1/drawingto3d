@@ -33,16 +33,16 @@ def test_a_leader_has_one_arrow_and_the_text_at_the_far_end():
     binary = _canvas()
     _stroke(binary, 30, 220, 45)
     _arrow(binary, 30, 60, 45)
-    _text_block(binary, 232, 36, 256, 54)
+    _text_block(binary, 232, 22, 256, 40)  # printed beside the shaft's blank end, not on it
     segments = _segments(binary)
 
-    leader = lines.leader_near(binary, segments, (232.0, 36.0, 256.0, 54.0))
+    leader = lines.leader_near(binary, segments, (232.0, 22.0, 256.0, 40.0))
 
     assert leader is not None
     assert leader.tip == pytest.approx((30.0, 45.0), abs=3)
     assert leader.tail == pytest.approx((220.0, 45.0), abs=3)
     # One arrow is not a dimension line: that needs an arrow at both ends and its number in the middle.
-    assert lines.dimension_line_near(binary, segments, (232.0, 36.0, 256.0, 54.0)) is None
+    assert lines.dimension_line_near(binary, segments, (232.0, 22.0, 256.0, 40.0)) is None
 
 
 def test_a_dimension_line_is_not_a_leader():

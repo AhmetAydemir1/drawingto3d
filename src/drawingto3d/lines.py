@@ -202,14 +202,27 @@ def leader_near(
         if len(arrows) != 1:
             continue
         arrow_end = arrows[0]
+        tip_x, tip_y = segment.ends()[arrow_end]
         tail_x, tail_y = segment.ends()[1 - arrow_end]
-        reach = max(24.0, 2.5 * segment.thickness + 12.0)
+        # The words sit beside the shaft, close to its blank end, and nearer that end than the arrow: a
+        # blob sitting *on* a stroke is a fragment of the stroke, not a number printed next to it.
         gap = ((centre_x - tail_x) ** 2 + (centre_y - tail_y) ** 2) ** 0.5
-        if gap > reach:
+        if gap > max(40.0, 4.0 * segment.thickness + 24.0):
+            continue
+        if _distance_to_line(centre_x, centre_y, segment) < 1.5 * segment.thickness:
+            continue
+        if (centre_x - tip_x) ** 2 + (centre_y - tip_y) ** 2 < gap**2:
             continue
         if best is None or segment.length > best.segment.length:
             best = Leader(segment, box, arrow_end)
     return best
+
+
+def _distance_to_line(x: float, y: float, segment: Segment) -> float:
+    """Perpendicular distance from a point to the segment's infinite line."""
+    if segment.horizontal:
+        return abs(y - (segment.y0 + segment.y1) / 2)
+    return abs(x - (segment.x0 + segment.x1) / 2)
 
 
 def _run(binary: np.ndarray, x: int, y: int, half: int, vertical: bool) -> int:

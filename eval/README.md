@@ -51,6 +51,29 @@ resolves.
 hatched sections. Reading-only for now: there is no reference STEP for them, and re-modelling them by
 hand is the honest way to get one.
 
+## How a number is read
+
+`perceive` finds printed numbers by the geometry that carries them, not by their size:
+
+1. `lines.thin_segments` keeps strokes 2–4 px thick and 36–1400 px long. On the A4 practice sheet the
+   outlines and title-block rules measure 5–6 px, so weight alone is not the filter — the arrows are.
+2. A candidate is a cluster of glyphs with a **dimension line** beside it (`lines.dimension_line_near`:
+   an arrow at both ends, the number between) or a **leader** (`lines.leader_near`: one arrow, the words
+   beside the blank end of the shaft). Title block, part numbers, copyright years and the frame band all
+   die here: on `my_part.jpg`, 364 glyph candidates become 21 that cover 10 of the 13 printed values.
+3. Text along a vertical line is printed a quarter turn round, so a glyph is judged on its longest side
+   and its crop is turned upright before it is read. Filtering those digits on height (or on width) is
+   how a printed 80 arrives as a bare `0`.
+4. `reader.read_dimension` asks the local vision model first, tesseract second, and reports agreement. An
+   answer that does not fit the crop it came from — letters on a dimension line, more digits than the box
+   could hold — is refused instead of kept; that is where `R100` and `R105` hallucinations come from.
+5. Every accepted number keeps the two ends of its own line as `Span.anchors`, so its value stays
+   attached to the geometry that printed it.
+6. `scale.audit` fits the sheet's own scale (px per mm) from those anchors and names the records that do
+   not fit it — a misread, or a number attached to a line that was never its own. On `my_part.jpg`:
+   5.95 px/mm with a 2.4% spread (A4 at 200 dpi, scale 1:2, expects 5.9) — no title block, dpi or scale
+   note needed.
+
 ## Known gaps
 
 - Two reference pairs is not an eval set. Synthetic sheets (build a part in CadQuery, render the
@@ -58,3 +81,6 @@ hand is the honest way to get one.
   `synthetic.py` when Phase 2 lands.
 - Nothing here scores *how much of the drawing was used*. A part built from 2 of 8 records and a part
   built from all 8 can both pass `vector`; coverage has to be its own check.
+- The reading front end (`perceive` + `lines` + `reader` + `scale`) is not yet the path the CLI takes:
+  `reason_drawing` still reads one question per number through `roles.read_records`. Wiring the two
+  together is what turns the measured candidate coverage into measured records.

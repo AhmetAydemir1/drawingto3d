@@ -36,6 +36,45 @@ class Calibration:
         return abs(self.residual(value_mm, measured_px)) > RELATIVE_TOLERANCE
 
 
+def measure(spans) -> list[tuple[float, float]]:
+    """(printed value in mm, length of its own dimension line in px) for every span that carries both."""
+    pairs = []
+    for span in spans:
+        if span.anchor_mode != "dimension" or span.value is None or len(span.anchors) != 2:
+            continue
+        (x0, y0), (x1, y1) = span.anchors[0], span.anchors[1]
+        length = ((float(x1) - float(x0)) ** 2 + (float(y1) - float(y0)) ** 2) ** 0.5
+        if length > 0:
+            pairs.append((float(span.value), length))
+    return pairs
+
+
+def audit(spans) -> tuple[Calibration | None, list[str]]:
+    """The sheet's scale, and which of its readings do not fit it.
+
+    Every dimension line is drawn to the number printed on it, so once the sheet has a scale, a value
+    that was misread — or a number matched up with a line that was never its line — shows up as a pair
+    whose length does not agree. No ground truth is needed to notice that something is wrong.
+    """
+    calibration = calibrate(measure(spans))
+    if calibration is None:
+        return None, []
+    suspect = [
+        span.id
+        for span in spans
+        if span.anchor_mode == "dimension"
+        and span.value is not None
+        and len(span.anchors) == 2
+        and calibration.disagrees(float(span.value), _length(span))
+    ]
+    return calibration, suspect
+
+
+def _length(span) -> float:
+    (x0, y0), (x1, y1) = span.anchors[0], span.anchors[1]
+    return ((float(x1) - float(x0)) ** 2 + (float(y1) - float(y0)) ** 2) ** 0.5
+
+
 def calibrate(pairs: list[tuple[float, float]], tolerance: float = RELATIVE_TOLERANCE) -> Calibration | None:
     """Fit pixels per millimetre to (value, measured length) pairs, ignoring the ones far off the pack.
 

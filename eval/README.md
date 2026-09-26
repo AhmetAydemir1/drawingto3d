@@ -5,6 +5,9 @@ What "better results" means for this project, in numbers. Two questions per shee
 1. **Reading** — did the reader find every number printed on the sheet, and nothing else?
 2. **Building** — is the STEP it built a functionally equal part to the reference STEP?
 
+`../CHANGES.md` keeps the other half of the record: one entry per change, with what it bought and what it
+cost. This file is the table of numbers those entries cite.
+
 Run:
 
 ```bash

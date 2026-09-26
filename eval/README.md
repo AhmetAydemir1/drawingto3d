@@ -72,26 +72,26 @@ and building metrics are held to.
 |---|---|---|---|---|---|
 | plastic-enclosure-1 | vektör | 11/11 | 0 | 3.917 | 7 |
 | plate-pocket-1 | vektör | 7/7 | 0 | 7.817 | 0 |
-| studycadcam-60 | raster | 6/9 | 7 | 3.278 | 7 |
-| studycadcam-50 | raster | 2/3 | 5 | - | 0 |
-| exercise-1 | raster | 2/13 | 8 | 5.700 | 9 |
-| flange-1 | raster | 3/13 | 4 | - | 0 |
+| studycadcam-60 | raster | 6/9 | 9 | 3.278 | 7 |
+| studycadcam-50 | raster | 2/3 | 7 | - | 0 |
+| exercise-1 | raster | 5/13 | 7 | 5.731 | 8 |
+| flange-1 | raster | 4/13 | 5 | - | 0 |
 
 The same sheets with the text layer taken away (`--as-raster`), which is the reader a scan gets:
 
 | vaka | kapsam | at the start of this work |
 |---|---|---|
 | plate-pocket-1 | 4/7 | 0/7 |
-| plastic-enclosure-1 | 6/11 | 2/11 |
+| plastic-enclosure-1 | 7/11 | 2/11 |
 | studycadcam-50 | 2/3 | 1/3 |
 | studycadcam-60 | 6/9 | - |
-| exercise-1 | 2/13 | - |
-| flange-1 | 3/13 | - |
+| exercise-1 | 5/13 | - |
+| flange-1 | 4/13 | - |
 
-`exercise-1` lost the value it had gained: it reads 2/13 with the text layer where it read 3/13, the cost of
-a crop being turned by the drawing's own geometry instead of by trial. Removing the text layer costs
-`plate-pocket-1` three numbers (7/7 -> 4/7) and `plastic-enclosure-1` five (11/11 -> 6/11), which is the
-distance between the text layer and the reader a scan has to use.
+The gap between the text layer and the reader a scan gets is the distance this project is closing:
+`plate-pocket-1` loses three numbers without it (7/7 -> 4/7) and `plastic-enclosure-1` four (11/11 ->
+7/11). `exercise-1` and `flange-1` only ever had the raster reader, and they are the two sheets the
+reading-angle change below moved: 2/13 -> 5/13 and 2/13 -> 4/13.
 
 The vector numbers are the text layer read through the geometry gate; the raster ones are the same gate
 with tesseract behind it, which is the floor, not the finished reader — `eval/baseline.py` is where the
@@ -103,7 +103,7 @@ The ceiling, with the vision model reading the same crops instead of tesseract (
 | vaka | tesseract (floor) | qwen2.5vl:7b (ceiling) |
 |---|---|---|
 | plate-pocket-1 | 4/7 | 4/7 |
-| plastic-enclosure-1 | 6/11 | 9/11 |
+| plastic-enclosure-1 | 7/11 | 9/11 |
 
 Neither switch is a default: the model costs minutes per sheet against seconds. Wall clock is not
 comparable between runs on one machine — the same plate took 32 s in one run and 538 s in another with
@@ -158,14 +158,26 @@ none at all on the other, where the geometry work below costs seconds.
 
 ## Known gaps
 
-- **A dimension drawn at an angle is still unread.** The strokes at an angle are found now
-  (`lines.diagonal_strokes`, banded by the sheet's own thin weight and wired into the gate), and that plus
-  the contrast rule below is what recovered `50,00` on `plate-pocket-1`: its line runs at 15° under the
-  number, faint, and carries an arrowhead at one end, so the leader path takes it (5/7 -> 6/7). What stays
-  unread is the *dimension* path: `dimension_for` reads a row of collinear strokes along an axis, so a
-  dimension line drawn at an angle is invisible however well its stroke is found. The same shape on the
-  flange is the `6 x Ø6.40` and `Ø11.00` callouts. Generalising the row to a direction (project onto the
-  stroke's own axis and across it) is what closes this, and the row code is already written in projections.
+- **A number written at an angle is read now; it is not yet sourced to its own line.** The crop of such a
+  number is offered to the reader at the digits' own angle first (`perceive._digits_angle`, guarded by
+  `_one_pen`; the measurement is in `CHANGES.md`), and that is what moved `exercise-1` 2/13 -> 5/13 and
+  `flange-1` 2/13 -> 4/13 with no other row moving. What is still missing is the **anchor**: the `50` on
+  `my_part.jpg` is printed at 45 degrees along the diameter it measures, so the two ends it should be
+  sourced to are that line's arrow tips — but `lines._angled_dimension` does not claim it, because the
+  number is printed *outside* the span, past the tip, on the row's extension. The value arrives on a short
+  leader's anchor instead, which is why that sheet's fitted scale (5.731 px/mm) and its suspects are not
+  yet trustworthy. `lines._angled_row` reads a row with the number inside its ink, or a row the number
+  breaks in two; a number printed beyond a tip is the third layout and is the next change.
+- **A dimension drawn at an angle is read as a row now, but only two of its three layouts.** The strokes at
+  an angle are found (`lines.diagonal_strokes`, banded by the sheet's own thin weight and wired into the
+  gate), and that plus the contrast rule below is what recovered `50,00` on `plate-pocket-1`: its line runs
+  at 15° under the number, faint, and carries an arrowhead at one end, so the leader path takes it
+  (5/7 -> 6/7). `lines._angled_dimension` then generalises the *dimension* pass to the stroke's own frame
+  (project the text and the row onto the stroke's direction and its normal), and it reads the number that
+  sits on an arrowed line and the number that breaks one in two. The layout it cannot read yet is the
+  number printed outside the span, past a tip — which is what the flange's `6 x Ø6.40` and `Ø11.00` turn
+  out *not* to be (they hang on the GD&T frame below them, and no stroke runs from that note to a hole),
+  and what the `50` on `my_part.jpg` is (see the bullet above).
 - **A drawn callout is still a picture, but its number is not.** On `plate-pocket-1` the region of the
   `6,80 THRU ALL` callout looks like it carries no text at all — the `4 x` prefix and the `Ø` are drawn as
   outlines, and so is the whole second line (`M8 - 6H THRU ALL`) — yet the text layer *does* hold
@@ -194,8 +206,8 @@ none at all on the other, where the geometry work below costs seconds.
   `plastic-enclosure-1` therefore reports 6 of its 14 readings as suspect although the fit itself
   (3.917 px/mm against the 3.937 a 1:2 A4 expects) is right. A reading should be judged against the
   larger of a relative tolerance and an absolute one in the sheet's own pixels.
-- **Raster reading is the weak half.** With the text layer taken away the front end finds 3 of the 13
-  printed numbers on `exercise-1`, 3 of 13 on `flange-1` and 4 of 7 on `plate-pocket-1`, against 6 of 7 on
+- **Raster reading is the weak half.** With the text layer taken away the front end finds 5 of the 13
+  printed numbers on `exercise-1`, 4 of 13 on `flange-1` and 4 of 7 on `plate-pocket-1`, against 7 of 7 on
   that sheet read through its text layer. Three causes were measured on the plate sheet, and all three are
   fixed: a decimal separator too small to survive the glyph filter left the digits on either side of it
   30.6 px apart against a 25.6 px reach, so *every* dimension on the sheet came apart at its comma

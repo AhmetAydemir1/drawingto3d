@@ -70,6 +70,92 @@ record.
 - The model run holds ~6.4 GB of VRAM while it goes, so it is not something to leave looping in the
   background of unrelated work.
 
+## The angled row, and one number per printed line (reading)
+
+Two changes carried over uncommitted from the session that wrote this file's handoff, recorded here so the
+accounting is complete. Both are `lines`/`perceive` geometry, and both were measured together with a third
+change that was then reverted (the glyph chain along a leader, see `.cursor/handoff.md` lesson 2).
+
+**What changed.** `lines.dimension_for` now reads a row along an axis first and, when that finds nothing,
+reads the same row in the stroke's own frame (`lines._angled_dimension`, `_angled_row`: the text and the
+strokes projected onto the stroke's direction and its normal, so a dimension drawn at an angle is visible).
+`perceive._cluster_glyphs` splits a cluster into printed lines (`_split_lines`, guarded by `_on_one_line`),
+so glyphs that a decimal separator bridged across two printed lines are two numbers and not one.
+
+**Bought.** Nothing on the eval set yet, and that is the measurement: the six-sheet table is identical to
+the one before the change (`.cursor/handoff.md` lesson 1), which is why the angled row is kept as the
+mechanism the next entry extends rather than as a win. The split is what the plate's raster callout needs
+next (`out/frontend/plate-pocket-1-raster.json`: the drawn `6,80`'s three glyphs and the two glyphs of the
+line below them are one five-glyph cluster, read as `08°9` -> 89, an angle printed nowhere on the sheet).
+
+**Cost / risk.** The angled pass only fires when the axis pass has found nothing, so it cannot take a line
+the axis already owns; a stroke arrowed at both ends is not a leader, so the two paths cannot claim the same
+stroke. What it does *not* do is claim a number printed outside the span — the layout the `50` on
+`my_part.jpg` is (see the next entry). `_split_lines` was not measured on its own: it was in the run that
+was reverted, and the two-line test in `tests/test_perceive.py` is the only evidence that it does what it
+says.
+
+**Verified.** `pytest -q` green (the three angled-row tests and the two-line test are in the suite);
+`eval/frontend.py` and `--as-raster` reproduce the table in `.cursor/handoff.md` lesson 1, except that
+`exercise-1` re-measures 2/13 there against the 3/13 recorded in that lesson — the row was re-measured on
+this commit and 2/13 is what the code prints.
+
+## The number's own line is the angle it is read at (reading)
+
+**What changed.** A crop was offered to tesseract at `(0, -ink, 90, -90)`, where `ink` is a fit through
+every ink pixel of the crop (`perceive._ink_angle`). It is now offered at the digits' own angle first
+(`perceive._digits_angle`: the line through the two glyph centres farthest apart), with the same angles
+behind it, so every reading the old order produced is still reachable.
+
+The mechanism is the first answer. On `my_part.jpg` the `50` printed at 45 degrees along the diameter it
+measures sits in a 58x56 crop whose ink fits at 28-37 degrees — the outline of a digit leans away from the
+line its centre lies on — and at that angle tesseract answered `2`: one digit of the two, a number in its
+own right, kept because the reader stops at the first answer that parses. At the digits' own 43.4 degrees
+the same crop reads `50`. The sign of `-ink` was wrong for text that is not on an axis, which is why this
+never showed on the sheets whose numbers are written level or up a vertical line: for those, `-ink` and
+`ink` are the same quarter turn and either lands on the number.
+
+`perceive._one_pen` guards the extra angle: it is only offered when the cluster's glyphs present one shape,
+which is what the digits of one printed number do — a digit at 45 degrees is as square as a `0`, whatever
+its shape when it stands level. Without the guard the change also reads the plastic sheet's drawn `R8.00`
+together with a blob of the vertical number beside it and returns `28.006` (see below).
+
+**Bought.** Coverage, with no sheet losing a number and no sheet gaining noise:
+
+| vaka | before | after | noise before -> after |
+|---|---|---|---|
+| exercise-1 | 2/13 | 5/13 | 10 -> 7 |
+| flange-1 | 2/13 | 4/13 | 5 -> 5 |
+| plate-pocket-1 | 7/7 (7/7 raster) | unchanged | 0 (3 raster -> 3) |
+| plastic-enclosure-1 | 11/11 (7/11 raster) | unchanged | 0 (8 raster -> 8) |
+| studycadcam-60 | 6/9 | unchanged | 9 -> 9 |
+| studycadcam-50 | 2/3 | unchanged | 7 -> 7 |
+
+On `exercise-1` the three numbers are `30`, `37` and `50`; on `flange-1` they are `1`, `1` and `#50`
+(two `1.00 X 45°` chamfers and the `50.00`), and the two misreadings the old order kept there (`2,` and a
+`2`) are gone.
+
+**Cost / risk.**
+- Measured, and the reason `_one_pen` exists: without it the plastic sheet's raster floor gains one
+  phantom, `28.006` at bbox (465, 627) — the drawn `R8.00` at 45 degrees and a blob of the vertical number
+  beside it in one cluster, read together. It cost no coverage, but it is noise, and the noise rule is not
+  negotiable; the guard removes it. `28.006` is also what the guard costs: a cluster of fragments whose
+  shapes disagree enough is read in the old order, so a number that *is* one row of fragments is not
+  straightened. The measured margin is thin and worth re-measuring on a new sheet: the loosest real row is
+  the flange's `#50` at 0.23 against `_one_pen`'s 0.25, and the plastic blob that makes it necessary is
+  0.34.
+- `exercise-1` now fits a scale where it fitted none (5.731 px/mm over 3 samples, 8 of its 15 readings
+  named suspect). The fit is not the point — the anchors are: `50`'s own anchor still comes from a short
+  leader, not from the 45-degree line it is printed on, so this number is read but not yet *sourced*.
+  That is the next change, not this one.
+- The extra angle is one more tesseract call per off-axis cluster; measured wall clock on the six sheets
+  is inside the noise of this box (exercise-1 49 s against 50 s).
+
+**Verified.** `pytest -q` 91 passed (4 new tests in `tests/test_perceive.py`);
+`eval/frontend.py` -> exercise-1 5/13, flange-1 4/13, every other row unchanged, the two tables above;
+`eval/frontend.py --as-raster` -> the same gains and no phantom (plate 3 noise records before and after,
+plastic 8 and 8, exercise-1 10 -> 7 at the raster floor); `out/frontend/*.json` re-measured.
+
 ## Measured, not yet changed
 
 The raster half of the callout: splitting a line of drawn words so that the number inside it is read on its

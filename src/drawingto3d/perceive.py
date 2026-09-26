@@ -274,7 +274,7 @@ class _DimensionGate:
     def accepts(self, box: tuple[float, float, float, float]) -> tuple[bool, list[list[float]] | None, AnchorMode]:
         if any(_overlaps(box, taken) for taken in self.taken):
             return False, None, "dimension"
-        found = lines.dimension_for(self.binary, self.segments, box, self.text_mask)
+        found = lines.dimension_for(self.binary, self.segments, box, self.text_mask, strokes=self.diagonals)
         if found is not None:
             anchors = [[point[0], point[1]] for point in found.anchors]
             self.anchors[box] = anchors
@@ -366,12 +366,130 @@ def _cluster_glyphs(glyphs: list[Glyph], mode: str = "center") -> list[list[int]
             grew = False
             for index in list(unused):
                 close = _same_word if mode == "gap" else _centers_near
-                if any(close(glyphs[index], glyphs[other]) or _separator_between(glyphs[index], glyphs[other], glyphs) for other in group):
+                if any(
+                    close(glyphs[index], glyphs[other])
+                    or _separator_between(glyphs[index], glyphs[other], glyphs)
+                    for other in group
+                ):
                     group.append(index)
                     unused.remove(index)
                     grew = True
         clusters.append(group)
-    return clusters
+    return [line for cluster in clusters for line in _split_lines(glyphs, cluster)]
+
+
+def _split_lines(glyphs: list[Glyph], cluster: list[int], fraction: float = 0.6) -> list[list[int]]:
+    """One printed number lies on one line, so glyphs from two lines of text are two numbers.
+
+    The clustering chains a glyph to any other within reach, and a separator's room is then measured
+    between two glyphs rather than one: on the plate sheet the comma of the drawn `6,80` bridged its `8`
+    to a `6` of the *line below* - 44.4 px apart against a 1.6-character limit of 44.8, missing by half a
+    pixel - and the crop of that five-glyph cluster, 67 x 72 px and two printed lines tall, was read as
+    `08°9`, an angle printed nowhere on the sheet, while the true 6.80 stayed missing.
+
+    The digits of one number sit within a fraction of a character of each other across their own line,
+    whether the text is printed upright or a quarter turn round, so a break in that direction is a line
+    break. Nothing is grouped along the line: that is where a number's own length lives, and it is what
+    makes `100,00` one number.
+    """
+    if len(cluster) < 2:
+        return [cluster]
+    size = float(np.median([max(glyphs[index].w, glyphs[index].h) for index in cluster]))
+    # A number printed along a leader sits on one straight line, diagonal included, so a gap in y is
+    # the number's own length and not a line break. Two printed lines are not collinear: the glyph
+    # that the comma pulled up off the next line stands off the digits' line.
+    if _on_one_line(glyphs, cluster, size):
+        return [cluster]
+    ordered = sorted(cluster, key=lambda index: glyphs[index].cy)
+    rows: list[list[int]] = [[ordered[0]]]
+    for index in ordered[1:]:
+        if glyphs[index].cy - glyphs[rows[-1][-1]].cy > fraction * size:
+            rows.append([index])
+        else:
+            rows[-1].append(index)
+    return rows
+
+
+def _on_one_line(glyphs: list[Glyph], cluster: list[int], size: float) -> bool:
+    """Do these glyphs lie on one straight line, whatever angle that line has?"""
+    points = [glyphs[index] for index in cluster]
+    first, second = max(
+        ((left, right) for index, left in enumerate(points) for right in points[index + 1 :]),
+        key=lambda pair: math.hypot(pair[0].cx - pair[1].cx, pair[0].cy - pair[1].cy),
+    )
+    dx, dy = second.cx - first.cx, second.cy - first.cy
+    length = math.hypot(dx, dy) or 1.0
+    farthest = max(abs((point.cx - first.cx) * dy - (point.cy - first.cy) * dx) / length for point in points)
+    return farthest <= 0.45 * size
+
+
+def _digits_angle(glyphs: list[Glyph], cluster: list[int]) -> float:
+    """The angle of the line the digits themselves sit on, in degrees, as the sheet prints it.
+
+    A number written along a leader is written along that leader, not along the sheet's axes, and the
+    two glyphs farthest apart state the line it is written on. A fit through the ink of its crop is a
+    different thing - `_ink_angle` - and a worse one: measured on `my_part.jpg`, the `50` printed at
+    45 degrees came out 28-37 degrees, because the outline of a digit leans away from the line its
+    centre lies on, and the crop turned by that angle read `2` - one digit of the two, a number in its
+    own right - while the digits' own 43.4 degrees read `50`.
+
+    `0.0` when the drawing does not say: one digit is not a line, and a separator is not a digit, so a
+    crop holding no line is left as it stands.
+    """
+    points = [glyphs[index] for index in cluster if not glyphs[index].separator]
+    if len(points) < 2:
+        return 0.0
+    first, second = max(
+        ((left, right) for index, left in enumerate(points) for right in points[index + 1 :]),
+        key=lambda pair: math.hypot(pair[0].cx - pair[1].cx, pair[0].cy - pair[1].cy),
+    )
+    return math.degrees(math.atan2(second.cy - first.cy, second.cx - first.cx))
+
+
+def _reading_angles(own: float, ink: float, least: float = 8.0) -> tuple[float, ...]:
+    """The angles a crop is offered to the reader at, the drawing's own line first.
+
+    A number written along a leader is written at that leader's angle, and the digits' own centres state
+    that angle (`_digits_angle`). The reader keeps its first answer, so asking it first at the number's
+    own angle is the whole difference between reading `50` and reading `2`: measured on `my_part.jpg`,
+    the crop of `50` printed at 45 degrees came back `2` - one digit of the two, a number in its own
+    right - as it stood, and `50` when offered at the digits' own 43.4 degrees.
+
+    A fit through the crop's ink (`_ink_angle`) is not that line: on the same crop a fit through the
+    digit outlines reads 28-37 degrees, because the outline of a digit leans away from the line its
+    centre lies on. It keeps the place it had - a fallback behind the drawing's own angle and behind the
+    quarter turns - and text already on an axis is read in the old order, because the drawing says
+    nothing new about a number written level.
+    """
+    angles = [0.0, -ink, 90.0, -90.0]
+    sheet_angle = abs(own) % 180.0
+    if min(sheet_angle, 180.0 - sheet_angle, abs(sheet_angle - 90.0)) > least:
+        angles.insert(0, (own + 90.0) % 180.0 - 90.0)
+    return tuple(dict.fromkeys(round(angle, 3) for angle in angles))
+
+
+def _one_pen(glyphs: list[Glyph], cluster: list[int], limit: float = 0.25) -> bool:
+    """Do these glyphs present one shape, the way the digits of one printed number do?
+
+    A number is drawn by one pen at one angle, so its digits present one shape to the clusterer: a digit
+    written at 45 degrees comes out as wide as it is tall - a `1`, a thin stroke when it stands level, is
+    as square as a `0` once the two are turned together - while a digit of the number that crosses this
+    one is turned by another angle and does not.
+
+    Measured on the plastic sheet: the drawn `R8.00` lies at 45 degrees and the vertical number beside it
+    put a 29x18 blob (0.62) into a row of 25x25 ones (0.96); the crop of the two together read `28.006`,
+    a number printed nowhere on the sheet. The widest spread a real row showed is the flange's `#50`,
+    three blobs 0.23 apart.
+    """
+    shapes = [
+        min(glyphs[index].w, glyphs[index].h) / max(1, max(glyphs[index].w, glyphs[index].h))
+        for index in cluster
+        if not glyphs[index].separator
+    ]
+    if len(shapes) < 2:
+        return False
+    middle = float(np.median(shapes))
+    return max(abs(shape - middle) for shape in shapes) <= limit
 
 
 def _reading_turn(glyphs: list[Glyph], cluster: list[int]) -> int | None:
@@ -471,8 +589,13 @@ def _read_cluster(
                 return _make_span(serial, text, kind, value, unit, x0, y0, x1, y1, anchors, mode)
         return None
     angle = _ink_angle(crop)
+    # The number's own line first, then the crop's ink, then the quarter turns: the drawing says which
+    # angle the number is written at, and a reader that keeps its first answer has to be asked at it.
+    # Only when the cluster really is one row of one-shaped glyphs: a digit of the number crossing this
+    # one is turned by another angle, and asking at this row's angle reads the two together.
+    own = _digits_angle(glyphs, cluster) if _one_pen(glyphs, cluster) else 0.0
     text = ""
-    for delta in (0, -angle, 90, -90):
+    for delta in _reading_angles(own + (turn or 0), angle):
         text = _ocr_upright(crop, delta, whitelist=False)
         kind, value, unit = _clean_dimension(text)
         if _usable(value):

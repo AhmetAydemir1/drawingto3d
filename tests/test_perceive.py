@@ -1,5 +1,9 @@
 """Geometry of reading: which glyphs are one printed number, and which candidate belongs to a line."""
 
+import cv2
+import numpy as np
+import pytest
+
 from drawingto3d import perceive
 from drawingto3d.schema import BBox, Span
 
@@ -111,3 +115,98 @@ def test_a_single_digit_says_nothing_about_which_way_it_reads():
     glyphs = [_glyph(100.0, 100.0, 90, 78, 18, 27), _glyph(112.0, 108.0, 110, 106, 5, 5, separator=True)]
 
     assert perceive._reading_turn(glyphs, list(range(len(glyphs)))) is None
+
+
+def test_glyphs_of_two_printed_lines_are_two_numbers_not_one():
+    # The plate sheet's raster path: the comma of the drawn `6,80` takes the same room as any comma, and
+    # the digits either side of it are then within 1.6 characters of each other - so it bridged the `8`
+    # to a `6` of the *line below* (44.4 px against a 44.8 px limit, missing by half a pixel). The crop
+    # of that five-glyph cluster spans two printed lines and 72 px, and was read as `08°9`, an angle
+    # printed nowhere on the sheet, while the true 6.80 stayed missing.
+    # 22 px apart: inside the digit reach (0.7 of the 28 px side plus 6). The comma is not what holds
+    # these two together; it is what pulls the line below into the same cluster.
+    first = _glyph(108.0, 100.0, 99, 80, 18, 28)
+    second = _glyph(130.0, 100.0, 122, 80, 18, 28)
+    below = _glyph(130.0, 140.0, 122, 120, 18, 28)
+    comma = _glyph(130.0, 120.0, 127, 117, 6, 7, separator=True)
+    glyphs = [first, second, below, comma]
+
+    assert perceive._separator_between(second, below, glyphs), "the comma is what joins them"
+    lines = perceive._cluster_glyphs(glyphs, "center")
+
+    assert sorted(sorted(line) for line in lines) == [[0, 1], [2]]
+
+
+def test_the_digits_own_line_gives_the_angle_a_number_is_written_at():
+    # my_part.jpg prints `50` at 45 degrees along the diameter it measures. The two glyph centres state
+    # that line exactly; a fit through the ink of the crop does not, because a digit's outline leans
+    # away from the line its centre lies on.
+    first = _glyph(860.2, 1646.3, 841, 1628, 41, 36)
+    second = _glyph(881.1, 1666.0, 864, 1649, 35, 35)
+
+    assert perceive._digits_angle([first, second], [0, 1]) == pytest.approx(43.4, abs=0.5)
+
+
+def test_a_number_written_at_an_angle_is_offered_to_the_reader_at_its_own_angle_first():
+    # The reader keeps its first answer, so the order of the angles is the whole question: offered the
+    # crop as it stands, `50` printed at 45 degrees came back `2`; offered at the digits' own angle it
+    # reads `50`.
+    angles = perceive._reading_angles(43.4, -37.4)
+
+    assert angles[0] == pytest.approx(43.4)
+    assert angles[1:] == (0.0, 37.4, 90.0, -90.0), "the angles it was read at before are all still there"
+
+
+def test_text_already_on_an_axis_keeps_the_order_it_had():
+    # A number written level, or up a vertical dimension, is already levelled by `_reading_turn` and its
+    # sense comes from the separator: the drawing says nothing new about it.
+    assert perceive._reading_angles(0.0, 0.0) == (0.0, 90.0, -90.0)
+    assert perceive._reading_angles(90.0, 0.0) == (0.0, 90.0, -90.0)
+
+
+def test_a_vertical_number_is_levelled_by_the_quarter_turn_and_not_by_its_own_line():
+    # The plate sheet's own `80,00` up a vertical line: its digits' line is vertical, so measured in the
+    # crop's own frame - after the quarter turn - it is a level line and adds no angle of its own.
+    digits = [_glyph(162.0, y, 148, int(y) - 9, 27, 18) for y in (840.0, 860.0, 891.0, 910.0)]
+    comma = _glyph(174.0, 875.0, 170, 873, 8, 4, separator=True)
+    glyphs = [*digits, comma]
+    cluster = list(range(len(glyphs)))
+    turn = perceive._reading_turn(glyphs, cluster)
+
+    assert turn == 90
+    own = perceive._digits_angle(glyphs, cluster) + turn
+    assert perceive._reading_angles(own, 0.0) == (0.0, 90.0, -90.0)
+
+
+def test_a_row_of_one_shape_is_one_number_and_a_digit_that_crosses_it_is_not():
+    # my_part.jpg's `50`, printed at 45 degrees: two digits turned together, and a digit turned by 45
+    # degrees is as wide as it is tall whatever its own shape.
+    level = [_glyph(860.2, 1646.3, 841, 1628, 41, 36), _glyph(881.1, 1666.0, 864, 1649, 35, 35)]
+
+    assert perceive._one_pen(level, [0, 1])
+
+
+def test_a_blob_from_the_number_that_crosses_the_row_breaks_it():
+    # The plastic sheet's drawn `R8.00` at 45 degrees, with the 29x18 blob of the vertical number beside
+    # it in the same cluster: 0.62 against 0.96. The crop of the two together read `28.006`, a number
+    # printed nowhere on the sheet.
+    row = [
+        _glyph(483.0, 642.9, 468, 630, 28, 30),
+        _glyph(497.6, 659.0, 485, 647, 26, 25),
+        _glyph(519.2, 680.5, 507, 669, 25, 24),
+        _glyph(533.6, 694.8, 522, 683, 25, 25),
+        _glyph(546.8, 715.4, 533, 707, 29, 18),
+    ]
+
+    assert not perceive._one_pen(row, list(range(len(row))))
+
+
+def test_the_widest_spread_a_real_row_showed_is_still_one_pen():
+    # The flange's `#50`: three blobs 0.23 apart, the loosest row the sheets offer.
+    row = [
+        _glyph(1537.4, 1648.9, 1529, 1640, 18, 19),
+        _glyph(1521.3, 1672.5, 1506, 1650, 31, 43),
+        _glyph(1498.7, 1687.4, 1490, 1666, 21, 36),
+    ]
+
+    assert perceive._one_pen(row, list(range(len(row))))

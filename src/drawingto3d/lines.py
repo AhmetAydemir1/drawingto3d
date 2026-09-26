@@ -404,7 +404,13 @@ class Dimension:
         return float(np.hypot(x1 - x0, y1 - y0))
 
 
-def dimension_for(binary: np.ndarray, segments: list[Segment], box: tuple[float, float, float, float], text_mask: np.ndarray | None = None) -> Dimension | None:
+def dimension_for(
+    binary: np.ndarray,
+    segments: list[Segment],
+    box: tuple[float, float, float, float],
+    text_mask: np.ndarray | None = None,
+    strokes: Sequence[Stroke] | None = None,
+) -> Dimension | None:
     """The dimension a printed number belongs to, read as a row rather than as one stroke.
 
     A drafting office draws a dimension as a row of collinear strokes with the number in it or beside it,
@@ -417,7 +423,19 @@ def dimension_for(binary: np.ndarray, segments: list[Segment], box: tuple[float,
 
     Everything is measured in the number's own text size, so the same code reads a drawing at any scale.
     A row with no arrowhead on it is a title-block rule or an outline edge, not a dimension.
+
+    A row along an axis is read from `segments`. A dimension drawn at an angle is the same row projected
+    onto the stroke's own direction and the normal across it (`strokes`): the axis pass cannot see it,
+    and a leader — one arrow, the words at the blank end — is left for `leader_near`.
     """
+    found = _axis_dimension(binary, segments, box)
+    if found is None and strokes:
+        found = _angled_dimension(binary, strokes, box)
+    return found
+
+
+def _axis_dimension(binary: np.ndarray, segments: list[Segment], box: tuple[float, float, float, float]) -> Dimension | None:
+    """The axis-aligned row. Kept as its own pass so a diagonal cannot steal a line the axis already owns."""
     reading_across = (box[2] - box[0]) >= (box[3] - box[1])
     size = max((box[3] - box[1]) if reading_across else (box[2] - box[0]), 1.0)
     text_span = (box[0], box[2]) if reading_across else (box[1], box[3])
@@ -475,6 +493,119 @@ def dimension_for(binary: np.ndarray, segments: list[Segment], box: tuple[float,
     if ends is None:
         return None
     return Dimension(horizontal=reading_across, offset=offset, ends=ends)
+
+
+def _project(x: float, y: float, axis: tuple[float, float]) -> float:
+    """Where a point sits along one axis of a stroke's own frame."""
+    return x * axis[0] + y * axis[1]
+
+
+def _off_axis(stroke: Stroke) -> float:
+    """Degrees away from the nearer sheet axis. A leftward horizontal line is 0, not 180."""
+    angle = abs(float(np.degrees(np.arctan2(stroke.y1 - stroke.y0, stroke.x1 - stroke.x0)))) % 180.0
+    return min(angle, 180.0 - angle, abs(angle - 90.0))
+
+
+def _along_span(stroke: Stroke, direction: tuple[float, float]) -> tuple[float, float]:
+    ends = [_project(x, y, direction) for x, y in stroke.ends()]
+    return min(ends), max(ends)
+
+
+def _angled_dimension(binary: np.ndarray, strokes: Sequence[Stroke], box: tuple[float, float, float, float]) -> Dimension | None:
+    """The same row as `_axis_dimension`, read in the stroke's own frame.
+
+    Project the text and the strokes onto the stroke's direction and reject anything that is really on
+    an axis: `diagonal_strokes` also keeps a line drawn a fraction of a degree off 180, and that line
+    already had its chance in the axis pass. A leader has one arrow, so a row is a dimension only when
+    two arrowed ends bracket the number — claiming the shaft itself would turn the callout into a length.
+    """
+    size = max(min(box[2] - box[0], box[3] - box[1]), 1.0)
+    centre_x, centre_y = (box[0] + box[2]) / 2, (box[1] + box[3]) / 2
+    reach = 3.0 * size
+    angled = [stroke for stroke in strokes if _off_axis(stroke) >= 6.0]
+    seeds = []
+    for stroke in angled:
+        if _distance_to_line(centre_x, centre_y, stroke) > 1.2 * size:
+            continue
+        direction, _normal = _basis(stroke)
+        text_along = [_project(x, y, direction) for x, y in ((box[0], box[1]), (box[2], box[1]), (box[0], box[3]), (box[2], box[3]))]
+        text_lo, text_hi = min(text_along), max(text_along)
+        stroke_lo, stroke_hi = _along_span(stroke, direction)
+        if text_hi < stroke_lo - reach or text_lo > stroke_hi + reach:
+            continue
+        seeds.append(stroke)
+    for seed in sorted(seeds, key=lambda stroke: _distance_to_line(centre_x, centre_y, stroke)):
+        found = _angled_row(binary, angled, seed, box, size, reach, centre_x, centre_y)
+        if found is not None:
+            return found
+    return None
+
+
+def _angled_row(
+    binary: np.ndarray,
+    strokes: Sequence[Stroke],
+    seed: Stroke,
+    box: tuple[float, float, float, float],
+    size: float,
+    reach: float,
+    centre_x: float,
+    centre_y: float,
+) -> Dimension | None:
+    """One collinear row around `seed`: the strokes that share its line and meet the text."""
+    direction, normal = _basis(seed)
+    text_along = [_project(x, y, direction) for x, y in ((box[0], box[1]), (box[2], box[1]), (box[0], box[3]), (box[2], box[3]))]
+    text_lo, text_hi = min(text_along), max(text_along)
+    row = []
+    for stroke in strokes:
+        if _angle_between(seed, stroke) > 8.0:
+            continue
+        if _distance_to_line(stroke.middle[0], stroke.middle[1], seed) > 0.5 * size:
+            continue
+        stroke_lo, stroke_hi = _along_span(stroke, direction)
+        if stroke_hi < text_lo - reach or stroke_lo > text_hi + reach:
+            continue
+        row.append(stroke)
+    centre_along = _project(centre_x, centre_y, direction)
+    # One stroke, arrowed at both ends, with the number on it: the tips are the span. The text has to
+    # sit inside that stroke, or a piece that merely passes the number would claim it.
+    for stroke in row:
+        if arrow_steps(binary, stroke, 0) < 8 or arrow_steps(binary, stroke, 1) < 8:
+            continue
+        stroke_lo, stroke_hi = _along_span(stroke, direction)
+        if stroke_lo - 0.2 * size <= text_lo and text_hi <= stroke_hi + 0.2 * size:
+            first, second = stroke.ends()
+            if _project(first[0], first[1], direction) > _project(second[0], second[1], direction):
+                first, second = second, first
+            return _angled_result(first, second, centre_x, centre_y, normal)
+    # The number breaks the line, so each piece keeps the arrow on the end farther from the number.
+    # The end facing the number is widened by the text itself and is not an arrow; taking it would
+    # measure the gap in the text instead of the tips.
+    outer: list[tuple[float, tuple[float, float]]] = []
+    for stroke in row:
+        ends = stroke.ends()
+        farther = max((0, 1), key=lambda end: abs(_project(ends[end][0], ends[end][1], direction) - centre_along))
+        if arrow_steps(binary, stroke, farther) < 8:
+            continue
+        point = ends[farther]
+        outer.append((_project(point[0], point[1], direction), point))
+    if len(outer) < 2:
+        return None
+    lo = min(outer, key=lambda item: item[0])
+    hi = max(outer, key=lambda item: item[0])
+    if not (lo[0] - 0.2 * size <= centre_along <= hi[0] + 0.2 * size) or hi[0] - lo[0] <= 0.5 * size:
+        return None
+    return _angled_result(lo[1], hi[1], centre_x, centre_y, normal)
+
+
+def _angled_result(
+    first: tuple[float, float],
+    second: tuple[float, float],
+    centre_x: float,
+    centre_y: float,
+    normal: tuple[float, float],
+) -> Dimension:
+    horizontal = abs(second[0] - first[0]) >= abs(second[1] - first[1])
+    return Dimension(horizontal=horizontal, offset=_project(centre_x, centre_y, normal), ends=(first, second))
 
 
 def _row_offset(segment: Segment, reading_across: bool) -> float:

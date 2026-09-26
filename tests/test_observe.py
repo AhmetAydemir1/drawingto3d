@@ -16,7 +16,6 @@ from drawingto3d.plan import source_hash
 
 PLATE = Path("examples/pdf with steps/Plate With A Pocket Drawing.PDF")
 PLASTIC = Path("examples/pdf with steps/plastic enclosue.pdf")
-RASTERS = (Path("examples/pdf with steps/my_part.jpg"), Path("examples/pdf with steps/Flange.PNG"))
 PX_PER_MM = 200 / 25.4
 
 
@@ -106,10 +105,9 @@ def test_observations_are_deterministic(plate):
     assert again.model_dump_json() == plate.model_dump_json()
 
 
-def test_raster_refuses_with_a_reason():
-    for raster in RASTERS:
-        with pytest.raises(Unsupported, match="vektör"):
-            observe(raster)
+def test_unsupported_suffix_is_named():
+    with pytest.raises(Unsupported, match="desteklenmeyen"):
+        observe(Path("examples/whatever.doc"))
 
 
 def test_vector_groups_still_serve_the_plate_recognizer():

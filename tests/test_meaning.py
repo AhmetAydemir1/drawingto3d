@@ -16,7 +16,6 @@ from drawingto3d.observe import observe
 
 PLATE = Path("examples/pdf with steps/Plate With A Pocket Drawing.PDF")
 PLASTIC = Path("examples/pdf with steps/plastic enclosue.pdf")
-RASTERS = (Path("examples/pdf with steps/my_part.jpg"), Path("examples/pdf with steps/Flange.PNG"))
 HOLES = {"g9", "g10", "g11", "g12"}
 
 
@@ -152,7 +151,6 @@ def test_json_round_trip(plate):
     assert payload["spans"][0]["claim"]["form"] in ("distance", "diameter", "radius")
 
 
-def test_raster_refuses_with_a_reason():
-    for raster in RASTERS:
-        with pytest.raises(Unsupported, match="vektör"):
-            meaning_page(raster)
+def test_unsupported_suffix_is_named():
+    with pytest.raises(Unsupported, match="desteklenmeyen"):
+        meaning_page(Path("examples/whatever.doc"))

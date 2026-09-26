@@ -20,7 +20,6 @@ from drawingto3d.proposal import Proposal, _frame_loops, _rounded_rectangle, pro
 
 PLATE = Path("examples/pdf with steps/Plate With A Pocket Drawing.PDF")
 PLASTIC = Path("examples/pdf with steps/plastic enclosue.pdf")
-RASTER = Path("examples/pdf with steps/my_part.jpg")
 
 ANALYTIC_VOLUME = (120 * 80 - (4 - math.pi) * 10 ** 2) * 15 \
     - 4 * math.pi * 3.4 ** 2 * 15 - math.pi * 25.0 ** 2 * 8
@@ -136,9 +135,9 @@ def test_plastic_is_refused_with_a_reason(plastic):
     assert plastic.refusals and "çap" in " ".join(plastic.refusals)
 
 
-def test_raster_is_unsupported():
-    with pytest.raises(Unsupported):
-        propose_general(RASTER)
+def test_unsupported_suffix_is_named():
+    with pytest.raises(Unsupported, match="desteklenmeyen"):
+        propose_general(Path("examples/whatever.doc"))
 
 
 def test_frame_loops_skips_a_sheet_border():

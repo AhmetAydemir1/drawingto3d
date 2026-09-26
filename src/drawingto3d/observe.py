@@ -7,7 +7,8 @@ consumer of these records, and a part nobody has seen yet is another.
 
 What this first slice does not do, and says so in the record it writes:
 
-- raster sheets raise `Unsupported` until the CV observer lands (vectors only, for now);
+- raster sheets are read by `raster.py` (CV strokes and circles, tesseract OCR phrases), whose
+  record carries its own limits — no source paths, no arcs, no anchors yet;
 - curve segments are recorded as skipped — this pdfium binding exposes a bezier's end point but
   no control points, so a curve cannot be rebuilt faithfully, and inventing a polyline for it
   would be a guess dressed as a measurement;
@@ -185,6 +186,7 @@ class Primitive(BaseModel):
     start_degrees: float | None = None
     end_degrees: float | None = None
     max_residual_px: float | None = None
+    coverage: float | None = None
     method: str = "least-squares-fit"
 
 
@@ -212,20 +214,21 @@ class TextObservation(BaseModel):
     bbox: BBox
     char_range: list[int] = Field(default_factory=list)
     method: str = "pdf-text"
+    confidence: float | None = None
 
 
 class SourceRef(BaseModel):
     ref: str
     sha256: str
     page: int = 0
-    page_size_pt: list[float]
+    page_size_pt: list[float] | None = None
     rotation: int = 0
 
 
 class Frame(BaseModel):
     width: int
     height: int
-    dpi: float = RASTER_DPI
+    dpi: float | None = RASTER_DPI
     origin: str = "top-left"
     y_axis: str = "down"
     detail: str = "the page rendered at 200 dpi from PDF points; text boxes placed on the sheet's ink"
@@ -287,7 +290,10 @@ def observe(path: str | Path, page_index: int = 0) -> Observations:
     if page_index != 0:
         raise Unsupported("gözlem katmanı şimdilik yalnız ilk sayfayı okuyor")
     if drawing.suffix.lower() != ".pdf":
-        raise Unsupported("raster gözlem katmanı henüz yok: şimdilik yalnız vektör PDF")
+        from drawingto3d.raster import RASTER_SUFFIXES, observe_raster
+        if drawing.suffix.lower() in RASTER_SUFFIXES:
+            return observe_raster(drawing)
+        raise Unsupported(f"desteklenmeyen dosya türü: {drawing.suffix or '(yok)'}")
 
     loaded = load_page(drawing)
     paths, skipped = vector_paths(loaded)
@@ -335,6 +341,6 @@ def observe(path: str | Path, page_index: int = 0) -> Observations:
     observations.notes = [
         "Ölçü oklarının bağlandığı geometri (bağlama) bir sonraki dilimde.",
         "Görünüş ayrımı (plan/kesit/izometrik) bir sonraki dilimde.",
-        "Raster sayfalar için CV gözlemcisi henüz yok.",
+        "Raster paftalar ayrı gözlemciden geçiyor (`raster.py`: CV çizgi/daire + OCR ifade).",
     ]
     return observations

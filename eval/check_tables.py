@@ -25,6 +25,9 @@ FULL_ROW = re.compile(
     r"\|\s*([a-z0-9\-]+)\s*\|\s*(raster|vektör)\s*\|\s*(\d+/\d+)\s*\|\s*(\d+)\s*\|\s*([\d.]+|-)\s*\|\s*(\d+)\s*\|"
 )
 THREE_CELL = re.compile(r"\|\s*([a-z0-9\-]+)\s*\|\s*(\d+/\d+)\s*\|\s*([^|]+?)\s*\|")
+BUILT_ROW = re.compile(
+    r"\|\s*([a-z0-9\-]+)\s*\|\s*(\d+/\d+|-)\s*\|\s*(\d+|-)\s*\|\s*(var|yok|-)\s*\|\s*([^|]+?)\s*\|"
+)
 
 
 def _cells(line: str) -> list[str]:
@@ -35,7 +38,9 @@ HEADERS = {
     "kaynak": "full",
     "at the start of this work": "raster cover",
     "qwen3-vl:8b-instruct (ceiling)": "ceiling",
+    "| katı |": "built",
 }
+REPORT = ROOT / "out" / "eval" / "report.json"
 
 
 def _run(case: str, suffix: str) -> dict | None:
@@ -107,8 +112,51 @@ def main() -> int:
                       f"  (tavan ayrı bir koşudur; tabloda yaşlı koşu notu olabilir)")
                 drifted += 1
 
+        elif table == "built":
+            match = BUILT_ROW.match(line)
+            if not match:
+                continue
+            case, coverage, records, built, verdict = match.groups()
+            checked += 1
+            row = _report_row(case)
+            if row is None:
+                print(f"KAYIT YOK  {case:22} built    tabloda var, out/eval/report.json'da yok")
+                drifted += 1
+                continue
+            for column, written in (("okuma", coverage), ("kayıt", records), ("katı", built), ("verdict", verdict)):
+                if written == "-":
+                    continue
+                real = _built_cell(row, column)
+                if written != real:
+                    print(f"KAYDI  {case:22} {column:8} README {written:>12}  ->  rapor {real:>12}")
+                    drifted += 1
+
     print(f"\n{checked} satır okundu, {drifted} satır koşuyla tutmuyor")
     return 1 if drifted else 0
+
+
+def _report_row(case: str) -> dict | None:
+    if not REPORT.is_file():
+        return None
+    report = json.loads(REPORT.read_text(encoding="utf-8"))
+    return next((row for row in report.get("cases", []) if row.get("id") == case), None)
+
+
+def _built_cell(row: dict, column: str) -> str:
+    """One cell of the built table, derived from the report row the same way the README writes it."""
+    reading = row.get("reading") or {}
+    built = row.get("built")
+    if column == "okuma":
+        return f"{len(reading.get('found') or [])}/{len(row.get('printed') or [])}" if reading.get("status") == "okundu" else "-"
+    if column == "kayıt":
+        return str(reading.get("records", 0))
+    if column == "katı":
+        return "var" if built and "error" not in built else "yok"
+    if not row.get("truth"):
+        return "referans yok"
+    if built is None or "error" in built:
+        return "katı üretilmedi"
+    return "GEÇTİ" if (row.get("verdict") or {}).get("pass") else "KALDI"
 
 
 if __name__ == "__main__":

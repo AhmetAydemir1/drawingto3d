@@ -63,12 +63,34 @@ def _case(case: dict) -> dict:
     return row
 
 
-def _reading(case: dict) -> dict:
-    """Every record the reader produced, split into 'a printed number' and 'noise'."""
+def _reading_source(case: dict) -> dict | None:
+    """The app's own records if it wrote them, else the baseline payload, else nothing read yet."""
+    written = BUILT / case["id"] / "records.json"
+    if written.is_file():
+        try:
+            records = json.loads(written.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            records = None
+        if isinstance(records, list):
+            return {"records": records}
     path = BASELINE / f"{case['id']}.json"
     if not path.is_file():
+        return None
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _reading(case: dict) -> dict:
+    """Every record the reader produced, split into 'a printed number' and 'noise'.
+
+    The app's own read writes `out/eval/<case>/records.json` (a bare list: what `drawingto3d read` produced and
+    what `drawingto3d build` consumed straight afterwards), and that is preferred where it exists — the report's
+    two halves then describe **one** run of the pipeline rather than a reading measured here and a part built
+    from something else. `out/baseline/<case>.json` stays the fallback for a case read by `eval/baseline.py`
+    alone.
+    """
+    data = _reading_source(case)
+    if data is None:
         return {"status": "okunmadı", "records": 0, "found": [], "missing": case["printed"], "noise": []}
-    data = json.loads(path.read_text(encoding="utf-8"))
     if data.get("error"):
         return {"status": "hata", "records": 0, "found": [], "missing": case["printed"], "noise": [], "error": data["error"]}
     printed = list(case["printed"])

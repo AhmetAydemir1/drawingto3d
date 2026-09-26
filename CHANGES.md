@@ -536,6 +536,56 @@ the 8B run the harness left in `out/frontend/`); the 8B's spans were read back o
 text layer, which is independent of the model: `8,00` where the text layer prints `8,00`, `15,00` where it
 prints `1 5,00` (the space between the digits dropped), `6,80` from the note's leader.
 
+## The building half is measured for the first time, and it fails (eval)
+
+**What changed.** Two things, both in the harness. `eval/report.py` now prefers `out/eval/<case>/records.json` —
+what `drawingto3d read` actually produced and what `drawingto3d build` then consumed — over
+`out/baseline/<case>.json`, which `eval/baseline.py` writes when it is run on its own. The report's two halves
+now describe **one** run of the pipeline instead of a reading measured here and a part built from something
+else; the baseline file stays the fallback. And the README's built table is checked by `eval/check_tables.py`
+against `out/eval/report.json`, cell by cell, so the number cannot be typed once and drift.
+
+**Bought.** The first building numbers this project has had, and they are bad news, which is the reason to
+measure them. Of the four cases with a reference STEP, **one built a solid and it failed every comparison**;
+three never produced one:
+
+| vaka | okuma | kayıt | katı | verdict |
+|---|---|---|---|---|
+| plate-pocket-1 | 7/7 | 7 | var | **KALDI** |
+| plastic-enclosure-1 | 11/11 | 14 | yok | katı üretilmedi |
+| exercise-1 | 6/13 | 15 | yok | katı üretilmedi |
+| flange-1 | 4/13 | 10 | yok | katı üretilmedi |
+
+The plate is the sharpest case and the reason this was worth doing at all: its reading is 7/7 with no noise —
+the reading half is not the problem — and the part it produced is `vector [15, 50, 60]` against the reference's
+`[15, 80, 120]`, `43.5 cm3` against `124.8 cm3` and cylinders `[4]` against `[3.4, 10, 25]`. Every number in it
+is a printed one and the shape is still not the part. The three failures are all the coder model composing
+`geo.*` calls whose arguments contradict each other — `ring_extrude: inner_d must be smaller than outer_d`
+(exercise-1), `plate: corner_radius must be smaller than half the shortest side` (plastic),
+`holes: result has 5 solids, expected one` (flange-1) — each surviving both attempts, and each caught by the
+toolchain rather than by the drawing. This is the failure the working plan's rule 4 names: a code model given a
+flat list of millimetres invents topology.
+
+**Cost / risk.**
+- The reading column of the built table is the *app's* reader, so it disagrees with the front-end tables by
+  design: the app path is 7/7 and 11/11 on the two vector sheets (text layer) and 6/13 and 4/13 on the raster
+  ones, where the front end's raster row says the same. Nothing unified them; they are two views, and the built
+  table is the one that says what the pipeline produced.
+- 4 cases × (read + build) = 36 minutes of model time on this box, the read step being ~10 model questions a
+  sheet. It stays a deliberate run, not part of the seconds-scale sweeps.
+- Three of the four cases stop at the build step, so their `part.step` never appears and the report says so
+  rather than scoring zero. A future run that succeeds gets compared without any edit here.
+
+**Measured and kept as a lesson.** The first attempt at the driver handed the child a *narrowed* environment
+(`PATH` without `/opt/homebrew/bin`); tesseract disappeared, every span became worthless, `read` wrote **0
+records** and the build failed with "kayıt yok; ölçü okunmadı" — a measurement of the harness, not of the app
+(`out/build_eval_bad_env.log`). The child inherits the parent's environment now. Same class as the probe rule:
+the call chain includes the environment.
+
+**Verified.** `pytest -q` 118 passed; `eval/check_tables.py` 20 rows, 0 drift, and the new column was shown to
+bite — flipping `KALDI` to `GEÇTİ` in the README exits 1 with `README GEÇTİ -> rapor KALDI`, restoring it
+exits 0. Numbers: `out/build_eval.log`, `out/eval/report.json`.
+
 ## Measured, not yet changed
 
 The plate's `50,00` on the raster path, and a correction. This entry previously claimed a `R8` refused by

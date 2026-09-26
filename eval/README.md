@@ -154,6 +154,45 @@ rows the audit names, not on every crop.
 The model is still not the product path on this evidence: minutes per sheet against seconds, and it is the
 raster half only — a vector sheet's own text layer reads 7/7 and 11/11 with no noise and no model at all.
 
+## Where the built part stands (measured, the app's own run)
+
+The tables above measure the reader. This one measures **what the app produced**: `drawingto3d read` then
+`drawingto3d build` per case (`out/build_eval.py`, log `out/build_eval.log`), with the part compared against
+the case's reference STEP by `eval/report.py` -> `out/eval/report.json`. `out/eval/<case>/records.json` is the
+reading the part was built from, so the two halves of the report describe one run of the pipeline.
+
+| vaka | okuma | kayıt | katı | verdict |
+|---|---|---|---|---|
+| plate-pocket-1 | 7/7 | 7 | var | KALDI |
+| plastic-enclosure-1 | 11/11 | 14 | yok | katı üretilmedi |
+| exercise-1 | 6/13 | 15 | yok | katı üretilmedi |
+| flange-1 | 4/13 | 10 | yok | katı üretilmedi |
+| studycadcam-60 | - | 0 | - | referans yok |
+| studycadcam-50 | - | 0 | - | referans yok |
+
+The reading column is the app's own reader, not the front end: with `qwen3-vl:8b-instruct` behind it, the two
+vector sheets read exactly — the plate 7/7 with no noise and the plastic sheet 11/11 with no noise — and the
+two raster sheets read 6/13 and 4/13, which is what the front end's own raster row predicts. The two practice
+sheets have no reference STEP, so they are reading-only here.
+
+The building column is the new measurement and it is bad news, which is the reason to have it. Of the four
+cases that have a reference, **one built a solid and it failed every comparison**; the other three never got a
+solid at all. The plate is the sharpest case: its reading is 7/7, and the part it produced is
+`vector [15, 50, 60]` against the reference's `[15, 80, 120]`, `43.5 cm3` against `124.8 cm3`, cylinders `[4]`
+against `[3.4, 10, 25]` — every number in it is a printed one, and the shape is still not the part. The three
+build failures are all the coder model composing `geo.*` calls whose arguments contradict each other, and all
+three are caught by the toolchain rather than by the drawing:
+
+| vaka | hatanın ölçüsü |
+|---|---|
+| exercise-1 | `ring_extrude: inner_d must be smaller than outer_d` (iki denemede) |
+| plastic-enclosure-1 | `plate: corner_radius must be smaller than half the shortest side` (iki denemede) |
+| flange-1 | `holes: result has 5 solids, expected one` (`geo.holes(solid, geo.rect_points(2), 2)`) |
+
+So the reading half is close to solved on the vector class and the building half is not started: a flat list of
+millimetres still lets the code model invent topology, which is the failure rule 4 of the working plan names,
+and the plate shows it in the one place where the reading cannot be blamed.
+
 ## How a number is read
 
 `perceive` finds printed numbers by the geometry that carries them, not by their size:

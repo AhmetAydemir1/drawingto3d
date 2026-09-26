@@ -12,6 +12,12 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 RELATIVE_TOLERANCE = 0.04
+# A dimension line can be drawn a pixel or two wrong end to end, and the 4% above is a fraction of the
+# *value*: on a 1:2 sheet a 1.5 mm dimension is 6 px, where 4% is a quarter of a pixel and one pixel of
+# arrowhead or extension line is 17%. The absolute floor is the sheet's own drawn weight — the ink a line
+# is made of — so a small dimension is judged in pixels instead of being called wrong by arithmetic that
+# no drawing could satisfy.
+ABSOLUTE_PX = 2.5
 
 
 @dataclass(frozen=True)
@@ -33,15 +39,27 @@ class Calibration:
         return measured_px / expected - 1.0
 
     def disagrees(self, value_mm: float, measured_px: float) -> bool:
-        return abs(self.residual(value_mm, measured_px)) > RELATIVE_TOLERANCE
+        """Is this reading off the line it was read from by more than the drawing can carry?
+
+        Judged against the larger of a relative tolerance and an absolute one in the sheet's own pixels:
+        4% of a 6 px dimension is a quarter of a pixel, which no drawing holds, and calling that reading
+        suspect says more about the arithmetic than about the sheet.
+        """
+        expected = self.expected_px(value_mm)
+        return abs(measured_px - expected) > max(RELATIVE_TOLERANCE * expected, ABSOLUTE_PX)
+
+
+def line_length(span) -> float:
+    """How long the dimension line a span was read from is, in pixels."""
+    (x0, y0), (x1, y1) = span.anchors[0], span.anchors[1]
+    return ((float(x1) - float(x0)) ** 2 + (float(y1) - float(y0)) ** 2) ** 0.5
 
 
 def measure(spans) -> list[tuple[float, float]]:
     """(printed value in mm, length of its own dimension line in px) for every span that carries both."""
     pairs = []
     for span in measure_spans(spans):
-        (x0, y0), (x1, y1) = span.anchors[0], span.anchors[1]
-        length = ((float(x1) - float(x0)) ** 2 + (float(y1) - float(y0)) ** 2) ** 0.5
+        length = line_length(span)
         if length > 0:
             pairs.append((float(span.value), length))
     return pairs
@@ -53,16 +71,20 @@ def audit(spans) -> tuple[Calibration | None, list[str]]:
     Every dimension line is drawn to the number printed on it, so once the sheet has a scale, a value
     that was misread — or a number matched up with a line that was never its line — shows up as a pair
     whose length does not agree. No ground truth is needed to notice that something is wrong.
+
+    The fit is made from the ratios (`consensus`, where a majority is the sheet's scale and a single wrong
+    ratio is outvoted), but each reading is then *judged* with `Calibration.disagrees`, which has the
+    absolute pixel floor: a 1.5 mm dimension on a 1:2 sheet is 6 px, and a 6 px line whose ratio is 17%
+    away from the fit is a drawing, not a misreading.
     """
     pairs = measure(spans)
-    calibration, agreeing = consensus(pairs)
+    calibration, _agreement = consensus(pairs)
     if calibration is None:
         return None, []
-    trusted = {index for index in agreeing}
     suspect = [
         span.id
-        for index, span in enumerate(measure_spans(spans))
-        if index not in trusted
+        for span in measure_spans(spans)
+        if calibration.disagrees(float(span.value), line_length(span))
     ]
     return calibration, suspect
 

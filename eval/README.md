@@ -217,11 +217,18 @@ reads on the plate it read before the geometry caught up.
   it what a note's leader has to be (see `CHANGES.md` for the guards and the two sheets they were measured
   against). What is still open here is the mark, not the number: the `Ø` and the `4 x` are drawn, so the
   record arrives as a linear `6.8` rather than a diameter.
-- **The scale audit has no pixel floor.** `scale.RELATIVE_TOLERANCE` is 4% of the value; a 1.5 mm
-  dimension on a 1:2 sheet is 6 px at 200 dpi, where one pixel of arrow or extension-line error is 17%.
-  `plastic-enclosure-1` therefore reports 6 of its 14 readings as suspect although the fit itself
-  (3.917 px/mm against the 3.937 a 1:2 A4 expects) is right. A reading should be judged against the
-  larger of a relative tolerance and an absolute one in the sheet's own pixels.
+- **The scale audit now judges a reading in pixels as well as in percent — and that changed nothing, which
+  is itself the measurement.** `scale.RELATIVE_TOLERANCE` is 4% of the value; a 1.5 mm dimension on a 1:2
+  sheet is 6 px at 200 dpi, where one pixel of arrow or extension-line error is 17%, so `disagrees` now
+  allows the larger of 4% and `scale.ABSOLUTE_PX` (2.5 px, the weight of the ink a line is drawn with). The
+  rule it corrects is real, but no row on the six sheets moves: every reading the audit names today is off
+  its line by far more than the ink — the plate's five agreeing dimensions are within 3.2 px of their lines
+  and its one suspect (a `4` on a 38 px line) is 6.7 px out. What `plastic-enclosure-1` reports is not a
+  tolerance artefact either: its 15 suspects of 20 auditable readings are numbers standing on lines that are
+  not their own (`1.50` on a 113.5 px line where 1.5 mm is 5.9 px, `2` on 181.5 px where 2 mm is 7.8 px), the
+  "number matched up with a line that was never its line" the audit's own docstring describes. Measured by
+  `out/probe/probe_scale_floor2.py`; the audit's fit is unchanged (`consensus` is still ratio-only, or the
+  small pairs would agree with any hypothesis and drag the majority).
 - **A sheet is its own ground truth, so it can read its own mistakes again.** Every dimension line is
   drawn to the number printed on it, so the sheet fits its own scale (`scale.consensus`, a majority of the
   ratios between a value and the line it was read from) and a misread number is a pair whose ratio is off —

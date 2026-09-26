@@ -103,3 +103,31 @@ def test_consensus_keeps_the_true_scale_even_when_most_readings_are_wrong():
 
 def cal_median() -> float:
     return calibrate([(5.0, 237.7), (7.0, 146.0), (3.0, 208.5), (8.0, 83.4), (2.0, 333.6)]).px_per_mm
+
+
+def test_a_dimension_a_few_pixels_long_is_judged_in_pixels_not_in_percent():
+    # On a 1:2 sheet at 200 dpi a 1.5 mm dimension is 6 px, where 4% of the value is a quarter of a pixel
+    # and one pixel of arrowhead or extension line is 17%. The pair below is 5.9 px for 1.5 mm against a
+    # scale of 3.9 px/mm: one pixel short, which is a drawing, not a misreading.
+    calibration = calibrate([(120.0, 469.0), (60.0, 234.5), (18.0, 70.3), (10.0, 39.1)])
+    assert calibration is not None
+    assert not calibration.disagrees(1.5, 4.9)  # a pixel short of 5.9: inside the floor
+    assert calibration.disagrees(1.5, 8.4)  # two and a half pixels long: past it
+    assert not calibration.disagrees(120.0, 465.0)  # 4 px on 469 is 0.9%: inside the relative tolerance
+
+
+def test_the_floor_does_not_hide_a_number_matched_to_the_wrong_line():
+    # What the plastic sheet is full of: a small number standing on a long line. Seventeen pixels of floor
+    # is nowhere near the +107 px by which `1.50` misses a 113.5 px line, and the audit still names it.
+    spans = [
+        _span(0, 120.0, [[0.0, 0.0], [469.0, 0.0]]),
+        _span(1, 60.0, [[0.0, 20.0], [234.5, 20.0]]),
+        _span(2, 18.0, [[0.0, 40.0], [70.3, 40.0]]),
+        _span(3, 10.0, [[0.0, 60.0], [39.1, 60.0]]),
+        _span(4, 1.5, [[0.0, 80.0], [113.5, 80.0]]),
+    ]
+
+    calibration, suspect = audit(spans)
+
+    assert calibration is not None
+    assert suspect == ["ocr-4"]

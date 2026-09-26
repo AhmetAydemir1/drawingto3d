@@ -338,6 +338,44 @@ happens to say — `20,00` for the crop of a number whose sheet prints 50, on on
 comparison is one multiplication against a fit the sheet already computed, and it is what keeps the
 substitution to readings the sheet itself agrees with.
 
+## A reading is judged in pixels as well as in percent (reading)
+
+**What changed.** `scale.RELATIVE_TOLERANCE` is 4% of the value, and on a 1:2 sheet a 1.5 mm dimension is
+6 px, where 4% of the value is a quarter of a pixel and one pixel of arrowhead or extension line is 17%.
+`Calibration.disagrees` now allows the larger of the relative tolerance and `scale.ABSOLUTE_PX` = 2.5 px
+(the weight of the ink a line is drawn with), and `scale.audit` judges each auditable reading with it
+instead of taking `consensus`' inlier set as the verdict. The *fit* is untouched: `consensus` still
+decides the sheet's scale by ratios, because a pixel floor there would make every small pair agree with
+every hypothesis and drag the majority. `scale.line_length` was factored out of `measure` so the fit and
+the judgement measure a span's line the same way.
+
+**Bought: nothing measurable, and that is the finding.** Field-by-field against `out/frontend_scale_reread`
+(the previous commit's run): all ten raster JSONs are identical — coverage, spans, noise, and the suspect
+lists. The rule being corrected is real, but no reading on the six sheets is currently named suspect *only*
+by the arithmetic: `out/probe/probe_scale_floor2.py` prints every auditable reading with its line length,
+the length its value expects, the difference, and what the floor allows. On the plate the five agreeing
+dimensions sit within 3.2 px of their lines and the one suspect (a `4` on a 38 px line) is 6.7 px out; on
+the plastic sheet the smallest allowed tolerance in play is the floor's 2.5 px and the suspects miss by
+20-495 px.
+
+**What the plastic sheet's suspects actually are.** 15 of its 20 auditable readings: small numbers standing
+on lines that are not their own — `1.50` on a 113.5 px line where 1.5 mm is 5.9 px, `2` on 181.5 px where
+2 mm is 7.8 px, `4.00` on 69 px where 4 mm is 15.6 px. That is the second thing the audit's docstring
+promises to catch ("a number matched up with a line that was never its line"), and it is a pairing bug in
+the gate, not a tolerance one. It is now the largest named gap on the raster side, and it is measured
+rather than guessed at: those ten numbers are covered on that sheet anyway (the row reads 8/11), so the
+mispaired records cost the suspect column and the anchors, not the coverage.
+
+**Cost / risk.** Two constants and one judgement; the floor could in principle let a misread of a *short*
+dimension pass (a 6 px pair can be 40% wrong and still be inside 2.5 px), which is inherent — a line that
+short cannot be audited by arithmetic, and the alternative is calling real drawings suspect. Measured on
+the six sheets, no other reading moved, so the risk is stated rather than exercised.
+
+**Verified.** `pytest -q` 107 passed in `out/pytest_tolerance.log` (2 new in `tests/test_scale.py`: a
+dimension of a few pixels is judged in pixels, and the floor does not hide a number matched to the wrong
+line — the plastic sheet's own case), and the raster sweep after the change is `out/raster_tolerance.log`,
+identical to `out/frontend_scale_reread` row by row.
+
 ## Measured, not yet changed
 
 The plate's `50,00` on the raster path, and a correction. This entry previously claimed a `R8` refused by
@@ -346,21 +384,37 @@ the gate on the plate; measured today, that cluster is the `B-B` of the printed 
 radius. The probe that produced the claim compared the reader's value against the printed list and stopped
 there; what it should have asked is whether the crop says `R8`, and the crop does not.
 
-What is really still missing on the plate's raster row is `50,00`, and it is a reading job rather than a
-geometry one. On the raster path the stroke carrying the number is taken as a leader — one arrowhead, the
-other not drawn or not found — so its anchors are the two ends of that stroke and
-`scale.measure_spans` cannot compare the value with anything: 617.6 px against a printed 50 is 12.35 px/mm
-where the sheet fits 7.817, and the audit never sees it. Every angle the reader is offered gives a
-different wrong answer (`90,00` at the digits' own 14.7°, `20,00` upright, `0.0` at the ink angle), so the
-candidate the scale would accept has to be produced, not chosen.
+What is really still missing on the plate's raster row is `50,00`, and the geometry of it is now measured:
+the stroke carrying the number is a **leader**, not a dimension line — it ends in an arrowhead on a large
+circle's arc (checked in the image, `out/probe/leader_tip_region.png`), so the number is a diameter, the
+617.7 px is the leader's length and measures nothing, and `scale.measure_spans` cannot compare the value
+with anything. Two consequences: no candidate reading of this crop can ever be audited by the sheet's own
+scale, and the *only* arbiter the drawing offers is the circle the arrow touches — a diameter callout's
+number is the circle's own diameter times the scale.
 
-Two more measured gaps stay open, both from this session: the scale audit has no pixel floor (a 1.5 mm
-dimension on a 1:2 sheet is 6 px, where one pixel is 17%), and a number carried by a stroke the gate reads
-as a leader is audited by nothing at all. A scan of every cluster the gate refuses that tesseract *would*
-give a number for is `out/probe/probe_refused_reads.py` — 30 on the plate, and what is behind them is not
-one kind of thing: the printed `6,80` (twice — the note's number, which the gate refused for its leader and
-which the committed change reads), the printed `50,00` (read as `250,00` from a crop 32 px wider to the
-left, where the accepted cluster's own crop reads `90,00`), four numbers an accepted cluster already covers
-(`100,00`, `80,00`, `60,00`, `16`), and the rest phantoms (`R8`, `9)`, `“3`, `3}`, `<6`, `2.`, `7`). A
-future change here has to separate those kinds by something other than the possibility of a read — which is
-what the re-read above does for the readings that carry their own line.
+The reader can be made to say it, which was measured rather than assumed: a 0.2-degree sweep over the
+digits' own line (`out/probe/probe_50prep.py`) finds `50,00` at 1.4-4 degrees off it, and at the ink angle,
+once the leader's ink is taken out of the crop — but *not* at any angle the reader asks today
+(`out/probe/probe_50prep2.py`: `90,00` at 14.69°, `20,00` upright, `0.0%` at the ink angle, unchanged by
+whitening the stroke). Taking those hits would be choosing the preparation and the sub-degree angle that
+happen to spell `50,00`, with nothing to confirm the answer — exactly the wrong-number-worse-than-none case.
+With the circle measured reliably they would become confirmable; Hough on this sheet returns 2152 circles
+(hatching and arcs everywhere), so that measurement is its own piece of work, not a footnote to this one.
+
+Two more measured gaps stay open: a number carried by a stroke the gate reads as a leader is audited by
+nothing at all (above), and — found while measuring the pixel floor — the sheet that has the most of those
+carries a different bug class, **a number matched to a line that was never its line**: 15 of
+`plastic-enclosure-1`'s 20 auditable readings are small numbers standing on long lines (`1.50` on 113.5 px,
+`2` on 181.5 px, `4.00` on 69 px). The audit names them correctly and it costs no coverage on that sheet
+(8/11 with those numbers found anyway), but the anchors of those records are wrong, which matters the day
+the reading is used for anything but counting. `out/probe/probe_scale_floor2.py` lists them with the
+numbers.
+
+A scan of every cluster the gate refuses that tesseract *would* give a number for is
+`out/probe/probe_refused_reads.py` — 30 on the plate, and what is behind them is not one kind of thing: the
+printed `6,80` (twice — the note's number, which the gate refused for its leader and which the committed
+change reads), the printed `50,00` (read as `250,00` from a crop 32 px wider to the left, where the accepted
+cluster's own crop reads `90,00`), four numbers an accepted cluster already covers (`100,00`, `80,00`,
+`60,00`, `16`), and the rest phantoms (`R8`, `9)`, `“3`, `3}`, `<6`, `2.`, `7`). A future change here has to
+separate those kinds by something other than the possibility of a read — which is what the re-read above
+does for the readings that carry their own line.

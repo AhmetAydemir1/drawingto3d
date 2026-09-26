@@ -609,7 +609,8 @@ exits 0. Numbers: `out/build_eval.log`, `out/eval/report.json`.
 the plate separately in `out/build_eval_cropfix.log`): **2 of 4 → 3 of 4 build**. `plastic-enclosure-1` and
 `flange-1` produce a part for the first time, and the plate's part is materially closer: `vector [23, 100, 100]`
 → `[15, 80, 100]` (thickness and width now exact), volume within tolerance (119.0 ↔ 124.8 cm³) and its `Ø6.8`
-holes back (`cylinders [3.4]`) once the fuse guard fired. The plate's `60,00` is now `hole_spacing` — its true
+holes back (`cylinders [3.4]`) once the fuse guard fired — that rebuild was isolated with `out/build_only.py` on
+the plate's own records (19 s, log `out/build_only_holeguard.log`), so the 185 s read is not re-run to see it. The plate's `60,00` is now `hole_spacing` — its true
 reading, verified against the sheet (the drawn holes are 100.81 x 60.64 mm apart and the crop shows the
 extension lines ending on the two top holes). The crops were looked at, not assumed:
 `out/probe/role_crop_1_00-00.png` shows both arrowheads, both extension lines and the two corner holes;
@@ -628,7 +629,7 @@ role question costs more image tokens than the 220 px square did.
 (`test_crop_reaches_the_features_the_line_points_at`: the box holds the line's ends and is scaled rather than
 trimmed; `test_fusing_the_undrilled_part_back_in_is_sent_back`: the guard fires for a copy and not for drilling
 in place). `eval/check_tables.py` 20 rows, 0 drift after the built table was refilled from the report.
-`out/build_eval.py` runs: plate read 185 s → build 19 s; `exercise-1` 428 s → failed; `plastic-enclosure-1`
+`out/build_eval.py` runs: plate read 185 s → build 35 s; `exercise-1` 428 s → failed; `plastic-enclosure-1`
 325 s → 45 s; `flange-1` 285 s → 44 s.
 
 ## The prompt names the shape the records prove, and two of four cases build (reason, build)

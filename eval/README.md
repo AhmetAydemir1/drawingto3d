@@ -14,10 +14,13 @@ which named features a plan has to account for (`plate-pocket-1` shows the inten
 empty list means "not yet identified"). `pilot` and `hidden` stay empty until those sheets are
 collected. The compiler half of the brief — a versioned general plan contract and two plans that use
 different operation combinations — lives in `plans/`; `build-general` in the CLI builds them. The
-reading half has its first slice too: `observe.py` plus `drawingto3d observe` write one
-family-independent record per vector sheet (subpaths, fitted primitives, printed phrases with their
-source characters, frame and text placement); what it still lacks is the binding from a printed
-number to the geometry its arrows touch, the view split and the scale.
+reading half now has two slices: `observe.py` plus `drawingto3d observe` write one family-independent
+record per vector sheet (subpaths, fitted primitives, printed phrases with their source characters,
+frame and text placement), and `bind.py` plus `drawingto3d bind` attaches every printed number to
+the geometry its arrows touch — rows, stubs, crossed strokes, chains of coincident strokes and, for
+two-anchor dimensions, candidates aligned along the measuring axis, all with pixel distances and the
+row length against the sheet's calibration. What is still missing is the meaning step (which of the
+candidates a number actually sizes), the view split, the raster observer.
 
 What "better results" means for this project, in numbers. Two questions per sheet:
 

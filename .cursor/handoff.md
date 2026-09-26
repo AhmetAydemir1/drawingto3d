@@ -56,10 +56,10 @@ ifade edilmiş hâli, ve genel derleyici iki farklı işlem birleşimiyle sınan
 
 ### Hâlâ yapılmayan
 
-- Okuma katmanı genelleştirmesi (PLAN.md Bölüm 3A/3B): ilk dilim — aile-bağımsız gözlem katmanı
-  (`observe.py`, vektör PDF) — eklendi; ama gözlemler henüz genel plan önerisine bağlanmadı:
-  ölçü bağlama (okların bağlandığı geometri), görünüş ayrımı, ölçek ve raster gözlemci sıradaki
-  dilimler. Genel plan bugün dosyadan/elle veriliyor; yalnız plaka yolu otomatik doluyor.
+- Okuma katmanı genelleştirmesi (PLAN.md Bölüm 3A/3B): gözlem (`observe.py`) ve ölçü bağlama
+  (`bind.py`) dilimleri eklendi; ama ikisi de henüz genel plan önerisine bağlanmadı: sıradaki iş
+  bağlanan adaylardan **anlam seçimi** (hangi özellik hangi sayının), görünüş ayrımı, ölçek ve
+  raster gözlemci. Genel plan bugün dosyadan/elle veriliyor; yalnız plaka yolu otomatik doluyor.
 - Pilot (en az 10) ve saklı (en az 20, en az 10'u raster) veri toplama kullanıcıda; ayrım
   altyapısı manifestte hazır, diziler boş.
 - Plaka tanıyıcı henüz deneysel seçeneğe taşınmadı; `plan`/`build-plan` hâlâ PlatePlan konuşur.
@@ -94,6 +94,26 @@ ifade edilmiş hâli, ve genel derleyici iki farklı işlem birleşimiyle sınan
 - Testler: `tests/test_observe.py` 11 test; toplam paket **180 geçti**.
 - Sıradaki dilim: ölçü bağlama (okların bağlandığı geometri), görünüş ayrımı ve ölçek; ardından
   raster gözlemci ve gözlem → genel plan önerisi.
+
+### Ölçü bağlama — ikinci dilim (aynı oturum, `9031094`)
+
+- `src/drawingto3d/bind.py` (yeni): her basılı sayı için ankrajlarının oturduğu çizgiler (row =
+  iki ankrajı birleştiren satır; stub = ucu ankrajda biten çizgi; crossing = ankrajdan geçen
+  çizgi), uçları çakışan açık çizgi zincirleri (en çok 4 adım) ve her iniş noktasının dokunduğu
+  özellikler (daire/yay merkez ya da kenar, uç, köşe) — piksel mesafesi, hangi zincirle gidildiği
+  ve hangi ankrajda olduğuyla. Seçim yapılmaz; tüm adaylar kayda geçer.
+- Ölçü ekseni hizalaması: iki ankrajlı linear ölçüde, eksen boyunca eşleşen adaylar kaydedilir
+  (dik uzaklık kırpılmaz — standoff çizimin kuralı). Plakada satır uçları delik x'ini 2,4 px'te
+  paylaşıyor; sıra: daire merkezi > yay merkezi > uçlar, 2 px ızgarada tekilleştirme.
+- `implied_px_per_mm` = satırın çizili uzunluğu / basılı değer; paftanın kendi kalibrasyonuyla
+  oranı 1 → ölçek tutarlı; ayrılıyorsa farklı ölçekli detay ya da şüpheli ankraj.
+- Ölçüm: plaka 7/7 bağlı — `100,00` iki üst deliğe 2,4 px hizada; `80,00` köşe yayları 0,5 px;
+  `Ø6,80` lideri zincirle delik kenarında 0,09 px; `50,00` cep kenarında 0,12 px. Plastik 14
+  sayı: 9 aligned + 4 partial + 1 unbound (`R8.00` radüs lideri — açık).
+- CLI: `bind <çizim> <out_dir>` → bindings.json; raster → exit 2.
+- Testler: `tests/test_bind.py` (15); tam paket **195 geçti**.
+- Sıradaki dilim: anlam seçimi — bağlanan adaylardan hangi özelliğin hangi sayıya ait olduğunu
+  seçmek (simetri, "4 x", görünüş ayrımı) ve gözlem+bağlama+anlamı genel plan önerisine çevirmek.
 
 ## Aktarım ve kayıtlar
 

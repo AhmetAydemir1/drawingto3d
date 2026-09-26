@@ -426,6 +426,29 @@ Bölüm 3A'nın vektör dilimi uygulandı (`ddacd48`): `src/drawingto3d/observe.
   cep yarıçapı — tanıyıcı kurallarından değil, geometriden.
 - CLI: `observe <çizim> <out_dir>` → `observations.json`; raster girdi → exit 2, neden tek satır.
 - Testler: `tests/test_observe.py` (11); tam paket **180 geçti**.
-- Açık kalanlar (sonraki dilimler): ölçü ↔ geometri bağlama (oklar/ankrajlar), görünüş ayrımı,
+- Açık kalanlar (sonraki dilimler): ölçü ↔ geometri bağlama (§13'te yapıldı), görünüş ayrımı,
   ölçek, raster gözlemci ve gözlemlerden genel plan önerisi. Bu dilim "okuyabiliyoruz" iddiasını
   "gözlemleyebiliyoruz" ile değiştirir; bağlama gelmeden okuma sayılmaz.
+
+## 13. Ölçü bağlama: basılı sayı ↔ geometri (2026-09-27, aynı oturum)
+
+Bölüm 3B'nin ilk somut adımı uygulandı (`9031094`): `src/drawingto3d/bind.py`.
+
+- Her span için: ankrajların oturduğu çizgiler (row = iki ankrajı birleştiren satır; stub = ucu
+  ankrajda biten çizgi; crossing = ankrajdan geçen çizgi), uçları çakışan açık çizgi zincirleri
+  (en çok 4 adım) ve her iniş noktasının dokunduğu özellikler (daire/yay merkez ve kenarı, uç,
+  köşe) — piksel mesafesi, zinciri ve bulunduğu ankrajla. Seçim yapılmaz; tüm adaylar kaydedilir.
+- Ölçü ekseni hizalaması: iki ankrajlı linear ölçüde eksen boyunca eşleşen adaylar (dik uzaklık
+  kırpılmaz — standoff çizimin kuralı). Plakada satır uçları delik x'ini 2,4 px'te paylaşıyor.
+  Sıra: daire merkezi > yay merkezi > uçlar; 2 px ızgarada tekilleştirme.
+- `implied_px_per_mm` = satırın çizili uzunluğu / basılı değer; paftanın ölçülmüş kalibrasyonuyla
+  oranı 1 → ölçek tutarlı; ayrılıyorsa farklı ölçekli detay ya da şüpheli ankraj.
+- Ölçüm: plaka 7/7 bağlı — `100,00` iki üst deliğe 2,4 px hizada; `80,00` köşe yayları 0,5 px;
+  `Ø6,80` lideri zincirle delik kenarında 0,09 px; `50,00` cep kenarında 0,12 px; beş satırın
+  implied'ı kendi değerini %3 içinde ölçüyor. Plastik 14 sayı: 9 aligned + 4 partial + 1 unbound
+  (`R8.00` radüs lideri — açık gap).
+- CLI: `bind <çizim> <out_dir>` → bindings.json (plaka 37 KB, plastik 76 KB). Raster → exit 2.
+- Testler: `tests/test_bind.py` (15); tam paket **195 geçti**.
+- Sıradaki dilim: anlam seçimi — bağlanan adaylardan hangi özelliğin hangi sayıya ait olduğunu
+  seçmek (simetri, "4 x", görünüş ayrımı), sonra gözlem+bağlama+anlamı genel plan önerisine
+  çevirmek.

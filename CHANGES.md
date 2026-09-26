@@ -4,6 +4,50 @@ One entry per change, in the order it was made: the mechanism, the measured bene
 carries, and how it was verified. The numbers themselves live in `eval/README.md` and in
 `out/frontend/<case>.json`; this file is the accounting.
 
+## Numbers are bound to the geometry their arrows touch, and the record says how (`9031094`, reading)
+
+**What changed.** `src/drawingto3d/bind.py` (new): for every printed span on a vector sheet, the
+strokes its anchors sit on (the `row` that joins both anchors, `stub`s ending on an anchor,
+strokes the anchor is `crossing`), chains of coincident open strokes walked up to four steps, and
+the `features` every landing point reaches — circle and arc centres and rims, line ends, path
+vertices — each with its pixel distance and the chain that got there. Where the drawing only
+*aligns* a feature with an arrow instead of touching it, a two-anchor linear dimension also records
+`aligned` candidates: points whose coordinate along the anchor-to-anchor axis matches, with the
+perpendicular offset left unclipped (standoff is the drawing's rule, not an error), circle centres
+ranked before arc centres before ends. `implied_px_per_mm` (row length over the printed value)
+rides with the sheet's own measured calibration, so a ratio away from 1 is visible instead of
+silently wrong. CLI: `drawingto3d bind <drawing> <out_dir>` writes `bindings.json`; a raster sheet
+exits 2. The module's docstring records why the three attachment conventions exist: perception's
+anchors do not know which one a drawing uses.
+
+**Bought.** The plate sheet's seven numbers are attached the way a human reads them, measured:
+`100,00`'s arrows align with the two top holes' centres within 2.4 px (perpendicular 145 px — the
+standoff is the drawing's), `60,00` with a hole at each end, `80,00`'s extension lines land on the
+corner-round arcs within 0.5 px, `Ø6,80`'s leader walks a chain of strokes down to a hole rim
+(0.09 px), `50,00`'s to the pocket rim (0.12 px). The five rows measure their own numbers at the
+sheet scale within 3 %. The plastic sheet gets the same shape without a claim: 9 aligned, 4
+partial, 1 unbound (its `R8.00` radius leader, whose arc the record cannot find yet) — every
+span's anchors, strokes, chains and candidates are in `bindings.json` (37 KB plate, 76 KB plastic)
+for the meaning step to consume.
+
+**Cost / risk.**
+- The record deliberately does not choose: `100,00`'s left arrow aligns with the top hole *and*
+  the bottom hole; picking the pair is the meaning step's job, and this layer would rather
+  over-report than guess. `aligned` is capped at 8 per anchor, ranked by kind then perpendicular.
+- Tolerances (anchor 3.5 px, feature 4.0 px, axis 3.0 px) were chosen from measurements on these
+  two sheets and are named in each record's notes; a sheet drawn with other conventions may need
+  them re-derived, which is why they are constants next to a note, not a silent assumption.
+- Radius leaders (`R8.00`) stay unbound: the arrow tip does not land within tolerance of the
+  fitted arc's rim, and unfitted arcs contribute no rim candidates at all.
+- A feature reachable only by crossing a *fitted* arc's rim (rather than its centre) is not
+  followed; three attachment conventions cover what these sheets do, not what drawings can do.
+
+**Verified.** `tests/test_bind.py` 15 tests (plate: holes aligned, spacing between holes, corner
+rounds reached, pocket rim, callout chain, rows vs values, leaders have no row, implied scale;
+plastic: same record shape, centre alignment, rim landing; determinism; anchors unmoved; raster
+refusal); `pytest -q` 195 passed; CLI on both sheets and on a raster (exit 2). Sanity: `aligned[0]`
+of `100,00`'s left anchor is the hole `g9` at (435.56, 658.22).
+
 ## Observations are family-independent; the plate is one consumer (`ddacd48`, reading)
 
 **What changed.** `src/drawingto3d/observe.py` (new): one record shape for any drawing page — every

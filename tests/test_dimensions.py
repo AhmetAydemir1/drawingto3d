@@ -220,3 +220,21 @@ def test_a_short_arrowed_piece_beside_a_number_is_a_fragment_not_a_dimension():
     stroke = lines.Stroke(float(start[0]), float(start[1]), float(end[0]), float(end[1]), 3.0)
 
     assert lines.dimension_for(binary, [], box, strokes=[stroke]) is None
+
+
+def test_a_wide_number_does_not_merge_the_two_edge_lines_that_carry_its_value():
+    # The plastic sheet's `1.50`: its own span is the gap between two extension lines 6 px apart, and the
+    # number is printed past their tip in a box 71 px wide. A merge tolerance read off that box (0.4 of
+    # 71 px) swallowed the two lines into one crossing, so the only pair left on the row was a neighbour's
+    # 113.5 px line and the value had nothing to be judged against.
+    binary = _canvas(width=400, height=140)
+    _stroke(binary, 20, 60, 70)  # the row, broken where the number sits
+    _stroke(binary, 250, 380, 70)
+    _upright(binary, 66, 40, 100)  # the two extension lines that carry the value
+    _upright(binary, 72, 40, 100)
+    box = (100.0, 53.0, 271.0, 87.0)
+
+    pairs = lines.crossing_pairs(_segments(binary), box)
+
+    lengths = sorted(round(pair[1][0] - pair[0][0], 1) for pair in pairs)
+    assert lengths == [pytest.approx(6, abs=2)]

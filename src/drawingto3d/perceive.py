@@ -156,6 +156,9 @@ def _oriented_spans(gray: np.ndarray, reader=None) -> list[Span]:
     spans = _one_number_per_line(spans)
     for index, span in enumerate(spans):
         span.id = f"ocr-{index}"
+    # The pairing first, the value second: the re-read judges a candidate against the line it would sit on,
+    # so a reading anchored to somebody else's line has to be given its own before it can be judged at all.
+    spans = _repoint_lines_that_are_not_their_own(segments, spans)
     spans = _reread_against_the_sheet_scale(gray, glyphs, spans, clusters, reader)
     return spans
 
@@ -435,6 +438,48 @@ def _collect_spans(
                 # caller renumbers them afterwards, so a name is not unique yet.
                 clusters[id(span)] = cluster
             spans.append(span)
+    return spans
+
+
+def _repoint_lines_that_are_not_their_own(segments, spans: list[Span]) -> list[Span]:
+    """A reading the sheet's scale calls wrong is given the span on its own row that its value fits.
+
+    The gate has to choose a span without knowing the value, so on a row that carries several features it
+    takes the pair of crossings the number sits between — and on the plastic sheet that made `1.50` stand on
+    a 113.5 px line where its own value is 5.9 px, `4.80` on the 69 px line of the step below it, and every
+    one of that sheet's twenty auditable readings suspect. The sheet is its own ground truth twice over: the
+    majority of its readings fit one scale (`scale.consensus`), and every printed number is drawn to the
+    line it measures. So a reading no majority agrees with is offered the other pairs of crossings on its own
+    row, and the one whose length fits the sheet's scale takes the place of the one that does not.
+
+    Only the readings the calibration names are re-pointed, and only to a pair that fits: a reading whose
+    row holds no such pair is left exactly as it was, on the line the gate chose. Nothing is dropped here —
+    whether a record with no line of its own should carry no anchors at all is a separate decision, and the
+    mispaired readings that survive this are mostly not numbers in the first place (below).
+
+    The value is not re-read on the new pair here: that is `_reread_against_the_sheet_scale`, which runs
+    after this one precisely so that it judges a candidate against the line this step has already corrected.
+    """
+    calibration, suspect = scale.audit(spans)
+    if calibration is None or not suspect:
+        return spans
+    by_id = {span.id: span for span in spans}
+    for id_ in suspect:
+        span = by_id.get(id_)
+        if span is None or span.anchor_mode != "dimension" or not span.value or len(span.anchors) != 2:
+            continue
+        box = (span.bbox.x, span.bbox.y, span.bbox.x + span.bbox.w, span.bbox.y + span.bbox.h)
+        expected = calibration.expected_px(float(span.value))
+        holding = ((float(span.anchors[0][0]), float(span.anchors[0][1])), (float(span.anchors[1][0]), float(span.anchors[1][1])))
+        fitting = [
+            pair
+            for pair in lines.crossing_pairs(segments, box, holding)
+            if not calibration.disagrees(float(span.value), math.hypot(pair[1][0] - pair[0][0], pair[1][1] - pair[0][1]))
+        ]
+        if not fitting:
+            continue
+        best = min(fitting, key=lambda pair: abs(math.hypot(pair[1][0] - pair[0][0], pair[1][1] - pair[0][1]) - expected))
+        span.anchors = [list(best[0]), list(best[1])]
     return spans
 
 

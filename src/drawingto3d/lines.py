@@ -436,21 +436,7 @@ def dimension_for(
 
 def _axis_dimension(binary: np.ndarray, segments: list[Segment], box: tuple[float, float, float, float]) -> Dimension | None:
     """The axis-aligned row. Kept as its own pass so a diagonal cannot steal a line the axis already owns."""
-    reading_across = (box[2] - box[0]) >= (box[3] - box[1])
-    size = max((box[3] - box[1]) if reading_across else (box[2] - box[0]), 1.0)
-    text_span = (box[0], box[2]) if reading_across else (box[1], box[3])
-    text_offset = (box[1] + box[3]) / 2 if reading_across else (box[0] + box[2]) / 2
-
-    row_strokes = [segment for segment in segments if segment.horizontal == reading_across]
-    if not row_strokes:
-        return None
-    reach = 3.0 * size
-    near = [
-        segment
-        for segment in row_strokes
-        if abs(_row_offset(segment, reading_across) - text_offset) <= 1.2 * size
-        and not (_row_end(segment, reading_across) < text_span[0] - reach or _row_start(segment, reading_across) > text_span[1] + reach)
-    ]
+    reading_across, size, text_span, text_offset, reach, near = _row_near(box, segments)
     if not near:
         return None
     # A dimension whose line carries an arrow at both ends and passes *under* its number states its own
@@ -640,6 +626,29 @@ def _angled_result(
     return Dimension(horizontal=horizontal, offset=_project(centre_x, centre_y, normal), ends=(first, second))
 
 
+def _row_near(box: tuple[float, float, float, float], segments: list[Segment]) -> tuple[bool, float, tuple[float, float], float, float, list[Segment]]:
+    """The strokes of the row a printed number sits beside, and the frame that row is read in.
+
+    A dimension is a row, not a stroke: the strokes collinear with the number's own line, within a
+    character's reach of it. Everything the row is measured in comes back with it — which axis it runs
+    along, the number's own extent along that axis and across it, and how far a stroke may stand off and
+    still be on this row.
+    """
+    reading_across = (box[2] - box[0]) >= (box[3] - box[1])
+    size = max((box[3] - box[1]) if reading_across else (box[2] - box[0]), 1.0)
+    text_span = (box[0], box[2]) if reading_across else (box[1], box[3])
+    text_offset = (box[1] + box[3]) / 2 if reading_across else (box[0] + box[2]) / 2
+    reach = 3.0 * size
+    near = [
+        segment
+        for segment in segments
+        if segment.horizontal == reading_across
+        and abs(_row_offset(segment, reading_across) - text_offset) <= 1.2 * size
+        and not (_row_end(segment, reading_across) < text_span[0] - reach or _row_start(segment, reading_across) > text_span[1] + reach)
+    ]
+    return reading_across, size, text_span, text_offset, reach, near
+
+
 def _row_offset(segment: Segment, reading_across: bool) -> float:
     return (segment.y0 + segment.y1) / 2 if reading_across else (segment.x0 + segment.x1) / 2
 
@@ -652,8 +661,21 @@ def _row_end(segment: Segment, reading_across: bool) -> float:
     return segment.x1 if reading_across else segment.y1
 
 
-def _crossings(segments: list[Segment], reading_across: bool, offset: float, row_span: tuple[float, float], size: float) -> list[float]:
-    """Where the strokes crossing the row meet it: the extension lines a dimension is drawn between."""
+def _crossings(
+    segments: list[Segment],
+    reading_across: bool,
+    offset: float,
+    row_span: tuple[float, float],
+    size: float,
+    merge: float | None = None,
+) -> list[float]:
+    """Where the strokes crossing the row meet it: the extension lines a dimension is drawn between.
+
+    `merge` is how close two crossings have to be before they are one extension line drawn thick. It comes
+    in from the caller where the sheet's own stroke weight is known, because a tolerance read off the
+    number's box is a tolerance read off the wrong thing: the plastic sheet's `1.50` sits in a box 71 px
+    wide, and a 0.4-of-that merge swallowed the two real extension lines 6.5 px apart that carry its value.
+    """
     start, end = row_span
     found: list[float] = []
     for segment in segments:
@@ -668,7 +690,73 @@ def _crossings(segments: list[Segment], reading_across: bool, offset: float, row
         # An extension line stops a hair short of the dimension line it belongs to.
         if cross_lo - 0.6 * size <= offset <= cross_hi + 0.6 * size:
             found.append(position)
-    return _merge_close(sorted(found), 0.4 * size)
+    return _merge_close(sorted(found), 0.4 * size if merge is None else merge)
+
+
+def crossing_pairs(
+    segments: list[Segment],
+    box: tuple[float, float, float, float],
+    holding: tuple[tuple[float, float], tuple[float, float]] | None = None,
+) -> list[tuple[tuple[float, float], tuple[float, float]]]:
+    """Every span the drawing offers on the row nearest this number, as the pairs of crossings on it.
+
+    `_span_ends` chooses one pair knowing nothing about the value, and it cannot do otherwise when the gate
+    runs: it takes the pair the number sits between, else the pair nearest it. On a sheet drawn as a band of
+    closely spaced profile edges that pair belongs to a neighbouring feature — measured on the plastic
+    sheet, a printed `1.50` whose value is 5.9 px was given a 113.5 px line and a `4.80` was given the 69 px
+    line of the step below it, and fifteen of the sheet's twenty auditable readings came out anchored to a
+    line that was not their own. Once the sheet has calibrated itself (`scale.consensus`) the number's own
+    value says which pair on that row is its own, so this returns the candidates and leaves the choosing to
+    the caller, which can judge a length against the sheet's scale.
+
+    The row is the one the gate itself would choose — the one nearest the number — so the pairs offered are
+    the spans of that line and not of whatever else lies within reach. `holding` is the span the gate gave
+    this number, and only the spans *at that line* are offered: the ones inside the stretch it was given,
+    and the neighbouring gap between one of that stretch's own ends and the next crossing. A pair further
+    along the same row belongs to another dimension, and taking it is not a repair — measured, a datum
+    symbol read as a `2` was offered and took an 8 px gap 25 px past the end of the line it stood on, which
+    fitted its value and made the sheet stop naming a record that is not a printed number at all.
+    """
+    reading_across, size, _text_span, text_offset, reach, near = _row_near(box, segments)
+    if not near:
+        return []
+    offset = min((_row_offset(segment, reading_across) for segment in near), key=lambda value: abs(value - text_offset))
+    row = [segment for segment in near if abs(_row_offset(segment, reading_across) - offset) <= 0.5 * size]
+    if not row:
+        return []
+    row_span = (
+        min(_row_start(segment, reading_across) for segment in row),
+        max(_row_end(segment, reading_across) for segment in row),
+    )
+    # The sheet's own line weight: two crossings closer together than one stroke of this drawing is wide
+    # are one extension line drawn thick, not two lines with a span between them.
+    weight = float(np.median([segment.thickness for segment in segments])) if len(segments) else 2.0
+    merge = max(weight, 2.0)
+    crossings = _crossings(
+        segments, reading_across, offset, (row_span[0] - reach, row_span[1] + reach), size, merge=merge
+    )
+    held = None
+    if holding is not None:
+        along = 0 if reading_across else 1
+        ends = [float(point[along]) for point in holding]
+        held = (min(ends), max(ends))
+    pairs: list[tuple[tuple[float, float], tuple[float, float]]] = []
+    for low, high in zip(crossings, crossings[1:]):
+        if high - low <= 0:
+            continue
+        if held is not None and not _at_the_same_line(held, (low, high), merge):
+            continue
+        first, second = ((low, offset), (high, offset)) if reading_across else ((offset, low), (offset, high))
+        pairs.append((first, second))
+    return pairs
+
+
+def _at_the_same_line(held: tuple[float, float], pair: tuple[float, float], merge: float) -> bool:
+    """Is this span one of the spans at the line the number was given: inside it, or the gap beside it?"""
+    low, high = pair
+    if low >= held[0] - merge and high <= held[1] + merge:
+        return True
+    return abs(low - held[1]) <= merge or abs(high - held[0]) <= merge
 
 
 def _merge_close(values: list[float], tolerance: float) -> list[float]:

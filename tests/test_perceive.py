@@ -345,3 +345,74 @@ def test_the_vision_model_is_not_asked_the_same_crop_at_another_angle(monkeypatc
 
     assert out[4].value == 3.0
     assert calls == []
+
+
+def _row_segments(horizontals, uprights, thickness: float = 2.0):
+    """The strokes of one row: the collinear pieces the number sits in, and the strokes crossing it."""
+    from drawingto3d import lines
+
+    made = [
+        lines.Segment(x0=float(x0), y0=float(y), x1=float(x1), y1=float(y), thickness=thickness, horizontal=True)
+        for x0, x1, y in horizontals
+    ]
+    made.extend(
+        lines.Segment(x0=float(x), y0=float(y0), x1=float(x), y1=float(y1), thickness=thickness, horizontal=False)
+        for x, y0, y1 in uprights
+    )
+    return made
+
+
+def test_a_reading_is_moved_to_the_pair_of_crossings_its_value_fits():
+    # The plastic sheet's shape: twenty auditable readings, fifteen of them small numbers on long lines.
+    # The gate chooses a span without knowing the value, so a `1.50` whose value is 5.9 px was given the
+    # 113.5 px line next to it. The sheet has already calibrated itself; the value picks its own pair.
+    spans = _calibrated_sheet() + [_measured(4, 20.0, 300.0)]
+    spans[4].bbox = BBox(x=120, y=40, w=60, h=20)
+    segments = _row_segments([(20, 140, 50), (200, 320, 50)], [(120, 20, 80), (277, 20, 80)])
+
+    out = perceive._repoint_lines_that_are_not_their_own(segments, spans)
+
+    (x0, _y0), (x1, _y1) = out[4].anchors
+    assert x0 == pytest.approx(120, abs=2)
+    assert x1 == pytest.approx(277, abs=3)
+
+
+def test_a_row_with_no_pair_that_fits_leaves_the_reading_where_the_gate_put_it():
+    # A reading whose row offers nothing that fits is left exactly as it was. Dropping its anchors is a
+    # separate decision: on the plastic sheet most of the readings that survive this are not printed
+    # numbers at all (an arrowhead read as a digit), and an anchor dropped from those hides a fake number.
+    spans = _calibrated_sheet() + [_measured(4, 20.0, 300.0)]
+    spans[4].bbox = BBox(x=120, y=40, w=60, h=20)
+    segments = _row_segments([(20, 140, 50), (200, 320, 50)], [(250, 20, 80), (290, 20, 80)])
+
+    out = perceive._repoint_lines_that_are_not_their_own(segments, spans)
+
+    assert out[4].anchors == [[0.0, 0.0], [300.0, 0.0]]
+
+
+def test_the_gap_beside_the_line_a_number_stands_on_is_its_own_span():
+    # The plastic sheet's `4.80`: its dimension is drawn with the arrows outside the span, so the stretch
+    # the gate took (the run above the arrow) is not the span — the span is the gap between that run's own
+    # end and the next crossing, and it fits the value.
+    spans = _calibrated_sheet() + [_measured(4, 20.0, 120.0)]
+    spans[4].bbox = BBox(x=120, y=40, w=60, h=20)
+    segments = _row_segments([(20, 140, 50), (200, 320, 50)], [(120, 20, 80), (277, 20, 80)])
+
+    out = perceive._repoint_lines_that_are_not_their_own(segments, spans)
+
+    (x0, _y0), (x1, _y1) = out[4].anchors
+    assert x0 == pytest.approx(120, abs=2)
+    assert x1 == pytest.approx(277, abs=3)
+
+
+def test_a_pair_past_the_end_of_the_line_a_number_stands_on_is_not_its_span():
+    # Measured: a datum symbol the reader called a `2` was offered, and took, an 8 px gap 25 px past the end
+    # of the line it stood on. It fitted the value, and it stopped the sheet naming a record that is not a
+    # printed number at all: a repair is a span at the line the number sits on, never a span further along.
+    spans = _calibrated_sheet() + [_measured(4, 20.0, 100.0)]
+    spans[4].bbox = BBox(x=120, y=40, w=60, h=20)
+    segments = _row_segments([(20, 100, 50), (200, 320, 50)], [(280, 20, 80), (437, 20, 80)])
+
+    out = perceive._repoint_lines_that_are_not_their_own(segments, spans)
+
+    assert out[4].anchors == [[0.0, 0.0], [100.0, 0.0]]

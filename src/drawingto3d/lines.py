@@ -8,6 +8,7 @@ number into geometry.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 
 import cv2
@@ -38,6 +39,184 @@ class Segment:
 
 
 @dataclass(frozen=True)
+class Stroke:
+    """A thin straight stroke at any angle, given by the two ends of its own centre line.
+
+    A stroke that runs along an axis is a `Segment`: it can be found row by row, and it knows its axis,
+    which is what makes its ends a range rather than a pair of points. A leader is drawn at whatever
+    angle the sheet leaves room for, so most callouts are carried by a diagonal, and a diagonal has no
+    axis to be found along: it is followed instead, and carries the ends of the line it lies on.
+    """
+
+    x0: float
+    y0: float
+    x1: float
+    y1: float
+    thickness: float
+
+    @property
+    def length(self) -> float:
+        return float(np.hypot(self.x1 - self.x0, self.y1 - self.y0))
+
+    @property
+    def middle(self) -> tuple[float, float]:
+        return (self.x0 + self.x1) / 2, (self.y0 + self.y1) / 2
+
+    def ends(self) -> list[tuple[float, float]]:
+        return [(self.x0, self.y0), (self.x1, self.y1)]
+
+
+def _basis(stroke: Segment | Stroke) -> tuple[tuple[float, float], tuple[float, float]]:
+    """The direction the stroke runs in, and the normal across it.
+
+    An axis stroke knows its own axis and its ends are the corners of a range, so its axis is read from
+    that flag rather than from the corner-to-corner line, which is off the centre by its own weight. A
+    stroke at an angle carries the ends of its centre line, so it reads the direction from those.
+    """
+    horizontal = getattr(stroke, "horizontal", None)
+    if horizontal is True:
+        return (1.0, 0.0), (0.0, 1.0)
+    if horizontal is False:
+        return (0.0, 1.0), (1.0, 0.0)
+    dx, dy = stroke.x1 - stroke.x0, stroke.y1 - stroke.y0
+    length = float(np.hypot(dx, dy)) or 1.0
+    return (dx / length, dy / length), (-dy / length, dx / length)
+
+
+def _ink_across(binary: np.ndarray, x: float, y: float, normal: tuple[float, float], half: int) -> int:
+    """Length of the ink stroke through a point, measured across the stroke.
+
+    An arrow is wide across the line it sits on and a bare line is exactly its own weight: the same
+    question an axis stroke is asked along its fixed direction, asked here along the stroke's own normal
+    so it can be asked of a stroke at any angle.
+    """
+    start_x, start_y = int(round(x)), int(round(y))
+    if not (0 <= start_y < binary.shape[0] and 0 <= start_x < binary.shape[1]) or binary[start_y, start_x] == 0:
+        return 0
+    steps = 1
+    for direction in (-1, 1):
+        for offset in range(1, half + 1):
+            next_x = int(round(x + normal[0] * direction * offset))
+            next_y = int(round(y + normal[1] * direction * offset))
+            if not (0 <= next_y < binary.shape[0] and 0 <= next_x < binary.shape[1]) or binary[next_y, next_x] == 0:
+                break
+            steps += 1
+    return steps
+
+
+def diagonal_strokes(
+    gray: np.ndarray,
+    binary: np.ndarray,
+    min_length: float,
+    max_thickness: float,
+    text_mask: np.ndarray | None = None,
+    min_angle: float = 6.0,
+    glyph_fraction: float = 0.75,
+) -> list[Stroke]:
+    """The thin strokes of the sheet that do not run along an axis: where a drawing keeps its callouts.
+
+    A leader is drawn from the words to the feature at whatever angle fits, so a stroke list holding
+    only horizontal and vertical lines loses every callout on the sheet. Measured on the eval sheets,
+    the Ø and R numbers were exactly the ones left unread, and every one of them is carried by a stroke
+    at an angle.
+
+    The band a stroke has to be in is set by the sheet's own thin weight, not by a pixel count: on the
+    sheets at hand the weight comes out 2-3 px and the outlines 5-6 px, so a leader is thin relative to
+    the drawing it is printed on.
+
+    `min_angle` is small on purpose. A line a drafting office draws at 8 degrees is not an axis stroke
+    and the row-by-row pass reads it as thick and drops it, so anything past a few degrees has to be
+    found here or nowhere: on the plate sheet the callout `Ø50,00` hangs on a line drawn at 8 degrees.
+
+    A stroke lying inside printed words is a glyph, not a leader, but only when it is *mostly* inside
+    them: the same `Ø50,00` line passes under the number it belongs to, and rejecting it for touching
+    the words would throw away the callout with the glyph.
+    """
+    detector = cv2.createLineSegmentDetector(cv2.LSD_REFINE_STD)
+    found = detector.detect(gray)[0]
+    if found is None:
+        return []
+    strokes: list[Stroke] = []
+    for raw in found.reshape(-1, 4):
+        x0, y0, x1, y1 = (float(value) for value in raw)
+        angle = abs(np.degrees(np.arctan2(y1 - y0, x1 - x0))) % 180.0
+        if angle < min_angle or abs(angle - 90.0) < min_angle:
+            continue
+        if float(np.hypot(x1 - x0, y1 - y0)) < min_length:
+            continue
+        thickness = _across_run(binary, x0, y0, x1, y1)
+        if thickness <= 0.0 or thickness > max_thickness:
+            continue
+        candidate = Stroke(x0, y0, x1, y1, thickness)
+        if text_fraction(text_mask, candidate) > glyph_fraction:
+            continue
+        strokes.append(candidate)
+    return _merged(strokes, max_thickness)
+
+
+def _across_run(binary: np.ndarray, x0: float, y0: float, x1: float, y1: float, half: int = 6, step: float = 3.0) -> float:
+    """The ink's thickness across a stroke, counted the same way as an axis stroke's.
+
+    `Segment.thickness` is a run of ink counted row by row, so a stroke's weight and the width an arrow
+    has to reach are in the same unit only if a diagonal is measured as a run too. Measured as a
+    half-width instead, a bare diagonal line comes out as wide as one of its own arrowheads and every
+    leader looks arrowed at both ends: a leader once scored 26 wide samples at its blank end.
+
+    The median of the samples that found ink, not of all of them: a faint line is darker along some of
+    its length than along the rest, and a sample that misses it entirely is not evidence that the line is
+    thin, only that the sheet prints it lightly - counting those as zero made every dimension line on the
+    plate sheet measure no ink at all.
+    """
+    dx, dy = x1 - x0, y1 - y0
+    length = float(np.hypot(dx, dy)) or 1.0
+    normal = (-dy / length, dx / length)
+    count = int(min(48.0, max(4.0, length / step)))
+    runs = [
+        _ink_across(binary, x0 + dx * (index + 0.5) / count, y0 + dy * (index + 0.5) / count, normal, half)
+        for index in range(count)
+    ]
+    found = [run for run in runs if run > 0]
+    return float(np.median(found)) if found else 0.0
+
+
+def _angle_between(first: Stroke, second: Stroke) -> float:
+    """How far apart two strokes point, off 180 degrees: strokes along one line point together."""
+    first_angle = np.arctan2(first.y1 - first.y0, first.x1 - first.x0)
+    second_angle = np.arctan2(second.y1 - second.y0, second.x1 - second.x0)
+    difference = abs(float(np.degrees(first_angle - second_angle))) % 180.0
+    return min(difference, 180.0 - difference)
+
+
+def _gap_between(first: Stroke, second: Stroke) -> float:
+    """The shortest distance between the two strokes' ends."""
+    return float(min(np.hypot(a[0] - b[0], a[1] - b[1]) for a in first.ends() for b in second.ends()))
+
+
+def _joined(first: Stroke, second: Stroke) -> Stroke:
+    """One stroke spanning two that lie along the same line: the detector reports a line's two edges,
+    and reports a long line in pieces."""
+    ends = first.ends() + second.ends()
+    pair = max(
+        ((a, b) for a in ends[:2] for b in ends[2:]),
+        key=lambda item: float(np.hypot(item[0][0] - item[1][0], item[0][1] - item[1][1])),
+    )
+    return Stroke(pair[0][0], pair[0][1], pair[1][0], pair[1][1], min(first.thickness, second.thickness))
+
+
+def _merged(strokes: list[Stroke], tolerance: float) -> list[Stroke]:
+    """Longest first, then anything lying along it is the same line seen twice."""
+    merged: list[Stroke] = []
+    for stroke in sorted(strokes, key=lambda item: -item.length):
+        for index, other in enumerate(merged):
+            if _angle_between(stroke, other) <= 8.0 and _gap_between(stroke, other) <= 3.0 * tolerance:
+                merged[index] = _joined(other, stroke)
+                break
+        else:
+            merged.append(stroke)
+    return merged
+
+
+@dataclass(frozen=True)
 class DimensionLine:
     """A segment that is a dimension line: something printed a number next to it, at both of whose
     ends the ink is heavier than a bare line end (an arrowhead, or an arrow meeting an extension
@@ -64,7 +243,7 @@ class Leader:
     points at one feature - the circle a Ø belongs to - and the number gives that feature's size.
     """
 
-    segment: Segment
+    segment: Segment | Stroke
     text_box: tuple[float, float, float, float]
     arrow_end: int
 
@@ -78,9 +257,20 @@ class Leader:
         return self.segment.ends()[1 - self.arrow_end]
 
 
-def ink(gray: np.ndarray) -> np.ndarray:
-    _threshold, binary = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
-    return binary
+def ink(gray: np.ndarray, contrast: float = 0.08) -> np.ndarray:
+    """The ink of a sheet: what is darker than its own paper by a real fraction of its own contrast.
+
+    Splitting the histogram in the middle (Otsu) is right when a sheet has two tones, ink and paper, and
+    wrong when it has three. Measured on the plate sheet, the text runs 0-50 grey, the paper sits at 255,
+    and the thin lines that carry every dimension on the sheet are printed at 161-235: Otsu splits at 158
+    and drops exactly the lines a number hangs on, leaving the reader with title-block rules and glyph
+    stems. Judging ink against the sheet's own paper and its own darkest tone keeps a dimension line on
+    any sheet, faint or dark, without a threshold picked per file.
+    """
+    paper = float(np.percentile(gray, 90))
+    darkest = float(np.percentile(gray, 1))
+    threshold = paper - contrast * (paper - darkest)
+    return np.where(gray <= threshold, 255, 0).astype(np.uint8)
 
 
 def thin_segments(binary: np.ndarray, min_length: int = 36, max_thickness: int = 4, max_length: float = 1400.0) -> list[Segment]:
@@ -354,7 +544,7 @@ def _distance_to_span(position: float, span: tuple[float, float]) -> float:
 
 def leader_near(
     binary: np.ndarray,
-    segments: list[Segment],
+    segments: Sequence[Segment | Stroke],
     box: tuple[float, float, float, float],
     text_mask: np.ndarray | None = None,
     min_arrow_steps: int = 8,
@@ -362,7 +552,8 @@ def leader_near(
     """The callout a printed Ø/R belongs to: one arrow, and its text at the far end of the same stroke.
 
     Only one end carries an arrow - the tip that touches the feature - which is what tells a leader from
-    a dimension line, whose number sits in the middle of a line arrowed at both ends.
+    a dimension line, whose number sits in the middle of a line arrowed at both ends. The stroke may run
+    along an axis or at an angle: most callouts on a drawing are diagonals, so both kinds are handed in.
     """
     centre_x, centre_y = (box[0] + box[2]) / 2, (box[1] + box[3]) / 2
     height = max(min(box[2] - box[0], box[3] - box[1]), 1.0)
@@ -399,30 +590,23 @@ def _distance_to_box(x: float, y: float, box: tuple[float, float, float, float])
     return float(np.hypot(dx, dy))
 
 
-def _distance_to_line(x: float, y: float, segment: Segment) -> float:
-    """Perpendicular distance from a point to the segment's infinite line."""
-    if segment.horizontal:
-        return abs(y - (segment.y0 + segment.y1) / 2)
-    return abs(x - (segment.x0 + segment.x1) / 2)
+def _distance_to_line(x: float, y: float, segment: Segment | Stroke) -> float:
+    """Perpendicular distance from a point to the stroke's own infinite line: through its middle, along
+    the direction it runs in."""
+    direction, _across = _basis(segment)
+    middle_x, middle_y = segment.middle
+    return float(abs((x - middle_x) * direction[1] - (y - middle_y) * direction[0]))
 
 
 def _run(binary: np.ndarray, x: int, y: int, half: int, vertical: bool) -> int:
-    """Length of the ink stroke through (x, y) across the line: the arrow is wide, a bare line is not."""
-    if not (0 <= y < binary.shape[0] and 0 <= x < binary.shape[1]) or binary[y, x] == 0:
-        return 0
-    steps = 1
-    for direction in (-1, 1):
-        for offset in range(1, half + 1):
-            ny, nx = (y + direction * offset, x) if vertical else (y, x + direction * offset)
-            if not (0 <= ny < binary.shape[0] and 0 <= nx < binary.shape[1]) or binary[ny, nx] == 0:
-                break
-            steps += 1
-    return steps
+    """Kept for the probes that measure a stroke by hand; the drawing code asks `_ink_across`."""
+    normal = (0.0, 1.0) if vertical else (1.0, 0.0)
+    return _ink_across(binary, x, y, normal, half)
 
 
 def arrow_steps(
     binary: np.ndarray,
-    segment: Segment,
+    segment: Segment | Stroke,
     end: int,
     reach: int = 45,
     low: float = 1.5,
@@ -435,17 +619,25 @@ def arrow_steps(
     to roughly twice to three times the line weight. A dimension line's end also touches the extension
     line, whose stroke goes far past the dimension line in both directions - so a stroke much wider than
     an arrow is that extension line, not an arrow. A bare line end is simply not wider at all.
+
+    The question is asked across the stroke's own normal, so it can be asked of a leader drawn at any
+    angle as well as of an axis stroke.
     """
+    direction, normal = _basis(segment)
+    horizontal = getattr(segment, "horizontal", None)
+    half = int(max(6.0, 6.0 * segment.thickness))
     start_x, start_y = segment.ends()[end]
     wide = 0
     for offset in range(-reach, reach + 1):
         # Both sides of the end: a drafting arrow either points at the extension line from inside the
         # dimension or sits outside it pointing in, and both styles appear on one sheet.
-        if segment.horizontal:
+        if horizontal is True:
             x, y = int(round(start_x + offset)), int(round(start_y))
-        else:
+        elif horizontal is False:
             x, y = int(round(start_x)), int(round(start_y + offset))
-        stroke = _run(binary, x, y, 30, vertical=segment.horizontal)
+        else:
+            x, y = start_x + direction[0] * offset, start_y + direction[1] * offset
+        stroke = _ink_across(binary, x, y, normal, half)
         if low * segment.thickness <= stroke <= high * segment.thickness:
             wide += 1
     return wide
@@ -468,7 +660,7 @@ def tip_ratio(binary: np.ndarray, segment: Segment, end: int, reach: float = 18.
     return filled / max(bare, 1e-6)
 
 
-def text_fraction(text_mask: np.ndarray, segment: Segment, samples: int = 48) -> float:
+def text_fraction(text_mask: np.ndarray | None, segment: Segment | Stroke, samples: int = 48) -> float:
     """How much of a stroke lies inside printed text: a digit's stem is all text, a dimension line none.
 
     Text is wide relative to a line, so the stroke through a letter looks arrow-like to `arrow_steps`.

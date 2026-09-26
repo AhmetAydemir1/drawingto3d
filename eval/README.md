@@ -67,12 +67,12 @@ and building metrics are held to.
 
 | vaka | kaynak | kapsam | gürültü | px/mm | şüpheli |
 |---|---|---|---|---|---|
-| plastic-enclosure-1 | vektör | 11/11 | 0 | 3.917 | 6 |
-| plate-pocket-1 | vektör | 5/7 | 0 | 7.867 | 0 |
-| exercise-1 | raster | 3/13 | 6 | 5.85 | 8 |
-| studycadcam-60 | raster | 6/9 | 6 | 3.312 | 7 |
-| studycadcam-50 | raster | 0/3 | 2 | - | 0 |
-| flange-1 | raster | 3/13 | 1 | - | 0 |
+| plastic-enclosure-1 | vektör | 11/11 | 0 | 3.917 | 7 |
+| plate-pocket-1 | vektör | 6/7 | 0 | 7.817 | 0 |
+| studycadcam-60 | raster | 7/9 | 8 | 3.278 | 9 |
+| studycadcam-50 | raster | 1/3 | 6 | - | 0 |
+| exercise-1 | raster | 2/13 | 6 | 5.70 | 7 |
+| flange-1 | raster | 3/13 | 5 | - | 0 |
 
 The vector numbers are the text layer read through the geometry gate; the raster ones are the same gate
 with tesseract behind it, which is the floor, not the finished reader — `eval/baseline.py` is where the
@@ -82,40 +82,60 @@ vision model enters.
 
 `perceive` finds printed numbers by the geometry that carries them, not by their size:
 
-1. `lines.thin_segments` keeps strokes 2–4 px thick and 36–1400 px long. On the A4 practice sheet the
-   outlines and title-block rules measure 5–6 px, so weight alone is not the filter — the arrows are.
-2. A candidate is a cluster of glyphs with a **dimension line** beside it (`lines.dimension_line_near`:
+1. `lines.ink` decides what is ink by the sheet's own paper and darkest tone, and `lines.thin_segments`
+   keeps strokes 2–4 px thick and 36–1400 px long. On the A4 practice sheet the outlines and title-block
+   rules measure 5–6 px, so weight alone is not the filter — the arrows are.
+2. `lines.diagonal_strokes` adds the strokes that do not run along an axis, which is where a drawing
+   keeps its callouts: the band is the sheet's own thin weight, and the length is measured against the
+   sheet's printed text so a glyph stroke stays a glyph. A line drawn at 8° is not an axis stroke — the
+   row-by-row pass reads it as thick and drops it — so this is the only path that can find it.
+3. A candidate is a cluster of glyphs with a **dimension line** beside it (`lines.dimension_line_near`:
    an arrow at both ends, the number between) or a **leader** (`lines.leader_near`: one arrow, the words
-   beside the blank end of the shaft). Title block, part numbers, copyright years and the frame band all
-   die here: on `my_part.jpg`, 364 glyph candidates become 21 that cover 10 of the 13 printed values.
-3. Text along a vertical line is printed a quarter turn round, so a glyph is judged on its longest side
+   beside the blank end of the shaft, the shaft at any angle). Title block, part numbers, copyright years
+   and the frame band all die here: on `my_part.jpg`, 364 glyph candidates become 21 that cover 10 of the
+   13 printed values.
+4. Text along a vertical line is printed a quarter turn round, so a glyph is judged on its longest side
    and its crop is turned upright before it is read. Filtering those digits on height (or on width) is
    how a printed 80 arrives as a bare `0`.
-4. `reader.read_dimension` asks the local vision model first, tesseract second, and reports agreement. An
+5. `reader.read_dimension` asks the local vision model first, tesseract second, and reports agreement. An
    answer that does not fit the crop it came from — letters on a dimension line, more digits than the box
    could hold — is refused instead of kept; that is where `R100` and `R105` hallucinations come from.
-5. Every accepted number keeps the two ends of its own line as `Span.anchors`, so its value stays
+6. Every accepted number keeps the two ends of its own line as `Span.anchors`, so its value stays
    attached to the geometry that printed it.
-6. `scale.audit` fits the sheet's own scale (px per mm) from those anchors and names the records that do
+7. `scale.audit` fits the sheet's own scale (px per mm) from those anchors and names the records that do
    not fit it — a misread, or a number attached to a line that was never its own. On `my_part.jpg`:
    5.95 px/mm with a 2.4% spread (A4 at 200 dpi, scale 1:2, expects 5.9) — no title block, dpi or scale
    note needed.
 
 ## Known gaps
 
-- **Diagonal strokes are not found.** `lines.thin_segments` returns horizontal and vertical strokes only,
-  so every leader drawn at an angle — which is how most callouts are drawn — is invisible to the gate. On
-  `plate-pocket-1` that is `Ø50,00` and `6,80 THRU ALL`: the sheet's two callouts, both lost while all five
-  linear dimensions come through. On the flange it is the `6 x Ø6.40` and `Ø11.00` counterbore callouts.
+- **A dimension drawn at an angle is still unread.** The strokes at an angle are found now
+  (`lines.diagonal_strokes`, from the sheet's own thin weight, wired into the gate), which is how
+  `6,80 THRU ALL` came through: its leader runs at 75°. What stays unread is the *dimension* path:
+  `dimension_for` reads a row of collinear strokes along an axis, so a dimension line drawn at an angle is
+  invisible however well the stroke is found. On `plate-pocket-1` that is `Ø50,00`, whose line runs at 15°
+  under the number and carries an arrowhead at both ends; the same shape on the flange is the
+  `6 x Ø6.40` and `Ø11.00` callouts. Generalising the row to a direction (project onto the stroke's own
+  axis and across it) is what closes this, and the row code is already written in projections.
 - **The scale audit has no pixel floor.** `scale.RELATIVE_TOLERANCE` is 4% of the value; a 1.5 mm
   dimension on a 1:2 sheet is 6 px at 200 dpi, where one pixel of arrow or extension-line error is 17%.
   `plastic-enclosure-1` therefore reports 6 of its 14 readings as suspect although the fit itself
   (3.917 px/mm against the 3.937 a 1:2 A4 expects) is right. A reading should be judged against the
   larger of a relative tolerance and an absolute one in the sheet's own pixels.
-- **Raster reading is the weak half.** The front end finds 3/13 printed numbers on `exercise-1` and 3/13
+- **Raster reading is the weak half.** The front end finds 2/13 printed numbers on `exercise-1` and 3/13
   on `flange-1` when the text layer is absent; on the same sheets with the text layer it finds all of
   them. `eval/frontend.py --as-raster` is the harness for this — it reads a vector sheet's raster with
-  the truth known exactly, so the CV reader can be improved without another hand-made example.
+  the truth known exactly, so the CV reader can be improved without another hand-made example. The
+  contrast rule below took `exercise-1` from 3/13 to 2/13 while lifting two other sheets: the lost value
+  is a real cost of the change, kept visible rather than smoothed over.
+- **A sheet is not two tones.** Splitting the grey histogram in the middle (Otsu) reads a drawing as ink
+  and paper, and a drawing has three tones: text, thin lines, paper. On `plate-pocket-1` the text runs
+  0-50 grey, the paper sits at 255 and every dimension line is printed at 161-235, so Otsu's split at 158
+  kept the title block and the glyph stems and dropped exactly the lines the numbers hang on — which is
+  why that sheet's leader at 75° was invisible to every earlier pass. Ink is judged now against the
+  sheet's own paper and its own darkest tone (`lines.ink`), and a stroke's weight is the median of the
+  samples that found ink rather than of all of them, because a faint line is missed at some sample points
+  and missing it is not evidence of thinness.
 - Synthetic sheets (build a part in CadQuery, render the three views, keep the part as truth) are the
   plan for volume; they belong in this folder as `synthetic.py` when Phase 2 lands.
 - Nothing here scores *how much of the drawing was used*. A part built from 2 of 8 records and a part

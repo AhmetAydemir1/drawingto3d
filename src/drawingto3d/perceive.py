@@ -48,7 +48,14 @@ def _gated_text_layer(page: Page, gray: np.ndarray) -> list[Span]:
     """
     binary = lines.ink(gray)
     segments = lines.thin_segments(binary)
-    gate = _DimensionGate(binary, segments, _text_mask(gray))
+    heights = [float(span.bbox.h) for span in page.spans if span.value is not None]
+    gate = _DimensionGate(
+        binary,
+        segments,
+        _text_mask(gray),
+        gray=gray,
+        text_height=float(np.median(heights)) if heights else None,
+    )
     kept: list[Span] = []
     for span in page.spans:
         if span.value is None or span.kind == SpanKind.text:
@@ -128,10 +135,17 @@ def _oriented_spans(gray: np.ndarray, reader=None) -> list[Span]:
     binary = lines.ink(gray)
     segments = lines.thin_segments(binary)
     text_mask = _text_mask(gray)
-    gate = _DimensionGate(binary, segments, text_mask)
     # One glyph list for both passes. Narrow per-pass size limits used to drop half of a rotated number
     # (the digit that looked too wide for that pass), leaving a fragment that then read as a stray digit.
     glyphs = _glyphs(gray, text_mask)
+    sizes = [max(glyph[4], glyph[5]) for glyph in glyphs]
+    gate = _DimensionGate(
+        binary,
+        segments,
+        text_mask,
+        gray=gray,
+        text_height=float(np.median(sizes)) if sizes else None,
+    )
     spans = _collect_spans(gray, glyphs, "center", gate, reader) + _collect_spans(gray, glyphs, "gap", gate, reader)
     spans = _one_number_per_line(spans)
     for index, span in enumerate(spans):
@@ -183,10 +197,38 @@ class _DimensionGate:
     finds can travel with the span.
     """
 
-    def __init__(self, binary: np.ndarray, segments, text_mask: np.ndarray) -> None:
+    def __init__(
+        self,
+        binary: np.ndarray,
+        segments,
+        text_mask: np.ndarray,
+        gray: np.ndarray | None = None,
+        text_height: float | None = None,
+    ) -> None:
         self.binary = binary
         self.segments = segments
         self.text_mask = text_mask
+        # A callout is drawn at whatever angle the sheet has room for, so the strokes that can carry one
+        # are not only the axis ones. Their band is read from the sheet's own thin weight instead of from
+        # a pixel count at one dpi: on these sheets the lines that carry dimensions come out 2-3 px and
+        # the outlines and title-block rules 5-6 px, so a leader is long and thin relative to its own
+        # drawing. Length is measured against the printed text where it is known, because a glyph stroke
+        # is about as long as the letter it belongs to and a leader is longer than the words it points
+        # from.
+        weight = float(np.median([segment.thickness for segment in segments])) if len(segments) else 2.0
+        min_length = 1.5 * text_height if text_height else 12.0 * weight
+        self.diagonals = (
+            lines.diagonal_strokes(
+                gray,
+                binary,
+                min_length=min_length,
+                max_thickness=2.0 * weight,
+                text_mask=text_mask,
+            )
+            if gray is not None
+            else []
+        )
+        self.strokes = [*segments, *self.diagonals]
         self.anchors: dict[tuple[float, float], list[tuple[float, float]]] = {}
         self.taken: list[tuple[float, float, float, float]] = []
 
@@ -199,7 +241,7 @@ class _DimensionGate:
             self.anchors[box] = anchors
             self.taken.append(box)
             return True, anchors, "dimension"
-        leader = lines.leader_near(self.binary, self.segments, box, self.text_mask)
+        leader = lines.leader_near(self.binary, self.strokes, box, self.text_mask)
         if leader is None:
             return False, None, "dimension"
         # A leader's arrow marks the feature; its tail is only where the text is.

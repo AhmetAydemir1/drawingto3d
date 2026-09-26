@@ -110,21 +110,22 @@ The ceiling, with the vision model reading the same crops instead of tesseract (
 | vaka | tesseract (floor) | qwen2.5vl:7b (ceiling) |
 |---|---|---|
 | plate-pocket-1 | 6/7 | 4/7 |
-| plastic-enclosure-1 | 8/11 | 10/11 (older run) |
+| plastic-enclosure-1 | 8/11 | 10/11 |
 
 Neither switch is a default: the model costs minutes per sheet against seconds. Wall clock is not
 comparable between runs on one machine — the same plate took 32 s in one run and 538 s in another with
-nothing else on the box, and the plastic ceiling below took 933 s — so the coverage is the measurement
-and the seconds are not. The plate's ceiling was re-run on this code (`out/model_run_plate_after.log`,
-716 s, this window) and it is **4/7, below that sheet's own tesseract floor of 6/7**, so "below the floor"
-was not an artefact of a stale run: on this sheet the local 7B model reads fewer of the printed numbers
-than the CV reader does, and that is worth saying plainly. It is not worse at *everything*: the numbers it
-reads include the `50,00` the floor cannot (`covers` = 50, 60, 80, 100) — the leader-carried diameter the
-tesseract path has no arbiter for — while it loses `6,8`, `8` and `15` that the floor reads, and adds two
-noise records (`800`, `R105`) against the floor's two. `plastic-enclosure-1`'s ceiling below is the older
-run with the leader change in place (`00d739c`): **10/11**, missing only the `8.0`, with 3 noise records
-against the floor's 8/11 at the time (7/11 then). The model is still not the product path on this evidence:
-minutes per sheet against seconds, and on one sheet it is the weaker reader.
+nothing else on the box — so the coverage is the measurement and the seconds are not. Both ceilings were
+re-run on the code of this window (`out/model_run_plate_after.log`, 716 s; `out/model_run_plastic_after2.log`,
+926.5 s). The plate is **4/7, below that sheet's own tesseract floor of 6/7**, so "below the floor" was not
+an artefact of a stale run: on this sheet the local 7B model reads fewer of the printed numbers than the CV
+reader does, and that is worth saying plainly. It is not worse at *everything*: the numbers it reads include
+the `50,00` the floor cannot (`covers` = 50, 60, 80, 100) — the leader-carried diameter the tesseract path has
+no arbiter for — while it loses `6,8`, `8` and `15` that the floor reads, with two noise records against the
+floor's two. The plastic sheet is the other way round and by a wide margin: **10/11 against the floor's
+8/11**, missing only the `8.0`, with 3 noise records against 7 — and among the numbers it reads are `1.50`
+and `4.80`, the small ones the floor's gate mispairs with a neighbouring line. The model is still not the
+product path on this evidence: minutes per sheet against seconds, and on one of the two sheets it is the
+weaker reader.
 
 ## How a number is read
 

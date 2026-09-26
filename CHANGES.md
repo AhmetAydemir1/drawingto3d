@@ -280,7 +280,10 @@ in place): `plastic-enclosure-1` **10/11** in 933 s, missing only the `8.0`, aga
 and sat below the floor, so it was re-run on the code of this window
 (`out/model_run_plate_after.log`, 716 s): **4/7 again**, so below the floor was not staleness — the model
 reads `50`, `60`, `80` and `100` (including the leader-carried `50,00` the floor cannot read) and loses
-`6,8`, `8` and `15`, with two noise records either way. Recorded in the README's ceiling table.
+`6,8`, `8` and `15`, with two noise records either way. The plastic ceiling was re-run on the same code too
+(`out/model_run_plastic_after2.log`, 926.5 s): **10/11 again**, missing only the `8.0`, 3 noise records
+against the floor's 7, and it reads the small numbers (`1.50`, `4.80`) whose lines the floor's gate mispairs.
+Both are in the README's ceiling table, and `eval/check_tables.py` now checks that table against the runs.
 
 ## The sheet re-reads what its own scale calls wrong (reading)
 

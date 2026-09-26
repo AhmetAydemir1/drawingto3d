@@ -382,6 +382,58 @@ dimension of a few pixels is judged in pixels, and the floor does not hide a num
 line — the plastic sheet's own case), and the raster sweep after the change is `out/raster_tolerance.log`,
 identical to `out/frontend_scale_reread` row by row.
 
+## A reading is given the span on its own line that its value fits (`be6b975`, reading)
+
+**What changed.** The gate picks a span without knowing the value: `lines.dimension_for` reads the row the
+number sits on, and `_span_ends` takes the pair of crossings the number sits between, else the pair nearest
+it. That is all it can do before the sheet has calibrated itself, and on a sheet drawn as a band of closely
+spaced profile edges the pair it takes belongs to a neighbouring feature.
+`perceive._repoint_lines_that_are_not_their_own` now runs between the reading and the re-read: it fits the
+sheet's scale (`scale.consensus`) and, for every reading that fit calls wrong, asks `lines.crossing_pairs`
+for the pairs of crossings **at the line the reading was given** — inside the stretch it holds, or the gap
+between one of that stretch's own ends and the next crossing — and takes the one whose length fits.
+`lines._crossings` gained a `merge` argument for it: the tolerance that says two crossings are one thick
+extension line was 0.4 of the number's *box*, and on the 71 px-wide `1.50` that swallowed the two real
+extension lines 6.5 px apart; it is now the sheet's own stroke weight. The order is load-bearing — the value
+re-read runs after this one, so it judges a candidate against a line that is already its own.
+`lines._row_near` was factored out of `_axis_dimension` so both callers choose the row the same way (the
+factor-out is behaviour-identical: the eight vector runs did not move).
+
+**Bought.** Of the 18 runs in the sweep, exactly one moved: `plastic-enclosure-1` raster, where two readings
+came back onto the drawing's own span — `1.50` 113.5 -> 6.5 px (1.66 mm where its value is 1.5) and `4.80`
+69 -> 19 px (4.85 mm where its value is 4.8). Checked in the image rather than in the arithmetic
+(`out/probe/annot_ocr-1.png`, `annot_ocr-3.png`: the reading's box and the line it holds, drawn on the sheet
+at 4x): the `1.50` now sits on the gap between the two facing arrowheads of the narrow feature, the `4.80` on
+the step its own arrowheads close on. Both left that sheet's suspect list, which is the point — their lines
+fit now. Coverage, noise and the vector rows are identical (plastic raster 8/11, 7 noise, as before), and
+`eval/check_tables.py` still reads 14 rows with 0 drift.
+
+**Cost / risk.**
+- The judgement is `Calibration.disagrees`, which carries the 2.5 px floor: the `1.50`'s own pair measures
+  6.5 px where 1.5 mm is 5.9 px, and only the floor accepts a 10% overshoot on a number that small. Any pair
+  within 2.5 px of what the value expects is therefore taken on a short dimension.
+- The fit is recomputed on the re-pointed pairs, so it moves: plastic raster 3.908 -> 3.917 px/mm, samples
+  5 -> 7, spread 0.0261 -> 0.0389 (the two small dimensions are the least pixel-accurate ratios in it).
+  Measured: no other reading on that sheet changed status, and the movement is *towards* the vector run's
+  own fit on the same sheet (3.917).
+- Nothing is dropped: a reading whose line offers no fitting pair is left exactly where the gate put it, and
+  the sheet keeps naming it. Anchors are what a reading is for downstream, and an anchor removed from a
+  phantom record hides a fake number instead of removing it (see below).
+
+**Alternatives measured and dropped.** Offering the best-fitting pair *anywhere* on the row instead of only
+at the line the reading was given: measured, it repaired three readings rather than two, and the third was a
+datum symbol the reader had called a `2`, for which it took an 8 px gap along the row past the end of the
+stretch the reading held. That pair fitted the value, and the sheet stopped naming a record that is not a
+printed number at all — the wrong direction for the audit. The offer is restricted to the spans at the line
+the reading stands on and a test holds the refusal. Recording a mispaired reading with no anchors at all,
+which the handoff proposed, is not taken: what those readings turn out to be is the next section.
+
+**Verified.** `pytest -q` 114 passed (5 new: one in `tests/test_dimensions.py` for the two extension lines on
+a wide number's row, four in `tests/test_perceive.py` for the pair that fits, the gap beside the held line,
+the pair past its end, and a row with nothing that fits). Sweeps: `out/run_raster_repoint.log`,
+`out/run_vector_repoint.log`; the field-by-field diff against the previous runs is
+`out/probe/probe_repoint_diff.py` (18 runs, 1 changed).
+
 ## Measured, not yet changed
 
 The plate's `50,00` on the raster path, and a correction. This entry previously claimed a `R8` refused by
@@ -416,23 +468,66 @@ and the tesseract floor cannot), so the number is readable by a reader with diff
 does not exist is a way to *confirm* it on the tesseract path, and a model call is minutes per sheet.
 
 Two more measured gaps stay open: a number carried by a stroke the gate reads as a leader is audited by
-nothing at all (above), and — found while measuring the pixel floor — the sheet that has the most of those
-carries a different bug class, **a number matched to a line that was never its line**: 15 of
-`plastic-enclosure-1`'s 20 auditable readings are small numbers standing on long lines (`1.50` on 113.5 px,
-`2` on 181.5 px, `4.00` on 69 px). The audit names them correctly and it costs no coverage on that sheet
-(8/11 with those numbers found anyway), but the anchors of those records are wrong, which matters the day
+nothing at all (above), and the readings the audit still names on `plastic-enclosure-1`. The paragraph
+below was written when that sheet had fifteen of twenty auditable readings suspect and is now history —
+two of them were re-pointed onto their own spans (`be6b975`, above), one left the list through a span
+inside the stretch it held, and twelve are named. What they are was re-measured, and it is not the class
+this paragraph assumed.
+
+**A number matched to a line that was never its line, as it was first seen and measured.** 15 of
+`plastic-enclosure-1`'s 20 auditable readings were small numbers standing on long lines (`1.50` on 113.5 px,
+`2` on 181.5 px, `4.00` on 69 px). The audit named them correctly and it cost no coverage on that sheet
+(8/11 with those numbers found anyway), but the anchors of those records were wrong, which matters the day
 the reading is used for anything but counting.
 
-Characterised (`out/probe/probe_mispairing.py`, output in `out/probe/mispairing.txt`): for each named
-reading, *no stroke near the number fits its value at the sheet's own scale*. The `1.50` at box (1077,193)
-was given a 113.5 px line and the strokes within 250 px of it measure 26.4, 11.0, 18.9, 18.9, 12.3 and
-22.3 mm; `4.80` was given 69 px and the strokes near it measure 15.9, 18.2, 11.0, 17.9, 11.0 and 16.6 mm
-where 4.8 mm is 18.8 px. So the gate is attaching a *neighbouring* dimension line to a number that has none
-of its own — the same shape as the leader-carried `50,00`: a diameter or thickness callout needs no line.
-The honest repair has the same two-phase shape as the re-read above (read, fit the sheet's scale, then check
-each record's own line against it): prefer a stroke near the number whose length fits the value, and where
-none does, record the reading without anchors rather than with a line that is not its own. That is a change
-with its own whole-set sweep, so it is the next piece of work rather than a footnote to this one.
+Characterised at the time (`out/probe/probe_mispairing.py`, output in `out/probe/mispairing.txt`): for each
+named reading, *no whole stroke near the number fits its value at the sheet's own scale*. The `1.50` at box
+(1077,193) was given a 113.5 px line and the strokes within 250 px of it measure 26.4, 11.0, 18.9, 18.9,
+12.3 and 22.3 mm. That measurement was of the wrong thing: a span is not a stroke but a pair of crossings,
+and two of these numbers turned out to have their own pair on their own row (`be6b975`). The rest do not,
+and what they are instead is below.
+
+**What the twelve remaining suspects actually are (re-measured after `be6b975`).** Crops of every one of
+them at 4x, with the reading's box and the line it holds drawn on the sheet (`out/probe/probe_mispair_annot.py`
+-> `annot_ocr-*.png`), plus the two sheet-relative measurements in `out/probe/probe_solid.py`, split them
+into three kinds, and only one of the three is a reading at all:
+
+- **Seven are arrowheads, and the reader calls them digits** (`ocr-2` `1`, `ocr-6` `5`, `ocr-10`, `ocr-11`,
+  `ocr-15`, `ocr-20` `4`, `ocr-17` `1`). The measurement that names them is where they sit: the centre of the
+  reading's box lies **on the axis of the very line it is anchored to** — 0.0 to 0.5 px off it. Nothing else
+  on the sheet is on its line like that: the nearest other reading is 4.5 px off (the datum symbol below),
+  every printed number is 20.5-21.5 px off, and on the two other sheets measured the same column reads
+  8.5-192.6 px. In the image the box is on a filled triangle (`out/probe/annot_ocr-11.png`,
+  `annot_ocr-6.png`). Six of them carry the value `4`, so part of that sheet's raster row (8/11) rests on a
+  number the sheet does not print there; the printed `4` is also read by a leader-carried `4` (`ocr-12`,
+  hollow glyphs, 8.8 px beside its line), so removing them costs no coverage — they are the real reason
+  those anchors looked so wrong.
+- **One is a datum symbol**: the `2` of `ocr-8` is a small circle with four ticks, read as a digit
+  (`out/probe/annot_ocr-8.png`, glyph fills 0.3-0.81: not one pen). It left the suspect list in `be6b975`
+  through a pair inside the stretch it held (8.0 px = 2.04 mm at its own line) — geometrically sound, and
+  still a repair of a record that is not a number: an audit that names a phantom by accident stops naming it
+  when the accident is fixed.
+- **Four read a real line and get the number wrong**: `29.00` stands on a 99 px line — 25.28 mm at the
+  sheet's own scale, where the sheet prints `25.00` and is missing it; `7` stands on 522.5 px; and the
+  `4.00` pair stands on 69 px lines where the step's three printed numbers are `4.00`, `4.00` and `4.80` and
+  all three of their spans measure 4.85 mm (`out/probe/three_dims.png`) — so at least one of those numbers is
+  misread and the sheet cannot say which, because its own scale calls all three wrong and no pair on their
+  rows fits.
+
+So both halves of the remedy proposed in the old paragraph are now answered by measurement: re-pointing the
+anchor is right where the reading is a number (done, two of them), and *dropping* the anchor is wrong where
+it is not a number at all — it would hide a fake number rather than remove it. What the phantom class needs
+is a guard that a cluster is **type** before it is a number, and the two signals above are the measured
+candidates. The strong one is position: on the three sheets measured (`probe_solid.py plastic|plate|studycadcam-60`),
+every reading whose value is read off a line stands 8.5-192.6 px off that line's axis and the seven phantoms
+stand 0.0-0.5 px on it — a margin of 17x. The caveat is rule 13's first layout, a real number *printed inside
+its line's own gap*, which would sit at 0 px too; it does not occur on these sheets (the plate's `100,00`,
+the number that looks most like it, measures 21 px off) but the guard is a reader-wide rule and has to be
+built with that layout in mind. The weak one is solidity: plastic's printed digits fill 0.34-0.50 of their
+blob box against 0.51-0.67 for its arrowheads, but `studycadcam-60`'s printed digits fill 0.36-0.53, so an
+absolute threshold throws away real numbers there and only a ratio to the sheet's own type can transfer —
+measured on all six sheets before it is set. Measurements: `out/probe/probe_solid.py`, `probe_phantom.py` and
+`phantom.txt`.
 
 A scan of every cluster the gate refuses that tesseract *would* give a number for is
 `out/probe/probe_refused_reads.py` — 30 on the plate, and what is behind them is not one kind of thing: the

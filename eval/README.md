@@ -123,9 +123,9 @@ the `50,00` the floor cannot (`covers` = 50, 60, 80, 100) — the leader-carried
 no arbiter for — while it loses `6,8`, `8` and `15` that the floor reads, with two noise records against the
 floor's two. The plastic sheet is the other way round and by a wide margin: **10/11 against the floor's
 8/11**, missing only the `8.0`, with 3 noise records against 7 — and among the numbers it reads are `1.50`
-and `4.80`, the small ones the floor's gate mispairs with a neighbouring line. The model is still not the
-product path on this evidence: minutes per sheet against seconds, and on one of the two sheets it is the
-weaker reader.
+and `4.80`, the small ones the floor used to anchor to a neighbouring line and now reads at their own span
+(`be6b975`). The model is still not the product path on this evidence: minutes per sheet against seconds,
+and on one of the two sheets it is the weaker reader.
 
 ## How a number is read
 

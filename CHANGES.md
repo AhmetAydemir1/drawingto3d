@@ -205,6 +205,12 @@ On `exercise-1` the three numbers are `30`, `37` and `50`; on `flange-1` they ar
 `eval/frontend.py --as-raster` -> the same gains and no phantom (plate 3 noise records before and after,
 plastic 8 and 8, exercise-1 10 -> 7 at the raster floor); `out/frontend/*.json` re-measured.
 
+The *before* column was re-measured independently: a raster run of the six sheets that was already going
+when this work started (its own process, log kept at `out/raster_baseline.log` — not tracked, `out/` is
+ignored) reports the same six rows, so the gains above are not one run's noise. Its table: exercise-1 2/13
+with 10 noise records, flange-1 2/13 with 5, plate-pocket-1 4/7 with 3, plastic-enclosure-1 7/11 with 8,
+studycadcam-60 6/9 with 9, studycadcam-50 2/3 with 7.
+
 ## Measured, not yet changed
 
 The raster half of the callout: splitting a line of drawn words so that the number inside it is read on its

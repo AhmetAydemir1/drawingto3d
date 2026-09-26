@@ -37,23 +37,59 @@ CODE_ASK = (
     "returned by an earlier geo call (for example a = geo.plate(...); a = geo.holes(a, ...)). "
     "Never pass a string or a number there. holes returns the drilled part: reassign it to the same "
     "variable and do not fuse it with the undrilled one.\n"
-    "- A bent tube is one ring_revolve; straight lengths are ring_extrude attached to its ends; "
-    "plates are attached to the tube ends and drilled with holes.\n"
+    "{shape}"
     "- No comments. Write numbers directly in the calls.\n"
-    "- Order of work: make the main tube or plate first; make each further part with geo.attach(new_part, base, 'start' or 'end'), "
+    "- Order of work: make the main body first; make each further part with geo.attach(new_part, base, 'start' or 'end'), "
     "which returns new_part moved onto that face of base (base stays where it is); drill plates with holes; "
     "finally solid = geo.fuse(every named part). Every part you created must appear in that fuse call. "
     "Do not use geo.place for stacking.\n"
-    "- Every record names a feature that must exist in the solid: a tube record needs a tube, "
-    "a bend_radius needs ring_revolve, a hole record needs holes.\n"
-    "- Role meanings: thickness = plate thickness; edge = plate side or tube length; "
-    "outer_diameter / inner_diameter = the tube; bend_radius = ring_revolve bend_radius; "
-    "hole_diameter with count = holes at geo.rect_points(hole_spacing); "
+    "- Every record names a feature that must exist in the solid: a hole_diameter needs holes, "
+    "a bend_radius needs ring_revolve, a thickness needs a plate or a wall of that thickness, "
+    "a corner_radius needs a plate corner.\n"
+    "- Role meanings: thickness = the thin depth of a plate or wall; edge = a side length of the body "
+    "(a plate side, a tube length, an arm); outer_diameter / inner_diameter = the round body; "
+    "bend_radius = ring_revolve bend_radius; hole_diameter with count = holes at geo.rect_points(hole_spacing); "
     "corner_radius = plate corner_radius; fillet = fillet_edges radius; chamfer = chamfer_edges size.\n"
     "- Write every millimetre as a literal number. Role names such as edge or thickness are not variables.\n"
     "- Do not call fillet_edges or chamfer_edges; a wrong selector fails the program. Leave edges sharp.\n\n"
     "Dimension records (millimetres):\n{records}\n"
 )
+
+TUBE_ROLES = frozenset({"outer_diameter", "inner_diameter", "bend_radius"})
+PLATE_ROLES = frozenset({"thickness", "corner_radius"})
+
+TUBE_SHAPE = (
+    "The records name a round part: an outer or inner diameter. A bent tube is one ring_revolve; straight "
+    "lengths are ring_extrude attached to its ends; plates are attached to the tube ends and drilled with holes.\n"
+)
+PLATE_SHAPE = (
+    "The records name a plate: a thin depth beside side lengths, with holes drilled through it. Build it with "
+    "geo.plate(width, height, thickness) - the two largest edge values are width and height, the thin depth is "
+    "the thickness - then drill it: a = geo.holes(a, positions=geo.rect_points(dx, dy), diameter=d). A "
+    "hole_diameter beside a hole_spacing is that pattern; a hole_diameter alone is one hole through the middle.\n"
+)
+UNKNOWN_SHAPE = (
+    "The records name no shape: no diameter, no thickness, no bend. Build the simplest body the records "
+    "describe, and add no feature they do not name.\n"
+)
+
+
+def shape_note(records: Sequence[DimensionRecord]) -> str:
+    """Which shape the records name, said only as far as they prove it.
+
+    The prompt used to hand the model a tube recipe before it had seen anything, and a plate sheet came out as
+    a bent tube with a plate glued to its end - measured twice, on a drawing where all seven numbers are
+    printed, so nothing about the reading can be blamed. What the records carry decides: a diameter means a
+    round part, a thin depth beside side lengths means a plate, and when neither is there the prompt says so
+    rather than picking one (a flange whose `Ø` was never read as a diameter lands here, which is where the
+    failure belongs: in its records).
+    """
+    roles = {record.role for record in records}
+    if roles & TUBE_ROLES:
+        return TUBE_SHAPE
+    if roles & PLATE_ROLES and "edge" in roles:
+        return PLATE_SHAPE
+    return UNKNOWN_SHAPE
 
 
 def reason_drawing(
@@ -131,7 +167,7 @@ def reason_drawing(
 
 
 def build_prompt(records: Sequence[DimensionRecord]) -> str:
-    return CODE_ASK.format(api=geo_summary(), records=records_text(records))
+    return CODE_ASK.format(api=geo_summary(), shape=shape_note(records), records=records_text(records))
 
 
 def records_text(records: Sequence[DimensionRecord]) -> str:

@@ -163,9 +163,9 @@ reading the part was built from, so the two halves of the report describe one ru
 
 | vaka | okuma | kayıt | katı | verdict |
 |---|---|---|---|---|
-| plate-pocket-1 | 7/7 | 7 | yok | katı üretilmedi |
+| plate-pocket-1 | 7/7 | 7 | var | KALDI |
+| exercise-1 | 6/13 | 15 | var | KALDI |
 | plastic-enclosure-1 | 11/11 | 14 | yok | katı üretilmedi |
-| exercise-1 | 6/13 | 15 | yok | katı üretilmedi |
 | flange-1 | 4/13 | 10 | yok | katı üretilmedi |
 | studycadcam-60 | - | 0 | - | referans yok |
 | studycadcam-50 | - | 0 | - | referans yok |
@@ -175,31 +175,50 @@ vector sheets read exactly — the plate 7/7 with no noise and the plastic sheet
 two raster sheets read 6/13 and 4/13, which is what the front end's own raster row predicts. The two practice
 sheets have no reference STEP, so they are reading-only here.
 
-The building column is the new measurement and it is bad news, which is the reason to have it: **as it stands no
-case produces a part.** Every failure is the coder model composing `geo.*` calls whose arguments contradict
-each other, and every one is caught by the toolchain rather than by the drawing:
+**Two of four cases now build, and both are plates.** Before the shape note below, **no case produced a part
+at all**; now the plate and `exercise-1` do, in 15 s and 35 s. The plate's part is
+
+```
+a = geo.plate(100, 80, 15)
+b = geo.holes(a, positions=geo.rect_points(60), diameter=6.8)
+c = geo.plate(50, 100, 8)
+d = geo.attach(c, b, 'end')
+solid = geo.fuse(b, d)
+```
+
+— a plate `100 x 80 x 15` with four `Ø6.8` corner holes, which is the right *kind* of part (the run before it
+built a bent tube with a plate glued to its end from the same numbers), and `vector [23, 100, 100]` against the
+reference's `[15, 80, 120]`, `157.8 cm3` against `124.8`, cylinders `[3.4]` against `[3.4, 10, 25]`. Every
+remaining difference is now a *named* one, which is the point of the change:
+
+| ne eksik | kayıtların dediği | paftanın dediği |
+|---|---|---|
+| Ø50 göz yok | `50 mm: edge` | `Ø50,00`, lider bir daireye gidiyor |
+| cep 8 mm derinlik değil, üstüne yapıştırılmış ikinci plaka (23 mm kalınlık) | `8 mm: thickness` | `SECTION B-B`'de 8,00 cep derinliği |
+| delik deseni `60 x 60` | `60 mm: edge` (100 de `edge`) | 100 x 60, köşe deliklerinin merkez aralığı |
+| dış uzunluk 100 | basılı en büyük sayı | 120 (kenar payından türetilir, çizili hat 121.15 mm) |
+
+The two cases that still produce nothing fail in the coder's program, and the guard now catches the one that
+invented numbers:
 
 | vaka | hatanın ölçüsü |
 |---|---|
-| plate-pocket-1 | `holes: result has 3 solids, expected one` — ve roller düzeltilmeden önce kurduğu katı bir **boruydu**: `vector [15, 50, 60]` (referans `[15, 80, 120]`), `43.5 cm3` (`124.8`), silindirler `[4]` (`[3.4, 10, 25]`) |
-| exercise-1 | `ring_extrude: inner_d must be smaller than outer_d` (iki denemede) |
-| plastic-enclosure-1 | `plate: corner_radius must be smaller than half the shortest side` (iki denemede) |
-| flange-1 | `holes: result has 5 solids, expected one` (`geo.holes(solid, geo.rect_points(2), 2)`) |
+| plastic-enclosure-1 | `The numbers 80, 100 are not printed on the drawing` (uydurulmuş sayı koruması, ikinci denemede) |
+| flange-1 | `holes: result has 5 solids, expected one` |
 
-Two measurements from this pair of runs are worth keeping. First, the plate is the sharpest case: its reading is
-7/7 — every millimetre printed — and the part it built before the role fix was a bent tube with `outer_d=100`,
-`inner_d=80`, `length=50` and a `60x60` plate glued to its end, i.e. an invented assembly made only of printed
-numbers, which is the failure rule 4 of the working plan names. Second, one wrong record was **provably** wrong
-and is now fixed: `6,80 THRU ALL` is a through-hole callout, but on a vector sheet the `Ø` is a drawn path that
-never reaches the text layer, so the role question offered only `edge, thickness, hole_spacing` and the reader
-answered `hole_spacing`. `role_choices` now reads the callout's own note (`THRU`, `TAP`, `CBORE`, `6H`, …) and
-offers the diameter family; the plate's record is `hole_diameter` and the coder's next program drills
-`diameter=6.8`. The plate still does not build, and the reason is upstream of the numbers: the prompt the code
-model answers is written for a tube-and-flange assembly, so a plate drawing is composed as a tube.
+The plate is the sharpest case in both directions. Its reading is 7/7 — every millimetre printed — and what
+still stands between it and the reference is entirely interpretation: `50` is a bore diameter whose record says
+`edge`, `8` is a pocket depth whose record says `thickness`, `100`/`60` are a hole pattern whose records say
+`edge`, and the plate's own length is not printed at all (it is derivable: the vertical pair teaches the edge
+distance `(80 - 60) / 2 = 10`, so `100 + 2 x 10 = 120`, and the sheet's drawn outline measures 121.15 mm). One
+wrong record was **provably** wrong and is fixed: `6,80 THRU ALL` is a through-hole callout, but on a vector
+sheet the `Ø` is a drawn path that never reaches the text layer, so the role question offered only
+`edge, thickness, hole_spacing` and the reader answered `hole_spacing`; `role_choices` now reads the callout's
+own note (`THRU`, `TAP`, `CBORE`, `6H`, …) and the record is `hole_diameter`.
 
-So the reading half is close to solved on the vector class and the building half is not started: a flat list of
-millimetres still lets the code model invent topology, which is the failure rule 4 of the working plan names,
-and the plate shows it in the one place where the reading cannot be blamed.
+So the reading half is close to solved on the vector class, the building half has started (2 of 4 build, both
+plates), and the next layer is the records themselves: a number has to arrive named as what it dimensions
+(bore, pocket depth, hole pattern) and the undimensioned length has to be derived.
 
 ## How a number is read
 

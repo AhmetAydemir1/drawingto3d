@@ -586,6 +586,36 @@ the call chain includes the environment.
 bite — flipping `KALDI` to `GEÇTİ` in the README exits 1 with `README GEÇTİ -> rapor KALDI`, restoring it
 exits 0. Numbers: `out/build_eval.log`, `out/eval/report.json`.
 
+## The prompt names the shape the records prove, and two of four cases build (reason, build)
+
+**What changed.** `reason.build_prompt` no longer hands the coder a shape before it has looked at the records.
+`CODE_ASK` carried a fixed recipe — "A bent tube is one ring_revolve; straight lengths are ring_extrude attached
+to its ends; plates are attached to the tube ends" and "edge = plate side *or tube length*" — so a plate drawing
+was composed as a bent tube. `shape_note(records)` now returns one of three notes, decided by the roles the
+records actually carry: a diameter or a bend means a round part, a thin depth beside side lengths means a plate,
+and neither means the prompt says **the records name no shape** rather than picking one. The order-of-work and
+role-meaning rules were rewritten to be class-neutral (no tube, no "plate side or tube length").
+
+**What it bought.** Measured by rebuilding all four cases from the records already on disk — one variable
+changed, no re-read (`out/build_only.py`, log `out/build_only_shapenote.log`): **0 of 4 → 2 of 4 build**. The
+plate builds in 15 s as `geo.plate(100, 80, 15)` with four `Ø6.8` corner holes — the right *kind* of part, where
+the run before it was a bent tube with a plate glued to its end from the same numbers. `exercise-1` builds in
+35 s after failing twice before. And every remaining difference is now a *named* one: the plate's
+`vector [23, 100, 100]` against `[15, 80, 120]`, `157.8` against `124.8 cm3`, cylinders `[3.4]` against
+`[3.4, 10, 25]`. What is missing and why: the Ø50 bore (its record says `edge`), the pocket (the `8` record is a
+`thickness`, so it became a second plate glued on top — 23 mm thick), and the hole pattern (`rect_points(60)`
+for a 100 x 60 pattern, because both spacing records say `edge`).
+
+**What it cost.** The note is a hard classification with no fallback, and roles are its only input: `flange-1`
+carries chamfer, edge and hole_spacing and no diameter at all, so it now gets "the records name no shape" — honest,
+and less help than the old tube recipe gave it. A misread role can therefore choose the wrong note, i.e. the
+same record-level weakness one step earlier. The prompt also grew by about eight lines.
+
+**How it was verified.** `pytest tests/` 120 passed, including the new
+`test_prompt_names_only_the_shape_the_records_prove` (plate note for edge+thickness+hole_diameter, round note
+once a diameter appears, "no shape" for a bare set, and `{shape}` never surviving into the prompt).
+`eval/check_tables.py` 20 rows, 0 drift after the README's built table was refilled; `eval/report.py` re-run.
+
 ## A through-hole callout is a diameter, and the plate's own 120 mm is derivable (reading, eval)
 
 **What changed.** Two small things, and one that is not code at all.

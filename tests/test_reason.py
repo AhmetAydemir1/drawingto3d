@@ -7,7 +7,7 @@ import pytest
 from drawingto3d.errors import UnavailableModel
 from drawingto3d.cadrun import CadFailure, close_code, extract_code, run_program
 from drawingto3d.llama import LlamaCoder, _local_origin
-from drawingto3d.reason import allowed_numbers, reason_drawing
+from drawingto3d.reason import allowed_numbers, build_prompt, reason_drawing, shape_note
 from drawingto3d.schema import DimensionRecord
 
 BOX = "import cadquery as cq\nsolid = cq.Workplane('XY').box(10, 20, 30)\n"
@@ -39,6 +39,28 @@ RECORDS = [
     _record("s10", "R10", 10, "fillet"),
     _record("s11", "C10", 10, "chamfer"),
 ]
+
+
+def test_prompt_names_only_the_shape_the_records_prove():
+    """The coder used to be handed a tube recipe before it saw anything, and a plate came out as a tube."""
+    plate = [
+        _record("s0", "100,00", 100.0, "edge"),
+        _record("s1", "80,00", 80.0, "edge"),
+        _record("s2", "15,00", 15.0, "thickness"),
+        _record("s3", "6,80 THRU ALL", 6.8, "hole_diameter", count=4),
+    ]
+    assert "name a plate" in shape_note(plate)
+    assert "ring_revolve" not in shape_note(plate)
+    pipe = plate + [_record("s4", "Ø60", 60.0, "outer_diameter")]
+    assert "name a round part" in shape_note(pipe)
+    # A flange whose Ø was never read as a diameter: the records name no shape, so the prompt says that
+    # rather than picking one - the failure belongs in the records, not papered over in the prompt.
+    bare = [_record("s0", "90", 90.0, "edge"), _record("s1", "7", 7.0, "chamfer")]
+    assert "name no shape" in shape_note(bare)
+
+    prompt = build_prompt(plate)
+    assert "{shape}" not in prompt and "{" not in prompt.split("Dimension records")[0]
+    assert "name a plate" in prompt
 
 
 def test_remote_host_is_rejected():

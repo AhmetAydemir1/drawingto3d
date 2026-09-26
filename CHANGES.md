@@ -188,7 +188,11 @@ On `exercise-1` the three numbers are `30`, `37` and `50`; on `flange-1` they ar
 - Measured, and the reason `_one_pen` exists: without it the plastic sheet's raster floor gains one
   phantom, `28.006` at bbox (465, 627) — the drawn `R8.00` at 45 degrees and a blob of the vertical number
   beside it in one cluster, read together. It cost no coverage, but it is noise, and the noise rule is not
-  negotiable; the guard removes it. `28.006` is also what the guard costs: a cluster of fragments whose
+  negotiable; the guard removes it. A raster run of the unguarded code was already going when the guard was
+  written and its log is kept at `out/raster_after.log` (ignored, like the rest of `out/`): plastic 7/11 with
+  **9** noise records including `28.006`, 23 spans and 17 suspects against the guarded code's 7/11 with 8,
+  22 and 16 — the same six rows otherwise, so the guard removes the phantom and nothing else. `28.006` is
+  also what the guard costs: a cluster of fragments whose
   shapes disagree enough is read in the old order, so a number that *is* one row of fragments is not
   straightened. The measured margin is thin and worth re-measuring on a new sheet: the loosest real row is
   the flange's `#50` at 0.23 against `_one_pen`'s 0.25, and the plastic blob that makes it necessary is

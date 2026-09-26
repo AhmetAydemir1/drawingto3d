@@ -14,7 +14,7 @@ which named features a plan has to account for (`plate-pocket-1` shows the inten
 empty list means "not yet identified"). `pilot` and `hidden` stay empty until those sheets are
 collected. The compiler half of the brief — a versioned general plan contract and two plans that use
 different operation combinations — lives in `plans/`; `build-general` in the CLI builds them. The
-reading half now has three slices: `observe.py` plus `drawingto3d observe` write one family-independent
+reading half now has four slices: `observe.py` plus `drawingto3d observe` write one family-independent
 record per vector sheet (subpaths, fitted primitives, printed phrases with their source characters,
 frame and text placement); `bind.py` plus `drawingto3d bind` attaches every printed number to the
 geometry its arrows touch — rows, stubs, crossed strokes, chains of coincident strokes and, for
@@ -22,8 +22,12 @@ two-anchor dimensions, candidates aligned along the measuring axis, all with pix
 row length against the sheet's calibration; and `meaning.py` plus `drawingto3d meaning` reads each
 number into the claim the drawing supports — a distance between two candidates projected onto the
 row's axis, a diameter/radius carrying every matching circle, a count checked against how many
-circles match — or marks it unresolved. What is still missing is the plan proposal from those
-readings (view split, which circles are holes vs pockets, thickness/depth) and the raster observer.
+circles match — or marks it unresolved; and `proposal.py` plus `drawingto3d propose` proposes the `GeneralPlan`
+those readings support — the part outline out of the sheet's closed loops with the sheet frame
+skipped, every parameter printed with its span id or derived by expression, every printed number
+checked against the same sheet's measured geometry — or refuses with the reasons (the plastic
+sheet: no diameter claims at all). What is still missing: the raster observer and the wider
+archetypes (multi-view sheets, chain dimensions, asymmetric layouts); the refusal lists name them.
 
 What "better results" means for this project, in numbers. Two questions per sheet:
 

@@ -57,10 +57,10 @@ ifade edilmiş hâli, ve genel derleyici iki farklı işlem birleşimiyle sınan
 ### Hâlâ yapılmayan
 
 - Okuma katmanı genelleştirmesi (PLAN.md Bölüm 3A/3B): gözlem (`observe.py`), ölçü bağlama
-  (`bind.py`) ve anlam seçimi (`meaning.py`) dilimleri eklendi; ama üçü de henüz genel plan
-  önerisine çevrilmedi: sıradaki iş bu okumaları (delik mi cep mi, kalınlık/derinlik) **genel plan
-  önerisine** dönüştürmek, görünüş ayrımı ve raster gözlemci. Genel plan bugün dosyadan/elle
-  veriliyor; yalnız plaka yolu otomatik doluyor.
+  (`bind.py`), anlam seçimi (`meaning.py`) ve plan önerisi (`proposal.py`) dilimleri eklendi; plaka
+  paftası artık aile-bağımsız motordan STEP'e gidiyor (124 825,4 mm³, kapalı formülle %0.0000 fark).
+  Açık işler: raster gözlemci; daha geniş arketipler (zincir ölçüleri, ikiden çok çap, asimetrik
+  yerleşim, kare köşeli kontur) — ret listesi bunların yol haritası.
 - Pilot (en az 10) ve saklı (en az 20, en az 10'u raster) veri toplama kullanıcıda; ayrım
   altyapısı manifestte hazır, diziler boş.
 - Plaka tanıyıcı henüz deneysel seçeneğe taşınmadı; `plan`/`build-plan` hâlâ PlatePlan konuşur.
@@ -73,8 +73,8 @@ ifade edilmiş hâli, ve genel derleyici iki farklı işlem birleşimiyle sınan
    `PYTHONPATH=src .venv/bin/python eval/check_tables.py`,
    `PYTHONPATH=src .venv/bin/python eval/plate_plan.py` ve
    `PYTHONPATH=src .venv/bin/python -m drawingto3d build-general eval/plans/bracket_linear_pattern.json out/general-examples/bracket`.
-2. Sıradaki iş `PLAN.md`'ye göre: okuma katmanı (Bölüm 3) ya da CLI/arayüzün genel plana
-   bağlanması. `git status` ile bu oturumun commit edilmemiş değişikliklerini koru.
+2. Sıradaki iş `PLAN.md`'ye göre: raster gözlemci (Bölüm 3C) ya da arayüzün genel planı
+   göstermesi. `git status` ile bu oturumun commit edilmemiş değişikliklerini koru.
 3. Pilot/saklı veri gelmeden genelleme iddiası yazma; değerlendirme sonucunu uydurma.
 
 ### Okuma katmanı — ilk dilim (aynı oturum, `ddacd48`)
@@ -129,6 +129,25 @@ ifade edilmiş hâli, ve genel derleyici iki farklı işlem birleşimiyle sınan
 - Testler: `tests/test_meaning.py` (14); tam paket **209 geçti**.
 - Sıradaki dilim: gözlem+bağlama+anlamı **genel plan önerisine** çevirmek (görünüş ayrımı, hangi
   daire delik hangisi cep, kalınlık/derinlik) ve raster gözlemci.
+
+### Öneri — dördüncü dilim (aynı oturum, `f61b7cc`)
+
+- `src/drawingto3d/proposal.py` (yeni): üç okuma katmanından `GeneralPlan` önerisi. Sayfa
+  çerçevesi atlanır (sayfanın ≥%80'ini kaplayan ya da ≥%60 kaplayıp başka döngüyü içeren döngü);
+  kontur iki eksen-hizalı çizgi çifti + dört çeyrek yay olmalı. Doğrulanan iddialar dokundukları
+  geometriye göre ayrılır: delik aralığı (iki daire), kontur yüksekliği (iki köşe yayı), kesit
+  kalınlığı ve cep derinliği (parça dışındaki iddialar), delik ve cep çapları.
+- Her parametre basılı (span id'siyle) ya da türetilmiş; ölçülen geometri dokuz kontrolle doğrular
+  (en büyük Δ0,87 mm, 120 mm genişlikte); tutmazsa ret — ret listesi eksikleri söyler (plastik:
+  hiç çap ölçüsü yok; 3 mesafe + 1 yarıçap doğrulandı).
+- Ölçüm: plaka artık uçtan uca aile-bağımsız — `propose` → `build-general`: **124 825,4 mm³**
+  (kapalı formül farkı %0.0000), **120,00 × 80,00 × 15,00 mm**, 4 delik + 1 cep silindiri
+  doğrulandı, tüm zincir ~6 s.
+- CLI: `propose <çizim> <out_dir>` → proposal.json (+ plan.json); ret ve raster → exit 2.
+- Testler: `tests/test_proposal.py` (16); tam paket **225 geçti**; check_tables 20/20; plate_plan
+  geçti.
+- Sıradaki dilim: raster gözlemci; sonra daha geniş arketipler (zincir ölçüleri, ikiden çok çap,
+  asimetrik yerleşim) ve arayüzün genel planı göstermesi.
 
 ## Aktarım ve kayıtlar
 

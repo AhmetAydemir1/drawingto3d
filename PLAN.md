@@ -473,3 +473,30 @@ Okuma zincirinin üçüncü dilimi uygulandı (`085cd83`): `src/drawingto3d/mean
 - Testler: `tests/test_meaning.py` (14); tam paket **209 geçti**.
 - Sıradaki dilim: bu okumaları **genel plan önerisine** çevirmek (görünüş ayrımı, hangi daire delik
   hangisi cep, kalınlık/derinlik), sonra raster gözlemci.
+
+## 15. Öneri: okumaların plana dönüşmesi (2026-09-27, aynı oturum)
+
+Dördüncü dilim uygulandı (`f61b7cc`): `src/drawingto3d/proposal.py`.
+
+- Üç okuma katmanı tek sayfada koşup (observe → bind → meaning) o okumaların desteklediği
+  `GeneralPlan`'ı önerir; desteklemiyorsa nedenini yazıp reddeder.
+- Parça konturu kapalı döngülerden seçilir: sayfa çerçevesi önce atlanır (sayfanın ≥%80'ini
+  kaplayan ya da ≥%60 kaplayıp başka döngüyü içeren döngü); kontur iki eksen-hizalı çizgi çifti +
+  dört çeyrek yaydan oluşmalıdır.
+- Doğrulanan iddialar dokundukları geometriye göre sıralanır: delik aralığı (iki daire; eksen
+  uzun deltaya göre), kontur yüksekliği (iki köşe yayı), kesitin kalınlık ve cep derinliği (parça
+  dışındaki iddialar), delik çapı ve cep çapı.
+- Her parametre **basılı** (span id'siyle) ya da **türetilmiş** (köşe yarıçapı, genişlik, alan);
+  ölçülen geometri her basılı sayıyı max(%1, 0,5 mm) içinde doğrular — dokuz kontrol, en büyük
+  sapma 120 mm genişlikte 0,87 mm. Tutmayan öneri reddedilir; ret listesi neyin eksik olduğunu
+  yazar (plastik: hiç çap ölçüsü okunmadı; 3 mesafe + 1 yarıçap doğrulandı).
+- Ölçüm: plaka paftası artık aile-bağımsız motordan STEP'e gidiyor — `propose` → `build-general`:
+  **124 825,4 mm³** (kapalı formülle fark **%0.0000**), bbox tam **120,00 × 80,00 × 15,00**,
+  yeniden açılan STEP'te dört delik + bir cep silindiri doğrulandı; tüm zincir ~6 s. Kapalı formül
+  testte ayrıca analitik sayıya karşı sınanır.
+- CLI: `propose <çizim> <out_dir>` → proposal.json (+ önerildiyse plan.json); ret ve raster → exit 2.
+- Testler: `tests/test_proposal.py` (16); tam paket **225 geçti**; check_tables 20/20; plate_plan
+  geçti.
+- Sıradaki dilim: raster gözlemci; sonra daha geniş arketipler (zincir ölçüleri, ikiden çok çap,
+  asimetrik yerleşim, kare köşeli kontur) ve arayüzün genel planı göstermesi — ret listesi
+  bunların yol haritası.

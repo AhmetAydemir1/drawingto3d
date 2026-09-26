@@ -4,6 +4,49 @@ One entry per change, in the order it was made: the mechanism, the measured bene
 carries, and how it was verified. The numbers themselves live in `eval/README.md` and in
 `out/frontend/<case>.json`; this file is the accounting.
 
+## The readings proposed back as a plan, and built (`f61b7cc`, reading)
+
+**What changed.** `src/drawingto3d/proposal.py` (new): the fourth reading slice reads a whole
+sheet through the three below it (observe → bind → meaning) and proposes the `GeneralPlan` those
+readings support, or refuses with the reasons. The part outline comes out of the closed loops the
+lines and arcs chain into — the sheet frame is skipped first (a loop covering ≥ 80 % of the page,
+or ≥ 60 % while holding another loop), and the chosen loop must be two axis-aligned line pairs
+plus four quarter arcs of one radius. The confirmed claims are then sorted by the geometry they
+touch: a spacing (two circles, axis by the longer delta), the outline height (two corner arcs),
+the section's thickness and pocket depth (claims off the part), the hole diameter and the pocket
+diameter. Every parameter that reaches the plan is **printed** (carrying its span id) or
+**derived** (corner radius, width, area) — nothing is guessed — and the sheet's own measured
+geometry verifies each printed number within max(1 %, 0.5 mm); a disagreement refuses the
+proposal instead of rounding it away. CLI: `propose <drawing> <out_dir>` writes `proposal.json`
+and, when proposed, `plan.json`, which `build-general` takes as it stands.
+
+**Bought.** The plate sheet now goes drawing → STEP through the family-independent engine: the
+proposal's plan builds (4.3 s) to a solid of **124 825.4 mm³** against the closed form's
+124 825.4 (difference **0.0000 %**, and the closed form itself is asserted against the analytic
+number in the test suite, not against the pipeline), bbox exactly **120.00 × 80.00 × 15.00**,
+with the reopened STEP showing four hole cylinders and one pocket cylinder removed and the export
+round trip clean. Nine measurement checks passed on the plate, the worst deviation 0.87 mm on the
+120 mm width. The plastic sheet refuses with a reason that is useful: *no diameter claims at
+all — three distances and one radius confirmed*, which is the next slice's work list.
+
+**Cost / risk.**
+- The archetype is narrow on purpose: one rounded-rectangle outline, a 2×2 hole grid, one central
+  pocket, thickness and depth from a section's two distance claims. A square-cornered plate, an
+  asymmetric layout, a third diameter callout or two hole sizes all refuse today.
+- "Thickness vs pocket depth" is decided by taking the larger section distance as the thickness —
+  true for the plate (15 > 8) and recorded as an assumption in the plan, but a part whose pocket
+  is deeper than half its thickness would need a better rule.
+- The section thickness is checked against the claim's *drawn* length (15.10 vs printed 15.00):
+  the tolerance absorbs it, and the parameter itself still carries the printed value.
+- Frame detection is two heuristics (page coverage, containment) rather than the real thing; a
+  part outline that covers ≥ 80 % of its sheet would be misread as the frame and the proposal
+  would refuse with "no closed outline outside the frame".
+
+**Verified.** `tests/test_proposal.py` 16 tests; `pytest -q` **225 passed**; `eval/check_tables.py`
+20/20; `eval/plate_plan.py` pass; CLI `propose` on the plate (exit 0, plan.json written) and on
+the plastic and a raster (exit 2 with reasons); `build-general` on the produced plan builds and
+audits clean.
+
 ## Every number is read into the claim the drawing supports, or left unresolved (`085cd83`, reading)
 
 **What changed.** `src/drawingto3d/meaning.py` (new): the third reading slice turns attachments

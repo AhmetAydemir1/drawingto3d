@@ -418,8 +418,18 @@ carries a different bug class, **a number matched to a line that was never its l
 `plastic-enclosure-1`'s 20 auditable readings are small numbers standing on long lines (`1.50` on 113.5 px,
 `2` on 181.5 px, `4.00` on 69 px). The audit names them correctly and it costs no coverage on that sheet
 (8/11 with those numbers found anyway), but the anchors of those records are wrong, which matters the day
-the reading is used for anything but counting. `out/probe/probe_scale_floor2.py` lists them with the
-numbers.
+the reading is used for anything but counting.
+
+Characterised (`out/probe/probe_mispairing.py`, output in `out/probe/mispairing.txt`): for each named
+reading, *no stroke near the number fits its value at the sheet's own scale*. The `1.50` at box (1077,193)
+was given a 113.5 px line and the strokes within 250 px of it measure 26.4, 11.0, 18.9, 18.9, 12.3 and
+22.3 mm; `4.80` was given 69 px and the strokes near it measure 15.9, 18.2, 11.0, 17.9, 11.0 and 16.6 mm
+where 4.8 mm is 18.8 px. So the gate is attaching a *neighbouring* dimension line to a number that has none
+of its own — the same shape as the leader-carried `50,00`: a diameter or thickness callout needs no line.
+The honest repair has the same two-phase shape as the re-read above (read, fit the sheet's scale, then check
+each record's own line against it): prefer a stroke near the number whose length fits the value, and where
+none does, record the reading without anchors rather than with a line that is not its own. That is a change
+with its own whole-set sweep, so it is the next piece of work rather than a footnote to this one.
 
 A scan of every cluster the gate refuses that tesseract *would* give a number for is
 `out/probe/probe_refused_reads.py` — 30 on the plate, and what is behind them is not one kind of thing: the

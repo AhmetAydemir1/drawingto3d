@@ -110,13 +110,20 @@ vision model enters.
 ## Known gaps
 
 - **A dimension drawn at an angle is still unread.** The strokes at an angle are found now
-  (`lines.diagonal_strokes`, from the sheet's own thin weight, wired into the gate), which is how
-  `6,80 THRU ALL` came through: its leader runs at 75°. What stays unread is the *dimension* path:
-  `dimension_for` reads a row of collinear strokes along an axis, so a dimension line drawn at an angle is
-  invisible however well the stroke is found. On `plate-pocket-1` that is `Ø50,00`, whose line runs at 15°
-  under the number and carries an arrowhead at both ends; the same shape on the flange is the
-  `6 x Ø6.40` and `Ø11.00` callouts. Generalising the row to a direction (project onto the stroke's own
-  axis and across it) is what closes this, and the row code is already written in projections.
+  (`lines.diagonal_strokes`, banded by the sheet's own thin weight and wired into the gate), and that plus
+  the contrast rule below is what recovered `50,00` on `plate-pocket-1`: its line runs at 15° under the
+  number, faint, and carries an arrowhead at one end, so the leader path takes it (5/7 -> 6/7). What stays
+  unread is the *dimension* path: `dimension_for` reads a row of collinear strokes along an axis, so a
+  dimension line drawn at an angle is invisible however well its stroke is found. The same shape on the
+  flange is the `6 x Ø6.40` and `Ø11.00` callouts. Generalising the row to a direction (project onto the
+  stroke's own axis and across it) is what closes this, and the row code is already written in projections.
+- **Callouts drawn as curves are not text at all.** On `plate-pocket-1` the region of the `6,80 THRU ALL`
+  callout contains *no* text-layer characters, and the same sheet's `Ø` marks are vector paths: a CAD tool
+  that draws its callouts as outlines leaves nothing for the text layer to carry, and the value cannot be
+  recovered by any amount of geometry on the strokes. The plate scores 6/7 for exactly this reason - all
+  six numbers the text layer holds are read, and the seventh is a picture. Reading those is a different
+  job (cluster the drawn glyphs, read the crop, keep the leader that anchors them), and it is the same job
+  the raster sheets need.
 - **The scale audit has no pixel floor.** `scale.RELATIVE_TOLERANCE` is 4% of the value; a 1.5 mm
   dimension on a 1:2 sheet is 6 px at 200 dpi, where one pixel of arrow or extension-line error is 17%.
   `plastic-enclosure-1` therefore reports 6 of its 14 readings as suspect although the fit itself

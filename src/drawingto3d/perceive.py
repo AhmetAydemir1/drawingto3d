@@ -271,7 +271,11 @@ class _DimensionGate:
         self.anchors: dict[tuple[float, float], list[tuple[float, float]]] = {}
         self.taken: list[tuple[float, float, float, float]] = []
 
-    def accepts(self, box: tuple[float, float, float, float]) -> tuple[bool, list[list[float]] | None, AnchorMode]:
+    def accepts(
+        self,
+        box: tuple[float, float, float, float],
+        block: tuple[tuple[float, float, float, float], float] | None = None,
+    ) -> tuple[bool, list[list[float]] | None, AnchorMode]:
         if any(_overlaps(box, taken) for taken in self.taken):
             return False, None, "dimension"
         found = lines.dimension_for(self.binary, self.segments, box, self.text_mask, strokes=self.diagonals)
@@ -281,6 +285,19 @@ class _DimensionGate:
             self.taken.append(box)
             return True, anchors, "dimension"
         leader = lines.leader_near(self.binary, self.strokes, box, self.text_mask, printed_text=self.printed)
+        if leader is None and block is not None:
+            # A number printed inside a note is carried by the note's own leader, wherever in the note it
+            # was printed: the gap to the number's box alone throws the `6,80` of `4 x Ø 6,80 THRU ALL`
+            # away, and `leader_to_note` asks of that leader what a note's leader has to be.
+            note, character = block
+            leader = lines.leader_to_note(
+                self.binary,
+                self.strokes,
+                note,
+                self.text_mask,
+                printed_text=self.printed,
+                character=character,
+            )
         if leader is None:
             return False, None, "dimension"
         # A leader's arrow marks the feature; its tail is only where the text is.
@@ -315,6 +332,65 @@ def _cluster_box(glyphs: list[Glyph], cluster: list[int]) -> tuple[float, float,
     )
 
 
+def _printed_block(
+    glyphs: list[Glyph],
+    cluster: list[int],
+    gap: float = 2.0,
+    lines: float = 2.0,
+) -> tuple[tuple[float, float, float, float], float] | None:
+    """The printed block this cluster sits in, letters and all: the note the drawing carries it inside.
+
+    A callout's leader is drawn to the note, not to each number in it: on the plate the leader of
+    `4 x Ø 6,80 THRU ALL` ends 28 px from the note's own ink and 181 px from the `6,80` it names, so a gate
+    that measures the gap to the number alone throws away a number the drawing carries. The block is grown
+    from the cluster along the cluster's own line — a number printed under a leader is written along that
+    leader, so the line is not always the sheet's axis — joining glyphs of one printed line within `gap`
+    characters of each other (a word space is about half a character, so two words of a line are joined),
+    and then keeping the printed lines within `lines` characters *across* that line and inside the line's
+    own width: a note's lines sit above one another, and the sheet's own type says how far apart they are.
+
+    Returns the block's box and the block's own measured character size, or `None` when nothing joins the
+    cluster — the caller then measures the leader against the number's own box, as before.
+    """
+    size = float(np.median([max(glyphs[index].w, glyphs[index].h) for index in cluster]))
+    if size <= 0.0:
+        return None
+    angle = math.radians(_digits_angle(glyphs, cluster))
+    along = (math.cos(angle), math.sin(angle))
+    across = (-along[1], along[0])
+    anchor = glyphs[cluster[0]]
+
+    def offsets(glyph: Glyph) -> tuple[float, float]:
+        dx, dy = glyph.cx - anchor.cx, glyph.cy - anchor.cy
+        return dx * along[0] + dy * along[1], dx * across[0] + dy * across[1]
+
+    line = sorted(
+        ((index, *offsets(glyph)) for index, glyph in enumerate(glyphs) if abs(offsets(glyph)[1]) <= 0.45 * size),
+        key=lambda item: item[1],
+    )
+    start = min(offsets(glyphs[index])[0] for index in cluster)
+    end = max(offsets(glyphs[index])[0] for index in cluster)
+    grown = set(cluster)
+    grew = True
+    while grew:
+        grew = False
+        for index, at, _across in line:
+            if index in grown or not start - gap * size <= at <= end + gap * size:
+                continue
+            start, end = min(start, at), max(end, at)
+            grown.add(index)
+            grew = True
+    block = [
+        index
+        for index, glyph in enumerate(glyphs)
+        if abs(offsets(glyph)[1]) <= lines * size and start - gap * size <= offsets(glyph)[0] <= end + gap * size
+    ]
+    if len(block) == len(cluster):
+        return None
+    character = float(np.median([max(glyphs[index].w, glyphs[index].h) for index in block]))
+    return _cluster_box(glyphs, block), character
+
+
 def _text_mask(gray: np.ndarray) -> np.ndarray:
     """Ink with the long straight strokes taken out: what is left is printed text."""
     _, ink = cv2.threshold(gray, 190, 255, cv2.THRESH_BINARY_INV)
@@ -338,7 +414,7 @@ def _collect_spans(gray: np.ndarray, glyphs: list[Glyph], mode: str, gate=None, 
         anchors = None
         mode: AnchorMode = "dimension"
         if gate is not None:
-            accepted, anchors, mode = gate.accepts(box)
+            accepted, anchors, mode = gate.accepts(box, _printed_block(glyphs, cluster))
             if not accepted:
                 continue
         span = _read_cluster(gray, glyphs, cluster, len(spans), reader, anchors, mode)

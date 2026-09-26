@@ -215,10 +215,78 @@ ignored) reports the same six rows, so the gains above are not one run's noise. 
 with 10 noise records, flange-1 2/13 with 5, plate-pocket-1 4/7 with 3, plastic-enclosure-1 7/11 with 8,
 studycadcam-60 6/9 with 9, studycadcam-50 2/3 with 7.
 
+## A note's leader is drawn to the note (reading)
+
+**What changed.** A callout's leader is drawn to the *note*, not to each number printed in it, and
+`lines.leader_near` measures the gap from the stroke's blank end to the box it is handed. On the plate the
+`4 x Ø 6,80 THRU ALL` leader ends 181 px from the `6,80` — and 34.8 px from the `ALL` of the note's second
+line, which is the word it was accepted for — so the number was refused while its own note was carried.
+Three pieces now sit behind that number: `perceive._printed_block` (the cluster's printed line, grown from
+the cluster along the cluster's own angle within two characters per word gap, plus the printed lines within
+two characters *across* that line and inside its width — the note's own ink, letters included);
+`lines.leader_to_note` (the stroke asked of the note's block with the two things a note's leader has to be:
+at least **three** of the note's own characters long, and ending **beside** the note's ink — outside it and
+within one and a half characters of it); and the gate's retry (`_DimensionGate.accepts(box, block)`), which
+runs only on a cluster the ordinary dimension and leader passes both refused, so no existing acceptance can
+move. `lines._distance_to_box` became public (`distance_to_box`) for the second question.
+
+**Bought.** `plate-pocket-1` at the raster floor: **4/7 -> 5/7**. The number comes out of the crop as
+`6,80` where it always did once the gate let it through; what was missing was its *carrier*, and the
+anchors are the note's leader (arrow tip on the feature, tail at the note). The other five sheets' raster
+rows are identical to before in coverage, span count, noise count and suspects (exercise-1 5/13, flange-1
+4/13, plastic-enclosure-1 7/11, studycadcam-60 6/9, studycadcam-50 2/3), and the vector table is untouched
+(plate 7/7, plastic 11/11) because the text layer hands the gate exact boxes and no block.
+
+**Cost / risk.**
+- Two guards, both suppress-only and both ratios of the sheet's own type, because the block on its own is
+  too coarse. Measured margins: the plate's note leader is 159 px against a 28 px character (**5.7**
+  characters, real), the flange's GD&T frame strokes are 43 px against 41 (**1.05**, refused) — a
+  feature-control frame is a ruled box of symbols whose own slanted strokes come out arrowed and 43 px
+  long; and the tail's distance to the note's ink is 28 px against 28 (**1.0**, real) against 89 px
+  (**1.9**), 113 px (**2.2**) and 137 px (**1.6**) for three strokes that end short of the note they were
+  being attached to. The limits are 3.0 characters and 1.5 characters.
+- The retry can only ever *add* anchors, which is the shape of change this project was burned by twice
+  (rule 18/21 in the skill: a change that only adds reads has to be judged on coverage *and* noise over
+  the whole set). It is judged that way below.
+- `_printed_block` is computed for every cluster in both modes, an O(glyphs) pass per cluster; no
+  measurable wall-clock change on the six sheets (the raster sweep is within its own run-to-run spread).
+- `_printed_block` grows word gaps at two characters. On a sheet whose notes are set with wider spaces, or
+  whose printed rows stand less than two characters apart, the block either fails to reach a word or
+  swallows the line below; both degrade to the guards' behaviour rather than to a wrong anchor, because the
+  guards are what accept.
+- Studycadcam-50's phantom changes identity, not count: `28` out, `4` in, 9 spans and 7 noise records
+  either way, 2/3 either way. A different number the sheet does not print, on the same row — the retry can
+  reorder which candidate wins a printed line (`_one_number_per_line`). Nothing moved in coverage; it is
+  recorded because it is a behaviour change nobody asked for.
+
+**Alternatives measured and dropped.** The same retry against the number's own printed *line* only, with no
+guards, bought the same plate number and added phantoms elsewhere: `flange-1` 12 -> 16 spans (noise +4,
+`3` and `5)` among them) and `studycadcam-60` 18 -> 19, coverage unchanged on both — the flange's frame
+strokes and a practice sheet's dashed centreline arrowhead both pass a gap-only test. The measured table is
+`out/raster_rowretry.log` (not tracked). The guards above are what separates the two.
+
+**Verified.** `pytest -q` **102 passed** (5 new: three in `tests/test_diagonal_leaders.py` for a leader to a
+note, a short arrowed stroke and a stroke ending inside the note's ink, two in `tests/test_perceive.py` for
+the block and for a lone number having none). The before/after are two separate raster runs, each of its own
+code, on the same box — `git stash` for the before — and the per-case JSONs were then compared field by
+field (`out/frontend_before` and `out/frontend_after_guarded`, both ignored): the only differences are the
+plate's `6,80` and studycadcam-50's phantom identity. The pre-change run is the one at the top of this
+entry's evidence; `eval/README.md` carries the two tables, and the plate's tesseract floor row now reads
+5/7.
+
+At the same time the plastic ceiling was re-measured with the current code (the leader change, `00d739c`,
+in place): `plastic-enclosure-1` **10/11** in 933 s, missing only the `8.0`, against the tesseract floor's
+7/11 — three numbers bought by the model. The plate's ceiling (4/7) predates both that change and this one
+and now sits below the floor; it is not evidence about either and is on the list to re-run.
+
 ## Measured, not yet changed
 
-The raster half of the callout: splitting a line of drawn words so that the number inside it is read on its
-own. Measured on the plate's raster path — the `4` is a cluster of one, the three glyphs of `6,80` cluster
-with the two glyphs of the line *below* them into one five-glyph cluster spanning 72 px and two printed
-lines, and the crop of that is what tesseract answers `08°9` for. Evidence and the failing case are in
-`eval/README.md` (Known gaps) and `out/probe/probe_callout_cluster.py`.
+The plate's `R8`, refused for a different reason than the note's `6,80` was. On the raster path the gate
+refuses the cluster at (886,378,935,405) and tesseract reads `R8` off it perfectly — a radius, printed on
+the sheet as `8.0`, with a circle whose own arrowed line the gate does not accept as a dimension line and
+whose stroke is not within reach of the number as a leader. The note retry does not cover it either: the
+block of a lone number is itself. A scan of every cluster the gate refuses that tesseract *would* give a
+number for is `out/probe/probe_refused_reads.py` — 30 on the plate, of which two are printed values
+(`6,80`, now read, and this `R8`) and 28 are phantoms (`9)`, `“3`, `3}`, `<6`, `2.`, single digits from
+letters), so a future change here has to separate those two from the rest by something other than the
+possibility of a read.

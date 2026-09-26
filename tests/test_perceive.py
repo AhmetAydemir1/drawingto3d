@@ -137,6 +137,43 @@ def test_glyphs_of_two_printed_lines_are_two_numbers_not_one():
     assert sorted(sorted(line) for line in lines) == [[0, 1], [2]]
 
 
+def test_the_note_a_number_is_printed_in_is_its_block_and_not_only_its_line():
+    # The plate's `4 x Ø 6,80 THRU ALL`: the note's own leader ends 28 px from the note's ink and 181 px
+    # from the `6,80`, so the number is only carried by the block it is printed in. The block is the note's
+    # printed lines - two of them here, a line spacing apart - and not the text standing further off.
+    number = _glyph(257.4, 1306.6, 249, 1292, 16, 28)
+    digits = [_glyph(287.4, 1304.5, 279, 1290, 18, 28), _glyph(307.4, 1303.9, 299, 1290, 18, 28)]
+    words = [
+        _glyph(336.0, 1301.7, 329, 1289, 15, 26),
+        _glyph(355.0, 1304.3, 346, 1291, 19, 26),
+        _glyph(379.8, 1303.2, 372, 1289, 16, 26),
+        _glyph(402.3, 1305.9, 394, 1291, 17, 27),
+        _glyph(439.0, 1305.7, 427, 1293, 25, 26),
+        _glyph(458.3, 1306.9, 452, 1294, 13, 26),
+    ]
+    below = [_glyph(258.4, 1350.6, 251, 1337, 16, 28), _glyph(281.0, 1348.4, 272, 1335, 19, 26)]
+    far = [_glyph(300.0, 1900.0, 292, 1886, 18, 28)]
+    glyphs = [number, *digits, *words, *below, *far]
+    cluster = [0, 1, 2]
+
+    block = perceive._printed_block(glyphs, cluster)
+
+    assert block is not None
+    box, character = block
+    assert box[0] == pytest.approx(249, abs=2) and box[2] == pytest.approx(465, abs=2), box
+    assert box[1] == pytest.approx(1289, abs=2), box
+    assert box[3] >= 1361, f"the note's second line is part of its block: {box}"
+    assert character == pytest.approx(26, abs=3), character
+
+
+def test_a_lone_number_is_its_own_block():
+    # Nothing joins it, so the leader is asked about the number's own box, as it always was.
+    alone = _glyph(700.0, 700.0, 690, 686, 18, 28)
+    glyphs = [alone, _glyph(1600.0, 200.0, 1592, 186, 18, 28)]
+
+    assert perceive._printed_block(glyphs, [0]) is None
+
+
 def test_the_digits_own_line_gives_the_angle_a_number_is_written_at():
     # my_part.jpg prints `50` at 45 degrees along the diameter it measures. The two glyph centres state
     # that line exactly; a fit through the ink of the crop does not, because a digit's outline leans

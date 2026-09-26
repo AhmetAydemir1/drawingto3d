@@ -749,7 +749,7 @@ def leader_near(
         # blob sitting *on* a stroke is a fragment of the stroke, not a number printed next to it. The
         # gap is measured to the nearest edge of the words, not to their centre: `0.688in` is a wide
         # block of text and still sits right beside the shaft its arrow belongs to.
-        gap = _distance_to_box(tail_x, tail_y, box)
+        gap = distance_to_box(tail_x, tail_y, box)
         if gap > 2.0 * height:
             continue
         if _distance_to_line(centre_x, centre_y, segment) < 1.5 * segment.thickness:
@@ -761,11 +761,46 @@ def leader_near(
     return best
 
 
-def _distance_to_box(x: float, y: float, box: tuple[float, float, float, float]) -> float:
+def distance_to_box(x: float, y: float, box: tuple[float, float, float, float]) -> float:
     """Distance from a point to the nearest edge of a rectangle (0 inside it)."""
     dx = max(box[0] - x, 0.0, x - box[2])
     dy = max(box[1] - y, 0.0, y - box[3])
     return float(np.hypot(dx, dy))
+
+
+def leader_to_note(
+    binary: np.ndarray,
+    segments: Sequence[Segment | Stroke],
+    box: tuple[float, float, float, float],
+    text_mask: np.ndarray | None = None,
+    printed_text: "PrintedText | None" = None,
+    character: float = 0.0,
+    least: float = 3.0,
+    reach: float = 1.5,
+) -> Leader | None:
+    """The stroke drawn *to* a printed note, for the numbers printed inside it.
+
+    `leader_near` measures the gap from a stroke's blank end to the box it is handed and asks nothing
+    else, which fits a one-word callout and misses a note: on the plate the leader of
+    `4 x Ø 6,80 THRU ALL` ends 181 px from the `6,80` it names and 28 px from the note's own ink. Handing
+    it the note's block instead is not enough on its own — a feature-control frame is a ruled box of
+    symbols whose own slanted strokes come out arrowed and 43 px long, and a dashes centreline's arrowhead
+    ends beside a cluster of arc ink — so the stroke has to be a line *to* the note: long against the
+    note's own character size, and ending beside the note's ink rather than inside it or short of it.
+
+    `character` is the note's own measured character size; `least` and `reach` are ratios of it.
+    """
+    if character <= 0.0:
+        return None
+    leader = leader_near(binary, segments, box, text_mask, printed_text=printed_text)
+    if leader is None or leader.segment.length < least * character:
+        return None
+    ends = leader.segment.ends()
+    tail_x, tail_y = ends[1 - leader.arrow_end]
+    distance = distance_to_box(tail_x, tail_y, box)
+    if not 0.0 < distance <= reach * character:
+        return None
+    return leader
 
 
 def _distance_to_line(x: float, y: float, segment: Segment | Stroke) -> float:

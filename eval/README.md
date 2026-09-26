@@ -81,7 +81,7 @@ The same sheets with the text layer taken away (`--as-raster`), which is the rea
 
 | vaka | kapsam | at the start of this work |
 |---|---|---|
-| plate-pocket-1 | 4/7 | 0/7 |
+| plate-pocket-1 | 5/7 | 0/7 |
 | plastic-enclosure-1 | 7/11 | 2/11 |
 | studycadcam-50 | 2/3 | 1/3 |
 | studycadcam-60 | 6/9 | - |
@@ -89,7 +89,7 @@ The same sheets with the text layer taken away (`--as-raster`), which is the rea
 | flange-1 | 4/13 | - |
 
 The gap between the text layer and the reader a scan gets is the distance this project is closing:
-`plate-pocket-1` loses three numbers without it (7/7 -> 4/7) and `plastic-enclosure-1` four (11/11 ->
+`plate-pocket-1` loses two numbers without it (7/7 -> 5/7) and `plastic-enclosure-1` four (11/11 ->
 7/11). `exercise-1` and `flange-1` only ever had the raster reader, and they are the two sheets the
 reading-angle change below moved: 2/13 -> 5/13 and 2/13 -> 4/13.
 
@@ -102,15 +102,19 @@ The ceiling, with the vision model reading the same crops instead of tesseract (
 
 | vaka | tesseract (floor) | qwen2.5vl:7b (ceiling) |
 |---|---|---|
-| plate-pocket-1 | 4/7 | 4/7 |
-| plastic-enclosure-1 | 7/11 | 9/11 |
+| plate-pocket-1 | 5/7 | 4/7 (older run: below the floor) |
+| plastic-enclosure-1 | 7/11 | 10/11 |
 
 Neither switch is a default: the model costs minutes per sheet against seconds. Wall clock is not
 comparable between runs on one machine — the same plate took 32 s in one run and 538 s in another with
-nothing else on the box — so the coverage is the measurement and the seconds are not. The plate row was
-re-measured after the leader work below; `plastic-enclosure-1`'s ceiling was taken before it and is
-provisional. The model is not the product path on this evidence: it buys three numbers on one sheet and
-none at all on the other, where the geometry work below costs seconds.
+nothing else on the box, and the plastic ceiling below took 933 s — so the coverage is the measurement
+and the seconds are not. `plastic-enclosure-1`'s ceiling was re-run with the leader change in place
+(`6,80`'s leader, `00d739c`): **10/11**, missing only the `8.0`, with 3 noise records against the floor's
+7/11 — so the model buys three numbers on that sheet. The plate's ceiling is an older run still: it
+predates both the leader change and the note below, so it now sits *below* that sheet's floor and is not
+comparable to it; re-running it is on the list, and until then it is not evidence about the geometry. The
+model is still not the product path on this evidence: minutes per sheet against seconds, and what it
+reads on the plate it read before the geometry caught up.
 
 ## How a number is read
 
@@ -127,7 +131,13 @@ none at all on the other, where the geometry work below costs seconds.
    an arrow at both ends, the number between) or a **leader** (`lines.leader_near`: one arrow, the words
    beside the blank end of the shaft, the shaft at any angle, and the ink it runs through no longer than
    the sheet's own type — a stroke that is not axis-aligned stays in the text mask as its own ink, so
-   "inside printed words" has to be judged against `PrintedText`, not against the mask). Title block, part numbers, copyright years
+   "inside printed words" has to be judged against `PrintedText`, not against the mask). A number printed
+   *inside a note* is carried by that note's leader, wherever in the note it sits: the leader is drawn to
+   the note's ink, not to each number in it, so the gate hands the leader the number's own printed block
+   (`perceive._printed_block`: the cluster's line, grown along the cluster's own angle, plus the printed
+   lines within two characters across it) and keeps the leader only if it is a line *to* the note
+   (`lines.leader_to_note`: at least three of the note's characters long, ending beside the note's ink
+   rather than inside it or short of it). Title block, part numbers, copyright years
    and the frame band all die here: on `my_part.jpg`, 364 glyph candidates become 21 that cover 10 of the
    13 printed values.
 4. Text along a vertical line is printed a quarter turn round, so a glyph is judged on its longest side
@@ -196,18 +206,23 @@ none at all on the other, where the geometry work below costs seconds.
   What stays unread is the `Ø` mark itself: it is a vector path, not text, so the record that reaches the
   interpreter is a linear `6.80` rather than a diameter, and the `4 x` multiplicity is a picture too. Those
   are the marks a reader has to get from the drawing, and they are the same job the raster sheets need.
-  On the raster path the same callout is not merely missed but *read wrong*: the drawn glyphs of
-  `4 x Ø 6,80` cluster together with their prefix, the gate takes the cluster, and tesseract answers
-  `08°9` -> 89 — an angle printed nowhere on the sheet (`out/frontend/plate-pocket-1-raster.json`, span
-  bbox 247,1288) — while the true 6.8 is missing. Splitting a line of drawn words into the number inside
-  it, and refusing a crop whose read does not fit it, is the geometry work left on the raster side.
+  On the raster path the same callout was missing for a reason that had nothing to do with *reading* it:
+  the drawn line is not merged into one cluster (the `4 x Ø` prefix and the words of the note are separate
+  clusters, and the three glyphs of `6,80` read back as `6,80` when they are read at all), and the number
+  was refused by the **gate**. `leader_near` measures the gap from the stroke's blank end to the box it is
+  handed, and the note's leader ends 181 px from the `6,80` — 28 px from the note's own ink, 34.8 px from
+  the `ALL` of its second line, which is the word it was accepted for. The plate's raster floor is 4/7 ->
+  **5/7** now: the gate hands the leader the number's own printed block and `lines.leader_to_note` asks of
+  it what a note's leader has to be (see `CHANGES.md` for the guards and the two sheets they were measured
+  against). What is still open here is the mark, not the number: the `Ø` and the `4 x` are drawn, so the
+  record arrives as a linear `6.8` rather than a diameter.
 - **The scale audit has no pixel floor.** `scale.RELATIVE_TOLERANCE` is 4% of the value; a 1.5 mm
   dimension on a 1:2 sheet is 6 px at 200 dpi, where one pixel of arrow or extension-line error is 17%.
   `plastic-enclosure-1` therefore reports 6 of its 14 readings as suspect although the fit itself
   (3.917 px/mm against the 3.937 a 1:2 A4 expects) is right. A reading should be judged against the
   larger of a relative tolerance and an absolute one in the sheet's own pixels.
 - **Raster reading is the weak half.** With the text layer taken away the front end finds 5 of the 13
-  printed numbers on `exercise-1`, 4 of 13 on `flange-1` and 4 of 7 on `plate-pocket-1`, against 7 of 7 on
+  printed numbers on `exercise-1`, 4 of 13 on `flange-1` and 5 of 7 on `plate-pocket-1`, against 7 of 7 on
   that sheet read through its text layer. Three causes were measured on the plate sheet, and all three are
   fixed: a decimal separator too small to survive the glyph filter left the digits on either side of it
   30.6 px apart against a 25.6 px reach, so *every* dimension on the sheet came apart at its comma

@@ -157,3 +157,99 @@ def test_a_stroke_running_through_the_words_is_still_refused():
     assert lines.text_fraction(text_mask, inside) > lines.TEXT_FRACTION
     assert printed.through_words(inside) is True
     assert lines.leader_near(binary, [inside], (100.0, 30.0, 160.0, 50.0), text_mask, printed_text=printed) is None
+
+
+def _printed_note(
+    binary: np.ndarray,
+    x0: int,
+    y0: int,
+    characters: int = 6,
+    side: int = 24,
+    step: int = 30,
+    line_gap: int = 32,
+) -> np.ndarray:
+    """A two-line note as printed text: characters the size of the sheet's own type, on one block.
+
+    Each line is a row of separate character-sized blobs, because `PrintedText.character` is the median
+    size of the mask's blobs and a note whose ink is one wide rectangle would tell the ratio below a
+    character size it does not have.
+    """
+    mask = np.zeros_like(binary)
+    for line in (0, line_gap):
+        for index in range(characters):
+            x, y = x0 + index * step, y0 + line
+            cv2.rectangle(binary, (x, y), (x + side, y + side), 255, 2)
+            cv2.rectangle(mask, (x, y), (x + side, y + side), 255, -1)
+    return mask
+
+
+NOTE_BOX = (100.0, 20.0, 274.0, 76.0)
+NUMBER_BOX = (100.0, 20.0, 124.0, 44.0)
+
+
+def test_a_leader_that_ends_beside_a_note_carries_the_number_printed_inside_it():
+    """The plate's `4 x Ø 6,80 THRU ALL`: the leader ends beside the note, 181 px from the `6,80` itself.
+
+    `leader_near` measures the gap to the box it is handed, which fits a one-word callout and refuses this
+    number; handing it the note's own block is what a drawing asks for, and `leader_to_note` is that
+    question with the two things a note's leader has to be: long against the note's type, and ending
+    beside the note's ink.
+    """
+    binary = _canvas(400, 400)
+    _line(binary, TAIL, TIP)
+    _arrow(binary, TIP, (110, 250))
+    text_mask = _printed_note(binary, 100, 20)
+
+    strokes = _diagonals(binary, text_mask)
+    printed = lines.PrintedText.of(text_mask)
+    assert printed.character == pytest.approx(24, abs=4), printed.character
+
+    assert lines.leader_near(binary, strokes, NUMBER_BOX, text_mask, printed_text=printed) is None
+    leader = lines.leader_to_note(
+        binary, strokes, NOTE_BOX, text_mask, printed_text=printed, character=printed.character
+    )
+
+    assert leader is not None, "a number printed inside a note is carried by the note's leader"
+    assert leader.tail == pytest.approx(TAIL, abs=8)
+
+
+def test_a_short_arrowed_stroke_beside_a_frame_is_not_a_note_s_leader():
+    """A feature-control frame is a ruled box of symbols: a symbol's own slanted stroke comes out arrowed.
+
+    Measured on the flange sheet: 43 px against a 41 px character — 1.05 characters, where a leader drawn
+    from a feature to a note is several. `leader_near` accepts it for the frame's block; a leader *to* a
+    note may not.
+    """
+    binary = _canvas(400, 400)
+    _line(binary, (285, 75), (240, 120))  # 63 px, about one character of this note
+    _arrow(binary, (240, 120), (250, 108))
+    text_mask = _printed_note(binary, 100, 20)
+
+    strokes = _diagonals(binary, text_mask)
+    printed = lines.PrintedText.of(text_mask)
+
+    assert lines.leader_near(binary, strokes, NOTE_BOX, text_mask, printed_text=printed) is not None
+    assert (
+        lines.leader_to_note(binary, strokes, NOTE_BOX, text_mask, printed_text=printed, character=printed.character)
+        is None
+    )
+
+
+def test_a_stroke_ending_inside_the_note_is_not_its_leader():
+    """A leader's tail is where the note ends. A stroke whose end lands inside the printed ink is a stroke
+    the text was printed over, which is what the ruled frames and centre lines of these sheets look like."""
+    binary = _canvas(400, 400)
+    text_mask = _printed_note(binary, 100, 20, characters=3, line_gap=60)
+    note = (100.0, 20.0, 184.0, 104.0)
+    # Along the empty band between the note's two printed lines, so the stroke runs through no type and its
+    # end meets no ink, and ending inside the note's block: a frame's own stroke, printed over by the type.
+    inside = lines.Stroke(250.0, 80.0, 170.0, 62.0, 2.0)
+    _arrow(binary, (250, 80), (225, 76))
+
+    printed = lines.PrintedText.of(text_mask)
+
+    assert lines.leader_near(binary, [inside], note, text_mask, printed_text=printed) is not None
+    assert (
+        lines.leader_to_note(binary, [inside], note, text_mask, printed_text=printed, character=printed.character)
+        is None
+    )

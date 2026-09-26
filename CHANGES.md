@@ -276,8 +276,11 @@ entry's evidence; `eval/README.md` carries the two tables, and the plate's tesse
 
 At the same time the plastic ceiling was re-measured with the current code (the leader change, `00d739c`,
 in place): `plastic-enclosure-1` **10/11** in 933 s, missing only the `8.0`, against the tesseract floor's
-7/11 — three numbers bought by the model. The plate's ceiling (4/7) predates both that change and this one
-and now sits below the floor; it is not evidence about either and is on the list to re-run.
+7/11 — three numbers bought by the model. The plate's ceiling (4/7) predated both that change and this one
+and sat below the floor, so it was re-run on the code of this window
+(`out/model_run_plate_after.log`, 716 s): **4/7 again**, so below the floor was not staleness — the model
+reads `50`, `60`, `80` and `100` (including the leader-carried `50,00` the floor cannot read) and loses
+`6,8`, `8` and `15`, with two noise records either way. Recorded in the README's ceiling table.
 
 ## The sheet re-reads what its own scale calls wrong (reading)
 
@@ -400,6 +403,10 @@ whitening the stroke). Taking those hits would be choosing the preparation and t
 happen to spell `50,00`, with nothing to confirm the answer — exactly the wrong-number-worse-than-none case.
 With the circle measured reliably they would become confirmable; Hough on this sheet returns 2152 circles
 (hatching and arcs everywhere), so that measurement is its own piece of work, not a footnote to this one.
+One measured cross-check that the value is right: the *model* path reads `50,00` from this crop
+(`plate-pocket-1-raster-model.json`, re-run this window — it is one of the four numbers that ceiling reads
+and the tesseract floor cannot), so the number is readable by a reader with different failure modes. What
+does not exist is a way to *confirm* it on the tesseract path, and a model call is minutes per sheet.
 
 Two more measured gaps stay open: a number carried by a stroke the gate reads as a leader is audited by
 nothing at all (above), and — found while measuring the pixel floor — the sheet that has the most of those

@@ -103,19 +103,22 @@ The ceiling, with the vision model reading the same crops instead of tesseract (
 
 | vaka | tesseract (floor) | qwen2.5vl:7b (ceiling) |
 |---|---|---|
-| plate-pocket-1 | 6/7 | 4/7 (older run: below the floor) |
-| plastic-enclosure-1 | 8/11 | 10/11 |
+| plate-pocket-1 | 6/7 | 4/7 |
+| plastic-enclosure-1 | 8/11 | 10/11 (older run) |
 
 Neither switch is a default: the model costs minutes per sheet against seconds. Wall clock is not
 comparable between runs on one machine — the same plate took 32 s in one run and 538 s in another with
 nothing else on the box, and the plastic ceiling below took 933 s — so the coverage is the measurement
-and the seconds are not. `plastic-enclosure-1`'s ceiling was re-run with the leader change in place
-(`6,80`'s leader, `00d739c`): **10/11**, missing only the `8.0`, with 3 noise records against the floor's
-7/11 — so the model buys three numbers on that sheet. The plate's ceiling is an older run still: it
-predates both the leader change and the note below, so it now sits *below* that sheet's floor and is not
-comparable to it; re-running it is on the list, and until then it is not evidence about the geometry. The
-model is still not the product path on this evidence: minutes per sheet against seconds, and what it
-reads on the plate it read before the geometry caught up.
+and the seconds are not. The plate's ceiling was re-run on this code (`out/model_run_plate_after.log`,
+716 s, this window) and it is **4/7, below that sheet's own tesseract floor of 6/7**, so "below the floor"
+was not an artefact of a stale run: on this sheet the local 7B model reads fewer of the printed numbers
+than the CV reader does, and that is worth saying plainly. It is not worse at *everything*: the numbers it
+reads include the `50,00` the floor cannot (`covers` = 50, 60, 80, 100) — the leader-carried diameter the
+tesseract path has no arbiter for — while it loses `6,8`, `8` and `15` that the floor reads, and adds two
+noise records (`800`, `R105`) against the floor's two. `plastic-enclosure-1`'s ceiling below is the older
+run with the leader change in place (`00d739c`): **10/11**, missing only the `8.0`, with 3 noise records
+against the floor's 8/11 at the time (7/11 then). The model is still not the product path on this evidence:
+minutes per sheet against seconds, and on one sheet it is the weaker reader.
 
 ## How a number is read
 

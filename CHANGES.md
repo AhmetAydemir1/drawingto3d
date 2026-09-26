@@ -434,6 +434,50 @@ the pair past its end, and a row with nothing that fits). Sweeps: `out/run_raste
 `out/run_vector_repoint.log`; the field-by-field diff against the previous runs is
 `out/probe/probe_repoint_diff.py` (18 runs, 1 changed).
 
+## A reading that is the line's own arrowhead is not a printed number (`10a32b6`, reading)
+
+**What changed.** The raster gate accepts a glyph cluster on the geometry that will carry it, and the reader
+is handed the crop. Measured (`out/probe/probe_guard_fire.py` asks the guard itself, with logging, on all six
+sheets; crops in `out/probe/guard_*.png` and `box_*.png`), what the reader answers for the filled triangle at
+the end of a dimension line is a *digit*: on `plastic-enclosure-1` seven of them (`4`, `4`, `4`, `4`, `5`,
+`1`, `1`), on `flange-1` two `7`s, on `exercise-1` a `2`. Six of the plastic ones carried the value `4`,
+which the sheet prints elsewhere, so they were counted as *covering* it — the raster row's coverage rested
+partly on ink that is not a number. `perceive._is_the_lines_own_ink` now refuses such a candidate before it
+is read, on a question of place rather than of shape: an arrowhead is drawn *on* its line and at one of that
+line's ends, a printed number *beside* the line or in the gap the line is broken around. The box centre has
+to lie on the anchored line's axis within 5% of the box's own shorter side (floored at 1 px) **and** within
+the box's own longer side of that line's nearer end. `perceive._is_drawn_solid` then keeps type that stands
+*on* its line — a printed digit is an outline, an arrowhead is filled, measured 0.30-0.53 against 0.50-0.67 —
+which is what stops the rule throwing away the one cluster on `plastic-enclosure-1` where `1.50` and `3.00`
+merge into a single box lying on the line (the box the vision model happens to read a correct `3.00` from).
+
+**Bought.** Coverage is unchanged on every sheet and every run: `plastic-enclosure-1` raster stays 8/11 with
+its `4` now covered by the leader-carried `4` that really reads it, `flange-1` stays 4/13. Five false records
+are gone (plastic's noise 7 -> **4**, `flange-1`'s 5 -> **3**), and the plastic sheet's suspect column falls
+12 -> **5**, which is the point: the seven readings the audit named were not mispaired numbers, they were its
+own arrowheads, and the audit stops naming them because they stop being readings.
+
+**Cost / risk.**
+- The `exercise-1` arrowhead survives: its cluster box is 1.15x its own length from the line's end, past the
+  1.0x limit, so it stays a named suspect (a `2` in a 12-auditable row). Catching it needs the limit at ~1.2x,
+  which then also reaches two `flange-1` candidates that are on-axis at 1.31x and 1.40x (keeps today) — not
+  taken without crops of those two.
+- The solidity threshold 0.45 is absolute. Measured on these sheets it separates at the cluster level (a
+  printed multi-digit number has at least one clearly hollow blob) and the failure it lets through is in the
+  safe direction — a bold printed mark stays a phantom — but a sheet-relative version (against the sheet's own
+  median glyph fill) is the refinement, not yet measured on all six sheets.
+- The *model* runs were not re-run, and on the evidence do not need to be: the candidates the guard drops
+  produce no spans in them (`out/frontend/*-raster-model.json`), and the one box that could matter — plastic's
+  merged `1.50`/`3.00` cluster — is kept by the solidity test. The ceiling table therefore stands unchanged.
+
+**Verified.** `pytest -q` 118 passed (4 new: three for the place test, one for the solidity test); raster sweep
+`out/run_raster_ownink.log`, vector sweep `out/run_vector_ownink.log`; the whole-set diff
+`PYTHONPATH=src .venv/bin/python out/probe/probe_repoint_diff.py frontend_pairs frontend` = 18 runs, 3 changed
+(`plastic-enclosure-1` raster, and `flange-1` in both of its runs — that sheet has no text layer, so both its
+runs are the raster reader), the other 15 byte-identical; `eval/check_tables.py` 14 rows, 0 drift. Turning the
+solidity test on changes nothing in those three runs but the seconds (checked field by field against
+`out/probe/*.before_rescue.json`).
+
 ## Measured, not yet changed
 
 The plate's `50,00` on the raster path, and a correction. This entry previously claimed a `R8` refused by
@@ -468,11 +512,13 @@ and the tesseract floor cannot), so the number is readable by a reader with diff
 does not exist is a way to *confirm* it on the tesseract path, and a model call is minutes per sheet.
 
 Two more measured gaps stay open: a number carried by a stroke the gate reads as a leader is audited by
-nothing at all (above), and the readings the audit still names on `plastic-enclosure-1`. The paragraph
-below was written when that sheet had fifteen of twenty auditable readings suspect and is now history —
-two of them were re-pointed onto their own spans (`be6b975`, above), one left the list through a span
-inside the stretch it held, and twelve are named. What they are was re-measured, and it is not the class
-this paragraph assumed.
+nothing at all (above), and the four readings that read a real line and get the number wrong (below). The
+paragraph below was written when `plastic-enclosure-1` had fifteen of twenty auditable readings suspect and is
+now history: two were re-pointed onto their own spans (`be6b975`), **seven turned out to be the sheet's own
+arrowheads and are refused before they are read at all** (`10a32b6`, above — with them the sheet's suspect
+column is down to **five**, and the `4` those six carried is covered by the leader-carried reading that really
+reads it), and one left the list through a span inside the stretch it held — which was a repair of a record
+that is not a number, the datum symbol below.
 
 **A number matched to a line that was never its line, as it was first seen and measured.** 15 of
 `plastic-enclosure-1`'s 20 auditable readings were small numbers standing on long lines (`1.50` on 113.5 px,
@@ -516,18 +562,22 @@ into three kinds, and only one of the three is a reading at all:
 
 So both halves of the remedy proposed in the old paragraph are now answered by measurement: re-pointing the
 anchor is right where the reading is a number (done, two of them), and *dropping* the anchor is wrong where
-it is not a number at all — it would hide a fake number rather than remove it. What the phantom class needs
-is a guard that a cluster is **type** before it is a number, and the two signals above are the measured
-candidates. The strong one is position: on the three sheets measured (`probe_solid.py plastic|plate|studycadcam-60`),
-every reading whose value is read off a line stands 8.5-192.6 px off that line's axis and the seven phantoms
-stand 0.0-0.5 px on it — a margin of 17x. The caveat is rule 13's first layout, a real number *printed inside
-its line's own gap*, which would sit at 0 px too; it does not occur on these sheets (the plate's `100,00`,
-the number that looks most like it, measures 21 px off) but the guard is a reader-wide rule and has to be
-built with that layout in mind. The weak one is solidity: plastic's printed digits fill 0.34-0.50 of their
-blob box against 0.51-0.67 for its arrowheads, but `studycadcam-60`'s printed digits fill 0.36-0.53, so an
-absolute threshold throws away real numbers there and only a ratio to the sheet's own type can transfer —
-measured on all six sheets before it is set. Measurements: `out/probe/probe_solid.py`, `probe_phantom.py` and
-`phantom.txt`.
+it is not a number at all — it would hide a fake number rather than remove it. What the phantom class needed
+is a guard that a cluster is **type** before it is a number, and it is built (`10a32b6`, above) from the
+position signal, with the solidity signal keeping type that stands on its line. The measurements behind it,
+kept here: the strong signal is position — on the three sheets measured (`probe_solid.py
+plastic|plate|studycadcam-60`), every reading whose value is read off a line stands 8.5-192.6 px off that
+line's axis and the seven phantoms stand 0.0-0.5 px on it, a margin of 17x; the caveat is rule 13's first
+layout, a real number *printed inside its line's own gap*, which would sit at 0 px too — it does not occur on
+these sheets (the plate's `100,00`, the number that looks most like it, measures 21 px off), and the guard
+asks the *solidity* question in that branch, which is what kept the one merged cluster on
+`plastic-enclosure-1` where type does stand on its line. The weaker signal, still open as a *sheet-relative*
+test: plastic's printed digits fill 0.34-0.50 of their blob box against 0.51-0.67 for its arrowheads, but
+`studycadcam-60`'s printed digits fill 0.36-0.53, so an absolute threshold throws away real numbers there and
+only a ratio to the sheet's own type can transfer — measured on all six sheets before it is set, which is the
+next piece of work on this rule. Measurements: `out/probe/probe_solid.py`, `probe_phantom.py`, `phantom.txt`,
+and the guard's own question stream with every candidate's numbers, `out/probe/probe_guard_fire.py` ->
+`guard_fire.txt`.
 
 A scan of every cluster the gate refuses that tesseract *would* give a number for is
 `out/probe/probe_refused_reads.py` — 30 on the plate, and what is behind them is not one kind of thing: the

@@ -81,7 +81,7 @@ and building metrics are held to.
 | studycadcam-60 | raster | 6/9 | 9 | 3.278 | 7 |
 | studycadcam-50 | raster | 2/3 | 7 | - | 0 |
 | exercise-1 | raster | 6/13 | 6 | 5.731 | 7 |
-| flange-1 | raster | 4/13 | 5 | - | 0 |
+| flange-1 | raster | 4/13 | 3 | - | 0 |
 
 The same sheets with the text layer taken away (`--as-raster`), which is the reader a scan gets:
 
@@ -122,7 +122,8 @@ reader does, and that is worth saying plainly. It is not worse at *everything*: 
 the `50,00` the floor cannot (`covers` = 50, 60, 80, 100) — the leader-carried diameter the tesseract path has
 no arbiter for — while it loses `6,8`, `8` and `15` that the floor reads, with two noise records against the
 floor's two. The plastic sheet is the other way round and by a wide margin: **10/11 against the floor's
-8/11**, missing only the `8.0`, with 3 noise records against 7 — and among the numbers it reads are `1.50`
+8/11**, missing only the `8.0`, with 3 noise records against 4 — the floor's noise fell from 7 to 4 when its
+own arrowheads stopped being read as digits (`10a32b6`) — and among the numbers it reads are `1.50`
 and `4.80`, the small ones the floor used to anchor to a neighbouring line and now reads at their own span
 (`be6b975`). The model is still not the product path on this evidence: minutes per sheet against seconds,
 and on one of the two sheets it is the weaker reader.
@@ -261,6 +262,21 @@ and on one of the two sheets it is the weaker reader.
   tesseract reads `90,00` at the digits' own line and `20,00` at the upright — no angle it is offered gives
   `50,00`, so this one is a reading job, not a geometry one. It is the last number missing from the plate's
   raster row.
+- **The line's own arrowhead is not a printed number, and the reader has to be told so.** Measured: the
+  reader answers a *digit* for the filled triangle at the end of a dimension line — seven of them on
+  `plastic-enclosure-1` (`4`, `4`, `4`, `4`, `5`, `1`, `1`), two `7`s on `flange-1`, a `2` on `exercise-1` —
+  and six of the plastic ones carried the value `4`, so they were counted as *covering* it and part of that
+  sheet's raster row rested on ink that is not a number. The question that names them is place, not shape:
+  the candidate's box centre lies **on the axis of the very line it is anchored to** (0.0-0.5 px, against
+  4.5-192.6 px for every reading the sheet prints) and within its own length of that line's end — an
+  arrowhead is drawn on its line and at an end of it, a printed number beside the line or in the gap the line
+  is broken around. `perceive._is_the_lines_own_ink` refuses such a candidate before the reader is handed it,
+  and `perceive._is_drawn_solid` keeps type that stands *on* its line (a printed digit is an outline,
+  an arrowhead is filled: 0.30-0.53 against 0.50-0.67 of the blob's own box), which is what stopped the rule
+  throwing away the one cluster on `plastic-enclosure-1` where `1.50` and `3.00` merge into a box lying on the
+  line. Coverage is unchanged on every sheet; five false records are gone (plastic 7 -> **4** noise, `flange-1`
+  5 -> **3**) and plastic's suspect column falls 12 -> **5**. What it does not catch: `exercise-1`'s own
+  arrowhead, 1.15x its own length from the line's end, which stays a named suspect (`10a32b6`).
 - **Raster reading is the weak half.** With the text layer taken away the front end finds 6 of the 13
   printed numbers on `exercise-1`, 4 of 13 on `flange-1` and 6 of 7 on `plate-pocket-1`, against 7 of 7 on
   that sheet read through its text layer. Three causes were measured on the plate sheet, and all three are

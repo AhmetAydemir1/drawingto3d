@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
+from typing import Callable
 
 import cv2
 import numpy as np
@@ -75,6 +76,30 @@ def _load_pdf(file: Path) -> Page:
     )
 
 
+def text_groups(page) -> list[tuple[str, tuple[float, float, float, float], list[int]]]:
+    """The page's text layer, grouped into printed phrases: (text, PDF char box, char indices).
+
+    Characters come in the order the PDF prints them and are joined along a row or a column, so a
+    phrase is a number's own digits and not a guess at a column of the page. The raw string is kept
+    (`100,00` stays `100,00`), and each phrase carries the indices of the characters it used, so a
+    later reader can cite the source. Whitespace carries no box and is dropped.
+    """
+    textpage = page.get_textpage()
+    placed: list[tuple[str, float, float, float, float]] = []
+    indices: list[int] = []
+    for index in range(textpage.count_chars()):
+        char = textpage.get_text_range(index, 1)
+        if char.isspace():
+            continue
+        left, bottom, right, top = textpage.get_charbox(index)
+        placed.append((char, float(left), float(bottom), float(right), float(top)))
+        indices.append(index)
+    if not placed:
+        return []
+    return [(text, box, [indices[member] for member in members])
+            for text, box, members in _group_along(placed)]
+
+
 def _vector_spans(page, scale: float, gray: np.ndarray) -> list[Span]:
     """The numbers printed in the file's own text layer, in raster pixels.
 
@@ -85,20 +110,8 @@ def _vector_spans(page, scale: float, gray: np.ndarray) -> list[Span]:
     is mirrored against the raster; the same code reads a sheet drawn the other way round (the self-made
     A4 sheets) without a per-file branch.
     """
-    textpage = page.get_textpage()
-    count = textpage.count_chars()
-    chars: list[tuple[str, float, float, float, float]] = []
-    for index in range(count):
-        char = textpage.get_text_range(index, 1)
-        if char.isspace():
-            continue
-        left, bottom, right, top = textpage.get_charbox(index)
-        chars.append((char, float(left), float(bottom), float(right), float(top)))
-    if not chars:
-        return []
-    rows = _group_along(chars)
     boxes: list[tuple[str, tuple[float, float, float, float]]] = []
-    for text, box, _members in rows:
+    for text, box, _indices in text_groups(page):
         kind, value, unit = parse_dimension_unit(text)
         if value is None or kind == SpanKind.text:
             continue
@@ -125,8 +138,8 @@ def _vector_spans(page, scale: float, gray: np.ndarray) -> list[Span]:
     return spans
 
 
-def _upright_placement(boxes, gray: np.ndarray, scale: float, section_height_pt: float):
-    """Which way round a text layer sits on the raster, measured from the ink it must be covering."""
+def _candidate_placements(scale: float, section_height_pt: float):
+    """The two ways a PDF char box can sit on the raster, as callables box -> (x, y, w, h)."""
 
     def mirrored(box, scale: float) -> tuple[float, float, float, float]:
         left, bottom, right, top = box
@@ -138,13 +151,28 @@ def _upright_placement(boxes, gray: np.ndarray, scale: float, section_height_pt:
         x0, y0 = left * scale, bottom * scale
         return x0, y0, (right - left) * scale, (top - bottom) * scale
 
-    candidates = (mirrored, as_is)
+    return mirrored, as_is
+
+
+def upright_placement(boxes, gray: np.ndarray, scale: float, section_height_pt: float) -> tuple[str, Callable]:
+    """Which way round a text layer sits on the raster: its name and the placement callable.
+
+    The two candidates differ only by a flip in y, so naming the winner is what lets an observation
+    record say what it did instead of looking like an assumption. See `_upright_placement` for why
+    the ink decides.
+    """
+    candidates = _candidate_placements(scale, section_height_pt)
     scores = [sum(_contrast_under(gray, place(box, scale)) for _text, box in boxes) for place in candidates]
     if scores[0] == scores[1]:
         # Nothing on the sheet disagrees: a PDF's own frame starts at the bottom-left, so the plain
         # reading of a char box is the one that has to be turned over to sit on the raster.
-        return candidates[0]
-    return candidates[int(scores[1] > scores[0])]
+        return "mirrored", candidates[0]
+    return ("mirrored", "as-is")[int(scores[1] > scores[0])], candidates[int(scores[1] > scores[0])]
+
+
+def _upright_placement(boxes, gray: np.ndarray, scale: float, section_height_pt: float):
+    """The chosen placement callable; `upright_placement` also names it."""
+    return upright_placement(boxes, gray, scale, section_height_pt)[1]
 
 
 def _contrast_under(gray: np.ndarray, box: tuple[float, float, float, float]) -> float:

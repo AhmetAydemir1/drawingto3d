@@ -8,13 +8,11 @@ circle and an aligned section proving the blind pocket's depth.
 
 from __future__ import annotations
 
-from ctypes import byref, c_float
 from pathlib import Path
 
 import numpy as np
-import pypdfium2 as pdfium
-import pypdfium2.raw as raw
 
+from drawingto3d.observe import vector_groups
 from drawingto3d.perceive import perceive
 from drawingto3d.plan import Evidence, PlatePlan, source_hash
 from drawingto3d.scale import audit
@@ -40,45 +38,6 @@ def propose_plate(page: Page) -> PlatePlan | None:
         except Unsupported:
             continue
     return proposals[0] if len(proposals) == 1 else None
-
-
-def vector_groups(page: Page) -> list[list[np.ndarray]]:
-    """PDF subpaths in the rendered page's pixel frame; curves/forms are not guessed."""
-    groups = []
-    with pdfium.PdfDocument(page.path) as document:
-        pdf_page = document[0]
-        if pdf_page.get_rotation() != 0:
-            return []
-        width, height = pdf_page.get_size()
-        sx, sy = page.width / width, page.height / height
-        for obj in pdf_page.get_objects(max_depth=1):
-            if obj.type != raw.FPDF_PAGEOBJ_PATH:
-                continue
-            matrix = obj.get_matrix()
-            paths, points = [], []
-            supported = True
-            for index in range(raw.FPDFPath_CountSegments(obj)):
-                segment = raw.FPDFPath_GetPathSegment(obj, index)
-                kind = raw.FPDFPathSegment_GetType(segment)
-                if kind not in (raw.FPDF_SEGMENT_MOVETO, raw.FPDF_SEGMENT_LINETO):
-                    supported = False
-                    break
-                if kind == raw.FPDF_SEGMENT_MOVETO and points:
-                    paths.append(np.array(points))
-                    points = []
-                x, y = c_float(), c_float()
-                if not raw.FPDFPathSegment_GetPoint(segment, byref(x), byref(y)):
-                    supported = False
-                    break
-                px, py = matrix.on_point(x.value, y.value)
-                points.append((px * sx, (height - py) * sy))
-                if raw.FPDFPathSegment_GetClose(segment) and points:
-                    points.append(points[0])
-            if points:
-                paths.append(np.array(points))
-            if supported and paths:
-                groups.append(paths)
-    return groups
 
 
 def _require(condition, reason: str):

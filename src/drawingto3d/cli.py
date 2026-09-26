@@ -21,6 +21,7 @@ from drawingto3d.plate import propose_plate
 from drawingto3d.plan import PlatePlan, build_plan
 from drawingto3d.cadrun import CadFailure
 from drawingto3d.general import GeneralPlan, build_general
+from drawingto3d.observe import observe
 
 
 def main() -> None:
@@ -48,6 +49,9 @@ def main() -> None:
     general.add_argument("out_dir")
     general.add_argument("--drawing", default=None,
                          help="plan.source.kind == 'drawing' ise kaynak çizim yolu")
+    observe_command = commands.add_parser("observe", help="çizimden aile-bağımsız gözlem kayıtları çıkar (vektör PDF)")
+    observe_command.add_argument("drawing")
+    observe_command.add_argument("out_dir")
 
     args = parser.parse_args()
     if args.command == "plan":
@@ -76,6 +80,19 @@ def main() -> None:
             parser.exit(2, f"Geçersiz plan: {_readable(exc)}\n")
         print(json.dumps({"step": str(step), "stl": str(stl), "status": "draft",
                           "audit": str(Path(args.out_dir) / "plan-audit.json")}, indent=2))
+        return
+    if args.command == "observe":
+        try:
+            observations = observe(args.drawing)
+        except ValueError as exc:
+            parser.exit(2, f"Gözlem çıkarılamadı: {exc}\n")
+        folder = Path(args.out_dir)
+        folder.mkdir(parents=True, exist_ok=True)
+        path = folder / "observations.json"
+        path.write_text(observations.model_dump_json(indent=2), encoding="utf-8")
+        print(json.dumps({"observations": str(path), "paths": len(observations.paths),
+                          "primitives": len(observations.primitives), "texts": len(observations.texts)},
+                         indent=2))
         return
     if args.command == "read":
         _read(args)

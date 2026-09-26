@@ -70,20 +70,25 @@ and building metrics are held to.
 | plastic-enclosure-1 | vektör | 11/11 | 0 | 3.917 | 7 |
 | plate-pocket-1 | vektör | 6/7 | 0 | 7.817 | 0 |
 | studycadcam-60 | raster | 6/9 | 7 | 3.278 | 7 |
-| studycadcam-50 | raster | 2/3 | 6 | - | 0 |
-| exercise-1 | raster | 3/13 | 8 | 5.731 | 9 |
-| flange-1 | raster | 3/13 | 3 | - | 0 |
+| studycadcam-50 | raster | 2/3 | 5 | - | 0 |
+| exercise-1 | raster | 2/13 | 8 | 5.700 | 9 |
+| flange-1 | raster | 3/13 | 4 | - | 0 |
 
 The same sheets with the text layer taken away (`--as-raster`), which is the reader a scan gets:
 
-| vaka | kapsam | before the separator work |
+| vaka | kapsam | at the start of this work |
 |---|---|---|
-| plate-pocket-1 | 2/7 | 0/7 |
-| plastic-enclosure-1 | 3/11 | 2/11 |
+| plate-pocket-1 | 4/7 | 0/7 |
+| plastic-enclosure-1 | 6/11 | 2/11 |
 | studycadcam-50 | 2/3 | 1/3 |
-| studycadcam-60 | 6/9 | 6/9 |
-| exercise-1 | 3/13 | 3/13 |
-| flange-1 | 3/13 | 3/13 |
+| studycadcam-60 | 6/9 | - |
+| exercise-1 | 2/13 | - |
+| flange-1 | 3/13 | - |
+
+`exercise-1` lost the value it had gained: it reads 2/13 with the text layer where it read 3/13, the cost of
+a crop being turned by the drawing's own geometry instead of by trial. Removing the text layer costs
+`plate-pocket-1` two numbers (6/7 -> 4/7) and `plastic-enclosure-1` five (11/11 -> 6/11), which is the
+distance between the text layer and the reader a scan has to use.
 
 The vector numbers are the text layer read through the geometry gate; the raster ones are the same gate
 with tesseract behind it, which is the floor, not the finished reader — `eval/baseline.py` is where the
@@ -107,10 +112,14 @@ grouped, so it is the row-by-row comparison that says whether a change helped, n
    and the frame band all die here: on `my_part.jpg`, 364 glyph candidates become 21 that cover 10 of the
    13 printed values.
 4. Text along a vertical line is printed a quarter turn round, so a glyph is judged on its longest side
-   and its crop is turned upright before it is read. Filtering those digits on height (or on width) is
-   how a printed 80 arrives as a bare `0`. The crop is then enlarged by the size of its *digits* to a size
-   a reader can work with (`_scaled_for_reading`), which is what turns the `08` of a vertical `80,00` into
-   something a reader gets right.
+   and its crop is turned upright before it is read (`_reading_turn`). Filtering those digits on height (or
+   on width) is how a printed 80 arrives as a bare `0`; *trying* the four quarter turns in order is how a
+   complete crop of `80,00` arrives as `08` or `8000`, since every rotation of a bare number parses as
+   some number. The drawing says which one it is: the digits' line gives the axis, and the decimal
+   separator gives the sense, sitting as it does below the baseline of the digits it belongs to. The crop
+   is then enlarged by the size of its digits, not by its own longest side (`_scaled_for_reading`), because
+   a number printed up a vertical dimension sits in a crop 33 px wide and 95 px tall whose digits stay
+   18 px when the longest side is what is scaled.
 5. A printed number is a cluster of glyphs, and the **decimal separator is a bridge, not a glyph**: it
    is a few pixels across, below the filter that keeps character-sized blobs, and the digits either side of
    it are then the only thing left to measure. Two digits chain across it when the blob lies between them
@@ -151,19 +160,26 @@ grouped, so it is the row-by-row comparison that says whether a change helped, n
   (3.917 px/mm against the 3.937 a 1:2 A4 expects) is right. A reading should be judged against the
   larger of a relative tolerance and an absolute one in the sheet's own pixels.
 - **Raster reading is the weak half.** With the text layer taken away the front end finds 3 of the 13
-  printed numbers on `exercise-1`, 3 of 13 on `flange-1`, and 2 of 7 on `plate-pocket-1`, where the same
-  sheet read through its text layer scores 6 of 7. Three causes were measured on the plate sheet and two
-  are fixed: a decimal separator too small to survive the glyph filter left the digits on either side of
-  it 30.6 px apart against a 25.6 px reach, so *every* dimension on the sheet came apart at its comma
-  (`100,00` arriving as `10` and `00`); a crop was enlarged by its own longest side, which left the 33x95
+  printed numbers on `exercise-1`, 3 of 13 on `flange-1` and 4 of 7 on `plate-pocket-1`, against 6 of 7 on
+  that sheet read through its text layer. Three causes were measured on the plate sheet, and all three are
+  fixed: a decimal separator too small to survive the glyph filter left the digits on either side of it
+  30.6 px apart against a 25.6 px reach, so *every* dimension on the sheet came apart at its comma
+  (`100,00` arriving as `10` and `00`); a crop was enlarged by its own longest side, which left the 33 x 95
   crop of a number printed up a vertical dimension at its original 18 px digits, and the reader returned
-  `08` for `80,00`; and the quarter turn a crop is read at is still *tried* rather than worked out, four
-  rotations in turn with the first parseable answer winning, which is how a complete crop of `80,00` still
-  comes back as `8000`. `eval/frontend.py --as-raster` is the harness for all of this — it reads a vector
-  sheet's raster with the truth known exactly, so the CV reader can be improved without another hand-made
-  example. It is a row of numbers that moved, not a clean win: `plate-pocket-1` 0/7 -> 2/7 and
-  `studycadcam-50` 1/3 -> 2/3, while `plastic-enclosure-1` went 2/11 -> 4/11 on the grouping fix and back to
-  3/11 when crops began being scaled by the size of the digits. The cost is kept in the table.
+  `08` for `80,00`; and the quarter turn a crop is read at was *tried* rather than worked out, four
+  rotations in turn with the first parseable answer winning, so a complete crop of `80,00` came back as
+  `8000`. The turn now comes from the drawing: the digits' line gives the axis, the decimal separator gives
+  the sense, because a separator sits below the baseline of the digits it belongs to. `eval/frontend.py
+  --as-raster` is the harness for all of this — it reads a vector sheet's raster with the truth known
+  exactly, so the CV reader can be improved without another hand-made example. It moved a row of numbers,
+  not cleanly: `plate-pocket-1` 0/7 -> 4/7 and `plastic-enclosure-1` 2/11 -> 6/11 (both now with a fitted
+  scale, 7.817 and 3.908 px/mm against 7.874 and 3.937 expected), `studycadcam-50` 1/3 -> 2/3, while
+  `exercise-1` went 3/13 -> 2/13 and `studycadcam-60` 7/9 -> 6/9. Both costs are in the table.
+- **What the raster reader still gets wrong is the read itself, not the geometry.** The clusters, the
+  turning and the scale are right on `plastic-enclosure-1` now (6 of 11, fitted 3.908 px/mm), and what is
+  missing it reads as `1`, `5`, `7`, `29.00`, `00` - single digits and fragments of numbers whose digits
+  are 12 px tall. Reading a 12 px digit is a reader problem (the vision model in `eval/baseline.py`, or
+  binarising and thinning the crop before tesseract), and `--as-raster` is what measures it.
 - **A sheet is not two tones.** Splitting the grey histogram in the middle (Otsu) reads a drawing as ink
   and paper, and a drawing has three tones: text, thin lines, paper. On `plate-pocket-1` the text runs
   0-50 grey, the paper sits at 255 and every dimension line is printed at 161-235, so Otsu's split at 158

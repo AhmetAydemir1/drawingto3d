@@ -371,6 +371,54 @@ def _cluster_glyphs(glyphs: list[Glyph], mode: str = "center") -> list[list[int]
     return clusters
 
 
+def _reading_turn(glyphs: list[Glyph], cluster: list[int]) -> int | None:
+    """Which quarter turn makes a printed number upright, worked out from the drawing instead of tried.
+
+    The digits of a number lie in a line, which says which axis the number is printed along, but not which
+    way round it runs: a crop of `80,00` printed up a vertical dimension came back `08`, and of the four
+    rotations tried in turn every one of them parses as some number - `08`, `O0`, `8000`. What settles the
+    sense is the decimal separator, which sits below the baseline of the digits: the side it lies on is the
+    down side of the text, and the text runs a quarter turn from there. On the plate sheet the comma of
+    `80,00` sits to the right of its digits, at (174, 875) against a digit line at x = 162, so that number
+    reads bottom to top and its crop wants turning clockwise - the one turn that reads it as `8000`.
+
+    `None` when the drawing does not say: a single digit has no line to judge, and without a separator
+    there is nothing to say which end of the line is the start.
+    """
+    digits = [glyphs[index] for index in cluster if not glyphs[index].separator]
+    if len(digits) < 2:
+        return None
+    left, right = min(g.cx for g in digits), max(g.cx for g in digits)
+    top, bottom = min(g.cy for g in digits), max(g.cy for g in digits)
+    size = float(max(max(glyph.w, glyph.h) for glyph in digits))
+    centre = ((left + right) / 2, (top + bottom) / 2)
+    down = None
+    best = 1.3 * size
+    for blob in glyphs:
+        if not blob.separator or max(blob.w, blob.h) > 0.6 * size:
+            continue
+        away = math.hypot(blob.cx - centre[0], blob.cy - centre[1])
+        if away < best:
+            down, best = (blob.cx - centre[0], blob.cy - centre[1]), away
+    if down is None:
+        return None
+    read = (down[1], -down[0])  # a quarter turn clockwise from the way the digits sit is the way they read
+    if right - left >= bottom - top:
+        return 0 if read[0] >= 0 else 180
+    return 90 if read[1] < 0 else -90
+
+
+def _turn_crop(crop: np.ndarray, turn: int | None) -> np.ndarray:
+    """The crop turned upright by the quarter turn the drawing gave, clockwise as `cv2.rotate` means it."""
+    if turn == 90:
+        return cv2.rotate(crop, cv2.ROTATE_90_CLOCKWISE)
+    if turn == -90:
+        return cv2.rotate(crop, cv2.ROTATE_90_COUNTERCLOCKWISE)
+    if turn == 180:
+        return cv2.rotate(crop, cv2.ROTATE_180)
+    return crop
+
+
 def _scaled_for_reading(crop: np.ndarray, text_size: float, target: float = 64.0, most: float = 6.0) -> np.ndarray:
     """The crop of a number enlarged until its digits are comfortable to read.
 
@@ -406,9 +454,13 @@ def _read_cluster(
     crop = gray[max(0, y0) : y1, max(0, x0) : x1]
     if crop.size == 0:
         return None
+    turn = _reading_turn(glyphs, cluster)
+    crop = _turn_crop(crop, turn)
     crop = _scaled_for_reading(crop, float(np.median([max(glyphs[index].w, glyphs[index].h) for index in cluster])))
     if reader is not None:
-        vertical = bool(anchors) and abs(anchors[0][0] - anchors[1][0]) < abs(anchors[0][1] - anchors[1][1])
+        # The crop is upright already when the drawing said which way round it runs; only without that does
+        # the model get told the text stands along a vertical line.
+        vertical = turn is None and bool(anchors) and abs(anchors[0][0] - anchors[1][0]) < abs(anchors[0][1] - anchors[1][1])
         text = read_dimension(reader, crop, vertical)
         if text and _plausible(text, crop, mode):
             kind, value, unit = _clean_dimension(text)

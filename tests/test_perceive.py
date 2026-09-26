@@ -87,3 +87,27 @@ def test_a_comma_beside_the_digits_still_bridges_them():
     assert not perceive._centers_near(upper, lower)
     assert perceive._separator_between(upper, lower, [upper, comma, lower])
     assert len(perceive._cluster_glyphs([upper, comma, lower], "center")) == 1
+
+
+def test_the_separator_side_says_which_way_a_vertical_number_reads():
+    # The plate sheet's own `80,00`: four digits up a vertical line at x = 162 and the comma to the right
+    # of them at (174, 875). A separator sits below the baseline, so that number reads bottom to top.
+    digits = [_glyph(162.0, y, 148, int(y) - 9, 27, 18) for y in (840.0, 860.0, 891.0, 910.0)]
+    comma = _glyph(174.0, 875.0, 170, 873, 8, 4, separator=True)
+    glyphs = [*digits, comma]
+
+    assert perceive._reading_turn(glyphs, list(range(len(glyphs)))) == 90
+
+
+def test_a_horizontal_number_with_its_comma_below_reads_as_it_stands():
+    digits = [_glyph(x, 491.0, int(x) - 9, 477, 18, 28) for x in (785.0, 805.0, 825.0, 856.0, 876.0)]
+    comma = _glyph(841.0, 504.0, 838, 500, 5, 7, separator=True)
+    glyphs = [*digits, comma]
+
+    assert perceive._reading_turn(glyphs, list(range(len(glyphs)))) == 0
+
+
+def test_a_single_digit_says_nothing_about_which_way_it_reads():
+    glyphs = [_glyph(100.0, 100.0, 90, 78, 18, 27), _glyph(112.0, 108.0, 110, 106, 5, 5, separator=True)]
+
+    assert perceive._reading_turn(glyphs, list(range(len(glyphs)))) is None

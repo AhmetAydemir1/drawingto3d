@@ -395,14 +395,18 @@ with anything. Two consequences: no candidate reading of this crop can ever be a
 scale, and the *only* arbiter the drawing offers is the circle the arrow touches — a diameter callout's
 number is the circle's own diameter times the scale.
 
-The reader can be made to say it, which was measured rather than assumed: a 0.2-degree sweep over the
-digits' own line (`out/probe/probe_50prep.py`) finds `50,00` at 1.4-4 degrees off it, and at the ink angle,
-once the leader's ink is taken out of the crop — but *not* at any angle the reader asks today
-(`out/probe/probe_50prep2.py`: `90,00` at 14.69°, `20,00` upright, `0.0%` at the ink angle, unchanged by
-whitening the stroke). Taking those hits would be choosing the preparation and the sub-degree angle that
-happen to spell `50,00`, with nothing to confirm the answer — exactly the wrong-number-worse-than-none case.
-With the circle measured reliably they would become confirmable; Hough on this sheet returns 2152 circles
-(hatching and arcs everywhere), so that measurement is its own piece of work, not a footnote to this one.
+The reader can be made to say it, which was measured rather than assumed. A 0.2-degree sweep over the
+digits' own line (`out/probe/probe_50prep.py`, and the raw crop re-measured on its own) puts `50,00` in a
+narrow window about 3-4 degrees *past* the digits' own line — 17.5-18.7 degrees against an own angle of
+14.69 — on the raw crop, on a thresholded crop and on a crop with the leader's ink taken out (that last one
+widens the window to 11.5-18.7). It is not a preparation that buys the number, it is the angle: the reader's
+own list is 14.69, the upright, the ink angle and the two quarter turns, and not one of them falls in that
+window — at 14.69 the same crop says `90,00`, upright `20,00`
+(`out/probe/probe_50prep2.py`, unchanged by whitening the stroke). Taking those hits would be choosing the
+sub-degree angle that happens to spell `50,00`, with nothing to confirm the answer — exactly the
+wrong-number-worse-than-none case. With the circle measured reliably they would become confirmable; Hough on
+this sheet returns 2152 circles (hatching and arcs everywhere), so that measurement is its own piece of
+work, not a footnote to this one.
 One measured cross-check that the value is right: the *model* path reads `50,00` from this crop
 (`plate-pocket-1-raster-model.json`, re-run this window — it is one of the four numbers that ceiling reads
 and the tesseract floor cannot), so the number is readable by a reader with different failure modes. What

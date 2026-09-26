@@ -68,7 +68,7 @@ and building metrics are held to.
 | vaka | kaynak | kapsam | gürültü | px/mm | şüpheli |
 |---|---|---|---|---|---|
 | plastic-enclosure-1 | vektör | 11/11 | 0 | 3.917 | 7 |
-| plate-pocket-1 | vektör | 6/7 | 0 | 7.817 | 0 |
+| plate-pocket-1 | vektör | 7/7 | 0 | 7.817 | 0 |
 | studycadcam-60 | raster | 6/9 | 7 | 3.278 | 7 |
 | studycadcam-50 | raster | 2/3 | 5 | - | 0 |
 | exercise-1 | raster | 2/13 | 8 | 5.700 | 9 |
@@ -87,7 +87,7 @@ The same sheets with the text layer taken away (`--as-raster`), which is the rea
 
 `exercise-1` lost the value it had gained: it reads 2/13 with the text layer where it read 3/13, the cost of
 a crop being turned by the drawing's own geometry instead of by trial. Removing the text layer costs
-`plate-pocket-1` two numbers (6/7 -> 4/7) and `plastic-enclosure-1` five (11/11 -> 6/11), which is the
+`plate-pocket-1` three numbers (7/7 -> 4/7) and `plastic-enclosure-1` five (11/11 -> 6/11), which is the
 distance between the text layer and the reader a scan has to use.
 
 The vector numbers are the text layer read through the geometry gate; the raster ones are the same gate
@@ -108,7 +108,9 @@ grouped, so it is the row-by-row comparison that says whether a change helped, n
    row-by-row pass reads it as thick and drops it — so this is the only path that can find it.
 3. A candidate is a cluster of glyphs with a **dimension line** beside it (`lines.dimension_line_near`:
    an arrow at both ends, the number between) or a **leader** (`lines.leader_near`: one arrow, the words
-   beside the blank end of the shaft, the shaft at any angle). Title block, part numbers, copyright years
+   beside the blank end of the shaft, the shaft at any angle, and the ink it runs through no longer than
+   the sheet's own type — a stroke that is not axis-aligned stays in the text mask as its own ink, so
+   "inside printed words" has to be judged against `PrintedText`, not against the mask). Title block, part numbers, copyright years
    and the frame band all die here: on `my_part.jpg`, 364 glyph candidates become 21 that cover 10 of the
    13 printed values.
 4. Text along a vertical line is printed a quarter turn round, so a glyph is judged on its longest side
@@ -147,13 +149,24 @@ grouped, so it is the row-by-row comparison that says whether a change helped, n
   dimension line drawn at an angle is invisible however well its stroke is found. The same shape on the
   flange is the `6 x Ø6.40` and `Ø11.00` callouts. Generalising the row to a direction (project onto the
   stroke's own axis and across it) is what closes this, and the row code is already written in projections.
-- **Callouts drawn as curves are not text at all.** On `plate-pocket-1` the region of the `6,80 THRU ALL`
-  callout contains *no* text-layer characters, and the same sheet's `Ø` marks are vector paths: a CAD tool
-  that draws its callouts as outlines leaves nothing for the text layer to carry, and the value cannot be
-  recovered by any amount of geometry on the strokes. The plate scores 6/7 for exactly this reason - all
-  six numbers the text layer holds are read, and the seventh is a picture. Reading those is a different
-  job (cluster the drawn glyphs, read the crop, keep the leader that anchors them), and it is the same job
-  the raster sheets need.
+- **A drawn callout is still a picture, but its number is not.** On `plate-pocket-1` the region of the
+  `6,80 THRU ALL` callout looks like it carries no text at all — the `4 x` prefix and the `Ø` are drawn as
+  outlines, and so is the whole second line (`M8 - 6H THRU ALL`) — yet the text layer *does* hold
+  `6,80 THRU ALL`, and the number was refused for a different reason: its leader. `leader_near` used to
+  throw away any stroke whose `text_fraction` was over 0.25, on the grounds that a stroke lying inside
+  printed words is a glyph. On a stroke at an angle that measurement is the mask talking about itself:
+  `lines._text_mask` only removes what a 28-px morphological opening can remove, the rules that run along
+  an axis, so a leader drawn at 15° lies in its own ink for 53-65% of its length and reads as text, while
+  a letter's stem reads 51%. The two callouts on the sheet were separated by that number alone: the faint
+  `Ø50,00` leader scores 0.02 and was read, the `6,80` leader scores 0.65 and was thrown away. The question
+  is now asked of the sheet's own type (`lines.PrintedText`): the ink a stroke runs through is printed
+  words when the blob it lies in is no longer than `TEXT_BOUND` characters of the sheet's own measured
+  character size (printed blobs on the plate are at most 2.3 characters, the leader is 5.9), and a drawn
+  line otherwise. The plate reads 7/7 through its text layer, and the raster sweep of all six sheets is
+  unchanged (23 covered numbers), so the change added the callout and nothing else.
+  What stays unread is the `Ø` mark itself: it is a vector path, not text, so the record that reaches the
+  interpreter is a linear `6.80` rather than a diameter, and the `4 x` multiplicity is a picture too. Those
+  are the marks a reader has to get from the drawing, and they are the same job the raster sheets need.
 - **The scale audit has no pixel floor.** `scale.RELATIVE_TOLERANCE` is 4% of the value; a 1.5 mm
   dimension on a 1:2 sheet is 6 px at 200 dpi, where one pixel of arrow or extension-line error is 17%.
   `plastic-enclosure-1` therefore reports 6 of its 14 readings as suspect although the fit itself

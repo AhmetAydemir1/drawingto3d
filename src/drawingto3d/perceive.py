@@ -265,6 +265,9 @@ class _DimensionGate:
             else []
         )
         self.strokes = [*segments, *self.diagonals]
+        # The sheet's printed text, measured once: `leader_near` needs it to tell a leader drawn at an
+        # angle (whose own ink the mask cannot remove) from a stroke that is really part of a word.
+        self.printed = lines.PrintedText.of(text_mask)
         self.anchors: dict[tuple[float, float], list[tuple[float, float]]] = {}
         self.taken: list[tuple[float, float, float, float]] = []
 
@@ -277,7 +280,7 @@ class _DimensionGate:
             self.anchors[box] = anchors
             self.taken.append(box)
             return True, anchors, "dimension"
-        leader = lines.leader_near(self.binary, self.strokes, box, self.text_mask)
+        leader = lines.leader_near(self.binary, self.strokes, box, self.text_mask, printed_text=self.printed)
         if leader is None:
             return False, None, "dimension"
         # A leader's arrow marks the feature; its tail is only where the text is.

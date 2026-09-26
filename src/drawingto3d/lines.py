@@ -14,6 +14,14 @@ from dataclasses import dataclass
 import cv2
 import numpy as np
 
+# A stroke whose ink runs past this many characters of the sheet's own type is a line drawn on the
+# sheet, not a word: measured on the plate sheet, printed blobs are 2.3 characters long at most and the
+# leader of `6,80 THRU ALL` is 5.9 (158 px against a 27 px character).
+TEXT_BOUND = 3.0
+
+# How much of a stroke may lie in the text mask before the mask is asked whether it is telling the truth.
+TEXT_FRACTION = 0.25
+
 
 @dataclass(frozen=True)
 class Segment:
@@ -548,6 +556,7 @@ def leader_near(
     box: tuple[float, float, float, float],
     text_mask: np.ndarray | None = None,
     min_arrow_steps: int = 8,
+    printed_text: "PrintedText | None" = None,
 ) -> Leader | None:
     """The callout a printed Ø/R belongs to: one arrow, and its text at the far end of the same stroke.
 
@@ -558,9 +567,15 @@ def leader_near(
     centre_x, centre_y = (box[0] + box[2]) / 2, (box[1] + box[3]) / 2
     height = max(min(box[2] - box[0], box[3] - box[1]), 1.0)
     best: Leader | None = None
+    printed = printed_text
     for segment in segments:
-        if text_fraction(text_mask, segment) > 0.25:
-            continue
+        if text_fraction(text_mask, segment) > TEXT_FRACTION:
+            # The mask says this stroke is printed text; on a stroke at an angle the mask is counting the
+            # stroke's own ink, so ask the sheet's own type whether the ink is a word or a drawn line.
+            if printed is None and text_mask is not None:
+                printed = PrintedText.of(text_mask)
+            if printed is not None and printed.through_words(segment):
+                continue
         arrows = [end for end in (0, 1) if arrow_steps(binary, segment, end) >= min_arrow_steps]
         if len(arrows) != 1:
             continue
@@ -677,6 +692,63 @@ def text_fraction(text_mask: np.ndarray | None, segment: Segment | Stroke, sampl
         if 0 <= y < height and 0 <= x < width and text_mask[y, x] > 0:
             inside += 1
     return inside / (samples + 1)
+
+
+@dataclass(frozen=True)
+class PrintedText:
+    """The mask's own blobs, and how big a printed character is on this sheet.
+
+    `text_fraction` counts a stroke's *own ink* as text wherever the mask kept it, and the mask only
+    removes what a 28-px morphological opening can remove: the rules that run along an axis. A stroke at
+    an angle survives, so on the plate sheet the leader of `6,80 THRU ALL` reads 53-65% text while a
+    letter's stem reads 51% - the measurement cannot tell a leader from a glyph, and `leader_near`
+    refuses every callout whose leader is not faint (the faint one, `Ø50,00`, scores 0.02). What does
+    tell them apart is the ink the stroke runs through: printed blobs are bounded by the sheet's own
+    type, a line stretches past it.
+
+    The character size is the same statistic `_glyphs` measures — the median longest side of the blobs
+    that are a character in both directions — so the two agree on what one character is.
+    """
+
+    labels: np.ndarray
+    stats: np.ndarray
+    character: float
+
+    @classmethod
+    def of(cls, text_mask: np.ndarray) -> "PrintedText":
+        count, labels, stats, _centroids = cv2.connectedComponentsWithStats(text_mask, 8)
+        sides = [
+            max(int(stats[index][2]), int(stats[index][3]))
+            for index in range(1, count)
+            if min(int(stats[index][2]), int(stats[index][3])) >= 8
+        ]
+        return cls(labels, stats, float(np.median(sides)) if sides else 0.0)
+
+    def through_words(self, stroke: Segment | Stroke, samples: int = 24) -> bool:
+        """Is the ink this stroke runs through printed type, or a line drawn across the sheet?
+
+        A blob of type is small in both directions; a leader, a rule or a hatch line is one narrow
+        shape whose length is the length of its own line, so the blob it lies in outgrows the sheet's
+        character. The blob is read from the samples along the stroke and takes the vote, because a
+        stroke crosses what it crosses rather than lying inside one thing.
+        """
+        if self.character <= 0.0:
+            return False
+        height, width = self.labels.shape
+        votes: dict[int, int] = {}
+        for step in range(samples + 1):
+            ratio = step / samples
+            x = int(round(stroke.x0 + (stroke.x1 - stroke.x0) * ratio))
+            y = int(round(stroke.y0 + (stroke.y1 - stroke.y0) * ratio))
+            if 0 <= y < height and 0 <= x < width:
+                label = int(self.labels[y, x])
+                if label:
+                    votes[label] = votes.get(label, 0) + 1
+        if not votes:
+            return False
+        label = max(votes, key=lambda key: votes[key])
+        longest = max(int(self.stats[label][2]), int(self.stats[label][3]))
+        return longest <= TEXT_BOUND * self.character
 
 
 def dimension_line_near(

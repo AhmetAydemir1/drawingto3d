@@ -121,3 +121,39 @@ def test_a_diagonal_inside_the_printed_words_is_a_glyph_not_a_leader():
 
     assert len(strokes) == 1, [stroke.middle for stroke in strokes]
     assert _distance(strokes[0], TIP) < 20.0
+
+
+def test_a_leader_whose_own_ink_is_in_the_text_mask_is_still_a_leader():
+    """The mask cannot remove a stroke at an angle, so it reports the leader's own ink as printed text.
+
+    On the plate sheet the leader of `6,80 THRU ALL` reads 65% text that way and every callout whose
+    leader is not faint was refused; the ink the stroke runs through is what tells the two apart, and
+    this fixture is a sheet where the mask is the ink (nothing removed): the leader is one narrow blob
+    as long as itself, the words are blobs the size of the sheet's own type.
+    """
+    binary = _canvas()
+    _line(binary, TAIL, TIP)
+    _arrow(binary, TIP, (110, 250))
+    for x0, y0 in ((300, 55), (150, 40), (40, 120), (260, 300), (30, 300)):
+        _words(binary, x0, y0, x0 + 44, y0 + 24)
+    text_mask = binary.copy()
+
+    strokes = _diagonals(binary, text_mask)
+    printed = lines.PrintedText.of(text_mask)
+    leader_stroke = min(strokes, key=lambda stroke: _distance(stroke, TIP))
+
+    assert printed.character == pytest.approx(44, abs=6), printed.character
+    assert printed.through_words(leader_stroke) is False
+    assert lines.leader_near(binary, strokes, TEXT_BOX, text_mask, printed_text=printed) is not None
+
+
+def test_a_stroke_running_through_the_words_is_still_refused():
+    """The same question asked of a stroke that really is inside type: its blob is one character long."""
+    binary = _canvas()
+    text_mask = _words(binary, 40, 40, 84, 64)
+    inside = lines.Stroke(80.0, 44.0, 44.0, 60.0, 2.0)  # a stroke across the words
+    printed = lines.PrintedText.of(text_mask)
+
+    assert lines.text_fraction(text_mask, inside) > lines.TEXT_FRACTION
+    assert printed.through_words(inside) is True
+    assert lines.leader_near(binary, [inside], (100.0, 30.0, 160.0, 50.0), text_mask, printed_text=printed) is None

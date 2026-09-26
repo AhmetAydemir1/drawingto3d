@@ -24,6 +24,7 @@ from drawingto3d.general import GeneralPlan, build_general
 from drawingto3d.observe import observe
 from drawingto3d.bind import bind_page
 from drawingto3d.meaning import meaning_page
+from drawingto3d.proposal import propose_general
 
 
 def main() -> None:
@@ -60,6 +61,9 @@ def main() -> None:
     meaning_command = commands.add_parser("meaning", help="bağlanan adaylardan her sayının ölçtüğü şeyi çöz (vektör PDF)")
     meaning_command.add_argument("drawing")
     meaning_command.add_argument("out_dir")
+    propose_command = commands.add_parser("propose", help="okumalardan genel plan önerisi çıkar; reddedilirse nedenini yaz")
+    propose_command.add_argument("drawing")
+    propose_command.add_argument("out_dir")
 
     args = parser.parse_args()
     if args.command == "plan":
@@ -135,6 +139,25 @@ def main() -> None:
         print(json.dumps({"meaning": str(path), "spans": len(meanings.spans),
                           "forms": forms, "resolution": resolutions},
                          ensure_ascii=False, indent=2))
+        return
+    if args.command == "propose":
+        try:
+            proposal = propose_general(args.drawing)
+        except ValueError as exc:
+            parser.exit(2, f"Öneri çıkarılamadı: {exc}\n")
+        folder = Path(args.out_dir)
+        folder.mkdir(parents=True, exist_ok=True)
+        path = folder / "proposal.json"
+        path.write_text(proposal.model_dump_json(indent=2), encoding="utf-8")
+        payload: dict = {"proposal": str(path), "status": proposal.status,
+                         "readings": len(proposal.readings), "refusals": proposal.refusals}
+        if proposal.plan is not None:
+            plan_path = folder / "plan.json"
+            plan_path.write_text(proposal.plan.model_dump_json(indent=2), encoding="utf-8")
+            payload["plan"] = str(plan_path)
+        else:
+            parser.exit(2, json.dumps(payload, ensure_ascii=False, indent=2) + "\n")
+        print(json.dumps(payload, ensure_ascii=False, indent=2))
         return
     if args.command == "read":
         _read(args)

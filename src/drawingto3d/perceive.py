@@ -15,7 +15,7 @@ from typing import NamedTuple
 import cv2
 import numpy as np
 
-from drawingto3d import lines
+from drawingto3d import lines, scale
 from drawingto3d.ingest import apply_sheet_unit, parse_dimension, parse_dimension_unit
 from drawingto3d.reader import read_dimension
 from drawingto3d.schema import AnchorMode, BBox, Page, Primitive, PrimitiveKind, Source, Span, SpanKind, Unit
@@ -149,10 +149,14 @@ def _oriented_spans(gray: np.ndarray, reader=None) -> list[Span]:
         gray=gray,
         text_height=float(np.median(sizes)) if sizes else None,
     )
-    spans = _collect_spans(gray, glyphs, "center", gate, reader) + _collect_spans(gray, glyphs, "gap", gate, reader)
+    clusters: dict[int, list[int]] = {}
+    spans = _collect_spans(gray, glyphs, "center", gate, reader, clusters) + _collect_spans(
+        gray, glyphs, "gap", gate, reader, clusters
+    )
     spans = _one_number_per_line(spans)
     for index, span in enumerate(spans):
         span.id = f"ocr-{index}"
+    spans = _reread_against_the_sheet_scale(gray, glyphs, spans, clusters, reader)
     return spans
 
 
@@ -403,7 +407,14 @@ def _text_mask(gray: np.ndarray) -> np.ndarray:
     return cv2.subtract(ink, rules)
 
 
-def _collect_spans(gray: np.ndarray, glyphs: list[Glyph], mode: str, gate=None, reader=None) -> list[Span]:
+def _collect_spans(
+    gray: np.ndarray,
+    glyphs: list[Glyph],
+    mode: str,
+    gate=None,
+    reader=None,
+    clusters: dict[int, list[int]] | None = None,
+) -> list[Span]:
     spans: list[Span] = []
     for cluster in _cluster_glyphs(glyphs, mode):
         # A printed number is a handful of digits; a cluster longer than eight is a line of words, or two
@@ -419,7 +430,59 @@ def _collect_spans(gray: np.ndarray, glyphs: list[Glyph], mode: str, gate=None, 
                 continue
         span = _read_cluster(gray, glyphs, cluster, len(spans), reader, anchors, mode)
         if span is not None:
+            if clusters is not None:
+                # By identity, not by id: the two clustering passes name their spans from zero and the
+                # caller renumbers them afterwards, so a name is not unique yet.
+                clusters[id(span)] = cluster
             spans.append(span)
+    return spans
+
+
+def _reread_against_the_sheet_scale(
+    gray: np.ndarray,
+    glyphs: list[Glyph],
+    spans: list[Span],
+    clusters: dict[int, list[int]],
+    reader=None,
+) -> list[Span]:
+    """A reading the sheet's own scale calls wrong is offered the reader the angles it was not asked at.
+
+    Every dimension line is drawn to the number printed on it, so the sheet calibrates itself
+    (`scale.consensus`), and a misread number is a pair whose ratio is off — a mistake the sheet itself
+    names, with no ground truth needed. On the plate the vertical `8,00` is read `3,00` at the angle the
+    digits' own line gives (63 px of line against 3 mm is 21 px/mm where the sheet fits 7.817) and `8,00`
+    two degrees past it (7.875). The reader keeps its first answer, and when the sheet says that answer is
+    wrong, the answer from the next angle is the one to keep.
+
+    Only the readings the calibration names are asked again, and only a candidate that fits the sheet's
+    own scale replaces one that does not: a re-read here costs a tesseract call per suspect, where asking
+    every crop at every angle would cost three to six times the sheet's whole reading time.
+
+    The vision model's path is left alone: one model call per crop is minutes per sheet, and a model's
+    answer is not a function of the angle it was asked at, so skipping to the next angle says nothing.
+    """
+    if reader is not None:
+        return spans
+    calibration, suspect = scale.audit(spans)
+    if calibration is None or not suspect:
+        return spans
+    by_id = {span.id: span for span in spans}
+    for id_ in suspect:
+        span = by_id.get(id_)
+        cluster = clusters.get(id(span)) if span is not None else None
+        if span is None or cluster is None or span.anchors is None or len(span.anchors) != 2 or not span.value:
+            continue
+        (ax, ay), (bx, by) = span.anchors
+        measured = math.hypot(float(bx) - float(ax), float(by) - float(ay))
+        if measured <= 0 or not calibration.disagrees(span.value, measured):
+            continue
+        for skip in range(1, 4):
+            other = _read_cluster(gray, glyphs, cluster, 0, None, span.anchors, span.anchor_mode, skip=skip)
+            if other is None or other.value is None or not _usable(other.value):
+                break
+            if not calibration.disagrees(other.value, measured):
+                span.text, span.value, span.kind, span.unit = other.text, other.value, other.kind, other.unit
+                break
     return spans
 
 
@@ -643,6 +706,7 @@ def _read_cluster(
     reader=None,
     anchors: list[list[float]] | None = None,
     mode: AnchorMode = "dimension",
+    skip: int = 0,
 ) -> Span | None:
     x0 = min(glyphs[index][2] for index in cluster) - 3
     y0 = min(glyphs[index][3] for index in cluster) - 3
@@ -671,7 +735,7 @@ def _read_cluster(
     # one is turned by another angle, and asking at this row's angle reads the two together.
     own = _digits_angle(glyphs, cluster) if _one_pen(glyphs, cluster) else 0.0
     text = ""
-    for delta in _reading_angles(own + (turn or 0), angle):
+    for delta in _reading_angles(own + (turn or 0), angle)[skip:]:
         text = _ocr_upright(crop, delta, whitelist=False)
         kind, value, unit = _clean_dimension(text)
         if _usable(value):

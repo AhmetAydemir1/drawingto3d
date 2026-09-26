@@ -279,14 +279,88 @@ in place): `plastic-enclosure-1` **10/11** in 933 s, missing only the `8.0`, aga
 7/11 — three numbers bought by the model. The plate's ceiling (4/7) predates both that change and this one
 and now sits below the floor; it is not evidence about either and is on the list to re-run.
 
+## The sheet re-reads what its own scale calls wrong (reading)
+
+**What changed.** Every dimension line is drawn to the number printed on it, so a sheet calibrates itself
+(`scale.consensus`): a value and the length of its own line give a ratio, and the ratio most of the sheet
+agrees on is the scale it was drawn at. A misread number is a pair whose ratio is off — a mistake the sheet
+names with no ground truth. Until now that audit only *reported*, in the last column of the eval table; the
+readings it names are now asked again. `perceive._reread_against_the_sheet_scale` walks the suspect list,
+and for each one asks `_read_cluster` again with the first `skip` angles dropped (`skip=1`, then 2, 3), and
+keeps a candidate whose implied pixels-per-millimetre fits the sheet's own fit within the same 4%. The
+cluster each span came from is carried along out of `_collect_spans` (`clusters[id(span)]` — by identity,
+because the two clustering passes name their spans from zero and the caller renumbers them later), and the
+re-read runs after the renumbering, so a span's `text`/`value`/`kind`/`unit` are the only fields that move.
+
+**Bought.** The only three rows that can move are the three with a fitted scale, and on each of them one
+phantom gave way to a printed number:
+
+| vaka | raster kapsam | gürültü | şüpheli | span |
+|---|---|---|---|---|
+| plate-pocket-1 | 5/7 -> 6/7 | 3 -> 2 | 2 -> 1 | `3,00` -> `8,00` |
+| plastic-enclosure-1 | 7/11 -> 8/11 | 8 -> 7 | 16 -> 15 | `2)` -> `10` |
+| exercise-1 | 5/13 -> 6/13 | 7 -> 6 | 8 -> 7 | `7€` -> `35` |
+
+Field-by-field against `out/frontend_after_guarded` (the previous commit's run on the same box): those are
+the *only* differences in all ten raster JSONs. `flange-1`, `studycadcam-50`, `studycadcam-60` and the two
+mcmaster sheets have no fitted scale (`calibrate` needs three agreeing pairs) and are byte-identical. The
+vector table is unchanged — the vector path does not go through `_oriented_spans`.
+
+The plate's case in full: the vertical `8,00` at the top right is read `3,00` at the angle the reader asks
+first, which is the digits' own line (89.4° after the quarter turn, then rounded to the ink angle 0.6°),
+and `8,00` at the *next* angle it is offered (+0.6°). Its line is 63 px; 63 px against 3 mm is 21 px/mm
+where the sheet fits 7.817, and against 8 mm it is 7.875 — a residual of 0.74%, inside the fit's own
+spread. Two candidate readings, one parseable, one that fits the sheet: the reader kept the parseable one.
+
+**Cost / risk.**
+- One tesseract call per suspect, and only for spans whose own anchors disagree — on the three sheets that
+  is 7 + 15 + 7 suspects, a few of which stop after one extra call. The alternative, keeping every
+  candidate for every crop, is three to six extra calls per cluster and was not measured in, because the
+  rows that move are the ones the audit already points at.
+- The re-read is skipped entirely when `reader` is not None: a model call is minutes a sheet, and a model's
+  answer is not a function of the angle it was asked at, so "the next angle" means nothing there.
+- The substitution can replace a *correct* reading with a fitting wrong one only if the correct one
+  disagrees with the sheet's scale (impossible if most of the sheet is read right) or if the wrong
+  candidate fits better (both within 4%). The whole-set comparison is the evidence that it did not.
+- `_one_number_per_line` runs *before* the re-read, so a span's value can change after it was chosen as the
+  one number of its line. Nothing in that choice uses the value, but the ordering is now load-bearing and
+  should be re-checked if that changes.
+
+**Verified.** `pytest -q` 107 passed (5 new in `tests/test_perceive.py`: the fitting candidate is kept; a
+candidate that also disagrees is not; a leader-carried number is not asked again; a sheet too sparse to
+calibrate is left alone; the model path is left alone). `PYTHONPATH=src .venv/bin/python eval/frontend.py
+--as-raster` is `out/raster_scale_reread.log` and the plain (vector) run is `out/vector_scale_reread.log`;
+`out/frontend_after_guarded` is the before-state and the JSON diff above was computed against it.
+
+**Considered and not taken.** Taking the next angle's candidate without comparing it to the sheet's scale
+would be no cheaper in calls (the call is made either way) and would substitute whatever a different angle
+happens to say — `20,00` for the crop of a number whose sheet prints 50, on one measured angle sweep. The
+comparison is one multiplication against a fit the sheet already computed, and it is what keeps the
+substitution to readings the sheet itself agrees with.
+
 ## Measured, not yet changed
 
-The plate's `R8`, refused for a different reason than the note's `6,80` was. On the raster path the gate
-refuses the cluster at (886,378,935,405) and tesseract reads `R8` off it perfectly — a radius, printed on
-the sheet as `8.0`, with a circle whose own arrowed line the gate does not accept as a dimension line and
-whose stroke is not within reach of the number as a leader. The note retry does not cover it either: the
-block of a lone number is itself. A scan of every cluster the gate refuses that tesseract *would* give a
-number for is `out/probe/probe_refused_reads.py` — 30 on the plate, of which two are printed values
-(`6,80`, now read, and this `R8`) and 28 are phantoms (`9)`, `“3`, `3}`, `<6`, `2.`, single digits from
-letters), so a future change here has to separate those two from the rest by something other than the
-possibility of a read.
+The plate's `50,00` on the raster path, and a correction. This entry previously claimed a `R8` refused by
+the gate on the plate; measured today, that cluster is the `B-B` of the printed `SECTION B-B` label, read
+`R8` by tesseract — a phantom the gate refuses correctly, and the `B`'s are the sheet's own *type*, not a
+radius. The probe that produced the claim compared the reader's value against the printed list and stopped
+there; what it should have asked is whether the crop says `R8`, and the crop does not.
+
+What is really still missing on the plate's raster row is `50,00`, and it is a reading job rather than a
+geometry one. On the raster path the stroke carrying the number is taken as a leader — one arrowhead, the
+other not drawn or not found — so its anchors are the two ends of that stroke and
+`scale.measure_spans` cannot compare the value with anything: 617.6 px against a printed 50 is 12.35 px/mm
+where the sheet fits 7.817, and the audit never sees it. Every angle the reader is offered gives a
+different wrong answer (`90,00` at the digits' own 14.7°, `20,00` upright, `0.0` at the ink angle), so the
+candidate the scale would accept has to be produced, not chosen.
+
+Two more measured gaps stay open, both from this session: the scale audit has no pixel floor (a 1.5 mm
+dimension on a 1:2 sheet is 6 px, where one pixel is 17%), and a number carried by a stroke the gate reads
+as a leader is audited by nothing at all. A scan of every cluster the gate refuses that tesseract *would*
+give a number for is `out/probe/probe_refused_reads.py` — 30 on the plate, and what is behind them is not
+one kind of thing: the printed `6,80` (twice — the note's number, which the gate refused for its leader and
+which the committed change reads), the printed `50,00` (read as `250,00` from a crop 32 px wider to the
+left, where the accepted cluster's own crop reads `90,00`), four numbers an accepted cluster already covers
+(`100,00`, `80,00`, `60,00`, `16`), and the rest phantoms (`R8`, `9)`, `“3`, `3}`, `<6`, `2.`, `7`). A
+future change here has to separate those kinds by something other than the possibility of a read — which is
+what the re-read above does for the readings that carry their own line.

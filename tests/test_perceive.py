@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 
 from drawingto3d import perceive
-from drawingto3d.schema import BBox, Span
+from drawingto3d.schema import AnchorMode, BBox, Span
 
 
 def _glyph(centre_x: float, centre_y: float, x: int, y: int, w: int, h: int, separator: bool = False) -> perceive.Glyph:
@@ -247,3 +247,101 @@ def test_the_widest_spread_a_real_row_showed_is_still_one_pen():
     ]
 
     assert perceive._one_pen(row, list(range(len(row))))
+
+
+_BLANK = np.zeros((4, 4), dtype=np.uint8)
+
+
+def _measured(serial: int, value: float, length: float, mode: AnchorMode = "dimension") -> Span:
+    """A reading of `value`, carried by a dimension line `length` pixels long."""
+    return Span(
+        id=f"ocr-{serial}",
+        text=f"{value:.2f}",
+        value=value,
+        bbox=BBox(x=0, y=0, w=10, h=10),
+        anchors=[[0.0, 0.0], [length, 0.0]],
+        anchor_mode=mode,
+    )
+
+
+def _calibrated_sheet() -> list[Span]:
+    """Four readings the sheet itself agrees on, at 7.85 px/mm."""
+    return [
+        _measured(0, 15.0, 117.8),
+        _measured(1, 60.0, 471.3),
+        _measured(2, 80.0, 628.4),
+        _measured(3, 100.0, 785.5),
+    ]
+
+
+def test_a_reading_the_sheet_calls_wrong_is_read_again_and_the_fitting_candidate_kept(monkeypatch):
+    # The plate's own case: the vertical `8,00` comes back `3,00` at the angle its digits' own line gives
+    # — 63 px of dimension line against 3 mm is 21 px/mm where the sheet fits 7.85 — and `8,00` two degrees
+    # past it, which fits. The reader keeps its first answer; the sheet says that answer is wrong.
+    spans = _calibrated_sheet() + [_measured(4, 3.0, 63.0)]
+    clusters = {id(spans[4]): [0, 1]}
+    seen = []
+
+    def reread(gray, glyphs, cluster, serial, reader, anchors, mode, skip=0):
+        seen.append(skip)
+        return _measured(0, 8.0, 63.0)
+
+    monkeypatch.setattr(perceive, "_read_cluster", reread)
+
+    out = perceive._reread_against_the_sheet_scale(_BLANK, [], spans, clusters, None)
+
+    assert out[4].value == 8.0
+    assert out[4].text == "8.00"
+    assert seen == [1]
+
+
+def test_a_second_reading_that_does_not_fit_the_sheet_is_not_kept(monkeypatch):
+    # A re-read no better than the reading it was meant to replace leaves the sheet as it was.
+    spans = _calibrated_sheet() + [_measured(4, 3.0, 63.0)]
+    clusters = {id(spans[4]): [0, 1]}
+    monkeypatch.setattr(perceive, "_read_cluster", lambda *a, **k: _measured(0, 5.0, 63.0))
+
+    out = perceive._reread_against_the_sheet_scale(_BLANK, [], spans, clusters, None)
+
+    assert out[4].value == 3.0
+
+
+def test_a_number_a_leader_carries_is_not_asked_again(monkeypatch):
+    # The plate's `50,00` rides a stroke the gate reads as a leader — its other arrow is not drawn, or not
+    # found — and a leader's two ends say nothing about the value: 617.6 px against 50 mm is 12.35 px/mm
+    # on a sheet fitting 7.85, and the sheet cannot call that wrong because its own line is not the pair
+    # being compared. So no angle is offered again, and this number is read wrong for good.
+    spans = _calibrated_sheet() + [_measured(4, 50.0, 617.6, mode="leader")]
+    clusters = {id(spans[4]): [0, 1]}
+    calls = []
+    monkeypatch.setattr(perceive, "_read_cluster", lambda *a, **k: calls.append(k) or _measured(0, 90.0, 617.6))
+
+    out = perceive._reread_against_the_sheet_scale(_BLANK, [], spans, clusters, None)
+
+    assert out[4].value == 50.0
+    assert calls == []
+
+
+def test_a_sheet_too_sparse_to_calibrate_is_left_alone(monkeypatch):
+    # flange-1 and studycadcam-50 fit no scale at all, and the re-read never runs where there is none.
+    spans = [_measured(0, 5.0, 100.0), _measured(1, 10.0, 40.0)]
+    calls = []
+    monkeypatch.setattr(perceive, "_read_cluster", lambda *a, **k: calls.append(k) or _measured(0, 20.0, 100.0))
+
+    out = perceive._reread_against_the_sheet_scale(_BLANK, [], spans, {}, None)
+
+    assert [span.value for span in out] == [5.0, 10.0]
+    assert calls == []
+
+
+def test_the_vision_model_is_not_asked_the_same_crop_at_another_angle(monkeypatch):
+    # A model call is minutes a sheet, and its answer is not a function of the angle it was asked at, so
+    # skipping to the next angle means nothing there.
+    spans = _calibrated_sheet() + [_measured(4, 3.0, 63.0)]
+    calls = []
+    monkeypatch.setattr(perceive, "_read_cluster", lambda *a, **k: calls.append(k) or _measured(0, 8.0, 63.0))
+
+    out = perceive._reread_against_the_sheet_scale(_BLANK, [], spans, {id(spans[4]): [0]}, reader=object())
+
+    assert out[4].value == 3.0
+    assert calls == []

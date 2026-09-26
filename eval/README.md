@@ -74,24 +74,25 @@ and building metrics are held to.
 | plate-pocket-1 | vektör | 7/7 | 0 | 7.817 | 0 |
 | studycadcam-60 | raster | 6/9 | 9 | 3.278 | 7 |
 | studycadcam-50 | raster | 2/3 | 7 | - | 0 |
-| exercise-1 | raster | 5/13 | 7 | 5.731 | 8 |
+| exercise-1 | raster | 6/13 | 6 | 5.731 | 7 |
 | flange-1 | raster | 4/13 | 5 | - | 0 |
 
 The same sheets with the text layer taken away (`--as-raster`), which is the reader a scan gets:
 
 | vaka | kapsam | at the start of this work |
 |---|---|---|
-| plate-pocket-1 | 5/7 | 0/7 |
-| plastic-enclosure-1 | 7/11 | 2/11 |
+| plate-pocket-1 | 6/7 | 0/7 |
+| plastic-enclosure-1 | 8/11 | 2/11 |
 | studycadcam-50 | 2/3 | 1/3 |
 | studycadcam-60 | 6/9 | - |
-| exercise-1 | 5/13 | - |
+| exercise-1 | 6/13 | - |
 | flange-1 | 4/13 | - |
 
 The gap between the text layer and the reader a scan gets is the distance this project is closing:
-`plate-pocket-1` loses two numbers without it (7/7 -> 5/7) and `plastic-enclosure-1` four (11/11 ->
-7/11). `exercise-1` and `flange-1` only ever had the raster reader, and they are the two sheets the
-reading-angle change below moved: 2/13 -> 5/13 and 2/13 -> 4/13.
+`plate-pocket-1` loses one number without it (7/7 -> 6/7) and `plastic-enclosure-1` three (11/11 ->
+8/11). `exercise-1` and `flange-1` only ever had the raster reader; the reading-angle change moved the
+first of those by three numbers (2/13 -> 5/13), and the sheet's own scale (the bullet further down) moved
+`exercise-1` again, to 6/13.
 
 The vector numbers are the text layer read through the geometry gate; the raster ones are the same gate
 with tesseract behind it, which is the floor, not the finished reader — `eval/baseline.py` is where the
@@ -102,8 +103,8 @@ The ceiling, with the vision model reading the same crops instead of tesseract (
 
 | vaka | tesseract (floor) | qwen2.5vl:7b (ceiling) |
 |---|---|---|
-| plate-pocket-1 | 5/7 | 4/7 (older run: below the floor) |
-| plastic-enclosure-1 | 7/11 | 10/11 |
+| plate-pocket-1 | 6/7 | 4/7 (older run: below the floor) |
+| plastic-enclosure-1 | 8/11 | 10/11 |
 
 Neither switch is a default: the model costs minutes per sheet against seconds. Wall clock is not
 comparable between runs on one machine — the same plate took 32 s in one run and 538 s in another with
@@ -221,8 +222,30 @@ reads on the plate it read before the geometry caught up.
   `plastic-enclosure-1` therefore reports 6 of its 14 readings as suspect although the fit itself
   (3.917 px/mm against the 3.937 a 1:2 A4 expects) is right. A reading should be judged against the
   larger of a relative tolerance and an absolute one in the sheet's own pixels.
-- **Raster reading is the weak half.** With the text layer taken away the front end finds 5 of the 13
-  printed numbers on `exercise-1`, 4 of 13 on `flange-1` and 5 of 7 on `plate-pocket-1`, against 7 of 7 on
+- **A sheet is its own ground truth, so it can read its own mistakes again.** Every dimension line is
+  drawn to the number printed on it, so the sheet fits its own scale (`scale.consensus`, a majority of the
+  ratios between a value and the line it was read from) and a misread number is a pair whose ratio is off —
+  a mistake the sheet names without being told the answer. That audit ran after reading and only
+  *reported*; now the readings it names are asked again, at the angles the reader was not asked the first
+  time, and a candidate that fits the sheet's own scale replaces one that does not (`perceive.
+  _reread_against_the_sheet_scale`). Three numbers came back on three sheets, each one a phantom leaving:
+  `plate-pocket-1` 5/7 -> **6/7** (the vertical `8,00`, read `3,00` at the angle its digits' own line gives
+  — 63 px of line against 3 mm is 21 px/mm where the sheet fits 7.817 — and `8,00` 0.6° past it, at 7.875),
+  `exercise-1` 5/13 -> **6/13** (`7€` giving way to `35`) and `plastic-enclosure-1` 7/11 -> **8/11** (`2)`
+  giving way to `10`). Noise fell by one on each of the three sheets, no row lost a number, and the two
+  sheets with no fitted scale (`flange-1`, `studycadcam-50`) and the four vector rows are unchanged. The
+  re-read is skipped when a model is reading: one call per crop is minutes a sheet, and a model's answer is
+  not a function of the angle it was asked at.
+- **A number a leader carries cannot be checked against the scale at all.** `scale.measure_spans` reads the
+  two ends of a span's own dimension line, and a leader's two ends say nothing about the value, so the
+  audit never names a leader-mode span and the re-read above never touches one. The plate's `50,00` is
+  exactly that case: on the raster path the stroke carrying it is taken as a leader (its other arrow is not
+  drawn, or not found), its 617.6 px against a printed 50 is 12.35 px/mm where the sheet fits 7.817, and
+  tesseract reads `90,00` at the digits' own line and `20,00` at the upright — no angle it is offered gives
+  `50,00`, so this one is a reading job, not a geometry one. It is the last number missing from the plate's
+  raster row.
+- **Raster reading is the weak half.** With the text layer taken away the front end finds 6 of the 13
+  printed numbers on `exercise-1`, 4 of 13 on `flange-1` and 6 of 7 on `plate-pocket-1`, against 7 of 7 on
   that sheet read through its text layer. Three causes were measured on the plate sheet, and all three are
   fixed: a decimal separator too small to survive the glyph filter left the digits on either side of it
   30.6 px apart against a 25.6 px reach, so *every* dimension on the sheet came apart at its comma

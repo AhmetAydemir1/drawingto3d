@@ -22,6 +22,7 @@ from drawingto3d.plan import PlatePlan, build_plan
 from drawingto3d.cadrun import CadFailure
 from drawingto3d.general import GeneralPlan, build_general
 from drawingto3d.observe import observe
+from drawingto3d.bind import bind_page
 
 
 def main() -> None:
@@ -52,6 +53,9 @@ def main() -> None:
     observe_command = commands.add_parser("observe", help="çizimden aile-bağımsız gözlem kayıtları çıkar (vektör PDF)")
     observe_command.add_argument("drawing")
     observe_command.add_argument("out_dir")
+    bind_command = commands.add_parser("bind", help="basılı sayıları oklarının dokunduğu geometriye bağla (vektör PDF)")
+    bind_command.add_argument("drawing")
+    bind_command.add_argument("out_dir")
 
     args = parser.parse_args()
     if args.command == "plan":
@@ -93,6 +97,22 @@ def main() -> None:
         print(json.dumps({"observations": str(path), "paths": len(observations.paths),
                           "primitives": len(observations.primitives), "texts": len(observations.texts)},
                          indent=2))
+        return
+    if args.command == "bind":
+        try:
+            bindings = bind_page(args.drawing)
+        except ValueError as exc:
+            parser.exit(2, f"Bağlama çıkarılamadı: {exc}\n")
+        folder = Path(args.out_dir)
+        folder.mkdir(parents=True, exist_ok=True)
+        path = folder / "bindings.json"
+        path.write_text(bindings.model_dump_json(indent=2), encoding="utf-8")
+        counts: dict[str, int] = {}
+        for span in bindings.spans:
+            counts[span.status] = counts.get(span.status, 0) + 1
+        print(json.dumps({"bindings": str(path), "spans": len(bindings.spans),
+                          "status": counts, "sheet_px_per_mm": bindings.sheet_px_per_mm},
+                         ensure_ascii=False, indent=2))
         return
     if args.command == "read":
         _read(args)

@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
+from typing import NamedTuple
+
 import math
 import re
 import shutil
 import subprocess
 import tempfile
 from pathlib import Path
+from typing import NamedTuple
 
 import cv2
 import numpy as np
@@ -138,7 +141,7 @@ def _oriented_spans(gray: np.ndarray, reader=None) -> list[Span]:
     # One glyph list for both passes. Narrow per-pass size limits used to drop half of a rotated number
     # (the digit that looked too wide for that pass), leaving a fragment that then read as a stray digit.
     glyphs = _glyphs(gray, text_mask)
-    sizes = [max(glyph[4], glyph[5]) for glyph in glyphs]
+    sizes = [max(glyph.w, glyph.h) for glyph in glyphs if not glyph.separator]
     gate = _DimensionGate(
         binary,
         segments,
@@ -174,18 +177,51 @@ def _one_number_per_line(spans: list[Span], step: float = 8.0) -> list[Span]:
     return [span for span in spans if id(span) in keep]
 
 
-def _glyphs(gray: np.ndarray, text_mask: np.ndarray, longest: int = 60, amin: int = 8, amax: int = 500) -> list[tuple]:
+class Glyph(NamedTuple):
+    """A blob of printed text: where it sits, how big it is, and whether it is a separator not a digit."""
+
+    cx: float
+    cy: float
+    x: int
+    y: int
+    w: int
+    h: int
+    separator: bool = False
+
+
+def _glyphs(gray: np.ndarray, text_mask: np.ndarray, longest: int = 60, amin: int = 8, amax: int = 500) -> list[Glyph]:
+    """Printed text as blobs: centre, box, size, and whether the blob is a separator rather than a digit.
+
+    A blob the size of a character is a glyph, and so is one too small in one direction to be a character
+    at all: a decimal separator is a few pixels across, and it is the whole difference between the printed
+    `100,00` and two numbers, `10` and `00`. Measured on the plate sheet, the comma's own room pushed the
+    digits on either side of it 30.6 px apart against a chaining limit of 25.6 px, so every dimension on
+    that sheet came apart at its decimal point. The small blobs are flagged, so the rest of the code can
+    tell a comma from a digit.
+    """
     count, _, stats, centroids = cv2.connectedComponentsWithStats(text_mask, 8)
     height, width = gray.shape
-    glyphs = []
+    blobs = []
     for index in range(1, count):
         x, y, w, h, area = [int(value) for value in stats[index]]
         if not (width * 0.04 < x < width * 0.96 and height * 0.04 < y < height * 0.96):
             continue
+        if max(w, h) <= longest and area <= amax:
+            blobs.append((float(centroids[index][0]), float(centroids[index][1]), x, y, w, h, area))
+    # What a character is on this sheet, measured from the blobs that are one in both directions. A `1`
+    # printed at this size is 6 px wide and 28 px tall, so the thinness of a blob says nothing about it,
+    # and a comma 8 px across is nearly as wide as it is tall: only the two together tell them apart.
+    core = [max(blob[4], blob[5]) for blob in blobs if min(blob[4], blob[5]) >= 8]
+    character = float(np.median(core or [max(blob[4], blob[5]) for blob in blobs] or [longest]))
+    glyphs = []
+    for cx, cy, x, y, w, h, area in blobs:
+        side = max(w, h)
         # Judged on the longest side, not the height: text along a vertical dimension is printed a
         # quarter turn round, so a digit of the same size is as wide as it is tall elsewhere.
-        if 8 <= min(w, h) and max(w, h) <= longest and amin <= area <= amax:
-            glyphs.append((float(centroids[index][0]), float(centroids[index][1]), x, y, w, h))
+        if 3 <= min(w, h) and 0.6 * character <= side <= longest and amin <= area <= amax:
+            glyphs.append(Glyph(cx, cy, x, y, w, h, False))
+        elif side <= 0.5 * character and area >= 2:
+            glyphs.append(Glyph(cx, cy, x, y, w, h, True))
     return glyphs
 
 
@@ -267,7 +303,7 @@ def _overlaps(a: tuple[float, float, float, float], b: tuple[float, float, float
     return overlap / smaller > limit
 
 
-def _cluster_box(glyphs: list[tuple], cluster: list[int]) -> tuple[float, float, float, float]:
+def _cluster_box(glyphs: list[Glyph], cluster: list[int]) -> tuple[float, float, float, float]:
     return (
         float(min(glyphs[index][2] for index in cluster)),
         float(min(glyphs[index][3] for index in cluster)),
@@ -288,10 +324,12 @@ def _text_mask(gray: np.ndarray) -> np.ndarray:
     return cv2.subtract(ink, rules)
 
 
-def _collect_spans(gray: np.ndarray, glyphs: list[tuple], mode: str, gate=None, reader=None) -> list[Span]:
+def _collect_spans(gray: np.ndarray, glyphs: list[Glyph], mode: str, gate=None, reader=None) -> list[Span]:
     spans: list[Span] = []
     for cluster in _cluster_glyphs(glyphs, mode):
-        if not 1 <= len(cluster) <= 5:
+        # A printed number is a handful of digits; a cluster longer than eight is a line of words, or two
+        # numbers that a separator's reach has bridged together.
+        if not 1 <= len(cluster) <= 8:
             continue
         box = _cluster_box(glyphs, cluster)
         anchors = None
@@ -306,8 +344,16 @@ def _collect_spans(gray: np.ndarray, glyphs: list[tuple], mode: str, gate=None, 
     return spans
 
 
-def _cluster_glyphs(glyphs: list[tuple], mode: str = "center") -> list[list[int]]:
-    unused = set(range(len(glyphs)))
+def _cluster_glyphs(glyphs: list[Glyph], mode: str = "center") -> list[list[int]]:
+    """Digits grouped into printed numbers. Separators are not members: they are only bridges.
+
+    A separator small enough to be a comma is small enough to be a speck of ink as well, and there are
+    many of them on a rendered sheet - about two hundred on the plate. As members of a cluster they chain
+    through each other and swallow the sheet into one group of every glyph on it, which no number can be.
+    They are consulted between two digits instead, and the crop of a number already spans the room they
+    take, so the reader still sees the comma.
+    """
+    unused = {index for index, glyph in enumerate(glyphs) if not glyph.separator}
     clusters: list[list[int]] = []
     while unused:
         seed = unused.pop()
@@ -317,7 +363,7 @@ def _cluster_glyphs(glyphs: list[tuple], mode: str = "center") -> list[list[int]
             grew = False
             for index in list(unused):
                 close = _same_word if mode == "gap" else _centers_near
-                if any(close(glyphs[index], glyphs[other]) for other in group):
+                if any(close(glyphs[index], glyphs[other]) or _separator_between(glyphs[index], glyphs[other], glyphs) for other in group):
                     group.append(index)
                     unused.remove(index)
                     grew = True
@@ -325,9 +371,28 @@ def _cluster_glyphs(glyphs: list[tuple], mode: str = "center") -> list[list[int]
     return clusters
 
 
+def _scaled_for_reading(crop: np.ndarray, text_size: float, target: float = 64.0, most: float = 6.0) -> np.ndarray:
+    """The crop of a number enlarged until its digits are comfortable to read.
+
+    A dimension on these sheets stands 14-28 px tall, and a reader handed a 14 px digit is being asked
+    about a smudge: on the plate sheet read as a raster the crops came back as `,00` and `).00` where the
+    sheet prints `80,00`, with the geometry around them already correct.
+
+    The factor is measured against the size of the *text*, not of the crop. A number printed up a vertical
+    dimension sits in a crop 33 px wide and 95 px tall, and scaling by the longest side left it untouched:
+    the digits stayed 18 px, and turning that crop upright to read it gave `08` for `80,00`. Scaling by the
+    size of the digits - which is a ratio of the digits themselves, so the same code reads a sheet at any
+    dpi - brings them to a size a reader can work with, which is where `8000` came from.
+    """
+    factor = min(most, max(1.0, target / max(1.0, text_size)))
+    if factor <= 1.01:
+        return crop
+    return cv2.resize(crop, None, fx=factor, fy=factor, interpolation=cv2.INTER_CUBIC)
+
+
 def _read_cluster(
     gray: np.ndarray,
-    glyphs: list[tuple],
+    glyphs: list[Glyph],
     cluster: list[int],
     serial: int,
     reader=None,
@@ -341,6 +406,7 @@ def _read_cluster(
     crop = gray[max(0, y0) : y1, max(0, x0) : x1]
     if crop.size == 0:
         return None
+    crop = _scaled_for_reading(crop, float(np.median([max(glyphs[index].w, glyphs[index].h) for index in cluster])))
     if reader is not None:
         vertical = bool(anchors) and abs(anchors[0][0] - anchors[1][0]) < abs(anchors[0][1] - anchors[1][1])
         text = read_dimension(reader, crop, vertical)
@@ -364,7 +430,7 @@ def _read_cluster(
     return None
 
 
-def _centers_near(a: tuple, b: tuple) -> bool:
+def _centers_near(a: Glyph, b: Glyph) -> bool:
     """Two glyphs are part of the same printed number if they sit within one character's reach of each other.
 
     The reach is measured on the glyph's *longest* side, not its height: a number printed along a vertical
@@ -376,14 +442,46 @@ def _centers_near(a: tuple, b: tuple) -> bool:
     return math.hypot(a[0] - b[0], a[1] - b[1]) < limit
 
 
-def _same_word(a: tuple, b: tuple) -> bool:
-    _, _, ax, ay, aw, ah = a
-    _, _, bx, by, bw, bh = b
-    gap_x = max(0, max(ax, bx) - min(ax + aw, bx + bw))
-    gap_y = max(0, max(ay, by) - min(ay + ah, by + bh))
-    same_row = abs((ay + ah / 2) - (by + bh / 2)) <= max(ah, bh) * 0.6
-    same_col = abs((ax + aw / 2) - (bx + bw / 2)) <= max(aw, bw) * 0.8
-    return (same_row and gap_x <= 12 and gap_y <= max(ah, bh)) or (same_col and gap_y <= 12 and gap_x <= max(aw, bw))
+def _separator_between(a: Glyph, b: Glyph, glyphs: list[Glyph]) -> bool:
+    """Whether two digits are separated only by the decimal separator, with nothing else between them.
+
+    A separator is too small to be kept as a glyph of its own, so the digits on either side of it are all
+    that is left to measure, and the room it takes reads as a gap between two numbers: on the plate sheet
+    the comma's own room pushed them 30.6 px apart against a 25.6 px reach, and every dimension on the
+    sheet came apart at its decimal point.
+
+    A comma is not just any small blob lying between two digits, though. A rendered sheet is full of them
+    - about two hundred on the plate, along dimension lines and hatching - and accepting one of those made
+    the digits of the whole sheet one group. So the blob has to be close to *both* digits, one character's
+    reach at most, small against the digits, and roughly on the way from one to the other.
+    """
+    reach = math.hypot(a.cx - b.cx, a.cy - b.cy)
+    size = float(max(a.w, a.h, b.w, b.h))
+    if reach <= 0 or reach > 1.6 * size:
+        return False
+    along_x, along_y = b.cx - a.cx, b.cy - a.cy
+    for blob in glyphs:
+        if not blob.separator or max(blob.w, blob.h) > 0.6 * size:
+            continue
+        # The blob stands between them: its projection falls inside the span, and it is near the line the
+        # two digits are on. Measured as the length of the path through it instead, a comma sitting 12 px
+        # to the side of the digits it belongs to missed the limit by half a pixel.
+        along = ((blob.cx - a.cx) * along_x + (blob.cy - a.cy) * along_y) / reach
+        if not 0.15 * reach <= along <= 0.85 * reach:
+            continue
+        across = abs((blob.cx - a.cx) * along_y - (blob.cy - a.cy) * along_x) / reach
+        if across > 0.7 * size:
+            continue
+        return True
+    return False
+
+
+def _same_word(a: Glyph, b: Glyph) -> bool:
+    gap_x = max(0, max(a.x, b.x) - min(a.x + a.w, b.x + b.w))
+    gap_y = max(0, max(a.y, b.y) - min(a.y + a.h, b.y + b.h))
+    same_row = abs((a.y + a.h / 2) - (b.y + b.h / 2)) <= max(a.h, b.h) * 0.6
+    same_col = abs((a.x + a.w / 2) - (b.x + b.w / 2)) <= max(a.w, b.w) * 0.8
+    return (same_row and gap_x <= 12 and gap_y <= max(a.h, b.h)) or (same_col and gap_y <= 12 and gap_x <= max(a.w, b.w))
 
 
 def _usable(value: float | None) -> bool:

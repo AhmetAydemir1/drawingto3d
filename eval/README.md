@@ -69,14 +69,26 @@ and building metrics are held to.
 |---|---|---|---|---|---|
 | plastic-enclosure-1 | vektör | 11/11 | 0 | 3.917 | 7 |
 | plate-pocket-1 | vektör | 6/7 | 0 | 7.817 | 0 |
-| studycadcam-60 | raster | 7/9 | 8 | 3.278 | 9 |
-| studycadcam-50 | raster | 1/3 | 6 | - | 0 |
-| exercise-1 | raster | 2/13 | 6 | 5.70 | 7 |
-| flange-1 | raster | 3/13 | 5 | - | 0 |
+| studycadcam-60 | raster | 6/9 | 7 | 3.278 | 7 |
+| studycadcam-50 | raster | 2/3 | 6 | - | 0 |
+| exercise-1 | raster | 3/13 | 8 | 5.731 | 9 |
+| flange-1 | raster | 3/13 | 3 | - | 0 |
+
+The same sheets with the text layer taken away (`--as-raster`), which is the reader a scan gets:
+
+| vaka | kapsam | before the separator work |
+|---|---|---|
+| plate-pocket-1 | 2/7 | 0/7 |
+| plastic-enclosure-1 | 3/11 | 2/11 |
+| studycadcam-50 | 2/3 | 1/3 |
+| studycadcam-60 | 6/9 | 6/9 |
+| exercise-1 | 3/13 | 3/13 |
+| flange-1 | 3/13 | 3/13 |
 
 The vector numbers are the text layer read through the geometry gate; the raster ones are the same gate
 with tesseract behind it, which is the floor, not the finished reader — `eval/baseline.py` is where the
-vision model enters.
+vision model enters. The raster column moves by a number or two with any change to how glyphs are
+grouped, so it is the row-by-row comparison that says whether a change helped, not one sheet.
 
 ## How a number is read
 
@@ -96,13 +108,22 @@ vision model enters.
    13 printed values.
 4. Text along a vertical line is printed a quarter turn round, so a glyph is judged on its longest side
    and its crop is turned upright before it is read. Filtering those digits on height (or on width) is
-   how a printed 80 arrives as a bare `0`.
-5. `reader.read_dimension` asks the local vision model first, tesseract second, and reports agreement. An
+   how a printed 80 arrives as a bare `0`. The crop is then enlarged by the size of its *digits* to a size
+   a reader can work with (`_scaled_for_reading`), which is what turns the `08` of a vertical `80,00` into
+   something a reader gets right.
+5. A printed number is a cluster of glyphs, and the **decimal separator is a bridge, not a glyph**: it
+   is a few pixels across, below the filter that keeps character-sized blobs, and the digits either side of
+   it are then the only thing left to measure. Two digits chain across it when the blob lies between them
+   and near their line (`_separator_between`) — a comma belongs to the digits it sits beside, and one of
+   the sheet's two hundred specks does not. A blob thin in one direction is not a separator either: a `1`
+   printed at this size is 6 px wide and 28 tall, so what is a character is decided against the sheet's own
+   character size, in both directions, by `_glyphs`.
+6. `reader.read_dimension` asks the local vision model first, tesseract second, and reports agreement. An
    answer that does not fit the crop it came from — letters on a dimension line, more digits than the box
    could hold — is refused instead of kept; that is where `R100` and `R105` hallucinations come from.
-6. Every accepted number keeps the two ends of its own line as `Span.anchors`, so its value stays
+7. Every accepted number keeps the two ends of its own line as `Span.anchors`, so its value stays
    attached to the geometry that printed it.
-7. `scale.audit` fits the sheet's own scale (px per mm) from those anchors and names the records that do
+8. `scale.audit` fits the sheet's own scale (px per mm) from those anchors and names the records that do
    not fit it — a misread, or a number attached to a line that was never its own. On `my_part.jpg`:
    5.95 px/mm with a 2.4% spread (A4 at 200 dpi, scale 1:2, expects 5.9) — no title block, dpi or scale
    note needed.
@@ -129,12 +150,20 @@ vision model enters.
   `plastic-enclosure-1` therefore reports 6 of its 14 readings as suspect although the fit itself
   (3.917 px/mm against the 3.937 a 1:2 A4 expects) is right. A reading should be judged against the
   larger of a relative tolerance and an absolute one in the sheet's own pixels.
-- **Raster reading is the weak half.** The front end finds 2/13 printed numbers on `exercise-1` and 3/13
-  on `flange-1` when the text layer is absent; on the same sheets with the text layer it finds all of
-  them. `eval/frontend.py --as-raster` is the harness for this — it reads a vector sheet's raster with
-  the truth known exactly, so the CV reader can be improved without another hand-made example. The
-  contrast rule below took `exercise-1` from 3/13 to 2/13 while lifting two other sheets: the lost value
-  is a real cost of the change, kept visible rather than smoothed over.
+- **Raster reading is the weak half.** With the text layer taken away the front end finds 3 of the 13
+  printed numbers on `exercise-1`, 3 of 13 on `flange-1`, and 2 of 7 on `plate-pocket-1`, where the same
+  sheet read through its text layer scores 6 of 7. Three causes were measured on the plate sheet and two
+  are fixed: a decimal separator too small to survive the glyph filter left the digits on either side of
+  it 30.6 px apart against a 25.6 px reach, so *every* dimension on the sheet came apart at its comma
+  (`100,00` arriving as `10` and `00`); a crop was enlarged by its own longest side, which left the 33x95
+  crop of a number printed up a vertical dimension at its original 18 px digits, and the reader returned
+  `08` for `80,00`; and the quarter turn a crop is read at is still *tried* rather than worked out, four
+  rotations in turn with the first parseable answer winning, which is how a complete crop of `80,00` still
+  comes back as `8000`. `eval/frontend.py --as-raster` is the harness for all of this — it reads a vector
+  sheet's raster with the truth known exactly, so the CV reader can be improved without another hand-made
+  example. It is a row of numbers that moved, not a clean win: `plate-pocket-1` 0/7 -> 2/7 and
+  `studycadcam-50` 1/3 -> 2/3, while `plastic-enclosure-1` went 2/11 -> 4/11 on the grouping fix and back to
+  3/11 when crops began being scaled by the size of the digits. The cost is kept in the table.
 - **A sheet is not two tones.** Splitting the grey histogram in the middle (Otsu) reads a drawing as ink
   and paper, and a drawing has three tones: text, thin lines, paper. On `plate-pocket-1` the text runs
   0-50 grey, the paper sits at 255 and every dimension line is printed at 161-235, so Otsu's split at 158

@@ -95,6 +95,20 @@ with tesseract behind it, which is the floor, not the finished reader — `eval/
 vision model enters. The raster column moves by a number or two with any change to how glyphs are
 grouped, so it is the row-by-row comparison that says whether a change helped, not one sheet.
 
+The ceiling, with the vision model reading the same crops instead of tesseract (`--as-raster --model`):
+
+| vaka | tesseract (floor) | qwen2.5vl:7b (ceiling) |
+|---|---|---|
+| plate-pocket-1 | 4/7 | 4/7 |
+| plastic-enclosure-1 | 6/11 | 9/11 |
+
+Neither switch is a default: the model costs minutes per sheet against seconds. Wall clock is not
+comparable between runs on one machine — the same plate took 32 s in one run and 538 s in another with
+nothing else on the box — so the coverage is the measurement and the seconds are not. The plate row was
+re-measured after the leader work below; `plastic-enclosure-1`'s ceiling was taken before it and is
+provisional. The model is not the product path on this evidence: it buys three numbers on one sheet and
+none at all on the other, where the geometry work below costs seconds.
+
 ## How a number is read
 
 `perceive` finds printed numbers by the geometry that carries them, not by their size:
@@ -167,6 +181,11 @@ grouped, so it is the row-by-row comparison that says whether a change helped, n
   What stays unread is the `Ø` mark itself: it is a vector path, not text, so the record that reaches the
   interpreter is a linear `6.80` rather than a diameter, and the `4 x` multiplicity is a picture too. Those
   are the marks a reader has to get from the drawing, and they are the same job the raster sheets need.
+  On the raster path the same callout is not merely missed but *read wrong*: the drawn glyphs of
+  `4 x Ø 6,80` cluster together with their prefix, the gate takes the cluster, and tesseract answers
+  `08°9` -> 89 — an angle printed nowhere on the sheet (`out/frontend/plate-pocket-1-raster.json`, span
+  bbox 247,1288) — while the true 6.8 is missing. Splitting a line of drawn words into the number inside
+  it, and refusing a crop whose read does not fit it, is the geometry work left on the raster side.
 - **The scale audit has no pixel floor.** `scale.RELATIVE_TOLERANCE` is 4% of the value; a 1.5 mm
   dimension on a 1:2 sheet is 6 px at 200 dpi, where one pixel of arrow or extension-line error is 17%.
   `plastic-enclosure-1` therefore reports 6 of its 14 readings as suspect although the fit itself

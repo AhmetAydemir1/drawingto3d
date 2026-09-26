@@ -23,6 +23,7 @@ from drawingto3d.cadrun import CadFailure
 from drawingto3d.general import GeneralPlan, build_general
 from drawingto3d.observe import observe
 from drawingto3d.bind import bind_page
+from drawingto3d.meaning import meaning_page
 
 
 def main() -> None:
@@ -56,6 +57,9 @@ def main() -> None:
     bind_command = commands.add_parser("bind", help="basılı sayıları oklarının dokunduğu geometriye bağla (vektör PDF)")
     bind_command.add_argument("drawing")
     bind_command.add_argument("out_dir")
+    meaning_command = commands.add_parser("meaning", help="bağlanan adaylardan her sayının ölçtüğü şeyi çöz (vektör PDF)")
+    meaning_command.add_argument("drawing")
+    meaning_command.add_argument("out_dir")
 
     args = parser.parse_args()
     if args.command == "plan":
@@ -112,6 +116,24 @@ def main() -> None:
             counts[span.status] = counts.get(span.status, 0) + 1
         print(json.dumps({"bindings": str(path), "spans": len(bindings.spans),
                           "status": counts, "sheet_px_per_mm": bindings.sheet_px_per_mm},
+                         ensure_ascii=False, indent=2))
+        return
+    if args.command == "meaning":
+        try:
+            meanings = meaning_page(args.drawing)
+        except ValueError as exc:
+            parser.exit(2, f"Anlam çıkarılamadı: {exc}\n")
+        folder = Path(args.out_dir)
+        folder.mkdir(parents=True, exist_ok=True)
+        path = folder / "meaning.json"
+        path.write_text(meanings.model_dump_json(indent=2), encoding="utf-8")
+        forms: dict[str, int] = {}
+        resolutions: dict[str, int] = {}
+        for span in meanings.spans:
+            forms[span.form] = forms.get(span.form, 0) + 1
+            resolutions[span.resolution] = resolutions.get(span.resolution, 0) + 1
+        print(json.dumps({"meaning": str(path), "spans": len(meanings.spans),
+                          "forms": forms, "resolution": resolutions},
                          ensure_ascii=False, indent=2))
         return
     if args.command == "read":

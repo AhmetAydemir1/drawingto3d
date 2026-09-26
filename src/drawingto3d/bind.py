@@ -96,6 +96,7 @@ class SpanBinding(BaseModel):
     unit: str
     kind: str
     anchor_mode: str
+    text_bbox: list[float] | None = None
     anchors: list[AnchorBinding] = Field(default_factory=list)
     row_px: float | None = None
     implied_px_per_mm: float | None = None
@@ -317,7 +318,8 @@ def _bind_span(span: Span, observations: Observations, strokes: dict[str, np.nda
                points: list[tuple[str, FeatureKind, np.ndarray]]) -> SpanBinding:
     anchors = [np.array(anchor, dtype=float) for anchor in span.anchors]
     binding = SpanBinding(span_id=span.id, text=span.text, value=span.value,
-                          unit=span.unit, kind=span.kind.value, anchor_mode=span.anchor_mode)
+                          unit=span.unit, kind=span.kind.value, anchor_mode=span.anchor_mode,
+                          text_bbox=[span.bbox.x, span.bbox.y, span.bbox.w, span.bbox.h])
     for index, anchor_point in enumerate(anchors):
         other = anchors[1 - index] if len(anchors) == 2 else None
         binding.anchors.append(_anchor_binding(anchor_point, other, span, observations,

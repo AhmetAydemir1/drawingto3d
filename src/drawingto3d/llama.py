@@ -16,7 +16,11 @@ PROMPT = (
     "Just the code, no other words."
 )
 
-VISION_MODELS = ("qwen2.5vl:7b", "qwen2.5vl:3b")
+# The instruct build of qwen3-vl is the one a number reader wants. Ollama's bare `qwen3-vl:8b` tag is
+# the *thinking* build (same model layer as `qwen3-vl:8b-thinking`), and a thinking build spends the
+# reader's 12-token budget on reasoning instead of the number, so the tag is named in full here.
+# qwen2.5vl stays behind it as the fallback for a box that has not pulled the newer weights.
+VISION_MODELS = ("qwen3-vl:8b-instruct", "qwen2.5vl:7b", "qwen2.5vl:3b")
 CODER_MODELS = ("qwen2.5-coder:7b", "qwen2.5-coder:14b", "qwen2.5-coder:3b")
 
 

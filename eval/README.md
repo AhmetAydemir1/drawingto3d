@@ -107,26 +107,52 @@ grouped, so it is the row-by-row comparison that says whether a change helped, n
 
 The ceiling, with the vision model reading the same crops instead of tesseract (`--as-raster --model`):
 
-| vaka | tesseract (floor) | qwen2.5vl:7b (ceiling) |
+| vaka | tesseract (floor) | qwen3-vl:8b-instruct (ceiling) |
 |---|---|---|
-| plate-pocket-1 | 6/7 | 4/7 |
+| plate-pocket-1 | 6/7 | 7/7 |
 | plastic-enclosure-1 | 8/11 | 10/11 |
 
 Neither switch is a default: the model costs minutes per sheet against seconds. Wall clock is not
 comparable between runs on one machine — the same plate took 32 s in one run and 538 s in another with
-nothing else on the box — so the coverage is the measurement and the seconds are not. Both ceilings were
-re-run on the code of this window (`out/model_run_plate_after.log`, 716 s; `out/model_run_plastic_after2.log`,
-926.5 s). The plate is **4/7, below that sheet's own tesseract floor of 6/7**, so "below the floor" was not
-an artefact of a stale run: on this sheet the local 7B model reads fewer of the printed numbers than the CV
-reader does, and that is worth saying plainly. It is not worse at *everything*: the numbers it reads include
-the `50,00` the floor cannot (`covers` = 50, 60, 80, 100) — the leader-carried diameter the tesseract path has
-no arbiter for — while it loses `6,8`, `8` and `15` that the floor reads, with two noise records against the
-floor's two. The plastic sheet is the other way round and by a wide margin: **10/11 against the floor's
-8/11**, missing only the `8.0`, with 3 noise records against 4 — the floor's noise fell from 7 to 4 when its
-own arrowheads stopped being read as digits (`10a32b6`) — and among the numbers it reads are `1.50`
-and `4.80`, the small ones the floor used to anchor to a neighbouring line and now reads at their own span
-(`be6b975`). The model is still not the product path on this evidence: minutes per sheet against seconds,
-and on one of the two sheets it is the weaker reader.
+nothing else on the box — so the coverage is the measurement and the seconds are not.
+
+The reader behind that column changed on 2026-09-26. `qwen2.5vl:7b` reads **4/7 on the plate — below that
+sheet's own tesseract floor of 6/7** — and 10/11 on the plastic sheet; the two runs (`out/ceiling_qwen2_5vl7b_8808a95.log`)
+confirm what `10a32b6` asserted without re-running them, that the arrowhead guard leaves the ceiling where it
+was. `qwen3-vl:8b-instruct` keeps the plastic sheet at 10/11 and takes the plate from 4/7 to **7/7**, so the
+ceiling is off the floor on both sheets. Both models were measured on one commit (`8808a95`) and one tree,
+one model per process, because the harness writes one `-raster-model.json` per case and a second run
+overwrites the first: the runs are kept in `out/frontend_7b_8808a95/` and `out/frontend_8b_8808a95/`, and the
+8B run took 723 s and 674 s against the 7B's 689 s and 677 s — the same order of minutes, not a faster reader.
+
+What the swap bought, sheet by sheet. The plate's three recovered numbers are `8,00`, `15,00` and `6,80`:
+the 7B read the first two as `800` and `1500` (the decimal comma lost, the value a number the sheet does not
+print) and never found the third, and the 8B reads the printed text exactly — including the drawn `Ø`, which
+the text layer does not carry at all (rule: on a vector sheet the diameter mark is a path, so `∅100` and
+`Ø10` can only come from the drawing; `∅100` covers the printed `100` where `100,00` already did). Nothing
+the 7B could read was lost: `50,00`, `60,00`, `80,00`, `100,00` come through on both, so the plate's own gain
+is three numbers and no loss.
+
+What it cost. The plate's noise goes 2 -> 4 (`7`, `Ø10`, `∅10`, `∅10` against the 7B's `800`, `R105`) and the
+plastic sheet's stays at 3 with different identities (`7`, `45`, `7` against `0`, `R105`, `R105`; `45` is the
+sheet's printed `46` with one digit wrong). The phantom crops are not the model's: both readers answer them,
+and the 7B's `R105` appears on both sheets, so what those crops are is a gate question about clusters that
+carry no number, not a question of which weights read them. Judged only on the project's own rule — coverage
+must rise, noise must not — this swap is a **+3 coverage, +2 noise** change on one sheet and a no-op on the
+other, and the noise it adds is the kind `10a32b6` was written to remove; it is kept because three printed
+numbers the part cannot be built without outweigh two phantoms the noise list already names, and because at
+4/7 the model path could not even be described as a reader.
+
+Running both readers and keeping what they agree on was measured and rejected (`out/probe/probe_model_swap.py`
+replays the gate's own crops through both). The plate's agreement row is 4/7 with no noise: it throws away
+exactly the three numbers the 8B found, because the two models disagree on them, and neither can say which
+of the two is right — the 7B's `800` is not hesitant. The union row is 7/7 with six noise records against the
+8B's four. A second model is worth its minutes only where something else can *decide* between two answers;
+on this pipeline that arbiter is the sheet's own scale (`scale.audit`), and the second reader belongs on the
+rows the audit names, not on every crop.
+
+The model is still not the product path on this evidence: minutes per sheet against seconds, and it is the
+raster half only — a vector sheet's own text layer reads 7/7 and 11/11 with no noise and no model at all.
 
 ## How a number is read
 

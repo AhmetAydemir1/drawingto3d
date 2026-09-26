@@ -478,6 +478,64 @@ runs are the raster reader), the other 15 byte-identical; `eval/check_tables.py`
 solidity test on changes nothing in those three runs but the seconds (checked field by field against
 `out/probe/*.before_rescue.json`).
 
+## The ceiling reader can read: qwen3-vl:8b-instruct, and the plate comes off its own floor (model, reading)
+
+**What changed.** `llama.VISION_MODELS` was `("qwen2.5vl:7b", "qwen2.5vl:3b")` and now reads
+`("qwen3-vl:8b-instruct", "qwen2.5vl:7b", "qwen2.5vl:3b")`. No call site changed: `_pick` still chooses the
+first name the local Ollama has, and the 7B stays behind the new one as the fallback for a box that has not
+pulled the weights. The tag is spelled in full because the bare one is a trap — Ollama's `qwen3-vl:8b` *is*
+the thinking build (same model layer digest as `qwen3-vl:8b-thinking`), and a reasoning build spends the
+reader's `num_predict=12` on a sentence instead of a number. That was checked before a sheet was read: on the
+plate's own gate crops, replayed through the production reader, both models answer a bare number on 6/6 crops,
+none empty, none long (`out/probe/probe_model_swap.py`).
+
+**Bought.** Both models were measured on one commit (`8808a95`) and one tree, one model per process:
+
+| vaka | tesseract (floor) | qwen2.5vl:7b | qwen3-vl:8b-instruct |
+|---|---|---|---|
+| plate-pocket-1 | 6/7 | 4/7 (gürültü 2) | **7/7** (gürültü 4) |
+| plastic-enclosure-1 | 8/11 | 10/11 (gürültü 3) | 10/11 (gürültü 3) |
+
+The plate's three recovered numbers are `8,00`, `15,00`, `6,80`: the 7B read the first two as `800` and
+`1500` — the decimal comma lost and the value a number the sheet never prints — and missed the third, and the
+8B reads the printed text exactly, including the drawn `Ø` the text layer does not carry (`∅100`, `Ø10`).
+Nothing the 7B read is lost (`50,00`, `60,00`, `80,00`, `100,00` come through on both). The model path is also
+no longer below its own floor anywhere: with the 7B the plate's ceiling was 4/7 against a 6/7 tesseract floor,
+which made "the ceiling" a misleading name for it. The 7B runs also confirm, without a new run being needed,
+what `10a32b6` asserted: the arrowhead guard leaves the ceiling where it was.
+
+**Cost / risk.**
+- Coverage up 3 on the plate, noise up 2 on the same sheet (`7`, `Ø10`, `∅10`, `∅10` for the 7B's `800`,
+  `R105`), and the plastic sheet's noise changes identity without changing count (`7`, `45`, `7` for `0`,
+  `R105`, `R105`). By the project's own rule — coverage must rise, noise must not — this is a trade, not a
+  clean win; it is kept because a printed number the part cannot be built without outranks a phantom the
+  noise list already names, and because the added noise is the class `10a32b6` was written to remove.
+- The phantom crops are not the model's fault and the swap does not fix them: both readers answer them, and
+  the 7B's `R105` shows up on both sheets. What those crops are is a gate question about clusters that carry
+  no number, and it stays open.
+- The 8B is not faster: 723 s and 674 s a sheet against the 7B's 689 s and 677 s, at 7.6 GB resident against
+  6.4 GB. Wall clock on this box is not a measurement anyway (32 s against 538 s for the same plate).
+- The harness writes one `-raster-model.json` per case, so the second model's run overwrites the first's
+  file. The runs are kept deliberately: `out/frontend_7b_8808a95/`, `out/frontend_8b_8808a95/`, logs
+  `out/ceiling_<model>_8808a95.log`. A future swap has to do the same or lose its "before".
+- `eval/check_tables.py` cannot see *which* model produced a run — the model lives in the column header, not
+  in a cell — so a swap is invisible to it wherever coverage does not move (the plastic row: 10/11 either
+  way). The header key in `HEADERS` is what names the model, and it was updated with the table.
+
+**Alternatives measured and dropped.** Running both readers and keeping only what they agree on: the plate's
+agreement row is **4/7 with no noise**, i.e. it throws away exactly the three numbers the 8B found, because
+the models disagree on them and neither can say which is right — the 7B's `800` carries no hesitation. Their
+union is 7/7 with six noise records against the 8B's four, so it is strictly worse than the better single
+reader. A second model pays only where something else can decide between two answers; here that arbiter is
+the sheet's own scale, and the second reader belongs on the rows `scale.audit` names (three on the measured
+sheets), not on every crop. Measured from the two runs' own JSON, `out/probe/probe_model_swap.py` is the
+per-crop instrument for a next time.
+
+**Verified.** `pytest -q` 118 passed; `eval/check_tables.py` 14 rows, 0 drift (the ceiling row checks against
+the 8B run the harness left in `out/frontend/`); the 8B's spans were read back one by one against the plate's
+text layer, which is independent of the model: `8,00` where the text layer prints `8,00`, `15,00` where it
+prints `1 5,00` (the space between the digits dropped), `6,80` from the note's leader.
+
 ## Measured, not yet changed
 
 The plate's `50,00` on the raster path, and a correction. This entry previously claimed a `R8` refused by

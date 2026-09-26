@@ -4,7 +4,7 @@ The eval tables in `eval/README.md` are the measurement this project is steered 
 hand from runs that live in `out/` (which is git-ignored). A row that has drifted is worse than no row, so
 this reads every table back and prints the difference. Which table a row belongs to is taken from the
 header above it (`vaka | kaynak | ...`, `vaka | kapsam | at the start of this work`,
-`vaka | tesseract (floor) | qwen2.5vl:7b (ceiling)`) rather than guessed from the shape of the row: two of
+`vaka | tesseract (floor) | qwen3-vl:8b-instruct (ceiling)`) rather than guessed from the shape of the row: two of
 the three tables have three columns.
 
 Usage: `PYTHONPATH=src .venv/bin/python eval/check_tables.py` (exit code 1 when a row has drifted).
@@ -34,7 +34,7 @@ READ_AS = {"raster": "-raster", "vektör": ""}
 HEADERS = {
     "kaynak": "full",
     "at the start of this work": "raster cover",
-    "qwen2.5vl:7b (ceiling)": "ceiling",
+    "qwen3-vl:8b-instruct (ceiling)": "ceiling",
 }
 
 

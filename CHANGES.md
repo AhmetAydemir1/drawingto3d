@@ -4,6 +4,42 @@ One entry per change, in the order it was made: the mechanism, the measured bene
 carries, and how it was verified. The numbers themselves live in `eval/README.md` and in
 `out/frontend/<case>.json`; this file is the accounting.
 
+## Observations are family-independent; the plate is one consumer (`ddacd48`, reading)
+
+**What changed.** `src/drawingto3d/observe.py` (new): one record shape for any drawing page — every
+vector subpath with its points, bbox, object/path index and method; every fitted line/circle/arc with
+the fit's own residual; every printed phrase with its raw string, value, unit, count, character
+indices and box; and the source hash, page size and frame the numbers were measured in, including
+which way the text layer was placed on the sheet's ink (`mirrored`/`as-is`, named instead of
+assumed). The vector walk that the plate experiment kept to itself moved here (`vector_paths`), so the
+recognizer and the observer read the same geometry; `plate.vector_groups` is now a thin grouping over
+it. Two pieces of `ingest.py` became shared: `text_groups` (the char-grouping the text layer already
+used) and `upright_placement` (the placement vote, now returning its name). Curve segments are
+recorded as skipped with their count — this pdfium binding exposes no bezier control points, and a
+partial outline that looks complete is worse than a named hole in the record. CLI: `observe <drawing>
+<out_dir>` writes `observations.json`; a raster sheet exits 2 with "raster gözlem katmanı henüz yok".
+
+**Bought.** The family-independent half of `PLAN.md` §3A on the vector class, measured: the plate's
+observations carry its own drawing — four corner circles at 100.02 × 60.01 mm spacing, Ø6.81 holes and
+a 25.01 mm pocket radius, read from the geometry rather than from the recognizer's rules — plus 209
+subpaths and 45 printed phrases at ~0.11 s a sheet with no model. The plastic sheet's 456 subpaths and
+65 phrases (all eleven printed numbers among them) get the same shape. The plate's own suite is
+unchanged by the shared-walk refactor, which is the point of doing it as a move rather than a rewrite.
+
+**Cost / risk.**
+- The plate's record is 239 KB: every drawn dimension line and arrowhead is now data that later steps
+  must filter themselves. Nothing here decides importance — a title-block `2026` is observed next to
+  a Ø50, by design, and the binding step has to earn that judgement.
+- Only the first page, only vector PDFs, only unrotated pages; each refusal has its own message and
+  the record's notes say what is missing.
+- The meaning layer (anchors, view split, scale, plan proposal) is deliberately absent: this slice
+  replaces the claim "we can read a drawing" with the weaker, checkable "we can observe one".
+
+**Verified.** `tests/test_observe.py` 11 tests — plate spacings and values against the sheet's own
+printed numbers, the plastic numbers' presence, byte-stable determinism, raster refusal, and the
+recognizer's 46 object groups still coming out; `pytest -q` 180 passed; the `observe` CLI run on both
+PDFs and on a raster (exit 2, reason on one line).
+
 ## The general plan is the product; the plate is a payload (working tree, compiler)
 
 **What changed.** `src/drawingto3d/general.py` (new): a versioned `GeneralPlan` — source identity

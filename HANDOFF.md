@@ -56,9 +56,10 @@ ifade edilmiş hâli, ve genel derleyici iki farklı işlem birleşimiyle sınan
 
 ### Hâlâ yapılmayan
 
-- Okuma katmanı genelleştirmesi (PLAN.md Bölüm 3A/3B): çizimden gelen gözlem/ölçü ankrajları
-  genel plan önerisine bağlanmadı. Genel plan bugün dosyadan/elle veriliyor; yalnız plaka yolu
-  otomatik doluyor (`from_plate`). Bu, sıradaki ana iş.
+- Okuma katmanı genelleştirmesi (PLAN.md Bölüm 3A/3B): ilk dilim — aile-bağımsız gözlem katmanı
+  (`observe.py`, vektör PDF) — eklendi; ama gözlemler henüz genel plan önerisine bağlanmadı:
+  ölçü bağlama (okların bağlandığı geometri), görünüş ayrımı, ölçek ve raster gözlemci sıradaki
+  dilimler. Genel plan bugün dosyadan/elle veriliyor; yalnız plaka yolu otomatik doluyor.
 - Pilot (en az 10) ve saklı (en az 20, en az 10'u raster) veri toplama kullanıcıda; ayrım
   altyapısı manifestte hazır, diziler boş.
 - Plaka tanıyıcı henüz deneysel seçeneğe taşınmadı; `plan`/`build-plan` hâlâ PlatePlan konuşur.
@@ -74,6 +75,25 @@ ifade edilmiş hâli, ve genel derleyici iki farklı işlem birleşimiyle sınan
 2. Sıradaki iş `PLAN.md`'ye göre: okuma katmanı (Bölüm 3) ya da CLI/arayüzün genel plana
    bağlanması. `git status` ile bu oturumun commit edilmemiş değişikliklerini koru.
 3. Pilot/saklı veri gelmeden genelleme iddiası yazma; değerlendirme sonucunu uydurma.
+
+### Okuma katmanı — ilk dilim (aynı oturum, `ddacd48`)
+
+- `src/drawingto3d/observe.py` (yeni): her çizim sayfası için tek gözlem kaydı — vektör alt yolları
+  (noktalar, bbox, nesne/yol kimliği, yöntem), uydurulmuş çizgi/daire/yay kayıtları (kendi artığıyla),
+  basılı her metin (ham dize, değer, birim, adet, kaynak karakter aralığı, kutu) ve kaynak özeti +
+  ölçüm çerçevesi. Metin katmanının hangi yöne yerleştiği artık adıyla kaydedilir (`mirrored`/`as-is`).
+- Plaka deneyiminin vektör yürüyüşü artık ortak: `observe.vector_paths`; `plate.vector_groups` onun
+  üstünde ince bir gruplama (plaka testleri değişmedi). `ingest.text_groups` ve
+  `ingest.upright_placement` paylaşıldı.
+- Bezier segmentli nesneler tümden atlanır ve `skipped` listesinde nedeniyle durur ("control points
+  are not exposed"): yarım ama bitmiş görünen bir kontur, adı konmuş bir eksikten kötüdür.
+- CLI: `observe <çizim> <out_dir>` → `observations.json`; raster girdi → exit 2, neden tek satır.
+- Ölçüm (model yok): plaka 209 yol / 169 ilkel / 45 metin (~0,11 s), plastik 456 / 365 / 65;
+  plaka kaydı 239 KB. Plaka kaydı kendi çizimini taşır: dört köşe dairesi 100,02 × 60,01 mm
+  aralıkta, Ø6,81 delik, 25,01 mm cep yarıçapı — tanıyıcı kurallarından değil, geometriden.
+- Testler: `tests/test_observe.py` 11 test; toplam paket **180 geçti**.
+- Sıradaki dilim: ölçü bağlama (okların bağlandığı geometri), görünüş ayrımı ve ölçek; ardından
+  raster gözlemci ve gözlem → genel plan önerisi.
 
 ## Aktarım ve kayıtlar
 

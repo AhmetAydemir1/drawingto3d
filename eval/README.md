@@ -13,7 +13,11 @@ holds empty `pilot`/`hidden` arrays, every case carries `part_group`/`split`, an
 which named features a plan has to account for (`plate-pocket-1` shows the intended granularity; an
 empty list means "not yet identified"). `pilot` and `hidden` stay empty until those sheets are
 collected. The compiler half of the brief — a versioned general plan contract and two plans that use
-different operation combinations — lives in `plans/`; `build-general` in the CLI builds them.
+different operation combinations — lives in `plans/`; `build-general` in the CLI builds them. The
+reading half has its first slice too: `observe.py` plus `drawingto3d observe` write one
+family-independent record per vector sheet (subpaths, fitted primitives, printed phrases with their
+source characters, frame and text placement); what it still lacks is the binding from a printed
+number to the geometry its arrows touch, the view split and the scale.
 
 What "better results" means for this project, in numbers. Two questions per sheet:
 

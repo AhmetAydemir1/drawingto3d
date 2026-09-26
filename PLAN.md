@@ -409,3 +409,23 @@ Bilinen sınırlar, kalan işler: okuma katmanı genelleştirilmedi (Bölüm 3A/
   ya da CLI/arayüzün genel plana bağlanması.
 HANDOFF.md, .cursor/handoff.md, out/HANDOFF.md güncellemesi: üçü de bu oturumun özetini taşır.
 ```
+
+## 12. Okuma katmanı — ilk dilim: aile-bağımsız gözlemler (2026-09-27, aynı oturum)
+
+Bölüm 3A'nın vektör dilimi uygulandı (`ddacd48`): `src/drawingto3d/observe.py`.
+
+- Gözlem kaydı: kaynak (yol, sha256, sayfa, pt boyut, döndürme), çerçeve (200 dpi, sol üst),
+  metin yerleşimi (adıyla: mirrored/as-is), vektör yolları (noktalar, bbox, nesne/yol kimliği),
+  uydurulmuş ilkeller (çizgi/daire/yay + artık), basılı metinler (ham dize, değer, birim, adet,
+  karakter aralığı, kutu) ve atlanan nesneler (nedeniyle).
+- Ortaklaşan yürüyüş: `observe.vector_paths`; plaka tanıyıcı aynı yürüyüşü kullanır
+  (`plate.vector_groups` onun üstünde ince gruplama). `ingest.text_groups` ve
+  `ingest.upright_placement` paylaşıldı; plaka testleri değişmedi.
+- Ölçüm (model yok): plaka 209 yol / 169 ilkel / 45 metin (~0,11 s), plastik 456 / 365 / 65.
+  Plaka kaydı kendi çizimini taşır: 100,02 × 60,01 mm delik aralığı, Ø6,81 delik, 25,01 mm
+  cep yarıçapı — tanıyıcı kurallarından değil, geometriden.
+- CLI: `observe <çizim> <out_dir>` → `observations.json`; raster girdi → exit 2, neden tek satır.
+- Testler: `tests/test_observe.py` (11); tam paket **180 geçti**.
+- Açık kalanlar (sonraki dilimler): ölçü ↔ geometri bağlama (oklar/ankrajlar), görünüş ayrımı,
+  ölçek, raster gözlemci ve gözlemlerden genel plan önerisi. Bu dilim "okuyabiliyoruz" iddiasını
+  "gözlemleyebiliyoruz" ile değiştirir; bağlama gelmeden okuma sayılmaz.

@@ -500,3 +500,34 @@ Dördüncü dilim uygulandı (`f61b7cc`): `src/drawingto3d/proposal.py`.
 - Sıradaki dilim: raster gözlemci; sonra daha geniş arketipler (zincir ölçüleri, ikiden çok çap,
   asimetrik yerleşim, kare köşeli kontur) ve arayüzün genel planı göstermesi — ret listesi
   bunların yol haritası.
+
+## 16. Raster gözlemci: piksellerden ölçülen çizgi, daire ve ifadeler (2026-09-27, aynı oturum)
+
+Beşinci dilim uygulandı (`64ed9d8`): `src/drawingto3d/raster.py`.
+
+- `observe()` artık PNG/JPG'yi piksel-önce gözlemciye yollar; kayıt şekli vektör yoluyla **aynı**
+  (paths boş; çizgiler/daireler/ifadeler/notlar aynı alanlarda; `page_size_pt` ve `dpi` isteğe
+  bağlı yapıldı, tek kayıt şekli iki kaynağa hizmet eder).
+- Çizgiler: Hough parçaları açı + dik-uzaklık kümelemesiyle birleştirilir; her çizgi kendi en kötü
+  artığını taşır.
+- Daireler Hough **adayıdır** ve paftanın kendi mürekkep testlerinden geçer: yarıçap önce rafine
+  edilir (r ± 6 px taranır, örneklerin en çoğunu mürekkebe oturtan değer; göbek adayı 0,81
+  kapsamayla 3 px kısa çıkmıştı, rafine sonrası 0,92), sonra kapsama ≥ 0,85, iç mürekkep ≤ 0,25,
+  merkez kelime-boyutlu OCR kutusunun içinde değil (görüntünün ≥%3'ünü kaplayan kutular okuma
+  gürültüsü sayılır — tesseract sentetik bir görünüşün tamamını tek "kelime" okudu) ve daha iyi bir
+  dairenin kopyası değil. Doğrulanan daireye binen kısa Hough kirişleri (≤ 80 px; uçlar ve orta
+  nokta halkaya ~7 px içinde, sagitta dahil) çizgi listesinden düşürülür — o mürekkep dairenin.
+- Metin: tesseract (`psm 11`) CLI'dan kendi zaman aşımıyla çağrılır; kelimeler ifadeye birleşir,
+  sayılar vektör yoluyla aynı `parse_dimension_unit` ile ayrıştırılır.
+- Ölçüm: Flange **388 çizgi + 2 daire** (Ø30 göbek r 91,6; kapsama 0,92) **+ 29 ifade** (9 sayısal);
+  my_part **343 çizgi + 6 daire + 49 ifade** (7 sayısal); `observe` CLI iki dosyada exit 0. Üst
+  zincir rasterda değişmeden koşuyor: `bind` 10 span kaydeder, `meaning` hiçbirini çözemez,
+  `proposal` "pafta ölçeği okunamadı" diye reddeder — dürüst sınır: ankraj yoksa ölçek yok.
+- Testler: `tests/test_raster.py` (9) — sentetik paftada çizilen geometri ölçülmüş olarak dönmeli
+  (yarıçap ±3 px, merkez ±5 px) ve tesseract'sız koşu not olarak kalmalı; tam paket **234 geçti**;
+  check_tables 20/20; plate_plan geçti.
+- Kayıtlı sınırlar: yüksek hassasiyet, düşük geri çağırma (küçük cıvata delikleri, kesikli/yoğun
+  kümedekiler kayda girmiyor; notlar bunu yazar); HoughCircles `minDist` eşmerkezli adayları
+  bastırır (bore + havşa çifti tek daire verir); rasterda yay uydurulmuyor.
+- Sıradaki dilim: **raster ankrajları + ölçek kalibrasyonu** (ölçü oklarını/uzatmalarını piksellerden
+  bulup mm/px kurmak) — zincirin anlam/öneri yarısını rasterda da açar; ondan sonra geniş arketipler.

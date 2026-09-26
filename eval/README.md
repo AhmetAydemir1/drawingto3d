@@ -16,7 +16,9 @@ collected. The compiler half of the brief — a versioned general plan contract 
 different operation combinations — lives in `plans/`; `build-general` in the CLI builds them. The
 reading half now has four slices: `observe.py` plus `drawingto3d observe` write one family-independent
 record per vector sheet (subpaths, fitted primitives, printed phrases with their source characters,
-frame and text placement); `bind.py` plus `drawingto3d bind` attaches every printed number to the
+frame and text placement), and PNG/JPG sheets go through `raster.py` into the *same* record (Hough
+lines and ink-verified circles, tesseract phrases with confidence; measured: flange 388 lines +
+2 circles + 29 phrases, `my_part.jpg` 343 lines + 6 circles + 49 phrases); `bind.py` plus `drawingto3d bind` attaches every printed number to the
 geometry its arrows touch — rows, stubs, crossed strokes, chains of coincident strokes and, for
 two-anchor dimensions, candidates aligned along the measuring axis, all with pixel distances and the
 row length against the sheet's calibration; and `meaning.py` plus `drawingto3d meaning` reads each
@@ -26,7 +28,9 @@ circles match — or marks it unresolved; and `proposal.py` plus `drawingto3d pr
 those readings support — the part outline out of the sheet's closed loops with the sheet frame
 skipped, every parameter printed with its span id or derived by expression, every printed number
 checked against the same sheet's measured geometry — or refuses with the reasons (the plastic
-sheet: no diameter claims at all). What is still missing: the raster observer and the wider
+sheet: no diameter claims at all). What is still missing: raster anchors and scale (a raster sheet
+binds and then resolves `no-scale` on every claim — `propose` refuses with *pafta ölçeği okunamadı*)
+and the wider
 archetypes (multi-view sheets, chain dimensions, asymmetric layouts); the refusal lists name them.
 
 What "better results" means for this project, in numbers. Two questions per sheet:

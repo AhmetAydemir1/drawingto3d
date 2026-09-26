@@ -4,6 +4,41 @@ One entry per change, in the order it was made: the mechanism, the measured bene
 carries, and how it was verified. The numbers themselves live in `eval/README.md` and in
 `out/frontend/<case>.json`; this file is the accounting.
 
+## Raster sheets observed as measured lines, circles and phrases (`64ed9d8`, reading)
+
+**What changed.** `src/drawingto3d/raster.py` (new): `observe()` now dispatches PNG/JPG sheets to a
+pixels-first observer that writes the *same* page records as the vector path. Lines come out of Hough
+segments merged into strokes (angle and perpendicular-offset clusters, the segment's own worst
+residual kept); circles are Hough *candidates* passed through the sheet's own ink tests — the radius
+is first refined (scan r ± 6 px for the value that lands on the most samples; the hub candidate came
+out 3 px short at 0.81 coverage and measured 0.92 after), then kept only if circumference coverage ≥
+0.85, interior ink ≤ 0.25, the centre is not inside a word-sized OCR box (boxes covering ≥ 3 % of the
+image are reading noise, not glyph zones — tesseract read one whole synthetic view as a single
+"word"), and it does not duplicate a better circle; short Hough chords riding a verified circle
+(≤ 80 px, ends and midpoint within ~7 px of the ring, sagitta included) are dropped from the line
+list as that circle's ink. Text is tesseract (`psm 11`) called from the CLI with its own timeout,
+phrases merged from words, numbers parsed with the same `parse_dimension_unit` as the vector path;
+`SourceRef.page_size_pt` and `Frame.dpi` became optional so one record shape serves both sources.
+
+**Bought.** Measured on the two example rasters: the flange observes **388 lines + 2 circles** (the
+Ø30 hub at r 91.6, coverage 0.92) **+ 29 phrases** (9 numeric); `my_part.jpg` observes **343 lines +
+6 circles + 49 phrases** (7 numeric); `observe` exits 0 through the CLI on both. The upper chain runs
+on a raster unchanged — `bind` records 10 spans, `meaning` resolves none, `proposal` refuses with
+*pafta ölçeği okunamadı* — which is the honest limit: without anchors there is no scale. Tests:
+`tests/test_raster.py` (9) including a synthetic sheet whose drawn geometry must come back measured
+at ±3 px radius / ±5 px centre, and a tesseract-missing run that stays a note; suite **234 green**;
+`check_tables` 20/20; `plate_plan` pass.
+
+**Cost / risk.**
+- High precision, low recall on purpose: circles the eye sees (small bolt holes, dashed or dense
+  clusters) do not enter the record, and the notes say so; raising recall is a later slice judged
+  against a real reference list, not against the examples.
+- HoughCircles' `minDist` suppresses concentric candidates — a bore + counterbore pair yields one
+  circle (recorded limit, not a silent one).
+- Arcs are not fitted on rasters yet, and OCR boxes over dense ink can read a whole view as one
+  "word"; that reading is kept with its low confidence and excluded from the glyph filter by the 3 %
+  cap.
+
 ## The readings proposed back as a plan, and built (`f61b7cc`, reading)
 
 **What changed.** `src/drawingto3d/proposal.py` (new): the fourth reading slice reads a whole

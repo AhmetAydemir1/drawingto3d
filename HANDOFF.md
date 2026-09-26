@@ -41,11 +41,24 @@ ifade edilmiş hâli, ve genel derleyici iki farklı işlem birleşimiyle sınan
   okunabilir hata. `plan`/`build-plan` (PlatePlan) ve eski `read`/`build` korundu.
 - `eval/cases.json`: her vakada `part_group`, `split`, `feature_ids`; boş `pilot`/`hidden` dizileri
   ve `_split` notu; `eval/README.md` bu alanları ve `plans/` klasörünü belgeler.
+- `src/drawingto3d/raster.py` (yeni, `64ed9d8`): PNG/JPG paftalar pikselden gözlenir — Hough çizgileri
+  birleştirilir; daireler Hough **adayı** + paftanın kendi mürekkep testleri (yarıçap rafine r±6 px,
+  kapsama ≥0,85, iç mürekkep ≤0,25, kelime-boyutlu OCR kutusu dışı, daha iyisinin kopyası değil);
+  doğrulanan daireye binen kısa Hough kirişleri (≤80 px, uç+orta halkaya ~7 px) çizgi listesinden
+  düşülür; tesseract (`psm 11`) CLI'dan kendi zaman aşımıyla. `observe()` PNG/JPG'yi bu yola gönderir;
+  `page_size_pt`/`dpi` isteğe bağlı oldu, kayıt şekli iki kaynakta aynı. Ölçüm: Flange **388 çizgi +
+  2 daire** (Ø30 göbek r 91,6) **+ 29 ifade**; my_part **343 çizgi + 6 daire + 49 ifade**; `observe`
+  CLI iki dosyada exit 0. Üst zincir rasterda değişmeden koşuyor: `bind` 10 span → `meaning` hiçbirini
+  çözemez → `proposal` "pafta ölçeği okunamadı" diye reddeder (ankraj yoksa ölçek yok). Testler:
+  `tests/test_raster.py` (9) — sentetik paftada çizilen geometri ölçülmüş dönmeli.
 
 ### Ölçümler (bu oturum, yerel)
 
 - pytest: **169 geçti** (146 eski + 23 yeni), 79,9 s. `eval/check_tables.py`: 20 satır, 0 tutmuyor.
   `eval/plate_plan.py`: pass, simetrik hacim farkı 0,0 mm³, inşa 3,49 s.
+- Okuma katmanı dilimleri (gözlem → bağlama → anlam → öneri) ve raster gözlemci eklendikten sonra:
+  pytest **234 geçti** (178 s); `check_tables`: 20 satır / 0 tutmuyor; `plate_plan`: pass; plaka artık
+  aile-bağımsız motordan STEP'e gidiyor — 124 825,4 mm³, kapalı formülle %0.0000 fark.
 - İki örnek plan CLI ile kuruldu, denetimler geçti: bracket hacmi kapalı formla fark ~8e-12;
   shaft mil hacmi dönel kapalı formla 1e-4 mm³ toleransla doğrulandı; yan delik silindiri
   yarıçap/eksen/aralık 1e-3 toleransla doğru.
@@ -56,11 +69,13 @@ ifade edilmiş hâli, ve genel derleyici iki farklı işlem birleşimiyle sınan
 
 ### Hâlâ yapılmayan
 
-- Okuma katmanı genelleştirmesi (PLAN.md Bölüm 3A/3B): gözlem (`observe.py`), ölçü bağlama
-  (`bind.py`), anlam seçimi (`meaning.py`) ve plan önerisi (`proposal.py`) dilimleri eklendi; plaka
-  paftası artık aile-bağımsız motordan STEP'e gidiyor (124 825,4 mm³, kapalı formülle %0.0000 fark).
-  Açık işler: raster gözlemci; daha geniş arketipler (zincir ölçüleri, ikiden çok çap, asimetrik
-  yerleşim, kare köşeli kontur) — ret listesi bunların yol haritası.
+- Okuma katmanı genelleştirmesi (PLAN.md Bölüm 3A/3B/16): gözlem (`observe.py` + `raster.py`), ölçü
+  bağlama (`bind.py`), anlam seçimi (`meaning.py`) ve plan önerisi (`proposal.py`) dilimleri eklendi;
+  plaka paftası artık aile-bağımsız motordan STEP'e gidiyor (124 825,4 mm³, kapalı formülle %0.0000).
+  Açık işler: **raster ankrajları + ölçek kalibrasyonu** (ölçü oklarını/uzatma çizgilerini piksellerden
+  bulup mm/px kurmak) — o olmadan rasterda `bind`/`meaning`/`proposal` ölçeksiz kalıp reddediyor;
+  daha geniş arketipler (zincir ölçüleri, ikiden çok çap, asimetrik yerleşim, kare köşeli kontur) —
+  ret listesi bunların yol haritası.
 - Pilot (en az 10) ve saklı (en az 20, en az 10'u raster) veri toplama kullanıcıda; ayrım
   altyapısı manifestte hazır, diziler boş.
 - Plaka tanıyıcı henüz deneysel seçeneğe taşınmadı; `plan`/`build-plan` hâlâ PlatePlan konuşur.

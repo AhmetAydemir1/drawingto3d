@@ -396,3 +396,15 @@ Tekrar deneme: üçüncü düzeni **satırın** uçlarıyla okumak (tek parça y
 - `R35` üç çift. Beş kalın rakam tek doğru; araya giren 22×3 px şerit (`_glyphs`, `min(w,h) >= 3`) doğrusallığı bozuyor. Şeridi rakamdan çıkarmak (`min(w,h) >= 4`; gerçek `1` 6 px) uygulanmadı. Zincir geri alındığı için bunu ancak yeni bir ölçümle dene.
 - Raster plakada eksik: 6.8, 8, 50.
 - `dur` yazma.
+
+## Raster dilimi — 2026-09-27 (`64ed9d8`)
+
+- `src/drawingto3d/raster.py` (yeni): PNG/JPG paftalar pikselden gözlenir — Hough çizgileri
+  birleştirilir; daireler aday + paftanın mürekkep testleri (yarıçap rafine r±6 px, kapsama ≥0,85,
+  iç ≤0,25, kelime-boyutlu OCR kutusu dışı); doğrulanan daireye binen kısa kirişler çizgi listesinden
+  düşülür; tesseract `psm 11` CLI'dan. `observe()` PNG/JPG'yi bu yola gönderir; kayıt şekli vektörle
+  aynı (`page_size_pt`/`dpi` isteğe bağlı).
+- Ölçüm: Flange 388 çizgi + 2 daire + 29 ifade; my_part 343 çizgi + 6 daire + 49 ifade; CLI exit 0.
+- Üst zincir rasterda koşuyor ama ankraj yok → `meaning` no-scale, `proposal` "pafta ölçeği
+  okunamadı". Sıradaki dilim: **raster ankrajları + ölçek kalibrasyonu**.
+- Tam paket **234 geçti**; CHANGES.md `64ed9d8` girdisi; PLAN.md §16.

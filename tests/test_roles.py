@@ -32,6 +32,16 @@ def test_prefix_limits_the_choices():
     assert "outer_diameter, inner_diameter, hole_diameter" in role_prompt("Ø290", role_choices("Ø290"))
 
 
+def test_a_hole_note_is_a_diameter_even_without_the_mark():
+    """The `Ø` is a drawn path on a vector sheet, so the note is what decides the family."""
+    assert role_choices("6,80 THRU ALL") == ("outer_diameter", "inner_diameter", "hole_diameter")
+    assert role_choices("4 x 6,80 THRU ALL") == ("outer_diameter", "inner_diameter", "hole_diameter")
+    assert role_choices("12 TAP") == ("outer_diameter", "inner_diameter", "hole_diameter")
+    # A plain length is still a length, and the note never overrides a mark that is printed.
+    assert role_choices("100,00") == ("edge", "thickness", "hole_spacing")
+    assert role_choices("R260") == ("bend_radius", "corner_radius", "fillet")
+
+
 def test_answer_outside_the_list_is_unknown():
     choices = role_choices("R260")
     assert parse_role("bend_radius", choices) == "bend_radius"

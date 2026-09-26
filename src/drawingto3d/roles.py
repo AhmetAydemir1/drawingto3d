@@ -20,6 +20,11 @@ from drawingto3d.schema import MM_PER_INCH, ROLES, DimensionRecord, Page, Span, 
 DIAMETER_ROLES = ("outer_diameter", "inner_diameter", "hole_diameter")
 RADIUS_ROLES = ("bend_radius", "corner_radius", "fillet")
 LENGTH_ROLES = ("edge", "thickness", "hole_spacing")
+# A callout that names a through-hole or a thread is a diameter even when the `Ø` itself is not typed: on a
+# vector sheet the mark is a drawn path that never reaches the text layer, so `6,80 THRU ALL` arrives bare and
+# the length family was the only list offered - the reader then had to answer `hole_spacing`, a wrong role no
+# later stage can repair. The note is the part of a callout that survives as text, so it decides the family.
+HOLE_NOTES = ("THRU", "TAP", "CBORE", "C'BORE", "CSK", "6H", "PILOT")
 
 
 class RoleReader(Protocol):
@@ -62,6 +67,8 @@ def role_choices(text: str, kind: SpanKind | None = None) -> tuple[str, ...]:
         return DIAMETER_ROLES
     if (body[:1].upper() == "R" and not body.lower().startswith("ra")) or kind == SpanKind.radius:
         return RADIUS_ROLES
+    if any(note in body.upper() for note in HOLE_NOTES):
+        return DIAMETER_ROLES
     return LENGTH_ROLES
 
 

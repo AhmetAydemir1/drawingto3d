@@ -586,6 +586,48 @@ the call chain includes the environment.
 bite — flipping `KALDI` to `GEÇTİ` in the README exits 1 with `README GEÇTİ -> rapor KALDI`, restoring it
 exits 0. Numbers: `out/build_eval.log`, `out/eval/report.json`.
 
+## A through-hole callout is a diameter, and the plate's own 120 mm is derivable (reading, eval)
+
+**What changed.** Two small things, and one that is not code at all.
+
+1. `roles.role_choices` now reads a callout's own note. On a vector sheet the `Ø` is a *drawn path* that never
+   reaches the text layer, so `6,80 THRU ALL` arrives with no mark; the only families offered were `edge,
+   thickness, hole_spacing` and the reader answered `hole_spacing` — a wrong role that no later stage can
+   repair, and the plate's program then drilled a hole where a spacing belonged. A text carrying `THRU`, `TAP`,
+   `CBORE`, `C'BORE`, `CSK`, `6H` or `PILOT` is now offered the diameter family. The note is the part of a
+   callout that survives as text, so it decides the family (`HOLE_NOTES` in `roles.py`).
+2. `out/build_eval.py` clears a case's `part.step`/`part.stl` before building it. Both the driver and
+   `eval/report.py` score a case by that file's *existence*, so a build that stopped working kept reporting a
+   part built from older records — measured on the plate: `part.step` from 20:56 beside `records.json` from
+   21:27, credited as this run's part.
+3. The plate's missing length is measured, not guessed: the `100,00` dimension line is 100.17 mm at the sheet's
+   own scale, but its left end sits 10.62 mm *inside* the plate's drawn edge; the plate's drawn outline is
+   121.15 x 80.6 mm and its four corner holes' centres are 100.81 x 60.64 mm apart. So `100,00`/`60,00` are the
+   hole pattern, and the part is 120 x 80 x 15 — the reference's `[15, 80, 120]`. The derivation the build needs
+   is the edge distance the vertical pair teaches: `(80 - 60) / 2 = 10`, so `100 + 2 x 10 = 120`, confirmed by
+   the drawn outline within a stroke width. Working: `out/probe/probe_plate_length.py`, `probe_plate_edges.py`,
+   `probe_plate_circles.py`; class of work: skill `references/deriving-undimensioned.md`.
+
+**What it bought.** A record that was provably wrong is right: the plate's `6,80 THRU ALL` is `hole_diameter`
+and the coder's next program asks for `diameter=6.8`. A false positive left the report: "a part was built" no
+longer survives a failed build. And the building half's real obstacle is now named with evidence instead of
+suspicion: the coder composes in the grammar of the prompt it is given, and that grammar is a tube — on the
+plate (every number printed, no ambiguity) it wrote `ring_extrude(outer_d=100, inner_d=80, length=50)` with a
+`60x60x15` plate glued to the end, and the run before it wrote a different tube from the same numbers.
+
+**What it cost.** The wider list for hole callouts is the same number of questions, but the reader now chooses
+among three diameter roles instead of three length roles, so a misread is possible in a new place. And the fix
+moved the failure rather than removing it: the plate's part was deleted (it was the earlier run's tube, and its
+numbers are kept in the entry below), the re-read plate no longer builds at all, and with it the built table
+now says no case produces a part. Deriving the 120 mm is *not* implemented — it is the next change, and it needs
+the numbers to arrive as named features for the coder to be able to use it.
+
+**How it was verified.** `pytest tests/` 119 passed, including the new
+`test_a_hole_note_is_a_diameter_even_without_the_mark` (the note decides the family; a printed `Ø` and a printed
+`R` still win; a plain `100,00` is still a length). `eval/check_tables.py` 20 rows, 0 drift. The plate was
+re-read with the fix (218 s) and wrote `hole_diameter`; `eval/report.py` was re-run — no case has a solid, which
+is what the table now says.
+
 ## Measured, not yet changed
 
 The plate's `50,00` on the raster path, and a correction. This entry previously claimed a `R8` refused by

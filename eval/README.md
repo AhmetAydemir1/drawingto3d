@@ -163,7 +163,7 @@ reading the part was built from, so the two halves of the report describe one ru
 
 | vaka | okuma | kayıt | katı | verdict |
 |---|---|---|---|---|
-| plate-pocket-1 | 7/7 | 7 | var | KALDI |
+| plate-pocket-1 | 7/7 | 7 | yok | katı üretilmedi |
 | plastic-enclosure-1 | 11/11 | 14 | yok | katı üretilmedi |
 | exercise-1 | 6/13 | 15 | yok | katı üretilmedi |
 | flange-1 | 4/13 | 10 | yok | katı üretilmedi |
@@ -175,19 +175,27 @@ vector sheets read exactly — the plate 7/7 with no noise and the plastic sheet
 two raster sheets read 6/13 and 4/13, which is what the front end's own raster row predicts. The two practice
 sheets have no reference STEP, so they are reading-only here.
 
-The building column is the new measurement and it is bad news, which is the reason to have it. Of the four
-cases that have a reference, **one built a solid and it failed every comparison**; the other three never got a
-solid at all. The plate is the sharpest case: its reading is 7/7, and the part it produced is
-`vector [15, 50, 60]` against the reference's `[15, 80, 120]`, `43.5 cm3` against `124.8 cm3`, cylinders `[4]`
-against `[3.4, 10, 25]` — every number in it is a printed one, and the shape is still not the part. The three
-build failures are all the coder model composing `geo.*` calls whose arguments contradict each other, and all
-three are caught by the toolchain rather than by the drawing:
+The building column is the new measurement and it is bad news, which is the reason to have it: **as it stands no
+case produces a part.** Every failure is the coder model composing `geo.*` calls whose arguments contradict
+each other, and every one is caught by the toolchain rather than by the drawing:
 
 | vaka | hatanın ölçüsü |
 |---|---|
+| plate-pocket-1 | `holes: result has 3 solids, expected one` — ve roller düzeltilmeden önce kurduğu katı bir **boruydu**: `vector [15, 50, 60]` (referans `[15, 80, 120]`), `43.5 cm3` (`124.8`), silindirler `[4]` (`[3.4, 10, 25]`) |
 | exercise-1 | `ring_extrude: inner_d must be smaller than outer_d` (iki denemede) |
 | plastic-enclosure-1 | `plate: corner_radius must be smaller than half the shortest side` (iki denemede) |
 | flange-1 | `holes: result has 5 solids, expected one` (`geo.holes(solid, geo.rect_points(2), 2)`) |
+
+Two measurements from this pair of runs are worth keeping. First, the plate is the sharpest case: its reading is
+7/7 — every millimetre printed — and the part it built before the role fix was a bent tube with `outer_d=100`,
+`inner_d=80`, `length=50` and a `60x60` plate glued to its end, i.e. an invented assembly made only of printed
+numbers, which is the failure rule 4 of the working plan names. Second, one wrong record was **provably** wrong
+and is now fixed: `6,80 THRU ALL` is a through-hole callout, but on a vector sheet the `Ø` is a drawn path that
+never reaches the text layer, so the role question offered only `edge, thickness, hole_spacing` and the reader
+answered `hole_spacing`. `role_choices` now reads the callout's own note (`THRU`, `TAP`, `CBORE`, `6H`, …) and
+offers the diameter family; the plate's record is `hole_diameter` and the coder's next program drills
+`diameter=6.8`. The plate still does not build, and the reason is upstream of the numbers: the prompt the code
+model answers is written for a tube-and-flange assembly, so a plate drawing is composed as a tube.
 
 So the reading half is close to solved on the vector class and the building half is not started: a flat list of
 millimetres still lets the code model invent topology, which is the failure rule 4 of the working plan names,
@@ -386,3 +394,20 @@ and the plate shows it in the one place where the reading cannot be blamed.
 - The reading front end is not yet the path the build takes: `reason_drawing` reads one question per
   number through `roles.read_records`, which asks the vision model about every span the gate kept. Wiring
   the two together is what turns the measured coverage above into measured records.
+- **The plate's overall length is not printed on the sheet, and it is derivable from the sheet's own
+  symmetry.** Measured on the raster at the sheet's own 7.817 px/mm: the `100,00` dimension line is 783 px
+  (100.17 mm) but its left end sits 83 px (10.62 mm) *inside* the plate's drawn left edge; the plate's drawn
+  outline is 947 x 630 px (121.15 x 80.6 mm); and the four corner holes' centres are 788 x 474 px
+  (100.81 x 60.64 mm) apart. So `100,00` and `60,00` are the **hole pattern**, not the part, and the plate is
+  120 x 80 x 15 — which is the reference part's `[15, 80, 120]`. The derivation is the edge distance the
+  vertical pair teaches: `(80 - 60) / 2 = 10 mm`, applied to the 100 pattern gives `100 + 2 x 10 = 120 mm`,
+  and the drawn outline confirms it to within a stroke width. Nothing printed says 120, so the build has to
+  derive it; a reader that takes the biggest printed number for the part's size builds a 100 mm plate.
+  Working: `out/probe/probe_plate_length.py`, `probe_plate_edges.py`, `probe_plate_circles.py`; the class of
+  work is written up in the skill's `references/deriving-undimensioned.md`.
+- **The code model composes in the grammar of the prompt it is given, and that grammar is a tube.** Measured:
+  on the plate — where all seven numbers are printed and unambiguous — the coder wrote
+  `ring_extrude(outer_d=100, inner_d=80, length=50)` and glued a `60x60x15` plate to its end, and the run
+  before it wrote a different tube from the same numbers. No amount of better reading can repair this (rule
+  4): the numbers have to reach the coder as named features, and inventing the composition is exactly what it
+  is doing instead. This is the first thing to fix on the building half.

@@ -452,3 +452,24 @@ Bölüm 3B'nin ilk somut adımı uygulandı (`9031094`): `src/drawingto3d/bind.p
 - Sıradaki dilim: anlam seçimi — bağlanan adaylardan hangi özelliğin hangi sayıya ait olduğunu
   seçmek (simetri, "4 x", görünüş ayrımı), sonra gözlem+bağlama+anlamı genel plan önerisine
   çevirmek.
+
+## 14. Anlam seçimi: her sayının ölçtüğü şey (2026-09-27, aynı oturum)
+
+Okuma zincirinin üçüncü dilimi uygulandı (`085cd83`): `src/drawingto3d/meaning.py`.
+
+- İki ankrajlı linear ölçü *mesafe* iddia eder: aday çiftlerinden, aralarındaki farkın **satırın
+  kendi eksenine izdüşümü** basılı değeri tutanlar (dik uzaklık değil izdüşüm — 8,00 kesit
+  boşluğunu ancak bu okudu). Sıra: tür (daire merkezi > yay > uç > köşe), sonra maliyet; simetrik
+  okumalarda standoff'a en yakın çift kazanır, elenen çift kayıtta alternatif kalır.
+- Lider ya da radüs işareti, değeri çizili çap/yarıçapla eşleşen geometriyi iddia eder ve
+  `matched_geometry` tüm eşleşenleri taşır; komşu "N x" yazısı (span'ın kendi metin kutusuna göre)
+  eşleşen sayıyla karşılaştırılır (`count`/`covered`).
+- Doğrulanamayan span'lar `unresolved` kalır; hiçbir okuma uydurulmaz.
+- Ölçüm: plaka 7/7 confirmed — `100,00` (g9-g11, çizili 100,71), `60,00` (60,43), `80,00` (köşe
+  yayları, 80,46), `15,00` (15,10), `8,00` (8,03), `50,00` (cebe çap, 50,36), `Ø6,80` (dört delik,
+  sayı 4/4). Plastik 14 sayının 4'ü confirmed, 10'u unresolved (zincir ölçüleri/detay görünüşleri —
+  ankrajlar pafta ölçeğiyle tutmuyor; kayıt bunu saklamıyor, söylüyor).
+- CLI: `meaning <çizim> <out_dir>` → meaning.json (plaka 18 KB, plastik 15 KB). Raster → exit 2.
+- Testler: `tests/test_meaning.py` (14); tam paket **209 geçti**.
+- Sıradaki dilim: bu okumaları **genel plan önerisine** çevirmek (görünüş ayrımı, hangi daire delik
+  hangisi cep, kalınlık/derinlik), sonra raster gözlemci.

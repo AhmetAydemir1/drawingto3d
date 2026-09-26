@@ -4,6 +4,47 @@ One entry per change, in the order it was made: the mechanism, the measured bene
 carries, and how it was verified. The numbers themselves live in `eval/README.md` and in
 `out/frontend/<case>.json`; this file is the accounting.
 
+## Every number is read into the claim the drawing supports, or left unresolved (`085cd83`, reading)
+
+**What changed.** `src/drawingto3d/meaning.py` (new): the third reading slice turns attachments
+into readings. A two-anchor linear dimension claims a *distance* — the pair of candidates, one per
+anchor, whose gap **projected onto the row's own axis** equals the printed value within
+max(3 %, 0.15 mm). Projection, not euclidean length: a dimension measures along its own row, and
+that is what finally read the plate's `8,00` section gap, whose segment ends sit 275 px apart in x.
+Pairs are ranked by candidate kind first (circle centres before arc centres before line ends before
+vertices) and then by how close to the arrows they sat — the plate's symmetric drawings resolve by
+standoff, and the rejected pair stays in the record as an alternative. A leader or radius mark
+whose value matches some circle's drawn diameter/radius claims that size and carries **every**
+matching circle in `matched_geometry`; a nearby "N x" callout — found relative to the span's own
+text box, not its arrows — is checked against how many circles match (`count`/`covered`). Spans
+whose candidates do not verify are marked `unresolved` and left alone. CLI:
+`drawingto3d meaning <drawing> <out_dir>` writes `meaning.json`; raster exits 2.
+
+**Bought.** The plate's seven numbers now read the way a human reads them, all confirmed:
+`100,00` between the top holes' centres (drawn 100.71, the bottom pair kept as an alternative),
+`60,00` between the left holes (60.43), `80,00` between the corner rounds (80.46), `15,00` at 15.10
+and `8,00` at 8.03 between section lines, `50,00` as the pocket's diameter (50.36, one match), and
+`Ø6,80` as the four holes' diameter — its "4 x" count checked, covered 4 of 4. The plastic sheet:
+four confirmed (its `R8.00` resolves against a family of twelve same-size fillet arcs — one chosen,
+all recorded) and ten marked unresolved, each inventing nothing.
+
+**Cost / risk.**
+- The plastic sheet's ten unresolved spans are an honest gap, not a hidden failure: their anchors
+  sit on chain dimensions and detail views whose drawn lengths do not match the sheet calibration
+  (a 3.00 row measures 70 px), so no candidate pair can verify — the record says so and
+  `bindings.json` still carries every candidate.
+- Recovery is per-span; nothing cross-checks readings against each other yet (the plate's `100,00`
+  and `60,00` share holes) — today only the alternatives expose that coupling.
+- Rank-before-cost ordering is a drafting prior (a dimension between holes is a hole spacing); it
+  picks the plate's true pairs, but on a sheet where a callout lands on one of several same-size
+  circles the touched one is chosen and `matched_geometry` shows the rest.
+
+**Verified.** `tests/test_meaning.py` 14 tests (plate: every number confirmed; hole spacings; the
+corner-round reading with its arc-rim kinds; section lines; the four-hole callout with count and
+covered; the pocket; claims cite observed geometry; plastic: fillet family, unresolved honesty,
+determinism; JSON round trip; raster refusal); `pytest -q` 209 passed; CLI on both sheets and on a
+raster (exit 2).
+
 ## Numbers are bound to the geometry their arrows touch, and the record says how (`9031094`, reading)
 
 **What changed.** `src/drawingto3d/bind.py` (new): for every printed span on a vector sheet, the

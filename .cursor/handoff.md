@@ -56,10 +56,11 @@ ifade edilmiş hâli, ve genel derleyici iki farklı işlem birleşimiyle sınan
 
 ### Hâlâ yapılmayan
 
-- Okuma katmanı genelleştirmesi (PLAN.md Bölüm 3A/3B): gözlem (`observe.py`) ve ölçü bağlama
-  (`bind.py`) dilimleri eklendi; ama ikisi de henüz genel plan önerisine bağlanmadı: sıradaki iş
-  bağlanan adaylardan **anlam seçimi** (hangi özellik hangi sayının), görünüş ayrımı, ölçek ve
-  raster gözlemci. Genel plan bugün dosyadan/elle veriliyor; yalnız plaka yolu otomatik doluyor.
+- Okuma katmanı genelleştirmesi (PLAN.md Bölüm 3A/3B): gözlem (`observe.py`), ölçü bağlama
+  (`bind.py`) ve anlam seçimi (`meaning.py`) dilimleri eklendi; ama üçü de henüz genel plan
+  önerisine çevrilmedi: sıradaki iş bu okumaları (delik mi cep mi, kalınlık/derinlik) **genel plan
+  önerisine** dönüştürmek, görünüş ayrımı ve raster gözlemci. Genel plan bugün dosyadan/elle
+  veriliyor; yalnız plaka yolu otomatik doluyor.
 - Pilot (en az 10) ve saklı (en az 20, en az 10'u raster) veri toplama kullanıcıda; ayrım
   altyapısı manifestte hazır, diziler boş.
 - Plaka tanıyıcı henüz deneysel seçeneğe taşınmadı; `plan`/`build-plan` hâlâ PlatePlan konuşur.
@@ -114,6 +115,20 @@ ifade edilmiş hâli, ve genel derleyici iki farklı işlem birleşimiyle sınan
 - Testler: `tests/test_bind.py` (15); tam paket **195 geçti**.
 - Sıradaki dilim: anlam seçimi — bağlanan adaylardan hangi özelliğin hangi sayıya ait olduğunu
   seçmek (simetri, "4 x", görünüş ayrımı) ve gözlem+bağlama+anlamı genel plan önerisine çevirmek.
+
+### Anlam seçimi — üçüncü dilim (aynı oturum, `085cd83`)
+
+- `src/drawingto3d/meaning.py` (yeni): bağlanan adaylardan her sayının okunuşu — distance (satır
+  eksenine izdüşüm; tür+maliyet sırası, elenen çiftler alternatif olarak kayıtta), diameter/radius
+  (`matched_geometry` tüm eşleşenler), komşu "N x" sayısının `count`/`covered` karşılaştırması.
+  Doğrulanamayan span `unresolved` kalır; okuma uydurulmaz.
+- Ölçüm: plaka 7/7 okundu — `100,00` → g9-g11 (100,71); `60,00` → 60,43; `80,00` → köşe yayları
+  (80,46); `15,00` → 15,10; `8,00` → 8,03; `50,00` → cep çapı (50,36); `Ø6,80` → dört delik, sayı
+  4/4. Plastik: 4 confirmed, 10 unresolved (zincir/detay ölçüleri — açık iş).
+- CLI: `meaning <çizim> <out_dir>` → meaning.json; raster → exit 2.
+- Testler: `tests/test_meaning.py` (14); tam paket **209 geçti**.
+- Sıradaki dilim: gözlem+bağlama+anlamı **genel plan önerisine** çevirmek (görünüş ayrımı, hangi
+  daire delik hangisi cep, kalınlık/derinlik) ve raster gözlemci.
 
 ## Aktarım ve kayıtlar
 

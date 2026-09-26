@@ -14,7 +14,13 @@ Run:
 PYTHONPATH=src .venv/bin/python eval/frontend.py          # reading front end, no model, seconds per sheet
 PYTHONPATH=src .venv/bin/python eval/baseline.py          # reading turn over every eval sheet -> out/baseline/<case id>.json
 .venv-cad/bin/python eval/report.py                       # table + out/eval/report.json
+PYTHONPATH=src .venv/bin/python eval/check_tables.py      # do the tables below still match out/frontend?
 ```
+
+`eval/check_tables.py` reads every table in this file back against the runs in `out/frontend/` (which is
+git-ignored) and prints any row that has drifted, exiting non-zero if one has. The tables are the
+measurement this project is steered by, and a row that has drifted is worse than no row: a re-run that
+changes a number is supposed to end in an edit to this file, and this is the check that it did.
 
 `eval/frontend.py` measures the half of reading that needs no model — glyph geometry, dimension lines,
 the PDF's own text layer, tesseract — and writes `out/frontend/<case id>.json`. It is what makes the

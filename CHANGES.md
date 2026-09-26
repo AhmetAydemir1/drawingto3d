@@ -586,6 +586,51 @@ the call chain includes the environment.
 bite — flipping `KALDI` to `GEÇTİ` in the README exits 1 with `README GEÇTİ -> rapor KALDI`, restoring it
 exits 0. Numbers: `out/build_eval.log`, `out/eval/report.json`.
 
+## The role question shows the number's own line, and fusing a body back over its drilled copy is caught (reading, build)
+
+**What changed.** Three things, each measured from the one before.
+
+1. `roles.crop_for_span` — the crop the role question shows. It was a square around the *number* (min 220 px), and
+   the question is what the number *measures*: the plate's `100,00` is its corner holes' centre spacing, drawn with
+   its ends 10.6 mm inside the plate's edge and extension lines running down to the holes, and a crop of the number
+   showed none of it — so `100,00`, `Ø50,00` and the 8 mm pocket depth all arrived as bare numbers and the reader
+   answered `edge`, `edge`, `thickness`. The box now spans the number's own line — `Span.anchors` are its two ends,
+   a dimension line's arrow tips or a leader's tip and its text — plus a quarter of the measured length past each
+   end, which is where the extension lines run to the features. A box longer than 1000 px is scaled down whole,
+   never trimmed.
+2. `reason._closed_holes` — `geo.holes(a, …)` returns a copy, so the coder's `geo.fuse(a, b)` put the undrilled
+   body back over the drilled copy and filled every hole. The prompt forbade it; nothing checked it, and the plate
+   passed the toolchain with `cylinders []`. The checker now sends it back with the reason, and drilling in place
+   (`a = geo.holes(a, …)`) is *not* flagged — a bug in the first version of this check that its own test caught.
+3. `eval/check_tables.py` derives the verdict cell with the same three words `eval/report.py` prints (`GEÇTİ`,
+   `şekil`, `KALDI`), so a README row can be copied from the report as it reads.
+
+**What it bought.** Measured by re-reading and rebuilding all four cases (log `out/build_eval_cropfix_set.log`;
+the plate separately in `out/build_eval_cropfix.log`): **2 of 4 → 3 of 4 build**. `plastic-enclosure-1` and
+`flange-1` produce a part for the first time, and the plate's part is materially closer: `vector [23, 100, 100]`
+→ `[15, 80, 100]` (thickness and width now exact), volume within tolerance (119.0 ↔ 124.8 cm³) and its `Ø6.8`
+holes back (`cylinders [3.4]`) once the fuse guard fired. The plate's `60,00` is now `hole_spacing` — its true
+reading, verified against the sheet (the drawn holes are 100.81 x 60.64 mm apart and the crop shows the
+extension lines ending on the two top holes). The crops were looked at, not assumed:
+`out/probe/role_crop_1_00-00.png` shows both arrowheads, both extension lines and the two corner holes;
+`role_crop_50-00.png` shows the leader's arrow on the bore and the printed `Ø`.
+
+**What it cost.** `exercise-1` **lost its build**: four of its numbers moved to `hole_spacing`, the coder drilled
+a `Ø20` hole at 20 mm spacing and the plate came apart into four solids. The reason is not the crop but the
+choices: that sheet prints `Ø20`, `Ø25`, `Ø30`, `Ø40`, `Ø50`, and the `Ø` is drawn ink that never enters the
+span's text, so those numbers are offered only the length family and `hole_spacing` is the nearest thing to a
+round feature — the model picks the least-bad option and the coder acts on it. The raster sheets' new roles are
+therefore *measured but not yet verified against their drawings*, which is the next piece of work. `plastic` and
+`flange` build and are still badly wrong (a 0.1 cm³ flange against 202.1). Crops are now 800-1000 px, so each
+role question costs more image tokens than the 220 px square did.
+
+**How it was verified.** `pytest tests/` 122 passed, including the two new tests
+(`test_crop_reaches_the_features_the_line_points_at`: the box holds the line's ends and is scaled rather than
+trimmed; `test_fusing_the_undrilled_part_back_in_is_sent_back`: the guard fires for a copy and not for drilling
+in place). `eval/check_tables.py` 20 rows, 0 drift after the built table was refilled from the report.
+`out/build_eval.py` runs: plate read 185 s → build 19 s; `exercise-1` 428 s → failed; `plastic-enclosure-1`
+325 s → 45 s; `flange-1` 285 s → 44 s.
+
 ## The prompt names the shape the records prove, and two of four cases build (reason, build)
 
 **What changed.** `reason.build_prompt` no longer hands the coder a shape before it has looked at the records.

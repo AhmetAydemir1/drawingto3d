@@ -164,9 +164,9 @@ reading the part was built from, so the two halves of the report describe one ru
 | vaka | okuma | kayıt | katı | verdict |
 |---|---|---|---|---|
 | plate-pocket-1 | 7/7 | 7 | var | KALDI |
-| exercise-1 | 6/13 | 15 | var | KALDI |
-| plastic-enclosure-1 | 11/11 | 14 | yok | katı üretilmedi |
-| flange-1 | 4/13 | 10 | yok | katı üretilmedi |
+| plastic-enclosure-1 | 11/11 | 14 | var | şekil |
+| exercise-1 | 6/13 | 15 | yok | katı üretilmedi |
+| flange-1 | 4/13 | 10 | var | KALDI |
 | studycadcam-60 | - | 0 | - | referans yok |
 | studycadcam-50 | - | 0 | - | referans yok |
 
@@ -175,50 +175,53 @@ vector sheets read exactly — the plate 7/7 with no noise and the plastic sheet
 two raster sheets read 6/13 and 4/13, which is what the front end's own raster row predicts. The two practice
 sheets have no reference STEP, so they are reading-only here.
 
-**Two of four cases now build, and both are plates.** Before the shape note below, **no case produced a part
-at all**; now the plate and `exercise-1` do, in 15 s and 35 s. The plate's part is
+**Three of four cases build, and the plate's part is close.** No case built before the shape note; the shape note
+got the plate and `exercise-1` building; giving the role question the number's own line then got `plastic` and
+`flange` building and **broke `exercise-1`** (below). What each part is now:
 
-```
-a = geo.plate(100, 80, 15)
-b = geo.holes(a, positions=geo.rect_points(60), diameter=6.8)
-c = geo.plate(50, 100, 8)
-d = geo.attach(c, b, 'end')
-solid = geo.fuse(b, d)
-```
+| vaka | katı | verdict | parçanın ölçüsü |
+|---|---|---|---|
+| plate-pocket-1 | var | KALDI | `[15, 80, 100]` ↔ `[15, 80, 120]`, hacim **ok** (119.0 ↔ 124.8 cm³), silindirler `[3.4]` ↔ `[3.4, 10, 25]` |
+| plastic-enclosure-1 | var | şekil | vector **ok**, hacim 171.7 ↔ 23.5 cm³, silindirler `[0.75, 1.5, 2, 2.4, 4]` ↔ `[1.5, 5, 6, 8]` |
+| flange-1 | var | KALDI | `[1, 2, 50]` ↔ `[50, 100, 100]`, hacim 0.1 ↔ 202.1 cm³, silindirler `[]` ↔ `[3.2, 5.5, 15, 30, 50]` |
+| exercise-1 | yok | katı üretilmedi | `holes: result has 4 solids` — `geo.holes(solid, geo.rect_points(20), diameter=20)` |
 
-— a plate `100 x 80 x 15` with four `Ø6.8` corner holes, which is the right *kind* of part (the run before it
-built a bent tube with a plate glued to its end from the same numbers), and `vector [23, 100, 100]` against the
-reference's `[15, 80, 120]`, `157.8 cm3` against `124.8`, cylinders `[3.4]` against `[3.4, 10, 25]`. Every
-remaining difference is now a *named* one, which is the point of the change:
+The plate's remaining differences are now few and **named** — and the first of them is measured, not guessed: its
+`60,00` is the corner holes' vertical spacing (the sheet's drawn holes are `100.81 x 60.64 mm` apart and the
+crop shows the dimension's extension lines ending on the two top holes), so the record says `hole_spacing`:
 
 | ne eksik | kayıtların dediği | paftanın dediği |
 |---|---|---|
-| Ø50 göz yok | `50 mm: edge` | `Ø50,00`, lider bir daireye gidiyor |
-| cep 8 mm derinlik değil, üstüne yapıştırılmış ikinci plaka (23 mm kalınlık) | `8 mm: thickness` | `SECTION B-B`'de 8,00 cep derinliği |
-| delik deseni `60 x 60` | `60 mm: edge` (100 de `edge`) | 100 x 60, köşe deliklerinin merkez aralığı |
+| Ø50 göz yok | `50 mm: hole_spacing` | `Ø50,00`, lider bir daireye gidiyor |
+| cep 8 mm derinlik değil, üstüne yapıştırılmış ikinci plaka | `8 mm: thickness` | `SECTION B-B`'de 8,00 cep derinliği |
 | dış uzunluk 100 | basılı en büyük sayı | 120 (kenar payından türetilir, çizili hat 121.15 mm) |
 
-The two cases that still produce nothing fail in the coder's program, and the guard now catches the one that
-invented numbers:
+**The role question now shows the number's own line.** It was a square around the number alone, and the question
+is what the number *measures*: the plate's `100,00` has its ends 10.6 mm inside the plate's drawn edge with
+extension lines running down to the holes, so a crop of the number answered `edge` for a hole pattern, `edge`
+for a `Ø50` bore and `thickness` for an 8 mm pocket depth. The box now spans the number's own line — `Span.anchors`
+are its two ends — and reaches a quarter of the measured length past each end. Verified by looking at the crops:
+`100,00` shows both arrowheads, both extension lines and the two corner holes they end on; `50,00` shows the
+leader's arrow on the bore and the printed `Ø`.
 
-| vaka | hatanın ölçüsü |
-|---|---|
-| plastic-enclosure-1 | `The numbers 80, 100 are not printed on the drawing` (uydurulmuş sayı koruması, ikinci denemede) |
-| flange-1 | `holes: result has 5 solids, expected one` |
+**What it cost, measured on the same run.** `exercise-1` no longer builds: four of its numbers moved to
+`hole_spacing`, the coder drilled a `Ø20` hole at 20 mm spacing and the plate came apart into four solids. And the
+reason it answers `hole_spacing` there is that **the right answer is not on the list**: that sheet prints `Ø20`,
+`Ø25`, `Ø30`, `Ø40` and `Ø50`, but the `Ø` is drawn ink and never enters the span's text, so those numbers are
+still offered only the length family and `hole_spacing` is the nearest thing to a round feature. Reading the
+drawn `Ø` (the crop now shows it) is the next change. `plastic` and `flange` build for the first time and are
+still badly wrong (a 0.1 cm³ flange against 202.1), which is honest progress rather than a result.
 
-The plate is the sharpest case in both directions. Its reading is 7/7 — every millimetre printed — and what
-still stands between it and the reference is entirely interpretation: `50` is a bore diameter whose record says
-`edge`, `8` is a pocket depth whose record says `thickness`, `100`/`60` are a hole pattern whose records say
-`edge`, and the plate's own length is not printed at all (it is derivable: the vertical pair teaches the edge
-distance `(80 - 60) / 2 = 10`, so `100 + 2 x 10 = 120`, and the sheet's drawn outline measures 121.15 mm). One
-wrong record was **provably** wrong and is fixed: `6,80 THRU ALL` is a through-hole callout, but on a vector
-sheet the `Ø` is a drawn path that never reaches the text layer, so the role question offered only
-`edge, thickness, hole_spacing` and the reader answered `hole_spacing`; `role_choices` now reads the callout's
-own note (`THRU`, `TAP`, `CBORE`, `6H`, …) and the record is `hole_diameter`.
+One wrong record was **provably** wrong and is fixed: `6,80 THRU ALL` is a through-hole callout, and
+`role_choices` now reads the callout's own note (`THRU`, `TAP`, `CBORE`, `6H`, …), so the record is
+`hole_diameter`. One silent failure is now caught as well: `geo.holes(a, …)` returns a copy, so the coder's
+`geo.fuse(a, b)` put the undrilled body back over the drilled copy and filled every hole — the part passed the
+toolchain with `cylinders []`. `reason._closed_holes` sends it back with the reason and the plate's holes came
+back (`cylinders [3.4]`).
 
-So the reading half is close to solved on the vector class, the building half has started (2 of 4 build, both
-plates), and the next layer is the records themselves: a number has to arrive named as what it dimensions
-(bore, pocket depth, hole pattern) and the undimensioned length has to be derived.
+So the reading half is close to solved on the vector class, three of four cases produce a part, and the layer
+that is left is the records' naming: a number has to arrive named as what it dimensions (a bore's diameter, a
+pocket's depth, a hole pattern's spacing) and the undimensioned length has to be derived.
 
 ## How a number is read
 

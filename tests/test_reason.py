@@ -63,6 +63,30 @@ def test_prompt_names_only_the_shape_the_records_prove():
     assert "name a plate" in prompt
 
 
+def test_fusing_the_undrilled_part_back_in_is_sent_back():
+    """The plate's build came out with no holes at all: the drilled copy was fused with the body it came from."""
+    from drawingto3d.reason import _program_problem
+
+    code = (
+        "a = geo.plate(100, 80, 15)\n"
+        "b = geo.holes(a, positions=geo.rect_points(60, 60), diameter=6.8)\n"
+        "solid = geo.fuse(a, b)\n"
+    )
+    problem = _program_problem(code)
+    assert problem is not None and "fills" in problem and "geo.holes(a" in problem
+    # Drilling in place, or fusing only the drilled copy, is how it should be written.
+    assert _program_problem(
+        "a = geo.plate(100, 80, 15)\n"
+        "a = geo.holes(a, positions=geo.rect_points(60, 60), diameter=6.8)\n"
+        "solid = geo.fuse(a)\n"
+    ) is None
+    assert _program_problem(
+        "a = geo.plate(100, 80, 15)\n"
+        "b = geo.holes(a, positions=geo.rect_points(60, 60), diameter=6.8)\n"
+        "solid = geo.fuse(b)\n"
+    ) is None
+
+
 def test_remote_host_is_rejected():
     with pytest.raises(UnavailableModel):
         _local_origin("https://example.com/v1")

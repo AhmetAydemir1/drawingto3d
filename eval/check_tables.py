@@ -156,7 +156,11 @@ def _built_cell(row: dict, column: str) -> str:
         return "referans yok"
     if built is None or "error" in built:
         return "katı üretilmedi"
-    return "GEÇTİ" if (row.get("verdict") or {}).get("pass") else "KALDI"
+    verdict = row.get("verdict") or {}
+    # The same three words `eval/report.py` prints, so a README row can be copied from the report as it reads.
+    if verdict.get("pass"):
+        return "GEÇTİ"
+    return "şekil" if verdict.get("shape_ok") else "KALDI"
 
 
 if __name__ == "__main__":

@@ -51,14 +51,39 @@ def test_answer_outside_the_list_is_unknown():
     assert parse_role("I think it is the pipe", choices) == "unknown"
 
 
-def test_crop_is_square_inside_the_page():
+def test_crop_covers_the_span_and_its_own_line_inside_the_page():
     page = _page(400, 300, [_span("s0", "50", 5.0, 5.0), _span("s1", "260", 380.0, 280.0)])
     for span in page.spans:
         crop = cv2.imdecode(np.frombuffer(crop_for_span(page, span), dtype=np.uint8), cv2.IMREAD_COLOR)
-        assert crop.shape[0] == crop.shape[1] == 220
+        # A span with no anchors still gets a crop big enough to read the number in.
+        assert crop.shape[0] >= 194 and crop.shape[1] >= 194
+        assert crop.shape[0] <= 300 and crop.shape[1] <= 400
     small = _page(120, 90, [_span("s0", "50", 5.0, 5.0)])
     crop = cv2.imdecode(np.frombuffer(crop_for_span(small, small.spans[0]), dtype=np.uint8), cv2.IMREAD_COLOR)
-    assert crop.shape[0] == crop.shape[1] == 90
+    assert crop.shape[0] == 90 and crop.shape[1] == 120
+
+
+def test_crop_reaches_the_features_the_line_points_at():
+    """A number's question is what it measures: the box holds its line's ends and a margin past them."""
+    span = _span("s0", "100,00", 400.0, 20.0)  # the number's own box is 30 x 14 px
+    span.anchors = [[300.0, 60.0], [600.0, 60.0]]
+    crop = cv2.imdecode(np.frombuffer(crop_for_span(_page(1200, 800, [span]), span), dtype=np.uint8), cv2.IMREAD_COLOR)
+    # The 300 px line plus the pad margin past each end (6 x the text size, which is the larger term here).
+    assert crop.shape[1] >= 300 + 2 * 180
+    assert crop.shape[0] >= 180
+
+    # A box longer than the limit is scaled down whole, never trimmed: both ends stay in the picture.
+    long_span = _span("s1", "100,00", 800.0, 20.0)
+    long_span.anchors = [[100.0, 60.0], [1400.0, 60.0]]
+    crop = cv2.imdecode(np.frombuffer(crop_for_span(_page(1600, 400, [long_span]), long_span), dtype=np.uint8), cv2.IMREAD_COLOR)
+    assert max(crop.shape[:2]) == 1000 and crop.shape[1] == 1000
+
+    # A leader is a mode, not a kind: the box still covers the tip and the text it carries.
+    leader = _span("s2", "50,00", 400.0, 20.0)
+    leader.anchors = [[300.0, 60.0], [600.0, 60.0]]
+    leader.anchor_mode = "leader"
+    crop = cv2.imdecode(np.frombuffer(crop_for_span(_page(1200, 800, [leader]), leader), dtype=np.uint8), cv2.IMREAD_COLOR)
+    assert crop.shape[1] >= 300 + 2 * 180
 
 
 def test_records_take_roles_from_the_reader_and_keep_spans():

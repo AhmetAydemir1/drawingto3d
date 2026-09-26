@@ -232,7 +232,54 @@ def _program_problem(code: str, records: Sequence[DimensionRecord] = ()) -> str 
         return "Do not import anything. cq and geo are already defined."
     if re.search(r"\b(?:fillet_edges|chamfer_edges)\s*\(", code):
         return "Do not call fillet_edges or chamfer_edges; a wrong selector fails the program. Leave edges sharp."
-    return _role_as_variable(code, records)
+    return _closed_holes(code) or _role_as_variable(code, records)
+
+
+def _geo_call_name(call: ast.Call) -> str | None:
+    """`geo.plate(...)` -> 'plate'; anything else is not a geo helper."""
+    func = call.func
+    if isinstance(func, ast.Attribute) and isinstance(func.value, ast.Name) and func.value.id == "geo":
+        return func.attr
+    return None
+
+
+def _closed_holes(code: str) -> str | None:
+    """Fusing the drilled part with the one it was drilled from fills its own holes.
+
+    `geo.holes(a, ...)` returns a copy of `a` with holes in it, so `geo.fuse(a, b)` is the whole body plus a
+    drilled copy sitting inside it - and the toolchain accepts that happily. The result has no holes at all,
+    which is exactly what the plate's build came out as: `vector [15, 80, 100]` with `cylinders []` against a
+    reference whose cylinders are `[3.4, 10, 25]`. The prompt forbids it; nothing checked it.
+    """
+    try:
+        tree = ast.parse(code)
+    except SyntaxError:
+        return None
+    drilled_from: dict[str, str] = {}
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Assign) or not isinstance(node.value, ast.Call):
+            continue
+        if _geo_call_name(node.value) != "holes":
+            continue
+        source = node.value.args[0] if node.value.args else None
+        source = next((kw.value for kw in node.value.keywords if kw.arg == "part"), source)
+        if not isinstance(source, ast.Name):
+            continue
+        for target in node.targets:
+            if isinstance(target, ast.Name):
+                drilled_from[target.id] = source.id
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call) or _geo_call_name(node) != "fuse":
+            continue
+        fused = {argument.id for argument in node.args if isinstance(argument, ast.Name)}
+        for name in sorted(fused):
+            origin = drilled_from.get(name)
+            if origin and origin != name and origin in fused:
+                return (
+                    f"`{name}` is `{origin}` with its holes drilled, and `{origin}` is fused back in, which fills "
+                    f"them. Fuse the drilled variable only, or drill in place: `{origin} = geo.holes({origin}, ...)`."
+                )
+    return None
 
 
 def _drop_edge_finish(code: str) -> str:

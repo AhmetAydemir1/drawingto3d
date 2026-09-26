@@ -126,6 +126,76 @@ def revolve_profile(points: list[tuple[float, float]], angle: float = 360, plane
     return _one_solid(_polygon(wp, points, "revolve_profile").revolve(angle, (0, 0, 0), (0, 1, 0)), "revolve_profile")
 
 
+def profile_extrude(
+    entities: list[dict],
+    distance: float,
+    plane: str = "XY",
+    offset: float = 0.0,
+) -> cq.Workplane:
+    """Closed line/arc/circle profile extruded `distance` along the plane normal, starting `offset` away from the plane; each entity is a dict: line (type, start, end), arc (type, center, radius, start_degrees, end_degrees), circle (type, center, radius), all in the plane's local x/y."""
+    _positive("profile_extrude", distance=distance)
+    frame = _wp(plane, "profile_extrude")
+    wire = _profile_wire(entities, frame.plane, "profile_extrude")
+    if offset:
+        wire = wire.translate(frame.plane.zDir.multiply(float(offset)))
+    solid = cq.Solid.extrudeLinear(wire, [], frame.plane.zDir.multiply(float(distance)))
+    result = _one_solid(cq.Workplane("XY").add(solid), "profile_extrude",
+                        "the profile must be closed and must not self-intersect")
+    origin = frame.plane.origin + frame.plane.zDir.multiply(float(offset))
+    return _with_ends(result, [(origin, frame.plane.zDir.multiply(-1)),
+                               (origin + frame.plane.zDir.multiply(float(distance)), frame.plane.zDir)])
+
+
+def profile_revolve(entities: list[dict], angle: float = 360, plane: str = "XZ", offset: float = 0.0) -> cq.Workplane:
+    """Closed line/arc profile revolved about the plane's local Y axis; local x is the radius and must stay >= 0, y is the height; `offset` first moves the profile along the plane normal."""
+    _positive("profile_revolve", angle=angle)
+    if angle > 360:
+        raise ValueError("profile_revolve: angle must be at most 360")
+    frame = _wp(plane, "profile_revolve")
+    wire = _profile_wire(entities, frame.plane, "profile_revolve")
+    _revolve_radii(entities, "profile_revolve")
+    if offset:
+        wire = wire.translate(frame.plane.zDir.multiply(float(offset)))
+    solid = cq.Solid.revolve(wire, [], float(angle), frame.plane.origin,
+                             frame.plane.origin + frame.plane.yDir)
+    return _one_solid(cq.Workplane("XY").add(solid), "profile_revolve",
+                      "the profile must not cross the revolve axis")
+
+
+def repeat_linear(body: cq.Workplane, x_pitch: float = 0.0, x_count: int = 1,
+                  y_pitch: float = 0.0, y_count: int = 1) -> cq.Workplane:
+    """Copy the solid `body` into a centred x/y grid of `x_count` * `y_count` positions `x_pitch`/`y_pitch` apart; the copies stay separate solids, ready to be passed to `cut`."""
+    _check_shape(body, "repeat_linear")
+    _count("repeat_linear", x_count=x_count, y_count=y_count)
+    for label, pitch, count in (("x", x_pitch, x_count), ("y", y_pitch, y_count)):
+        _number("repeat_linear", **{f"{label}_pitch": pitch})
+        if count > 1 and not pitch > 0:
+            raise ValueError(f"repeat_linear: {label}_pitch must be positive when {label}_count is 2 or more")
+    if x_count == 1 and y_count == 1:
+        raise ValueError("repeat_linear: at least one count must be 2 or more")
+    xs = [x_pitch * (i - (x_count - 1) / 2) for i in range(x_count)]
+    ys = [y_pitch * (j - (y_count - 1) / 2) for j in range(y_count)]
+    copies = [solid.translate((x, y, 0)) for solid in body.solids().vals() for x in xs for y in ys]
+    return _with_ends(cq.Workplane("XY").newObject(copies), [])
+
+
+def repeat_circular(body: cq.Workplane, count: int, span_degrees: float = 360, axis: str = "Z") -> cq.Workplane:
+    """Copy the solid `body` `count` times about the world `axis` through the origin; a full 360 span spaces the copies evenly, a smaller span puts the first and last copy on its ends."""
+    _check_shape(body, "repeat_circular")
+    _count("repeat_circular", count=count)
+    _number("repeat_circular", span_degrees=span_degrees)
+    if count < 2:
+        raise ValueError("repeat_circular: count must be 2 or more")
+    if not 0 < span_degrees <= 360:
+        raise ValueError("repeat_circular: span_degrees must be between 0 and 360")
+    if str(axis).upper() not in ("X", "Y", "Z"):
+        raise ValueError("repeat_circular: axis must be 'X', 'Y' or 'Z'")
+    unit = {"X": (1.0, 0.0, 0.0), "Y": (0.0, 1.0, 0.0), "Z": (0.0, 0.0, 1.0)}[str(axis).upper()]
+    step = span_degrees / count if span_degrees >= 360 else span_degrees / (count - 1)
+    copies = [solid.rotate((0, 0, 0), unit, i * step) for solid in body.solids().vals() for i in range(count)]
+    return _with_ends(cq.Workplane("XY").newObject(copies), [])
+
+
 def attach(part: cq.Workplane, base: cq.Workplane, end: str = "end") -> cq.Workplane:
     """Move `part` so its 'start' face sits flat on the chosen end face ('start' or 'end') of `base`, pointing away from base. Works on plates and tubes, not on fused solids."""
     base_ends = _ends(_check_shape(base, "attach"))
@@ -276,6 +346,108 @@ def _non_negative(name: str, **values: float) -> None:
     for key, value in values.items():
         if not isinstance(value, (int, float)) or value < 0:
             raise ValueError(f"{name}: {key} must be zero or positive, got {value!r}")
+
+
+def _number(name: str, **values) -> None:
+    for key, value in values.items():
+        if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
+            raise ValueError(f"{name}: {key} must be a finite number, got {value!r}")
+
+
+def _count(name: str, **values) -> None:
+    for key, value in values.items():
+        if isinstance(value, bool) or not isinstance(value, int) or value < 1:
+            raise ValueError(f"{name}: {key} must be a whole number of 1 or more, got {value!r}")
+
+
+def _field(entity: dict, key: str, where: str) -> float:
+    if not isinstance(entity, dict) or key not in entity:
+        raise ValueError(f"{where}: missing field {key!r}")
+    value = entity[key]
+    _number(where, **{key: value})
+    return float(value)
+
+
+def _point2(entity: dict, key: str, where: str) -> tuple[float, float]:
+    value = entity.get(key) if isinstance(entity, dict) else None
+    if not isinstance(value, (list, tuple)) or len(value) != 2:
+        raise ValueError(f"{where}: {key} must be an [x, y] pair")
+    _number(where, **{f"{key}[0]": value[0], f"{key}[1]": value[1]})
+    return float(value[0]), float(value[1])
+
+
+def _world(frame: cq.Plane, x: float, y: float, z: float = 0.0) -> cq.Vector:
+    """Map local (x, y, z) of a named plane onto world coordinates."""
+    return frame.origin + frame.xDir * float(x) + frame.yDir * float(y) + frame.zDir * float(z)
+
+
+def _profile_edges(entities: list[dict], frame: cq.Plane, name: str) -> list[cq.Edge]:
+    if not isinstance(entities, (list, tuple)) or not entities:
+        raise ValueError(f"{name}: entities must be a non-empty list of dicts")
+    kinds = [entity.get("type") if isinstance(entity, dict) else None for entity in entities]
+    if "circle" in kinds and len(entities) != 1:
+        raise ValueError(f"{name}: a circle must be the whole profile, not mixed with other entities")
+    edges = []
+    for index, (entity, kind) in enumerate(zip(entities, kinds)):
+        where = f"{name}: entity {index}"
+        if kind == "line":
+            start, end = _point2(entity, "start", where), _point2(entity, "end", where)
+            first, second = _world(frame, *start), _world(frame, *end)
+            if first.sub(second).Length < 1e-9:
+                raise ValueError(f"{where}: line start and end are the same point")
+            edges.append(cq.Edge.makeLine(first, second))
+        elif kind == "arc":
+            center = _point2(entity, "center", where)
+            radius = _field(entity, "radius", where)
+            start_degrees = _field(entity, "start_degrees", where)
+            end_degrees = _field(entity, "end_degrees", where)
+            _positive(where, radius=radius)
+            if not 0 < end_degrees - start_degrees < 360:
+                raise ValueError(f"{where}: arc sweep must be between 0 and 360 degrees, got {end_degrees - start_degrees:g}")
+            points = [_world(frame, center[0] + radius * math.cos(math.radians(a)),
+                             center[1] + radius * math.sin(math.radians(a)))
+                      for a in (start_degrees, (start_degrees + end_degrees) / 2, end_degrees)]
+            edges.append(cq.Edge.makeThreePointArc(*points))
+        elif kind == "circle":
+            center = _point2(entity, "center", where)
+            radius = _field(entity, "radius", where)
+            _positive(where, radius=radius)
+            edges.append(cq.Edge.makeCircle(radius, _world(frame, *center), frame.zDir))
+        else:
+            raise ValueError(f"{where}: type must be line, arc or circle, got {kind!r}")
+    return edges
+
+
+def _profile_wire(entities: list[dict], frame: cq.Plane, name: str) -> cq.Wire:
+    edges = _profile_edges(entities, frame, name)
+    try:
+        wire = cq.Wire.assembleEdges(edges)
+    except Exception as exc:  # noqa: BLE001 - OCC raises plain Exceptions
+        raise ValueError(f"{name}: the profile edges do not join into one wire") from exc
+    if not wire.IsClosed():
+        raise ValueError(f"{name}: the profile is not closed")
+    return wire
+
+
+def _revolve_radii(entities: list[dict], name: str) -> None:
+    """Every profile point must stay on the x >= 0 side of the revolve axis."""
+    for index, entity in enumerate(entities):
+        where = f"{name}: entity {index}"
+        kind = entity.get("type") if isinstance(entity, dict) else None
+        if kind == "line":
+            xs = [_point2(entity, key, where)[0] for key in ("start", "end")]
+        elif kind == "arc":
+            center = _point2(entity, "center", where)
+            radius = _field(entity, "radius", where)
+            start = _field(entity, "start_degrees", where)
+            end = _field(entity, "end_degrees", where)
+            angles = [start, end] + [a for a in (-180, 0, 180, 360) if start < a < end]
+            xs = [center[0] + radius * math.cos(math.radians(a)) for a in angles]
+        else:
+            center = _point2(entity, "center", where)
+            xs = [center[0] - _field(entity, "radius", where)]
+        if any(x < 0 for x in xs):
+            raise ValueError(f"{where}: profile must stay on the x >= 0 side of the revolve axis")
 
 
 # End-face bookkeeping. Kept as plain tuples so it survives without OCC objects.

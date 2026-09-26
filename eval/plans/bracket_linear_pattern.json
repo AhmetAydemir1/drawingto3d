@@ -1,0 +1,197 @@
+{
+  "version": 1,
+  "unit": "mm",
+  "source": {
+    "kind": "synthetic",
+    "ref": "eval/plans/bracket_linear_pattern.json",
+    "sha256": null,
+    "page": 1
+  },
+  "parameters": {
+    "length": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 80,
+      "explanation": "Sentetik derleyici örneği: ölçü bir çizimden okunmadı."
+    },
+    "height": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 50,
+      "explanation": "Sentetik derleyici örneği: ölçü bir çizimden okunmadı."
+    },
+    "width": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 30,
+      "explanation": "Sentetik derleyici örneği: ölçü bir çizimden okunmadı."
+    },
+    "thickness": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 6,
+      "explanation": "Sentetik derleyici örneği: ölçü bir çizimden okunmadı."
+    },
+    "hole_dx": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 50,
+      "explanation": "Sentetik derleyici örneği: ölçü bir çizimden okunmadı."
+    },
+    "hole_d": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 5,
+      "explanation": "Sentetik derleyici örneği: ölçü bir çizimden okunmadı."
+    },
+    "pi": {
+      "unit": "count",
+      "source": "assumed",
+      "value": 3.141592653589793,
+      "explanation": "İfadelerdeki π sabiti; boyutsuz."
+    },
+    "area": {
+      "unit": "mm",
+      "source": "derived",
+      "expr": "length * thickness + (height - thickness) * thickness",
+      "explanation": "L kesitinin alanı."
+    }
+  },
+  "sketches": {
+    "outline": {
+      "plane": "XY",
+      "offset": "0",
+      "entities": [
+        {
+          "type": "line",
+          "start": [
+            "-(length / 2)",
+            "0"
+          ],
+          "end": [
+            "length / 2",
+            "0"
+          ]
+        },
+        {
+          "type": "line",
+          "start": [
+            "length / 2",
+            "0"
+          ],
+          "end": [
+            "length / 2",
+            "thickness"
+          ]
+        },
+        {
+          "type": "line",
+          "start": [
+            "length / 2",
+            "thickness"
+          ],
+          "end": [
+            "-(length / 2) + thickness",
+            "thickness"
+          ]
+        },
+        {
+          "type": "line",
+          "start": [
+            "-(length / 2) + thickness",
+            "thickness"
+          ],
+          "end": [
+            "-(length / 2) + thickness",
+            "height"
+          ]
+        },
+        {
+          "type": "line",
+          "start": [
+            "-(length / 2) + thickness",
+            "height"
+          ],
+          "end": [
+            "-(length / 2)",
+            "height"
+          ]
+        },
+        {
+          "type": "line",
+          "start": [
+            "-(length / 2)",
+            "height"
+          ],
+          "end": [
+            "-(length / 2)",
+            "0"
+          ]
+        }
+      ]
+    },
+    "hole": {
+      "plane": "XZ",
+      "offset": "-(thickness + 1)",
+      "entities": [
+        {
+          "type": "circle",
+          "center": [
+            "0",
+            "width / 2"
+          ],
+          "radius": "hole_d / 2"
+        }
+      ]
+    }
+  },
+  "operations": [
+    {
+      "op": "extrude",
+      "id": "outer",
+      "output": "body",
+      "sketch": "outline",
+      "distance": "width"
+    },
+    {
+      "op": "extrude",
+      "id": "hole_pin",
+      "output": "hole_tool",
+      "sketch": "hole",
+      "distance": "thickness + 2"
+    },
+    {
+      "op": "repeat",
+      "id": "hole_pair",
+      "input": "hole_tool",
+      "output": "hole_tools",
+      "linear": {
+        "x_pitch": "hole_dx",
+        "x_count": 2,
+        "y_pitch": "0",
+        "y_count": 1
+      }
+    },
+    {
+      "op": "cut",
+      "id": "holes",
+      "target": "body",
+      "tool": "hole_tools",
+      "output": "finished"
+    }
+  ],
+  "result": "finished",
+  "assumptions": [
+    "Sentetik derleyici örneği; hiçbir ölçü bir çizimden okunmuş gibi gösterilmez.",
+    "Delikler XZ düzleminde tanımlı; eksenleri Y boyunca, bacak kalınlığından (thickness) geçer.",
+    "Beklenen hacim kapalı formdan: area * width - 2 * pi * (hole_d / 2) ** 2 * thickness."
+  ],
+  "expect": {
+    "bbox": [
+      "length",
+      "height",
+      "width"
+    ],
+    "volume": "area * width - 2 * pi * (hole_d / 2) ** 2 * thickness"
+  }
+}

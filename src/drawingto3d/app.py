@@ -9,10 +9,13 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse
 
+from pydantic import ValidationError
+
 from drawingto3d.errors import UnavailableModel
 from drawingto3d.cadrun import CadFailure
 from drawingto3d.ingest import load_page
 from drawingto3d.reason import reason_drawing
+from drawingto3d.plan import edit_plan
 from drawingto3d.schema import ROLES, Audit, ConvertResult, DimensionRecord, Source, Span, View
 
 ROOT = Path(__file__).resolve().parent / "static"
@@ -60,7 +63,7 @@ class Handler(BaseHTTPRequestHandler):
         if not payload:
             self._send(400, "application/json", b'{"error":"dosya yok"}')
             return
-        folder = Path("out") / "upload"
+        folder = Path("out") / "upload" / uuid.uuid4().hex
         folder.mkdir(parents=True, exist_ok=True)
         source = folder / "drawing.png"
         if payload[:5] == b"%PDF-":
@@ -81,6 +84,19 @@ class Handler(BaseHTTPRequestHandler):
             self._send(404, "application/json", b'{"error":"oturum yok"}')
             return
         result: ConvertResult = session["result"]
+        if result.plate_plan is not None:
+            try:
+                plan = edit_plan(result.plate_plan, data.get("parameters", {}))
+            except (ValueError, TypeError) as exc:
+                message = str(exc)
+                if isinstance(exc, ValidationError):
+                    message = exc.errors()[0]["msg"].removeprefix("Value error, ")
+                self._send(400, "application/json", json.dumps({"error": message}, ensure_ascii=False).encode())
+                return
+            out_dir = Path(session["source"]).parent / "auto"
+            job_id = _start_solid_job(session["source"], out_dir, [], result.page, plate_plan=plan)
+            self._send(202, "application/json", json.dumps({"job": job_id}).encode())
+            return
         try:
             records = merge_records(result.records, data.get("records") or [])
         except (ValueError, TypeError):
@@ -127,6 +143,9 @@ class Handler(BaseHTTPRequestHandler):
         if path.endswith("/audit.json"):
             self._send(200, "application/json", result.audit.model_dump_json().encode())
             return
+        if path.endswith("/plan.json") and result.plate_plan:
+            self._send(200, "application/json", result.plate_plan.model_dump_json(indent=2).encode())
+            return
         self._send(404, "text/plain", b"not found")
 
     def _send(self, status: int, content_type: str, payload: bytes) -> None:
@@ -152,7 +171,7 @@ def _start_reason_job(source, out_dir) -> str:
 
     def run() -> None:
         try:
-            result = reason_drawing(source, out_dir, progress=progress)
+            result = reason_drawing(source, out_dir, progress=progress, prefer_plan=True)
             _remember(job_id, source, result)
             with LOCK:
                 job["public"] = _public(result, job_id)
@@ -202,7 +221,7 @@ def merge_records(current: list[DimensionRecord], edits: list[dict]) -> list[Dim
     return list(by_id.values())
 
 
-def _start_solid_job(source, out_dir, records: list[DimensionRecord], page) -> str:
+def _start_solid_job(source, out_dir, records: list[DimensionRecord], page, plate_plan=None) -> str:
     job_id = uuid.uuid4().hex[:8]
     job = {"events": [], "done": False, "error": None, "public": None}
     with LOCK:
@@ -214,7 +233,7 @@ def _start_solid_job(source, out_dir, records: list[DimensionRecord], page) -> s
 
     def run() -> None:
         try:
-            result = reason_drawing(source, out_dir, records=records, progress=progress)
+            result = reason_drawing(source, out_dir, records=records, progress=progress, plate_plan=plate_plan)
             if result.page is not None and page is not None:
                 result.page.spans = list(page.spans)
                 result.page.views = list(page.views)
@@ -267,6 +286,9 @@ def _remember(token: str, source, result: ConvertResult) -> None:
         "views": [view.model_dump() for view in page.views] if page else [],
         "step_path": result.step_path,
         "stl_path": result.stl_path,
+        "plate_plan": result.plate_plan.model_dump() if result.plate_plan else None,
+        "audit": result.audit.model_dump(),
+        "questions": [q.model_dump() for q in result.questions],
     }
     SESSION_DIR.mkdir(parents=True, exist_ok=True)
     (SESSION_DIR / f"{token}.json").write_text(json.dumps(payload), encoding="utf-8")
@@ -282,11 +304,13 @@ def _load_sessions() -> None:
             page.spans = [Span.model_validate(item) for item in data.get("spans") or []]
             page.views = [View.model_validate(item) for item in data.get("views") or []]
             result = ConvertResult(
-                audit=Audit(accepted=bool(data.get("accepted"))),
+                audit=Audit.model_validate(data.get("audit", {"accepted": bool(data.get("accepted"))})),
                 records=[DimensionRecord.model_validate(item) for item in data.get("records") or []],
                 page=page,
                 step_path=data.get("step_path"),
                 stl_path=data.get("stl_path"),
+                plate_plan=data.get("plate_plan"),
+                questions=data.get("questions", []),
             )
             SESSIONS[path.stem] = {"source": data["source"], "result": result}
         except (OSError, json.JSONDecodeError, ValueError, KeyError):
@@ -301,12 +325,14 @@ def _public(result: ConvertResult, token: str) -> dict:
         "questions": [question.model_dump() for question in result.questions],
         "bindings": [entry.model_dump() for entry in result.audit.entries],
         "records": [record.model_dump() for record in result.records],
+        "plate_plan": result.plate_plan.model_dump() if result.plate_plan else None,
         "roles": list(ROLES),
         "spans": [span.model_dump() for span in page.spans] if page else [],
         "views": [view.model_dump() for view in page.views] if page else [],
         "step": f"/session/{token}/part.step" if result.step_path else None,
         "stl": f"/session/{token}/part.stl" if result.stl_path else None,
         "audit": f"/session/{token}/audit.json",
+        "plan": f"/session/{token}/plan.json" if result.plate_plan else None,
         "drawing": f"/session/{token}/drawing",
     }
 

@@ -7,6 +7,8 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
+from drawingto3d.plan import PlatePlan
+
 
 class SpanKind(str, Enum):
     linear = "linear"
@@ -217,6 +219,7 @@ class Audit(BaseModel):
     entries: list[AuditEntry] = Field(default_factory=list)
     questions: list[Question] = Field(default_factory=list)
     accepted: bool = False
+    checks: dict[str, bool] = Field(default_factory=dict)
 
 
 class Page(BaseModel):
@@ -238,5 +241,6 @@ class ConvertResult(BaseModel):
     graph: FeatureGraph | None = None
     page: Page | None = None
     records: list[DimensionRecord] = Field(default_factory=list)
+    plate_plan: PlatePlan | None = None
 
     model_config = {"arbitrary_types_allowed": True}

@@ -4,6 +4,53 @@ One entry per change, in the order it was made: the mechanism, the measured bene
 carries, and how it was verified. The numbers themselves live in `eval/README.md` and in
 `out/frontend/<case>.json`; this file is the accounting.
 
+## The general plan is the product; the plate is a payload (working tree, compiler)
+
+**What changed.** `src/drawingto3d/general.py` (new): a versioned `GeneralPlan` — source identity
+(kind/ref/sha256), typed parameters (mm/in/deg/count, each printed/derived/assumed/user with its
+explanation and span ids), sketches on named planes with offsets, and an operation list
+(extrude/revolve/fuse/cut/repeat/fillet) whose references, units and single assignment are checked
+before any CAD runs. `evaluate_parameters` resolves derived expressions with cycle detection and
+inch->mm conversion; `compile_general` emits the deterministic Python program (a test asserts the
+program text carries no file name, part family or source metadata); `check_general` audits the built
+facts (one valid solid, STEP round-trip volume, bounding box, declared volume, and every cut tool's
+cylinders by radius, axis and extent); `from_plate` is the only plate-aware code left, re-expressing
+the plate experiment as those operations; `edit_parameters` stamps user values so a derivation cannot
+silently replace them. `geo.py` gained `profile_extrude`/`profile_revolve` (with offset) and
+`repeat_linear`/`repeat_circular`; `cadrun.py` reports cylindrical faces on any axis
+(`cylinders_axis`: axis point, direction, relative extent) instead of Z-parallel ones only, and the
+cylinder match canonicalises the tool's own normal before comparing extents.
+
+**Bought.** The delivery slice of `PLAN.md` §7 with §10's acceptance list: two plans that share one
+compiler and use different operation combinations — `eval/plans/bracket_linear_pattern.json`
+(extrude + repeat + cut with XZ-plane holes) and `shaft_revolve_cross_hole.json`
+(revolve + fuse + cross-drill) — plus the plate running through the same compiler to the same
+volume, size and cylinder set as the plate engine (rel 1e-6). Expected volumes were derived
+independently (closed forms, Simpson quadrature and Monte Carlo in
+`eval/plans/derive_examples.py`), not read back from a build. A parameter edit rebuilds: hole_dx
+100 -> 110 gives a 130 mm part whose audit passes.
+
+**Cost / risk.**
+- Kernel honesty, measured: OCC approximates cylinder-cylinder (quartic) intersections — the
+  cross-drill removes 349.9709 mm3 against the analytic 349.9866 (4.5e-5 relative) — while the
+  bracket's polyhedral volume matches its closed form to 8e-12. The shaft plan therefore declares
+  no volume expectation, and `export_round_trip` is loosened to relative 1e-7 (measured round-trip
+  noise 2.6e-9) so it catches a broken export rather than kernel round-off.
+- `from_plate` is a compatibility adapter kept on purpose; it is the only place a part family is
+  named. `plan`/`build-plan` still speak `PlatePlan`; `build-general` writes drafts
+  (`"status": "draft"`), and the five output states are not yet separated end to end.
+- The new verbs reach the legacy model path automatically, because `reason.geo_summary` reads
+  `geo.py`: the prompt now offers `profile_extrude`, `profile_revolve`, `repeat_linear` and
+  `repeat_circular` to the code model, with no model run behind that — behaviour change by
+  availability, not by validation.
+- The general plan is v1 and uncommitted; nothing about unseen-part accuracy is claimed — that
+  needs the pilot/hidden sheets, and the manifest's arrays are still empty.
+
+**Verified.** `pytest -q` 169 passed (146 old + 23 in `tests/test_general_plan.py`);
+`eval/check_tables.py` 20/20; `eval/plate_plan.py` still `pass` with 0.0 mm3 symmetric difference;
+`build-general` on both examples (exit 0) and on a broken plan (exit 2, one-line reason);
+`eval/plans/derive_examples.py` re-derives and validates both JSONs.
+
 ## A leader's own ink is not printed text (`00d739c`, reading)
 
 **What changed.** `lines.leader_near` used to throw away every stroke whose `text_fraction` was over 0.25 —
@@ -813,3 +860,49 @@ cluster's own crop reads `90,00`), four numbers an accepted cluster already cove
 `60,00`, `16`), and the rest phantoms (`R8`, `9)`, `“3`, `3}`, `<6`, `2.`, `7`). A future change here has to
 separate those kinds by something other than the possibility of a read — which is what the re-read above
 does for the readings that carry their own line.
+
+## 2026-09-26 — Deterministic vector plate plan
+
+Added `plate.py` and `plan.py`: bind PDF vector outline, four hole centres, central circle and aligned
+section to named parameters with dimension IDs and derivations. No example filename, reference STEP
+or model is used for prediction. Missing or ambiguous dimensions/geometry refuse recognition.
+
+The plate now builds as 120 × 80 × 15, four Ø6.8 holes at 100 × 60 spacing, R10 corners, and a centred
+Ø50 pocket 8 mm deep. Volume 124.825 cm³ matches reference; the two-way Boolean difference is 0 mm³.
+The former model-path result was 100 mm long with no central pocket. Old results remain in `out/eval`;
+new reproducible outputs live in `out/plate-plan` (`eval/plate_plan.py`, 5.221 s in the measured run).
+
+CAD export now rejects invalid solids and reopens the exported STEP. Plan validation checks exact
+sizes, analytic volume, and every cylinder's radius, centre and depth. Edited plans retain provenance,
+carry a drawing SHA256, and survive app session persistence. The app reviews/edits the plan before
+building; the CLI exposes `plan` and `build-plan`. Upload folders are unique per drawing.
+
+Limit: recognition is one explicit vector plate family and expects a particular structural grouping
+of polyline paths. Raster/model accuracy is unchanged. Equal-margin and radius derivations are visible
+assumptions, so output remains a draft. Thread helix and tolerances are not modelled.
+
+Validation: 22 new tests passed (real PDF, three synthetic dimension/scale/location variants, wrong and
+missing geometry, user edits, source mismatch, CAD feature audit and session restart). Whole suite:
+143 passed in sandbox; the one localhost HTTP test passed separately outside sandbox (144 total).
+`eval/check_tables.py`: 20 rows, zero drift. No OCR algorithm changed and full raster runs were not repeated.
+
+Follow-up validation in the same session: changing hole spacing now recomputes derived width, while an
+explicit width override remains user input. Two regression tests added; all 24 new tests pass (146 total
+with the 122 existing tests). Browser upload, plan review, depth-error rejection and STEP build verified.
+User-facing validation errors omit Python/Pydantic internals.
+The STL preview now uses a shaded isometric projection, so the plate face, holes and pocket are visible.
+
+## 2026-09-27 — General pipeline plan and agent handoff
+
+The user clarified that the supplied parts are test examples and requested a plan to hand to another
+AI agent. Added `PLAN.md` as a self-contained implementation brief: repository state, environment,
+commands, code map, staged deliverables, acceptance criteria, and reporting requirements.
+
+The intended architecture uses source-linked observations and constraints to propose generic CAD
+operation sequences, followed by deterministic construction and separate plan/drawing validation.
+The existing plate recognizer remains a narrow regression experiment; its result is not a claim of
+generalization. Existing cases are seen data; evaluation on unseen parts is a future deliverable.
+
+Updated root `HANDOFF.md`, `.cursor/handoff.md`, and `out/HANDOFF.md`, preserving historical results
+and explicitly superseding the earlier next-family development direction. Clarified evaluation scope
+in `eval/README.md`. Documentation only; no runtime behavior changed or tests rerun in this session.

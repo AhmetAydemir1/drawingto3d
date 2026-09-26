@@ -4,6 +4,8 @@
     {
       "id": "exercise-1",
       "class": "self-made",
+      "part_group": "exercise-1",
+      "split": "seen-regression",
       "drawing": "examples/pdf with steps/my_part.jpg",
       "step": "examples/pdf with steps/my_part.STEP",
       "unit": "mm",
@@ -33,12 +35,15 @@
         50
       ],
       "callouts": [],
+      "feature_ids": [],
       "part": "A4 pafta, olcek 1:2, iki gorunus (kesitli on/yan + ust) + kucuk golgeli izometrik",
       "expect_vector": "measure.txt"
     },
     {
       "id": "plate-pocket-1",
       "class": "self-made",
+      "part_group": "plate-pocket",
+      "split": "seen-regression",
       "drawing": "examples/pdf with steps/Plate With A Pocket Drawing.PDF",
       "step": "examples/pdf with steps/plate with a pocket.STEP",
       "unit": "mm",
@@ -58,12 +63,23 @@
         "4 x 6,80 THRU ALL",
         "M8 - 6H THRU ALL"
       ],
+      "feature_ids": [
+        "outline",
+        "corner-radius",
+        "hole-pattern",
+        "hole-diameter",
+        "pocket-diameter",
+        "pocket-depth",
+        "thickness"
+      ],
       "part": "A4 yatay, olcek 1:1, cep ve delikli plaka; ondalik virgul, THRU ALL / M8-6H cagrilari",
       "expect_vector": "measure.txt"
     },
     {
       "id": "studycadcam-60",
       "class": "practice-sheet",
+      "part_group": "studycadcam-60",
+      "split": "seen-regression",
       "drawing": "examples/504715c44a0f1b2bbb386bb7c387a8db.jpg",
       "step": null,
       "unit": "mm",
@@ -89,12 +105,15 @@
         50
       ],
       "callouts": [],
+      "feature_ids": [],
       "part": "kavisli kol (3 gorunus + izometrik), okuyucu dogrulugu icin",
       "expect_vector": null
     },
     {
       "id": "studycadcam-50",
       "class": "practice-sheet",
+      "part_group": "studycadcam-50",
+      "split": "seen-regression",
       "drawing": "examples/Teknik Resim Go\u0308ru\u0308nu\u0308s\u0327 C\u0327\u0131karma O\u0308rnekleri 1 - Makine Eg\u0306itimi.jpg",
       "step": null,
       "unit": "mm",
@@ -119,12 +138,15 @@
         4
       ],
       "callouts": [],
+      "feature_ids": [],
       "part": "el carki (ust gorunus + iki kesit + iki izometrik), okuyucu dogrulugu icin",
       "expect_vector": null
     },
     {
       "id": "plastic-enclosure-1",
       "class": "self-made",
+      "part_group": "plastic-enclosure",
+      "split": "seen-regression",
       "drawing": "examples/pdf with steps/plastic enclosue.pdf",
       "step": "examples/pdf with steps/plastic enclosue.STEP",
       "unit": "mm",
@@ -145,12 +167,15 @@
         8
       ],
       "callouts": [],
+      "feature_ids": [],
       "part": "A4 dikey, olcek 1:2, ABS plastik: ust gorunus + on gorunus + iki izometrik; yan kenarda zincir olcu (1,5-3-4-4,8), iki yarik ve iki kucuk delik",
       "expect_vector": "measure.txt"
     },
     {
       "id": "flange-1",
       "class": "self-made",
+      "part_group": "flange",
+      "split": "seen-regression",
       "drawing": "examples/pdf with steps/Flange.PNG",
       "step": "examples/pdf with steps/Flange.STEP",
       "unit": "mm",
@@ -190,6 +215,7 @@
         "0.2",
         "0.1"
       ],
+      "feature_ids": [],
       "part": "A3 raster, olcek 1:2, karbon celik: on gorunus + kesit A-A + izometrik, GD&T cerceveleri (tolerans degerleri olcu degil)",
       "expect_vector": "measure.txt"
     }
@@ -198,5 +224,23 @@
     "catalog-fitting": "Vektorel PDF, 2 gorunus + golgeli izometrik, inc olculer, az sayida olcu; standart tablo bilgisi gerekir. Okuma kurali bu sinif icin de gecerli, ama su an eval'de bu sinifi temsil eden pafta yok.",
     "practice-sheet": "Raster alistirma paftasi, tam olceklendirilmis 3 gorunus + izometrik, mm, \u00d8/R/C cagrilari.",
     "self-made": "Kullanicinin kendi paftasi + dogru STEP'i: ayni B-rep beklenir, toleranslar sikilastirilabilir. Vektorel PDF'te metin katmani, raster/PNG'de yalniz geometri ve OCR."
+  },
+  "_split": {
+    "seen-regression": [
+      "exercise-1",
+      "plate-pocket-1",
+      "studycadcam-60",
+      "studycadcam-50",
+      "plastic-enclosure-1",
+      "flange-1"
+    ],
+    "pilot": [],
+    "hidden": [],
+    "_note": "PLAN.md Bolum 5: pilot en az 10 yeni parca, sakli degerlendirme en az 20 parca (en az 10'u raster). Yeni kayitlar id, part_group, split, kaynak/lisans bilgisi ve feature_ids ile girer; pilot ve hidden dizileri yeni parcalarla dolar."
+  },
+  "_fields": {
+    "part_group": "Ayni parcanin varyantlari ayni grup; gruplar arasi bolunme varyant sizmasini engeller.",
+    "split": "seen-regression: gelistirmede gorulen paftalar. pilot/hidden: PLAN.md'deki yeni parca degerlendirmesi.",
+    "feature_ids": "Plan ve geometri denetiminin hesaba katmasi gereken adlandirilmis ozellikler; bos liste 'henuz kimliklendirilmedi' demektir."
   }
 }

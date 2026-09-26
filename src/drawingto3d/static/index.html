@@ -126,6 +126,7 @@
         <button id="build" disabled>STEP üret</button>
         <a id="step" class="disabled" href="#">STEP</a>
         <a id="audit" class="disabled" href="#">Denetim</a>
+        <a id="plan" class="disabled" href="#">CAD planı</a>
       </div>
       <canvas id="preview" width="360" height="240" hidden style="margin-top:12px"></canvas>
     </div>
@@ -246,7 +247,11 @@ function escapeHtml(text) {
 function render() {
   const table = document.getElementById("roles");
   const build = document.getElementById("build");
-  if (state.records && state.records.length) {
+  if (state.plate_plan) {
+    renderPlan(table);
+    build.textContent = "Taslak STEP üret";
+    build.disabled = false;
+  } else if (state.records && state.records.length) {
     renderRecords(table);
     build.textContent = "Katıyı kur";
     build.disabled = false;
@@ -255,13 +260,37 @@ function render() {
     build.textContent = "STEP üret";
     build.disabled = false;
   }
-  const ready = state.accepted;
+  const ready = Boolean(state.step);
+  document.getElementById("step").textContent = state.plate_plan ? "Taslak STEP" : "STEP";
   for (const id of ["step", "audit"]) {
     document.getElementById(id).className = ready || id === "audit" ? "" : "disabled";
   }
   document.getElementById("step").href = state.step || "#";
   document.getElementById("audit").href = state.audit || "#";
+  document.getElementById("plan").href = state.plan || "#";
+  document.getElementById("plan").className = state.plan ? "" : "disabled";
+  preview.hidden = true;
   if (state.stl) showStl(state.stl);
+}
+
+const PLAN_LABELS = {
+  width: "Dış uzunluk", height: "Dış genişlik", thickness: "Kalınlık",
+  corner_radius: "Köşe yarıçapı", hole_dx: "Yatay delik aralığı", hole_dy: "Dikey delik aralığı",
+  hole_diameter: "Dört deliğin çapı", pocket_diameter: "Merkez cep çapı", pocket_depth: "Cep derinliği"
+};
+
+function renderPlan(table) {
+  const plan = state.plate_plan;
+  const labels = { printed: "Çizimde yazılı", derived: "Geometriden türetildi", user: "Senin düzeltmen" };
+  const rows = Object.entries(PLAN_LABELS).map(([key, label]) => {
+    const evidence = plan.evidence[key];
+    return `<tr><td>${label}</td><td><input aria-label="${label}" data-parameter="${key}" type="number" min="0" step="any" value="${plan[key]}" /></td>` +
+      `<td>${escapeHtml(labels[evidence.kind])}</td></tr>`;
+  }).join("");
+  const notes = plan.assumptions.map(note => `<li>${escapeHtml(note)}</li>`).join("");
+  table.innerHTML = `<tr><th>Özellik</th><th>mm</th><th>Kaynak</th></tr>${rows}` +
+    `<tr><td colspan="3"><strong>İncelenecek kabuller</strong><ul>${notes}</ul>` +
+    `Çıktı taslaktır. Geometri bu plana göre denetlenir; türetilen ölçüler imalat öncesinde doğrulanmalıdır.</td></tr>`;
 }
 
 function renderRecords(table) {
@@ -324,6 +353,15 @@ document.getElementById("build").onclick = async () => {
 };
 
 async function buildSolid() {
+  const parameters = {};
+  for (const input of document.querySelectorAll("input[data-parameter]")) {
+    const value = Number(input.value);
+    if (input.value.trim() === "" || !Number.isFinite(value) || value <= 0) {
+      showWait("Ölçüyü kontrol et", "Tüm ölçüler pozitif sayı olmalı.");
+      return;
+    }
+    parameters[input.dataset.parameter] = value;
+  }
   const records = [];
   for (const select of document.querySelectorAll("select[data-span]")) {
     const spanId = select.dataset.span;
@@ -332,11 +370,11 @@ async function buildSolid() {
     records.push({ span_id: spanId, role: select.value, value: Number.isFinite(value) ? value : null });
   }
   setBusy(true);
-  showWait("Kayıt gönderiliyor", "Roller ve ölçüler kod modeline gidiyor.");
+  showWait("Kayıt gönderiliyor", state.plate_plan ? "Özelliklerden katı oluşturuluyor." : "Roller ve ölçüler kod modeline gidiyor.");
   const response = await fetch("/api/solid", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ token: state.token, records })
+    body: JSON.stringify({ token: state.token, records, parameters })
   });
   const started = await response.json();
   if (!started.job) {
@@ -364,24 +402,52 @@ async function showStl(url) {
     offset += 2;
   }
   pctx.clearRect(0, 0, preview.width, preview.height);
+  // Isometric projection keeps the plate face and pocket visible in every axis convention.
+  const project = p => [(p[0] - p[1]) / Math.sqrt(2),
+    (p[0] + p[1] - 2 * p[2]) / Math.sqrt(6)];
   let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
   for (const tri of triangles) for (const p of tri) {
-    minX = Math.min(minX, p[0]); maxX = Math.max(maxX, p[0]);
-    minY = Math.min(minY, p[2]); maxY = Math.max(maxY, p[2]);
+    const [x, y] = project(p);
+    minX = Math.min(minX, x); maxX = Math.max(maxX, x);
+    minY = Math.min(minY, y); maxY = Math.max(maxY, y);
   }
-  const scale = Math.min(preview.width / (maxX - minX || 1), preview.height / (maxY - minY || 1)) * 0.8;
+  const scale = Math.min(preview.width / (maxX - minX || 1), preview.height / (maxY - minY || 1)) * 0.85;
   const ox = preview.width / 2, oy = preview.height / 2;
-  pctx.beginPath();
+  const pixels = pctx.createImageData(preview.width, preview.height);
+  const depths = new Float64Array(preview.width * preview.height).fill(-Infinity);
   for (const tri of triangles) {
-    tri.forEach((p, index) => {
-      const x = ox + (p[0] - (minX + maxX) / 2) * scale;
-      const y = oy - (p[2] - (minY + maxY) / 2) * scale;
-      if (index === 0) pctx.moveTo(x, y); else pctx.lineTo(x, y);
+    const u = tri[1].map((v, i) => v - tri[0][i]);
+    const v = tri[2].map((v, i) => v - tri[0][i]);
+    const n = [u[1]*v[2]-u[2]*v[1], u[2]*v[0]-u[0]*v[2], u[0]*v[1]-u[1]*v[0]];
+    const length = Math.hypot(...n) || 1;
+    const light = Math.max(0, (0.3*n[0]+0.5*n[1]+0.8*n[2])/length);
+    const shade = Math.round(75 + 115 * light);
+    const projected = tri.map(p => {
+      const q = project(p);
+      return [ox + (q[0] - (minX + maxX) / 2) * scale,
+        oy + (q[1] - (minY + maxY) / 2) * scale, p[0] + p[1] + p[2]];
     });
-    pctx.closePath();
+    const [a, b, c] = projected;
+    const denominator = (b[1]-c[1])*(a[0]-c[0]) + (c[0]-b[0])*(a[1]-c[1]);
+    if (Math.abs(denominator) < 1e-8) continue;
+    const x0 = Math.max(0, Math.floor(Math.min(a[0], b[0], c[0])));
+    const x1 = Math.min(preview.width-1, Math.ceil(Math.max(a[0], b[0], c[0])));
+    const y0 = Math.max(0, Math.floor(Math.min(a[1], b[1], c[1])));
+    const y1 = Math.min(preview.height-1, Math.ceil(Math.max(a[1], b[1], c[1])));
+    // Depth per pixel is necessary: sorting whole triangles fails around holes and pockets.
+    for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
+      const wa = ((b[1]-c[1])*(x+0.5-c[0]) + (c[0]-b[0])*(y+0.5-c[1])) / denominator;
+      const wb = ((c[1]-a[1])*(x+0.5-c[0]) + (a[0]-c[0])*(y+0.5-c[1])) / denominator;
+      const wc = 1-wa-wb;
+      if (Math.min(wa,wb,wc) < -1e-8) continue;
+      const z = wa*a[2] + wb*b[2] + wc*c[2];
+      const offset = y*preview.width+x;
+      if (z <= depths[offset]) continue;
+      depths[offset] = z;
+      pixels.data.set([shade, shade+7, shade+10, 255], offset*4);
+    }
   }
-  pctx.strokeStyle = "#1c1915";
-  pctx.stroke();
+  pctx.putImageData(pixels, 0, 0);
   preview.hidden = false;
 }
 </script>

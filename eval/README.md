@@ -1,5 +1,20 @@
 # eval
 
+## Direction update — 2026-09-27
+
+The six existing cases are seen development/regression data. The deterministic plate result below
+tests a narrow structural recognizer; it does not demonstrate unseen-part or general raster accuracy.
+The implementation brief in `../PLAN.md` defines the next evaluation: group variants by part, keep
+unseen parts separate, measure dimension occurrences and feature bindings, and check feature positions
+and depths in addition to overall shape. These changes are planned, not implemented in the metrics here.
+
+The manifest now carries that split vocabulary: `cases.json` `_split` names the seen-regression ids and
+holds empty `pilot`/`hidden` arrays, every case carries `part_group`/`split`, and `feature_ids` records
+which named features a plan has to account for (`plate-pocket-1` shows the intended granularity; an
+empty list means "not yet identified"). `pilot` and `hidden` stay empty until those sheets are
+collected. The compiler half of the brief — a versioned general plan contract and two plans that use
+different operation combinations — lives in `plans/`; `build-general` in the CLI builds them.
+
 What "better results" means for this project, in numbers. Two questions per sheet:
 
 1. **Reading** — did the reader find every number printed on the sheet, and nothing else?
@@ -433,3 +448,31 @@ pocket's depth, a hole pattern's spacing) and the undimensioned length has to be
   before it wrote a different tube from the same numbers. No amount of better reading can repair this (rule
   4): the numbers have to reach the coder as named features, and inventing the composition is exactly what it
   is doing instead. This is the first thing to fix on the building half.
+
+## Deterministic plate plan (2026-09-26)
+
+A separate path now binds vector contours and dimension anchors to an explicit CAD plan:
+
+```sh
+PYTHONPATH=src .venv/bin/python eval/plate_plan.py
+```
+
+This does not overwrite `out/eval` or the model-path tables above. It writes `out/plate-plan`.
+The planner sees only the drawing. The harness opens the reference STEP after production.
+
+| case | dimensions | volume | cylinders | symmetric difference |
+|---|---|---|---|---|
+| plate-pocket-1 | 120 × 80 × 15 mm | 124.825 cm³ | radii 3.4, 10, 25 mm | 0 mm³ |
+
+The exported STEP is reimported and checked for validity, all nine cylindrical faces' positions and
+axial extents, bounding box and analytic volume. Reference comparison also checks both Boolean
+differences, in this fixture's shared coordinate frame. The measured build took 5.221 s on Apple M1
+16 GB; this is one run, not a general performance guarantee.
+
+Supported recognition is deliberately narrow: one rounded rectangular plate with four equal corner
+holes, one central circular pocket and an aligned section, expressed as top-level polyline PDF paths.
+The width and corner radius are derived from equal margins after checking the drawn outline; these
+remain visible assumptions. Outputs are drafts (`audit.accepted=False`) even when all plan checks pass.
+The app tries this path first; unsupported drawings use the existing model path. CLI `plan/build-plan`
+select it explicitly. Raster recognition, other part families and arbitrary PDF path grouping remain open.
+See `../HANDOFF.md` for reproduction and next work.

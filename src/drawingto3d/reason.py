@@ -7,6 +7,7 @@ for the user to correct. Second turn: the records come back and the code model b
 from __future__ import annotations
 
 import ast
+import json
 import re
 from collections.abc import Callable, Sequence
 from pathlib import Path
@@ -15,7 +16,9 @@ from drawingto3d.cadrun import GEO_MODULE, CadFailure, extract_code, run_program
 from drawingto3d.ingest import load_page
 from drawingto3d.llama import LlamaCoder, OllamaCoder, OllamaVision, retry_prompt
 from drawingto3d.roles import read_records
-from drawingto3d.schema import ROLES, Audit, ConvertResult, DimensionRecord, Page
+from drawingto3d.schema import ROLES, Audit, ConvertResult, DimensionRecord, Page, Question
+from drawingto3d.plan import PlatePlan, build_plan
+from drawingto3d.plate import propose_plate
 
 ATTEMPTS = 3
 MAX_LINES = 30
@@ -101,12 +104,30 @@ def reason_drawing(
     reader=None,
     after_build: AfterBuild | None = None,
     auto_build: bool = False,
+    prefer_plan: bool = False,
+    plate_plan: PlatePlan | None = None,
 ) -> ConvertResult:
     def tell(title: str, detail: str) -> None:
         if progress is not None:
             progress(title, detail)
 
     page = load_page(path)
+    if prefer_plan and records is None and plate_plan is None:
+        tell("Geometri inceleniyor", "Ölçüler, konturlar ve kesit eşleştiriliyor.")
+        plate_plan = propose_plate(page)
+        if plate_plan is not None and not auto_build:
+            questions = [Question(role="assumption", reason=note) for note in plate_plan.assumptions]
+            tell("CAD planı hazır", "Ölçüleri ve türetilen değerleri incele, sonra taslak STEP üret.")
+            return ConvertResult(audit=Audit(accepted=False, questions=questions), page=page,
+                                 questions=questions, plate_plan=plate_plan)
+    if plate_plan is not None:
+        tell("Katı kuruluyor", "Doğrulanmış CAD işlemleri yerelde çalışıyor.")
+        step, stl = build_plan(plate_plan, path, out_dir)
+        checks = json.loads((Path(out_dir) / "plan-audit.json").read_text())["checks"]
+        questions = [Question(role="assumption", reason=note) for note in plate_plan.assumptions]
+        tell("Taslak STEP hazır", "Boyut, hacim, delik konumları ve cep derinliği plana göre doğrulandı.")
+        return ConvertResult(audit=Audit(accepted=False, questions=questions, checks=checks), page=page,
+                             questions=questions, plate_plan=plate_plan, step_path=str(step), stl_path=str(stl))
     if records is None:
         vision = reader or OllamaVision()
         tell("Ölçüler okunuyor", "Her ölçü için tek soru soruluyor.")

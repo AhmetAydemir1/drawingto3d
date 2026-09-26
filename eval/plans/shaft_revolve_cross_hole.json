@@ -1,0 +1,245 @@
+{
+  "version": 1,
+  "unit": "mm",
+  "source": {
+    "kind": "synthetic",
+    "ref": "eval/plans/shaft_revolve_cross_hole.json",
+    "sha256": null,
+    "page": 1
+  },
+  "parameters": {
+    "shaft_r": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 9,
+      "explanation": "Sentetik derleyici örneği: ölçü bir çizimden okunmadı."
+    },
+    "fillet_r": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 3,
+      "explanation": "Sentetik derleyici örneği: ölçü bir çizimden okunmadı."
+    },
+    "length": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 40,
+      "explanation": "Sentetik derleyici örneği: ölçü bir çizimden okunmadı."
+    },
+    "flange_r": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 18,
+      "explanation": "Sentetik derleyici örneği: ölçü bir çizimden okunmadı."
+    },
+    "flange_h": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 5,
+      "explanation": "Sentetik derleyici örneği: ölçü bir çizimden okunmadı."
+    },
+    "hole_d": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 5,
+      "explanation": "Sentetik derleyici örneği: ölçü bir çizimden okunmadı."
+    },
+    "hole_z": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 20,
+      "explanation": "Sentetik derleyici örneği: ölçü bir çizimden okunmadı."
+    },
+    "pi": {
+      "unit": "count",
+      "source": "assumed",
+      "value": 3.141592653589793,
+      "explanation": "İfadelerdeki π sabiti; boyutsuz."
+    },
+    "shaft_washers": {
+      "unit": "mm",
+      "source": "derived",
+      "expr": "shaft_r ** 2 * (length - fillet_r) + (shaft_r - fillet_r) ** 2 * fillet_r + (pi / 2) * (shaft_r - fillet_r) * fillet_r ** 2 + 2 * fillet_r ** 3 / 3",
+      "explanation": "Mil profilinin dönel hacim integrali (π hariç), kapalı form."
+    }
+  },
+  "sketches": {
+    "shaft_profile": {
+      "plane": "XZ",
+      "offset": "0",
+      "entities": [
+        {
+          "type": "line",
+          "start": [
+            "0",
+            "0"
+          ],
+          "end": [
+            "shaft_r",
+            "0"
+          ]
+        },
+        {
+          "type": "line",
+          "start": [
+            "shaft_r",
+            "0"
+          ],
+          "end": [
+            "shaft_r",
+            "length - fillet_r"
+          ]
+        },
+        {
+          "type": "arc",
+          "center": [
+            "shaft_r - fillet_r",
+            "length - fillet_r"
+          ],
+          "radius": "fillet_r",
+          "start_degrees": 0,
+          "end_degrees": 90
+        },
+        {
+          "type": "line",
+          "start": [
+            "shaft_r - fillet_r",
+            "length"
+          ],
+          "end": [
+            "0",
+            "length"
+          ]
+        },
+        {
+          "type": "line",
+          "start": [
+            "0",
+            "length"
+          ],
+          "end": [
+            "0",
+            "0"
+          ]
+        }
+      ]
+    },
+    "flange_profile": {
+      "plane": "XZ",
+      "offset": "0",
+      "entities": [
+        {
+          "type": "line",
+          "start": [
+            "0",
+            "0"
+          ],
+          "end": [
+            "flange_r",
+            "0"
+          ]
+        },
+        {
+          "type": "line",
+          "start": [
+            "flange_r",
+            "0"
+          ],
+          "end": [
+            "flange_r",
+            "flange_h"
+          ]
+        },
+        {
+          "type": "line",
+          "start": [
+            "flange_r",
+            "flange_h"
+          ],
+          "end": [
+            "0",
+            "flange_h"
+          ]
+        },
+        {
+          "type": "line",
+          "start": [
+            "0",
+            "flange_h"
+          ],
+          "end": [
+            "0",
+            "0"
+          ]
+        }
+      ]
+    },
+    "cross_hole": {
+      "plane": "YZ",
+      "offset": "-25",
+      "entities": [
+        {
+          "type": "circle",
+          "center": [
+            "0",
+            "hole_z"
+          ],
+          "radius": "hole_d / 2"
+        }
+      ]
+    }
+  },
+  "operations": [
+    {
+      "op": "revolve",
+      "id": "shaft_body",
+      "output": "shaft",
+      "sketch": "shaft_profile",
+      "angle": "360"
+    },
+    {
+      "op": "revolve",
+      "id": "flange_body",
+      "output": "flange",
+      "sketch": "flange_profile",
+      "angle": "360"
+    },
+    {
+      "op": "fuse",
+      "id": "blank",
+      "output": "blank",
+      "inputs": [
+        "flange",
+        "shaft"
+      ]
+    },
+    {
+      "op": "extrude",
+      "id": "cross_tool_body",
+      "output": "cross_tool",
+      "sketch": "cross_hole",
+      "distance": "50"
+    },
+    {
+      "op": "cut",
+      "id": "cross_drill",
+      "target": "blank",
+      "tool": "cross_tool",
+      "output": "finished"
+    }
+  ],
+  "result": "finished",
+  "assumptions": [
+    "Sentetik derleyici örneği; hiçbir ölçü bir çizimden okunmuş gibi gösterilmez.",
+    "Hacim beklentisi bildirilmedi: yan delikteki silindir-silindir kesişimini CAD çekirdeği yaklaşık hesaplar (ölçülen sapma ~1,6e-2 mm³). Delik, araç silindirinin yarıçap/konum/derinlik denetimiyle doğrulanır.",
+    "Bağımsız sayısal beklenti (rapor): kesme öncesi 13894.708 mm³, yan deliğin kaldırdığı 349.987 mm³, sonuç 13544.722 mm³."
+  ],
+  "expect": {
+    "bbox": [
+      "2 * flange_r",
+      "2 * flange_r",
+      "length"
+    ],
+    "volume": null
+  }
+}

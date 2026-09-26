@@ -12,8 +12,15 @@ import argparse
 import json
 from pathlib import Path
 
+from pydantic import ValidationError
+
 from drawingto3d.reason import reason_drawing
 from drawingto3d.schema import DimensionRecord
+from drawingto3d.ingest import load_page
+from drawingto3d.plate import propose_plate
+from drawingto3d.plan import PlatePlan, build_plan
+from drawingto3d.cadrun import CadFailure
+from drawingto3d.general import GeneralPlan, build_general
 
 
 def main() -> None:
@@ -29,7 +36,47 @@ def main() -> None:
     build.add_argument("records")
     build.add_argument("out_dir")
 
+    plan = commands.add_parser("plan", help="desteklenen vektör paftadan model çağırmadan CAD planı çıkar")
+    plan.add_argument("drawing")
+    plan.add_argument("out_dir")
+    replay = commands.add_parser("build-plan", help="incelenebilir CAD planından deterministik taslak STEP üret")
+    replay.add_argument("drawing")
+    replay.add_argument("plan")
+    replay.add_argument("out_dir")
+    general = commands.add_parser("build-general", help="sürümlü genel plandan deterministik taslak STEP üret")
+    general.add_argument("plan")
+    general.add_argument("out_dir")
+    general.add_argument("--drawing", default=None,
+                         help="plan.source.kind == 'drawing' ise kaynak çizim yolu")
+
     args = parser.parse_args()
+    if args.command == "plan":
+        proposal = propose_plate(load_page(args.drawing))
+        if proposal is None:
+            parser.exit(2, "Bu çizim desteklenen vektör plaka ailesiyle güvenilir biçimde eşleşmedi.\n")
+        folder = Path(args.out_dir)
+        folder.mkdir(parents=True, exist_ok=True)
+        path = folder / "plan.json"
+        path.write_text(proposal.model_dump_json(indent=2), encoding="utf-8")
+        print(json.dumps({"plan": str(path), "assumptions": proposal.assumptions}, ensure_ascii=False, indent=2))
+        return
+    if args.command == "build-plan":
+        proposal = PlatePlan.model_validate_json(Path(args.plan).read_text(encoding="utf-8"))
+        step, stl = build_plan(proposal, args.drawing, args.out_dir)
+        print(json.dumps({"step": str(step), "stl": str(stl), "draft": True,
+                          "audit": str(Path(args.out_dir) / "plan-audit.json")}, indent=2))
+        return
+    if args.command == "build-general":
+        try:
+            plan = GeneralPlan.model_validate_json(Path(args.plan).read_text(encoding="utf-8"))
+            step, stl = build_general(plan, args.drawing, args.out_dir)
+        except CadFailure as exc:
+            parser.exit(2, f"Plan uygulanamadı: {exc}\n")
+        except ValueError as exc:
+            parser.exit(2, f"Geçersiz plan: {_readable(exc)}\n")
+        print(json.dumps({"step": str(step), "stl": str(stl), "status": "draft",
+                          "audit": str(Path(args.out_dir) / "plan-audit.json")}, indent=2))
+        return
     if args.command == "read":
         _read(args)
         return
@@ -61,6 +108,19 @@ def _build(args) -> None:
 
 def _tell(title: str, detail: str) -> None:
     print(f"{title}: {detail}", flush=True)
+
+
+def _readable(exc: ValueError) -> str:
+    """Validation errors read as one line: location and message, no pydantic internals."""
+    if isinstance(exc, ValidationError):
+        parts = []
+        for error in exc.errors(include_url=False, include_input=False):
+            where = ".".join(str(item) for item in error["loc"])
+            message = str(error["msg"]).removeprefix("Value error, ")
+            parts.append(f"{where}: {message}" if where else message)
+        if parts:
+            return "; ".join(parts)
+    return str(exc)
 
 
 if __name__ == "__main__":

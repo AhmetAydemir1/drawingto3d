@@ -31,7 +31,8 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 from drawingto3d import scale as sheet_scale  # noqa: E402
-from drawingto3d.ingest import load_page  # noqa: E402
+from drawingto3d.ingest import load_page
+from drawingto3d.reader import VisionReader  # noqa: E402
 from drawingto3d.perceive import perceive  # noqa: E402
 
 CASES = json.loads((ROOT / "eval" / "cases.json").read_text(encoding="utf-8"))["cases"]
@@ -46,14 +47,18 @@ def main() -> None:
     # known exactly, that measures the CV reader against the truth without a model and without a second
     # hand-drawn eval sheet.
     as_raster = "--as-raster" in arguments
+    # `--model` reads the crops with the local vision model instead of tesseract. It costs minutes per
+    # sheet against seconds, so it never runs by default: it is how the ceiling of the raster path is
+    # measured, and the geometry work is judged on the tesseract floor.
+    use_model = "--model" in arguments
     wanted = [arg for arg in arguments if not arg.startswith("--")]
     chosen = [case for case in CASES if _wanted(case, wanted) and (ROOT / case["drawing"]).is_file()]
     if not chosen:
         print("eşleşen pafta yok; eval/cases.json ve dosya yollarını kontrol et")
         raise SystemExit(1)
-    rows = [_case(case, as_raster=as_raster) for case in chosen]
+    rows = [_case(case, as_raster=as_raster, model=use_model) for case in chosen]
     for row in rows:
-        suffix = "-raster" if as_raster else ""
+        suffix = ("-raster" if as_raster else "") + ("-model" if use_model else "")
         (OUT / f"{row['id']}{suffix}.json").write_text(json.dumps(row, indent=2, ensure_ascii=False), encoding="utf-8")
     _print(rows)
     print(f"\nyazıldı: {OUT}")
@@ -65,14 +70,14 @@ def _wanted(case: dict, wanted: list[str]) -> bool:
     return any(word in case["id"].lower() or word in Path(case["drawing"]).name.lower() for word in wanted)
 
 
-def _case(case: dict, as_raster: bool = False) -> dict:
+def _case(case: dict, as_raster: bool = False, model: bool = False) -> dict:
     sheet = ROOT / case["drawing"]
     start = time.time()
     page = load_page(sheet)
     if as_raster and page.vector_text:
         page.spans = []
         page.vector_text = False
-    _primitives, spans = perceive(page)
+    _primitives, spans = perceive(page, reader=VisionReader() if model else None)
     valued = [span for span in spans if span.value is not None]
     printed = [float(value) for value in case["printed"]]
     callouts = [_squash(item) for item in case.get("callouts") or []]

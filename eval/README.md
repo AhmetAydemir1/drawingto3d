@@ -175,6 +175,14 @@ grouped, so it is the row-by-row comparison that says whether a change helped, n
   not cleanly: `plate-pocket-1` 0/7 -> 4/7 and `plastic-enclosure-1` 2/11 -> 6/11 (both now with a fitted
   scale, 7.817 and 3.908 px/mm against 7.874 and 3.937 expected), `studycadcam-50` 1/3 -> 2/3, while
   `exercise-1` went 3/13 -> 2/13 and `studycadcam-60` 7/9 -> 6/9. Both costs are in the table.
+- **A second preparation of a crop is not additive, and was measured and dropped.** Offering the reader
+  the crop both as it stands and as the drawing's own ink (`lines.ink` on the crop, thickened by a pixel)
+  was tried because it reads two more crops on `plastic-enclosure-1`. It is not additive: on
+  `studycadcam-50` the coverage fell 2/3 -> 0/3 and on `flange-1` 3/13 -> 2/13, with five extra spans across
+  the set. The mechanism is worth keeping: a crop tesseract refuses used to contribute nothing, and a second
+  preparation turns the refusal into a *value* - a phantom span that then claims a dimension line and blocks
+  the true number printed on that same row. A reader's refusal is doing work, so a fallback has to be
+  measured on coverage, not on how many crops it reads.
 - **What the raster reader still gets wrong is the read itself, not the geometry.** The clusters, the
   turning and the scale are right on `plastic-enclosure-1` now (6 of 11, fitted 3.908 px/mm), and what is
   missing it reads as `1`, `5`, `7`, `29.00`, `00` - single digits and fragments of numbers whose digits

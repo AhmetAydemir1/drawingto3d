@@ -18,11 +18,15 @@ Durumu `dur` yapmadan bitmiş sayma. Bitmiş sayma koşulu: açılı dimension �
 
 ## Şimdi
 
-`dur` değil. Bitmiş sayma. Glif zinciri ölçüldü ve geri alındı (ders 2). Açılı `dimension_for` artı `_on_one_line` commit'lendi; ders 1'deki tablo tabandır. Ders 3 tutuldu ve commit'lendi: sayının kendi çizgisi okuma açısı olarak öne alındı, `exercise-1` 2/13 → **5/13**, `flange-1` 2/13 → **4/13**, başka satır oynamadı, gürültü hiçbir paftada artmadı.
+**`dur`.** Görevin bitme koşulu karşılandı, ölçümle: **açılı dimension çizgisi bir gerçek paftada okunuyor** — `my_part.jpg`'de 45°'lik çap çizgisinin kendi okları `50`'nin ankrajı (284.6 px, 5.692 px/mm; paftanın kendi fiti 5.731, ÷1:2 A4/200 dpi beklentisi 5.9). Ankraj eskiden 53 px'lik bir liderdi (1.062 px/mm) ve `50` paftanın kendi ölçek denetiminde yer bulamıyordu; şimdi fitin dört örneğinden biri.
 
-Sıradaki hipotez `lines._angled_row`'un üçüncü düzeni: **sayı span'ın dışında, ok ucunun ötesinde** basılı. `exercise-1`'deki `50` tam bu: 45°'lik çap çizgisinin iki oku var (284.6 px, `arrows 23/28`), sayı üst ucun ötesinde duruyor, bu yüzden değer geliyor ama **ankrajı** kısa bir liderden geliyor (53 px) → paftanın ölçeği 5.731 px/mm ve 15 okumanın 8'i şüpheli. Kıyas: `eval/README.md` tabloları + `CHANGES.md`. Okuma değişince modeli çağırma; `eval/frontend.py` sonra `--as-raster`. Bir sayfa kazanç, başka sayfa kayıp kabul değildir; gürültü artmamalıdır.
+`pytest tests/ -q` **97 geçti**. `eval/frontend.py` ve `--as-raster` tabloları ders 3 tabanıyla birebir aynı (kapsam düşmedi, gürültü artmadı): exercise-1 5/13 (gürültü 7; raster 5/13 gürültü 7), flange-1 4/13 (5), plate 7/7 (raster 4/7, gürültü 3), plastic 11/11 (raster 7/11, gürültü 8), studycadcam-60 6/9 (9), studycadcam-50 2/3 (7). Kıyas ve tam muhasebe: `CHANGES.md` son iki giriş.
 
-Ölçülüp bırakılan yollar: iki oklu açılı satırı ok eşiğini 8'den 6'ya indirmek (ders 1), glifleri lider boyunca zincirlemek (ders 2), `_one_pen` korumasını kaldırmak (ders 3; plastik raster tabanında `28.006` hayaleti).
+Ayrıntı: üçüncü düzen yazıldı (`lines._angled_row`, sayı ok ucunun ötesinde). İki koruma ölçülmüş hatadan geliyor: stroke, sayının kutusunun iki katından uzun olmalı (plastikte çizili `R8.00` liderinin 91 px'lik parçası, rakamların kestiği yerde ok gibi genişleyip dimension sanılıyordu; sınır 2, gerçek örnek 4.6, parça 1.11) ve sayı span'a değmemeli (my_part'ın tapu bloğundaki `A4`, rakam whitelist'iyle `4` okunup harfin kendi bacağı oklu görünüyordu).
+
+Sıradaki iş bu görevde değil; `out/HANDOFF.md` "Sıradaki iş" listesinde duruyor (çağrı satırının raster okunuşu, çizili `Ø`/`4 x` önekleri, ölçek denetimine piksel tabanlı mutlak tolerans, `reason_drawing` bağlantısı). Yeni sohbet o görevlerden birini `.cursor/handoff.md`'ye Görev olarak yazıp başlasın; bu dosyanın dersleri ve `eval/README.md` Known gaps ölçülmüş yolların kaydıdır.
+
+Ölçülüp bırakılan yollar: iki oklu açılı satırı ok eşiğini 8'den 6'ya indirmek (ders 1), glifleri lider boyunca zincirlemek (ders 2), `_one_pen` korumasını kaldırmak (ders 3; plastik raster tabanında `28.006` hayaleti), üçüncü düzeni üçüncü düzen olarak *satırın* uçlarıyla okumak (ders 4; `50`'nin ankrajını kaybettiriyor, studycadcam-60'a gürültü ekliyor).
 
 ## Dersler
 
@@ -85,9 +89,24 @@ Değişiklik: `perceive._digits_angle` (birbirinden en uzak iki glif merkezinin 
 
 Tekrar deneme: `_one_pen` korumasını kaldırmak (yukarıdaki `28.006`). Ölçülen marj ince, yeni paftada yeniden ölç: en gevşek gerçek satır flanştaki `#50`, 0.23; korumayı gerekli kılan plastik parça 0.34.
 
-`50`'nin **ankrajı** hâlâ yanlış: değer doğru, kaynağı 53 px'lik kısa bir lider. Üçüncü düzen (sayı ok ucunun ötesinde) yazılınca ankraj çapın iki ucuna döner ve ölçek denetimi düzelir.
+`50`'nin ankrajı o koşuda hâlâ yanlıştı (değer doğru, kaynağı 53 px'lik kısa bir lider). Ders 4 onu çapın iki ucuna döndürdü.
 
-### 4. Açık kalan
+### 4. Üçüncü düzen tutuldu: sayı ok ucunun ötesinde — görev bitti
+
+Hipotez (ders 3'ün sonundan): `_angled_row` iki düzeni okuyor — sayı tek oklu strokun içinde, ya da sayı çizgiyi ikiye kırıyor. Üçüncüsü, ölçülecek şey kendi sayısını taşıyamayacak kadar küçükse: iki ok da özellikte, sayı yanında, aynı doğru üzerinde. `my_part.jpg`'deki `50` bu: çapın 45°'lik çizgisi (uçlar arası 284.6 px, `arrows 23/28`), sayı üst ucun ötesinde.
+
+Değişiklik (`lines._angled_row`): satırdaki strok, iki ucu da okluysa, sayı span'a değmiyorsa ve sayıya bir buçuk karakterden yakınsa span o strokun uçlarıdır. İki koruma ölçülmüş hatadan doğdu, ikisi de yalnızca *susturucu*:
+
+- **Uzunluk:** strok, sayının kutusunun en az iki katı olmalı. Sebep ölçüldü: plastik paftada çizili `R8.00`'in lideri kendi rakamlarını kesiyor, rakamlar çizgiyi ok gibi genişletiyor ve 270 px'lik liderin **91 px'lik parçası** iki ucu oklu görünüp `R8.00`'i 11.4 px/mm'lik bir ankraja bağlıyordu (paftanın ölçeği 3.917). Marj: gerçek örnek 4.6× (284.6 px / 62 px), parça 1.11× (91 px / 82 px), sınır 2×.
+- **Değmeme:** sayı kutusuyla örtüşen satır sayının içindeki mürekkeptir. `my_part.jpg`'ın tapu bloğundaki `A4` iki gliftir, rakam whitelist'iyle `4` okunur ve `A`'nın kendi bacağı tepesiyle alt çizgisi sayesinde iki ucu oklu görünür; parça kutusunun içinde kaldığı için reddedilir.
+
+Ölçüm (2026-09-26, `eval/frontend.py` sonra `--as-raster`, ikisi de çıkış 0). Kapı öncesi/sonrası **iki tablo da değişmedi**, bütün paftalarda gürültü de değişmedi: exercise-1 5/13 (gürültü 7; raster 5/13, gürültü 7), flange-1 4/13 (5), plate-pocket-1 7/7 (raster 4/7, gürültü 3), plastic-enclosure-1 11/11 (raster 7/11, gürültü 8), studycadcam-60 6/9 (9), studycadcam-50 2/3 (7). pytest `tests/ -q` **97 geçti** (3 yeni test: ok ucunun ötesindeki sayı ölçülür; üç yüz piksel ötedeki sayı ölçülmez; kısa oklu parça dimension değildir).
+
+Kazanç kapsam değil **kaynak**: `50`'nin ankrajı 53 px'lik liderden (1.062 px/mm) çapın kendi oklarına (284.6 px, **5.692 px/mm**) döndü; paftanın kendi fiti artık dört örnek üzerinde (37, 20, 50, 26; yayılım %1.12) ve `50` fitin içinde. Ankraj noktalarını `out/probe/probe_anchors.py` yazdırır — front-end JSON'u yalnızca ankraj *sayısını* taşıyor, bu yüzden liderle uçlar oradan ayırt edilemiyor.
+
+Tekrar deneme: üçüncü düzeni **satırın** uçlarıyla okumak (tek parça yerine satırın en dış iki ucu + ikisinin de oklu olması). Ölçüldü, geri alındı: `50`'nin ankrajı lidere dönüyor ve studycadcam-60'ın gürültüsü 9 → 10 oluyor. Parça + uzunluk koruması bunun yerine duruyor.
+
+### 5. Açık kalan
 
 - `6 x Ø6.40` ve `Ø11.00` okunmuyor. LSD nottan deliğe çizgi döndürmüyor; mürekkep yok.
 - `R35` üç çift. Beş kalın rakam tek doğru; araya giren 22×3 px şerit (`_glyphs`, `min(w,h) >= 3`) doğrusallığı bozuyor. Şeridi rakamdan çıkarmak (`min(w,h) >= 4`; gerçek `1` 6 px) uygulanmadı. Zincir geri alındığı için bunu ancak yeni bir ölçümle dene.

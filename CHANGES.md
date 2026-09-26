@@ -100,6 +100,55 @@ says.
 `exercise-1` re-measures 2/13 there against the 3/13 recorded in that lesson — the row was re-measured on
 this commit and 2/13 is what the code prints.
 
+## The number printed beyond the tip is measured by the row it stands on (reading)
+
+**What changed.** `lines._angled_row` read two layouts of an angled dimension: a stroke arrowed at both
+ends with the number inside its span, and a line the number breaks in two. A third layout is read now: the
+number printed **outside** the span, on the row's own extension — the shape a feature too small to hold its
+number is drawn in, both arrows on the feature and the value beside it. Two guards carry it, and both are
+there because of a measured failure:
+
+- the stroke has to be longer than the number's box (two characters), because a piece shorter than that is
+  a fragment of a longer line, not the line that measures the number. A long line crossing its own digits
+  is widened by them exactly the way an arrowhead widens a line: on the plastic sheet a **91 px piece of the
+  drawn `R8.00`'s 270 px leader** came out arrowed at both ends and 4 px/mm away from the sheet's scale.
+- the number has to be clear of the span. A row that overlaps the number's box is ink *inside* the number:
+  `my_part.jpg`'s title block `A4` is two glyphs, read as `4` through the digit whitelist, and the letter's
+  own leg is arrowed by its apex and its crossbar.
+
+**Bought.** An angled dimension line is read as a *dimension* on a real sheet, not merely OCR'd off whatever
+leader happens to be near. `my_part.jpg`'s `50` is printed at 45° along the diameter it measures:
+
+| | before | after |
+|---|---|---|
+| anchor | a 53 px leader at 1.062 px/mm | the diameter's own arrow tips, 284.6 px |
+| the number against the sheet's own scale | a reading the sheet could not place | 5.692 px/mm against the fitted 5.731 (1:2 A4 at 200 dpi expects 5.9) |
+| the sheet's fit | 3 spans, spread 0.99% | 4 spans (37, 20, 50, 26), spread 1.12% — the `50` is inside the consensus now, and 8 of 12 measured readings are named suspect instead of 8 of 11 |
+
+Coverage and noise do not move, on either table, sheet by sheet (measured on this commit, `eval/frontend.py`
+then `--as-raster`, both exit 0): exercise-1 5/13 (noise 7; raster 5/13, noise 7), flange-1 4/13 (noise 5),
+plate-pocket-1 7/7 (raster 4/7, noise 3), plastic-enclosure-1 11/11 (raster 7/11, noise 8), studycadcam-60
+6/9 (noise 9), studycadcam-50 2/3 (noise 7). The change buys a correct *source* for one reading and costs
+nothing measurable — which is the shape the task asked for: coverage not down, noise not up.
+
+**Cost / risk.**
+- Both guards only ever *suppress* the third layout, so they cannot widen a span the axis pass or the two
+  earlier angled layouts already own. What they suppress is a legitimate short dimension whose value is
+  printed outside it: that sheet keeps its old leader anchor (as `my_part.jpg`'s `50` had before).
+- The length guard's margin, for a new sheet: the `50` is 4.6 × its box (284.6 px against 62 px) and the
+  plastic fragment 1.11 × (91 px against 82 px) against a limit of 2. The gap guard's: 67 px against a
+  93 px limit (1.5 × box).
+- This case runs before the broken-line case, so a row that would satisfy both is read as this layout. The
+  broken-line case needs the number's centre between its two arrowed outer ends and this one needs the
+  number outside the row, which is the same question asked twice; the ordering was measured as it stands
+  and not re-measured the other way round.
+
+**Verified.** `pytest -q` 97 passed (3 new tests in `tests/test_dimensions.py`: the number beyond the tip is
+measured, a number three hundred pixels past it is not, and a short arrowed piece beside a number is a
+fragment); `out/probe/probe_anchors.py` prints the two points of `50`'s anchor, which is how the leader and
+the tips are told apart — the front end's JSON carries only how many anchors a span has; both front-end
+tables above.
+
 ## The number's own line is the angle it is read at (reading)
 
 **What changed.** A crop was offered to tesseract at `(0, -ink, 90, -90)`, where `ink` is a fit through

@@ -158,26 +158,26 @@ none at all on the other, where the geometry work below costs seconds.
 
 ## Known gaps
 
-- **A number written at an angle is read now; it is not yet sourced to its own line.** The crop of such a
-  number is offered to the reader at the digits' own angle first (`perceive._digits_angle`, guarded by
-  `_one_pen`; the measurement is in `CHANGES.md`), and that is what moved `exercise-1` 2/13 -> 5/13 and
-  `flange-1` 2/13 -> 4/13 with no other row moving. What is still missing is the **anchor**: the `50` on
-  `my_part.jpg` is printed at 45 degrees along the diameter it measures, so the two ends it should be
-  sourced to are that line's arrow tips — but `lines._angled_dimension` does not claim it, because the
-  number is printed *outside* the span, past the tip, on the row's extension. The value arrives on a short
-  leader's anchor instead, which is why that sheet's fitted scale (5.731 px/mm) and its suspects are not
-  yet trustworthy. `lines._angled_row` reads a row with the number inside its ink, or a row the number
-  breaks in two; a number printed beyond a tip is the third layout and is the next change.
-- **A dimension drawn at an angle is read as a row now, but only two of its three layouts.** The strokes at
+- **A number written at an angle is read, and sourced to its own line when that line carries it.** The crop
+  of such a number is offered to the reader at the digits' own angle first (`perceive._digits_angle`,
+  guarded by `_one_pen`), which is what moved `exercise-1` 2/13 -> 5/13 and `flange-1` 2/13 -> 4/13 with no
+  other row moving. The *anchor* came next: the `50` on `my_part.jpg` is printed at 45 degrees along the
+  diameter it measures, so the two ends it is sourced to are that line's arrow tips — 284.6 px against a
+  value of 50, or 5.692 px/mm against the 5.731 that sheet's own four agreeing dimensions fit (a 1:2 A4 at
+  200 dpi expects 5.9). It used to arrive on a 53 px leader at 1.062 px/mm, which that sheet's scale audit
+  could not place. `lines._angled_row` reads a row with the number inside its ink, a row the number breaks
+  in two, and now a row whose number is printed past a tip, both guards for the third measured on the
+  sheets (see `CHANGES.md`). What is still open is on the other layout, the two in the bullet below.
+- **A dimension drawn at an angle is read as a row now, in all three of its layouts.** The strokes at
   an angle are found (`lines.diagonal_strokes`, banded by the sheet's own thin weight and wired into the
   gate), and that plus the contrast rule below is what recovered `50,00` on `plate-pocket-1`: its line runs
   at 15° under the number, faint, and carries an arrowhead at one end, so the leader path takes it
   (5/7 -> 6/7). `lines._angled_dimension` then generalises the *dimension* pass to the stroke's own frame
-  (project the text and the row onto the stroke's direction and its normal), and it reads the number that
-  sits on an arrowed line and the number that breaks one in two. The layout it cannot read yet is the
-  number printed outside the span, past a tip — which is what the flange's `6 x Ø6.40` and `Ø11.00` turn
-  out *not* to be (they hang on the GD&T frame below them, and no stroke runs from that note to a hole),
-  and what the `50` on `my_part.jpg` is (see the bullet above).
+  (project the text and the row onto the stroke's direction and its normal), and it reads all three layouts:
+  the number sitting on an arrowed line, the number breaking one in two, and the number printed *outside*
+  the span past a tip (the `50` on `my_part.jpg`, which is where its 284.6 px anchor comes from). The
+  flange's `6 x Ø6.40` and `Ø11.00` turn out *not* to be any of the three: they hang on the GD&T frame
+  below them and no stroke runs from that note to a hole, so nothing there is a dimension line to read.
 - **A drawn callout is still a picture, but its number is not.** On `plate-pocket-1` the region of the
   `6,80 THRU ALL` callout looks like it carries no text at all — the `4 x` prefix and the `Ø` are drawn as
   outlines, and so is the whole second line (`M8 - 6H THRU ALL`) — yet the text layer *does* hold

@@ -577,6 +577,38 @@ def _angled_row(
             if _project(first[0], first[1], direction) > _project(second[0], second[1], direction):
                 first, second = second, first
             return _angled_result(first, second, centre_x, centre_y, normal)
+    # The number is printed outside the span, on the row's own extension: a feature too small to hold its
+    # number is drawn with both arrows on the feature and the value beside it, along the same line. The
+    # tips are the span, and the stroke has to be longer than the number beside it: a drafting office
+    # prints the value beside a line only when the words do not fit on it, so a piece shorter than the
+    # number's own box is a fragment of a longer line cut by the words it crosses — on the plastic sheet
+    # the drawn `R8.00`'s leader crosses its own digits, and a 91 px piece of its 270 px length, widened
+    # by a `0` the way an arrowhead widens a line, was read as a dimension between a real arrow and a
+    # digit. The number also has to be clear of the span: a row overlapping the number's box is ink
+    # inside the number, not a line beside it (my_part.jpg's title block `A4` is two glyphs there).
+    #
+    # Measured on my_part.jpg: the `50` on the 45-degree diameter sits 67 px along the row past the near
+    # corner of its box, against a box of 62 px, 284.6 px of line against a value of 50 — 5.69 px/mm
+    # against the 5.9 a 1:2 A4 at 200 dpi expects. Without this the value still arrives, but its anchor
+    # comes from a 53 px leader and the sheet's own scale audit is built on that.
+    for stroke in row:
+        if arrow_steps(binary, stroke, 0) < 8 or arrow_steps(binary, stroke, 1) < 8:
+            continue
+        stroke_lo, stroke_hi = _along_span(stroke, direction)
+        if stroke_hi - stroke_lo <= 2.0 * size:
+            continue
+        if text_lo > stroke_hi:
+            gap = text_lo - stroke_hi
+        elif text_hi < stroke_lo:
+            gap = stroke_lo - text_hi
+        else:
+            continue
+        if gap > 1.5 * size:
+            continue
+        first, second = stroke.ends()
+        if _project(first[0], first[1], direction) > _project(second[0], second[1], direction):
+            first, second = second, first
+        return _angled_result(first, second, centre_x, centre_y, normal)
     # The number breaks the line, so each piece keeps the arrow on the end farther from the number.
     # The end facing the number is widened by the text itself and is not an arrow; taking it would
     # measure the gap in the text instead of the tips.

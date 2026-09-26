@@ -167,3 +167,56 @@ def test_a_wide_number_beside_a_one_arrow_shaft_is_a_leader():
 
     assert leader is not None
     assert leader.tip == pytest.approx((40.0, 90.0), abs=5)
+
+
+def test_a_number_print_beyond_the_tip_still_measures_the_arrowed_line():
+    # A feature too small to hold its own number is drawn with both arrows on the feature and the value
+    # beside it, on the row's extension: the `50` on my_part.jpg's 45-degree diameter. The tips are the
+    # span; the number has to be clear of that span and within a character and a half of it.
+    binary = _canvas(width=420, height=400)
+    start, end = (60, 260), (300, 180)
+    cv2.line(binary, start, end, 255, 2)
+    _arrow_along(binary, start, _on_line(start, end, 36))
+    _arrow_along(binary, end, _on_line(end, start, 36))
+    beyond = _on_line(start, end, 320)  # 45 px past the far tip
+    box = (float(beyond[0] - 20), float(beyond[1] - 20), float(beyond[0] + 20), float(beyond[1] + 20))
+    _text(binary, int(box[0]), int(box[1]), int(box[2]), int(box[3]))
+    stroke = lines.Stroke(float(start[0]), float(start[1]), float(end[0]), float(end[1]), 3.0)
+
+    found = lines.dimension_for(binary, [], box, strokes=[stroke])
+
+    assert found is not None
+    assert found.ends[0] == pytest.approx(start, abs=1)
+    assert found.ends[1] == pytest.approx(end, abs=1)
+
+
+def test_a_number_far_past_the_tip_is_not_this_line_s_dimension():
+    # Four characters past the tip and the number has a line of its own; this row must not reach for it.
+    binary = _canvas(width=560, height=400)
+    start, end = (60, 260), (300, 180)
+    cv2.line(binary, start, end, 255, 2)
+    _arrow_along(binary, start, _on_line(start, end, 36))
+    _arrow_along(binary, end, _on_line(end, start, 36))
+    beyond = _on_line(start, end, 560)  # 300 px past the far tip
+    box = (float(beyond[0] - 20), float(beyond[1] - 20), float(beyond[0] + 20), float(beyond[1] + 20))
+    _text(binary, int(box[0]), int(box[1]), int(box[2]), int(box[3]))
+    stroke = lines.Stroke(float(start[0]), float(start[1]), float(end[0]), float(end[1]), 3.0)
+
+    assert lines.dimension_for(binary, [], box, strokes=[stroke]) is None
+
+
+def test_a_short_arrowed_piece_beside_a_number_is_a_fragment_not_a_dimension():
+    # A number crossed by a long line widens the ink the way an arrowhead does, so a piece of that line
+    # cut by the digits looks arrowed at both ends. The plastic sheet's drawn `R8.00` is this shape: 91 px
+    # of a 270 px leader read as a dimension against an 82 px box. A span that fits inside the number's
+    # own box is a fragment of the number's line, not the line that measures it.
+    binary = _canvas(width=420, height=300)
+    start, end = (120, 140), (200, 200)
+    cv2.line(binary, start, end, 255, 2)
+    _arrow_along(binary, start, _on_line(start, end, 20))
+    _arrow_along(binary, end, _on_line(end, start, 20))
+    box = (196.0, 132.0, 296.0, 212.0)
+    _text(binary, 196, 132, 296, 212)
+    stroke = lines.Stroke(float(start[0]), float(start[1]), float(end[0]), float(end[1]), 3.0)
+
+    assert lines.dimension_for(binary, [], box, strokes=[stroke]) is None

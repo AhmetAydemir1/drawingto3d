@@ -416,3 +416,49 @@ def test_a_pair_past_the_end_of_the_line_a_number_stands_on_is_not_its_span():
     out = perceive._repoint_lines_that_are_not_their_own(segments, spans)
 
     assert out[4].anchors == [[0.0, 0.0], [100.0, 0.0]]
+
+
+def test_an_arrowhead_on_its_own_line_is_the_lines_ink_and_not_a_number():
+    # Measured on the plastic sheet: the seven readings the reader called digits sat 0.0-0.5 px off the axis
+    # of their own line and 12.0-14.0 px from its nearest end, and the image shows a filled triangle. Six of
+    # them carried the value `4`, which the sheet prints elsewhere: they were counted as covering it.
+    box = (522.0, 448.0, 538.0, 479.0)  # a 16x31 box whose centre x is the line's own x
+    anchors = [[530.0, 427.0], [530.0, 476.0]]
+
+    assert perceive._is_the_lines_own_ink(box, anchors)
+
+
+def test_a_number_beside_its_line_is_still_read():
+    # Every printed number on that sheet stands 20.5-21.5 px off the axis of its own line.
+    box = (1077.0, 193.0, 1148.0, 227.0)
+    anchors = [[1008.5, 230.5], [1122.0, 230.5]]
+
+    assert not perceive._is_the_lines_own_ink(box, anchors)
+
+
+def test_a_number_printed_in_the_middle_of_its_own_line_is_still_read():
+    # The layout the guard must not throw away: a number printed inside the gap its line is broken around
+    # sits on the axis too, but at the middle of its line and not at an end. The plate's `100,00` — the
+    # closest thing to that layout on these sheets — measures 21.0 px off the axis and 388 px from an end.
+    box = (543.0, 233.0, 654.0, 267.0)
+    anchors = [[150.0, 250.0], [933.0, 250.0]]
+
+    assert not perceive._is_the_lines_own_ink(box, anchors)
+
+
+def test_type_standing_on_its_own_line_is_not_thrown_away_as_line_ink():
+    # `1.50` and `3.00` merge into one cluster on the plastic sheet and its box sits *on* the line, so the
+    # position test alone would call it line ink and drop printed numbers. What keeps them is that a printed
+    # digit is an outline: measured, printed blobs fill 0.30-0.53 of their box against 0.50-0.67 for the
+    # arrowheads, so every blob of the cluster has to be a filled mark before the guard may drop it.
+    mask = np.zeros((40, 56), np.uint8)
+    mask[2:4, 2:22] = 255  # a digit's outline: a ring, 0.31 of its own box
+    mask[30:32, 2:22] = 255
+    mask[2:32, 2:4] = 255
+    mask[2:32, 20:22] = 255
+    mask[2:32, 30:50] = 255  # an arrowhead: filled, 1.00 of its box
+    hollow = _glyph(12, 17, 2, 2, 20, 30)
+    solid = _glyph(40, 17, 30, 2, 20, 30)
+
+    assert not perceive._is_drawn_solid([hollow, solid], [0, 1], mask)
+    assert perceive._is_drawn_solid([hollow, solid], [1], mask)

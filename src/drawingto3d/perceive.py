@@ -150,8 +150,8 @@ def _oriented_spans(gray: np.ndarray, reader=None) -> list[Span]:
         text_height=float(np.median(sizes)) if sizes else None,
     )
     clusters: dict[int, list[int]] = {}
-    spans = _collect_spans(gray, glyphs, "center", gate, reader, clusters) + _collect_spans(
-        gray, glyphs, "gap", gate, reader, clusters
+    spans = _collect_spans(gray, glyphs, "center", gate, reader, clusters, text_mask) + _collect_spans(
+        gray, glyphs, "gap", gate, reader, clusters, text_mask
     )
     spans = _one_number_per_line(spans)
     for index, span in enumerate(spans):
@@ -410,6 +410,65 @@ def _text_mask(gray: np.ndarray) -> np.ndarray:
     return cv2.subtract(ink, rules)
 
 
+def _is_the_lines_own_ink(box: tuple[float, float, float, float], anchors) -> bool:
+    """Is this candidate the line's own arrowhead rather than a printed number?
+
+    A dimension's arrowhead is drawn *on* the line, at one of its ends; a printed number is drawn beside the
+    line, or in the gap where the line is broken to make room for it. So the question is a place, not a
+    shape: how far the candidate's box stands off the line's own axis, and how far its centre sits from the
+    nearer end of that line.
+
+    Measured on the plastic sheet (`out/probe/probe_solid.py`, `probe_phantom.py`): the seven readings the
+    reader called digits — six `4`s, a `5` and two `1`s — sat **0.0-0.5 px off the axis of their own line and
+    12.0-14.0 px from its nearest end**, and in the image their box is on a filled triangle
+    (`out/probe/annot_ocr-11.png`). Nothing else on that sheet is placed like that: the nearest other reading
+    stands 4.5 px off its axis, every printed number 20.5-21.5 px, and on the plate and `studycadcam-60` the
+    same measurement reads 8.5-192.6 px. Six of those seven carry the value `4`, which the sheet prints
+    elsewhere: they were counted as covering it, so the raster row's coverage rested on ink that is not a
+    number.
+
+    The layout this could wrongly throw away is the one where a number is printed *inside* its line, in the
+    gap the line is broken around: it would sit on the axis too, but at the middle of its line rather than at
+    an end. The plate's `100,00` is the closest thing to that layout on these sheets and measures 21.0 px off
+    the axis and 388 px from an end, so it does not come near the guard. Both limits are ratios of the
+    candidate's own box, which is what keeps them readable at any dpi.
+    """
+    (ax, ay), (bx, by) = anchors
+    vertical = abs(bx - ax) < abs(by - ay)
+    axis = (ax + bx) / 2 if vertical else (ay + by) / 2
+    centre_across = (box[0] + box[2]) / 2 if vertical else (box[1] + box[3]) / 2
+    centre_along = (box[1] + box[3]) / 2 if vertical else (box[0] + box[2]) / 2
+    across, along = (box[2] - box[0]), (box[3] - box[1])
+    if abs(centre_across - axis) > max(1.0, 0.05 * min(across, along)):
+        return False
+    reach = max(across, along)
+    return min(abs(centre_along - (ay if vertical else ax)), abs(centre_along - (by if vertical else bx))) <= reach
+
+
+def _is_drawn_solid(glyphs: list[Glyph], cluster: list[int], text_mask: np.ndarray) -> bool:
+    """Does every blob of this cluster fill its own box like a filled mark rather than like type?
+
+    A printed digit is an outline, an arrowhead is a filled mark. Measured on the plastic sheet: printed digits'
+    blobs fill 0.30-0.53 of their boxes, the arrowheads the reader calls digits fill 0.50-0.67 — one glyph is
+    therefore *not* separable by this test, the two ranges meet at 0.5. A cluster is: a printed number of
+    several digits has at least one clearly hollow blob, while an arrowhead's one or two blobs are both solid.
+    So this is asked only after the position test has already said "this could be the line's own ink", and there
+    it is what keeps type that stands *on* its line — on the plastic sheet `1.50` and `3.00` merge into one
+    cluster whose box sits on the line, and dropping it would throw away printed numbers, not line ink (it is
+    also the box the vision model happens to read a correct `3.00` from).
+
+    The failure it lets through: a printed mark bold enough that every blob of the cluster fills 0.45 of its box
+    is kept, so a phantom stays named rather than a number being discarded — the safe direction for an audit.
+    A sheet-relative version of the 0.45 (against the sheet's own median glyph fill) is the refinement, not yet
+    measured on all six sheets.
+    """
+    return all(
+        text_mask[glyphs[index].y : glyphs[index].y + glyphs[index].h,
+                  glyphs[index].x : glyphs[index].x + glyphs[index].w].mean() / 255.0 >= 0.45
+        for index in cluster
+    )
+
+
 def _collect_spans(
     gray: np.ndarray,
     glyphs: list[Glyph],
@@ -417,6 +476,7 @@ def _collect_spans(
     gate=None,
     reader=None,
     clusters: dict[int, list[int]] | None = None,
+    text_mask: np.ndarray | None = None,
 ) -> list[Span]:
     spans: list[Span] = []
     for cluster in _cluster_glyphs(glyphs, mode):
@@ -430,6 +490,17 @@ def _collect_spans(
         if gate is not None:
             accepted, anchors, mode = gate.accepts(box, _printed_block(glyphs, cluster))
             if not accepted:
+                continue
+            # The line's own ink is not a printed number: an arrowhead lies on the axis of the line it
+            # terminates and at one of that line's ends, and the reader answers a digit when it is handed
+            # one. Six of `plastic-enclosure-1`'s readings were its own arrowheads, counted as covering a
+            # printed `4`. Type that stands on its own line is kept by the solidity test.
+            if (
+                mode == "dimension"
+                and anchors
+                and _is_the_lines_own_ink(box, anchors)
+                and (text_mask is None or _is_drawn_solid(glyphs, cluster, text_mask))
+            ):
                 continue
         span = _read_cluster(gray, glyphs, cluster, len(spans), reader, anchors, mode)
         if span is not None:

@@ -1,4 +1,17 @@
-"""Local llama-server client. No host other than 127.0.0.1."""
+"""Local llama-server client. No host other than 127.0.0.1.
+
+Three clients live here, in the order the pipeline grows:
+
+  `OllamaVision`  one short question about one crop (a printed number, a role)
+  `OllamaCoder`   a short `geo.*` program written from plain-text dimension records
+  `LlamaCoder`    free Python for a whole sheet through a local llama-server
+
+`OllamaChat` is the one the measurement harness uses: every setting that changes an answer
+(model tag, context length, sampling, output limit, keep_alive) is an argument of the run and is
+reported back by `settings()`, so a run's record says what produced it instead of what happened to
+be installed. `installed_models()` reports the weights the machine actually holds. Existing
+clients keep their behaviour; nothing here picks a model silently for a run it did not describe.
+"""
 
 from __future__ import annotations
 
@@ -7,6 +20,7 @@ import json
 import os
 import urllib.error
 import urllib.request
+from dataclasses import dataclass
 from urllib.parse import urlparse
 
 from drawingto3d.errors import UnavailableModel
@@ -107,6 +121,8 @@ def _ollama_chat(
     predict: int,
     temperature: float = 0.2,
     num_ctx: int = 16384,
+    response_format: dict | str | None = None,
+    stats: dict | None = None,
 ) -> str:
     message: dict = {"role": "user", "content": prompt}
     if image_png is not None:
@@ -120,6 +136,11 @@ def _ollama_chat(
         # 400 it returns ("exceeds the available context size") is not a model failure.
         "options": {"temperature": temperature, "num_predict": predict, "num_ctx": num_ctx},
     }
+    if response_format is not None:
+        # Constrained decoding: the answer's *shape* is the product contract (a versioned plan), not a
+        # hint to the model. Without it a 3B model answers a plan-shaped object with the wrong nesting
+        # and the failure reads as "the model cannot plan".
+        payload["format"] = response_format
     request = urllib.request.Request(
         host + "/api/chat",
         data=json.dumps(payload).encode(),
@@ -134,6 +155,14 @@ def _ollama_chat(
         raise UnavailableModel(f"yerel model isteği reddedildi ({exc.code}): {_short(detail)}") from exc
     except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as exc:
         raise UnavailableModel("yerel model yanıt vermiyor; buluta düşülmez") from exc
+    if stats is not None:
+        stats.update({
+            "done_reason": body.get("done_reason"),
+            "eval_count": body.get("eval_count"),
+            "prompt_eval_count": body.get("prompt_eval_count"),
+            "total_duration_ns": body.get("total_duration"),
+            "load_duration_ns": body.get("load_duration"),
+        })
     text = str(body.get("message", {}).get("content", ""))
     if not text.strip():
         raise UnavailableModel("yerel model yanıt vermiyor; buluta düşülmez")
@@ -192,3 +221,155 @@ def _local_origin(url: str) -> str:
     if parsed.hostname not in {"127.0.0.1", "localhost"} or parsed.scheme not in {"http", "https"}:
         raise UnavailableModel("bağlama yalnız yerel adrese gidebilir")
     return url.rstrip("/")
+
+
+# --- what the machine holds, and what one run was told to use ------------------------
+
+
+@dataclass(frozen=True)
+class ModelInfo:
+    """One installed weight set, as the local server describes it. The tag is part of the
+    model — a thinking build under a different tag answers differently — so the digest is
+    recorded beside the name and not instead of it."""
+
+    name: str
+    digest: str = ""
+    size_bytes: int = 0
+    parameter_size: str = ""
+    quantization: str = ""
+    context_length: int = 0
+    families: tuple[str, ...] = ()
+    capabilities: tuple[str, ...] = ()
+
+    def as_dict(self) -> dict:
+        return {
+            "name": self.name,
+            "digest": self.digest,
+            "size_bytes": self.size_bytes,
+            "size_gb": round(self.size_bytes / 1e9, 3),
+            "parameter_size": self.parameter_size,
+            "quantization": self.quantization,
+            "context_length": self.context_length,
+            "families": list(self.families),
+            "capabilities": list(self.capabilities),
+        }
+
+
+def installed_models(host: str | None = None) -> list[ModelInfo]:
+    """Every model the local Ollama holds, with the metadata a run record needs.
+
+    Raises `UnavailableModel` when the local server cannot be reached: a missing dependency is
+    reported as a missing dependency, never as a model that answered nothing.
+    """
+    origin = _local_origin(host or os.environ.get("DRAWINGTO3D_OLLAMA_URL", "http://127.0.0.1:11434"))
+    request = urllib.request.Request(origin + "/api/tags")
+    try:
+        with urllib.request.urlopen(request, timeout=5) as response:
+            body = json.load(response)
+    except urllib.error.HTTPError as exc:
+        detail = exc.read().decode("utf-8", "replace").strip()
+        raise UnavailableModel(f"yerel model listesi reddedildi ({exc.code}): {_short(detail)}") from exc
+    except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as exc:
+        raise UnavailableModel("yerel model yanıt vermiyor; buluta düşülmez") from exc
+    models: list[ModelInfo] = []
+    for item in body.get("models", []):
+        details = item.get("details") or {}
+        models.append(
+            ModelInfo(
+                name=str(item.get("name", "")),
+                digest=str(item.get("digest", "")),
+                size_bytes=int(item.get("size") or 0),
+                parameter_size=str(details.get("parameter_size", "")),
+                quantization=str(details.get("quantization_level", "")),
+                context_length=int(details.get("context_length") or 0),
+                families=tuple(str(value) for value in details.get("families") or ()),
+                capabilities=tuple(str(value) for value in item.get("capabilities") or ()),
+            )
+        )
+    return models
+
+
+def find_model(models: list[ModelInfo], wanted: str) -> ModelInfo:
+    """The installed model whose tag is `wanted`. A prefix match is accepted for a tag written
+    without its quantisation suffix, but an ambiguous prefix is refused rather than guessed."""
+    exact = [model for model in models if model.name == wanted]
+    if exact:
+        return exact[0]
+    partial = [model for model in models if model.name.startswith(wanted)]
+    if len(partial) == 1:
+        return partial[0]
+    if not partial:
+        available = ", ".join(sorted(model.name for model in models)) or "(hiç yok)"
+        raise UnavailableModel(f"istenen model kurulu değil: {wanted!r}; kurulu olanlar: {available}")
+    raise UnavailableModel(
+        f"model adı belirsiz: {wanted!r} -> " + ", ".join(sorted(model.name for model in partial))
+    )
+
+
+@dataclass
+class ChatSettings:
+    """Everything about a call that can change its answer, so a run record can name it."""
+
+    model: str
+    num_ctx: int = 16384
+    temperature: float = 0.0
+    num_predict: int = 512
+    keep_alive: str = "5m"
+    timeout: float = 300.0
+    image_max_side: int | None = None
+    images_per_call: int = 1
+    response_format: str | None = None
+
+    def as_dict(self) -> dict:
+        return {
+            "model": self.model,
+            "num_ctx": self.num_ctx,
+            "temperature": self.temperature,
+            "num_predict": self.num_predict,
+            "keep_alive": self.keep_alive,
+            "timeout_s": self.timeout,
+            "image_max_side": self.image_max_side,
+            "images_per_call": self.images_per_call,
+            "response_format": self.response_format or "text",
+        }
+
+
+class OllamaChat:
+    """A local chat call whose settings are the caller's, not the installation's default.
+
+    `OllamaVision` and `OllamaCoder` pick a model by preference order, which is right for the
+    product path and wrong for a measurement: a run that compares two models has to say which one
+    it asked. This client takes the model and the sampling explicitly and reports them back.
+    """
+
+    def __init__(self, model: str, host: str | None = None, settings: ChatSettings | None = None) -> None:
+        raw = host or os.environ.get("DRAWINGTO3D_OLLAMA_URL", "http://127.0.0.1:11434")
+        self.host = _local_origin(raw)
+        self.settings = settings or ChatSettings(model=model)
+        if self.settings.model != model:
+            raise ValueError("ChatSettings.model ile verilen model uyuşmuyor")
+
+    @property
+    def model(self) -> str:
+        return self.settings.model
+
+    def complete(self, prompt: str, image_png: bytes | None = None, num_predict: int | None = None,
+                 response_format: dict | str | None = None, stats: dict | None = None) -> str:
+        return _ollama_chat(
+            self.host,
+            self.settings.model,
+            prompt,
+            image_png,
+            self.settings.timeout,
+            self.settings.num_predict if num_predict is None else num_predict,
+            temperature=self.settings.temperature,
+            num_ctx=self.settings.num_ctx,
+            response_format=response_format,
+            stats=stats,
+        )
+
+    def unload(self) -> None:
+        _ollama_unload(self.host, self.settings.model)
+
+    def settings_record(self) -> dict:
+        return self.settings.as_dict()

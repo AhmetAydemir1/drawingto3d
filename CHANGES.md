@@ -1105,3 +1105,51 @@ generalization. Existing cases are seen data; evaluation on unseen parts is a fu
 Updated root `HANDOFF.md`, `.cursor/handoff.md`, and `out/HANDOFF.md`, preserving historical results
 and explicitly superseding the earlier next-family development direction. Clarified evaluation scope
 in `eval/README.md`. Documentation only; no runtime behavior changed or tests rerun in this session.
+
+## 2026-09-27 — Pre-training measurement (PLAN section 7)
+
+Built the measurement slice section 7 asks for, and ran it on this machine.
+
+`src/drawingto3d/planner.py` asks a local model for a versioned `GeneralPlan` instead of free Python: the
+reading chain (`observe` -> `bind` -> `meaning`) produces the cited evidence, the model only chooses
+operations, and the answer is judged by the schema, the citation check and the deterministic compiler. The
+plan's own identity is never the model's — a model that volunteers a `source` has it replaced by the run's
+and the fact recorded under `overrides` (it was thrown away as `invalid` before, which reported a planning
+failure the model had not made: measured on `qwen3-vl:8b-instruct`, whose seven parameter values were right).
+
+`eval/model_baseline.py` measures the four conditions of section 18B apart — `reading`, `chain`,
+`verified_plan`, `relations` — and writes one machine-readable record per run with code HEAD and dirty-file
+list, manifest summary, model digest and quantisation, prompt/schema/evidence versions, sampling settings,
+cold/warm start, per-stage seconds, output status, swap and free-page samples, and ollama RSS peak. Reference
+STEP, the correct plan and the file name never enter a model prompt. `eval/baseline_report.py` builds the
+report's tables from those records (`--check` fails on drift), and `eval/reports/model-baseline.md` carries the
+findings and the next-step decision.
+
+Measured. Reading: the vector sheets are complete (`plate-pocket-1` 7/7, `plastic-enclosure-1` 11/11) and the
+same sheets re-read as rendered raster lose 0-3 numbers with the same scale to four digits (7.817 and 3.917
+px/mm), while the genuinely scanned sheets sit at the floor — `exercise-17` 2/7, `exercise-51` 4/14,
+`exercise-13` 2/8, `flange-1` 4/13 — and four of them fit no scale at all, which is what stops the chain
+(`bind`/`meaning`/`proposal` refuse with `no-scale`, correctly). The loss is located, not guessed: on
+`Exercise 17` the gate accepts 30 clusters and the reader yields 2 spans, and a contact sheet of those 30 crops
+(`out/agent-s7/crops-Exercise 17.png`) shows arrowheads, arcs and small circles — 28 of the 30 candidates are not
+printed numbers. Planning: both ready models fail in this layer and differently. `qwen2.5vl:3b` emits
+`parameters` as a list, repeats keys, sets both `value` and `expr`, and never closes the object — not at 2048
+output tokens, not with the JSON Schema as a decoder grammar at 4096. `qwen3-vl:8b-instruct` terminates cleanly
+(929 tokens, 147 s) and gets all seven parameter values and their span citations right, then collapses
+`sketches.*.entities[0]` into a single string, where its own reasoning leaked into the document. CAD is not
+implicated by this run: no model candidate reached the compiler, and the hand-verified plate plan still builds
+against the closed form at 0.0000%.
+
+Manifest: `2/Drawing.jpg` and `7/my_part.jpg` are byte-identical, as are `2/Part-2.STEP` and `7/my_part.STEP`;
+the two folders are one part, recorded as one `part_group` with both sources (`exercise-1` raster,
+`exercise-1-vector`).
+
+Limit and decision: this slice claims neither universal conversion nor training success. Training is not
+justified yet — section 18C requires a repeated error and a separate validation set, and the two failures
+measured are interface and gate problems first: the raster candidate gate (extend the arrowhead guard to
+leader mode and generalise its place test to a true point-to-segment distance) and the depth of the plan body
+the model is asked to write. The labels for the reading task do exist and are measured: a vector sheet's text
+layer says exactly which printed number sits where in its rendered raster.
+
+Validation: `pytest` 234 -> 253 passed (17 planner, 2 report). No reading algorithm was changed in this slice,
+so the frontend tables are unchanged (`eval/check_tables.py`: 20 rows, zero drift).

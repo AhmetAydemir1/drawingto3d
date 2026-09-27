@@ -1,5 +1,99 @@
 # drawingto3d — proje devam kaydı
 
+## Güncel yön: ölçüm, hedefli eğitim ve çevrimdışı ürün — 2026-09-27
+
+`PLAN.md` Bölüm 7'nin beş teslimi tamamlandı ve ölçüm bu makinede koşuldu. Sonuç:
+`eval/reports/model-baseline.md` (tablolar `eval/baseline_report.py --check` ile koşu
+kayıtlarına bağlı). Eğitim **çalıştırılmadı** ve gerekçesi raporda.
+
+- Genel CAD şeması/derleyici ve okuma katmanları mevcut; bunları yeniden kurma.
+- Ölçülen ayrım: **okuma** (vektör tam, gerçek tarama taban) ve **planlama** (iki hazır model
+  de şema derinliğinde düşüyor). CAD bu ölçümde suçlanmadı.
+- Sıradaki iş sırası: (1) raster aday kapısı — ok başı korumasını kılavuz moduna da sor,
+  konum testini gerçek nokta–doğru parçası uzaklığına genelleştir, sonra kapsamı **tüm
+  vaka kümesinde** yeniden ölç; (2) plan arayüzü — modelden istenen iç içe gövdeyi azalt.
+- Eğitim kararı Bölüm 18C'nin koşullarını bekliyor: tekrarlanan hata (1 ve 2 uygulanmadan
+  gösterilemez) ve ayrı doğrulama kümesi (pilot ≥10 / saklı ≥20, kullanıcı kararı bekliyor).
+  Etiket kaynağı hazır: vektör paftanın metin katmanı, render rasterinde hangi basılı sayının
+  nerede olduğunu tam veriyor.
+- Geçiş eşiği (eğitim başlamadan kayıtlı): raster kapsamı tüm kümede `found/printed ≥ 0.8`,
+  ölçek kuran pafta ≥ 4/5; planlama koşulunda derleyiciye ulaşan aday ≥ 1/2.
+- PLAN Bölüm 18; veri sözleşmesi, sentetik üretim, parça gruplarına göre ayrım, eğitim seçim
+  koşulları ve son modelin M1/ağ kapalı kabulünü tanımlar.
+- `examples/pdf with steps/2/` ve `7/` aynı parçadır (dosyalar bayt bayt aynı: `Drawing.jpg` ≡
+  `my_part.jpg`, `Part-2.STEP` ≡ `my_part.STEP`); yeni bağımsız örnek sayılmaz. Pilot ≥10 ve
+  saklı ≥20 hedefi açık; mevcut sonuçlar genelleme kanıtı değil.
+- Hedef yeterli bilgide otomatik dönüşüm, belirsizlikte kısa soru. Geçerli STEP tek başına
+  doğru çizim yorumu değildir; bağımsız ölçü/görünüş kontrolü gerekir.
+
+## Bu oturum: eğitim öncesi ölçüm dilimi — 2026-09-27 (3. oturum)
+
+Kullanıcı isteği: PLAN.md'yi uygula, Bölüm 7'deki eğitim öncesi ölçümden başla, hazır modelleri
+ölç, hatayı okuma/bağlama/planlama/CAD olarak ayır, sonuç gerektiriyorsa hedefli eğitim yap.
+
+### Ne yapıldı
+
+- `src/drawingto3d/planner.py` (yeni): modelden serbest Python yerine sürümlü `GeneralPlan`
+  adayı ister; kanıt okuma zincirinden (`observe`→`bind`→`meaning`) atıflı gelir, modelin işi
+  yalnız işlem seçmek. Atıf denetimi, şema denetimi ve derleyici kararı adayı yargılar.
+  Modelin verdiği `source` artık adayı düşürmüyor: koşunun kaynağı yerine geçiyor ve durum
+  `overrides` alanına yazılıyor (önce tüm aday `invalid` sayılıyordu ve bu, modelin yapmadığı
+  bir planlama hatasını raporluyordu).
+- `eval/model_baseline.py` (yeni): Bölüm 18B'nin dört koşulu ayrı ölçülür (`reading`, `chain`,
+  `verified_plan`, `relations`); koşu başına okunur kayıt (kod HEAD + kirli dosya listesi,
+  manifest, model digest/nicemleme, istem/şema/kanıt sürümü, örnekleme, soğuk/sıcak başlangıç,
+  aşama süreleri, çıktı durumu, swap/boş sayfa örnekleri, ollama RSS tepesi). Referans STEP,
+  doğru plan ve dosya adı isteme girmiyor.
+- `eval/relations/plate-pocket-1.json` (yeni): elle doğrulanmış ilişki tablosu; `relations`
+  koşusunun girdisi, teşhis amaçlı (otomatik başarıya sayılmaz).
+- `eval/baseline_report.py` (yeni) + `eval/reports/model-baseline.md`: raporun tabloları koşu
+  kayıtlarından üretilir, `--check` kayma olursa düşer.
+- `tests/test_planner.py` (17), `tests/test_baseline_report.py` (2).
+- Ölçüm araçları (`out/agent-s7/`, Git dışı): `where.py` (leke→küme→kapı sayımı),
+  `readlog.py` (her aday için okuma sorusu ve cevabı), `crops.py` (kabul edilen adayların
+  hazırlanmış kırpmaları tek kontak sayfada), `guard.py` (ok başı korumasının verdiği cevaplar).
+
+### Ölçülen bulgular (ayrıntı: `eval/reports/model-baseline.md`)
+
+- **Manifest:** `2/` ≡ `7/` bayt bayt; tek `part_group`, iki kaynak (`exercise-1` raster,
+  `exercise-1-vector` vektör).
+- **Okuma:** vektör paftalar tam (`plate-pocket-1` 7/7, `plastic-enclosure-1` 11/11); aynı
+  paftaların render'ı 6/7 ve 8/11 (ölçek 4 haneye kadar aynı: 7.817 / 3.917 px/mm); gerçek
+  taramalar taban — `exercise-17` 2/7, `exercise-51` 4/14, `exercise-13` 2/8, `flange-1` 4/13
+  ve dördünde ölçek kurulmuyor. Zinciri durduran şey hata değil, `no-scale` reddi.
+- **Kaybın yeri:** `Exercise 17`'de kapı 30 kümeyi kabul ediyor, okuyucudan 2 span çıkıyor;
+  kabul edilen 30 kırpmanın 28'i ok başı/yay/daire, sayı değil. Yani kayıp aramada değil, aday
+  kümesinin kendisinde. `_collect_spans` ok başı korumasını yalnız `mode == "dimension"` için
+  soruyor; bu paftada ölçü modunda kalan ok başları içi boş çizildiği için `_is_drawn_solid`
+  onları ayıramıyor (kuralın docstring'indeki varsayım bu paftada ters).
+- **Planlama:** `qwen2.5vl:3b` (serbest metin, 2048 ve şema grameriyle 4096) nesneyi hiç
+  kapatamıyor; `parameters` liste olarak, anahtarlar tekrarlı, `value`+`expr` birlikte.
+  `qwen3-vl:8b-instruct` temiz kapanıyor (929 token, 147 s), yedi parametre değerini ve ölçü
+  atıflarını doğru veriyor, ama `sketches.*.entities[0]` tek dizeye çöküyor — kendi muhakemesi
+  JSON gövdesine sızıyor. Ölçülen ayrım: değer/atıf 8B'de doğru, gövde derinliği ikisinde de yok.
+- **CAD:** hiçbir aday derleyiciye ulaşmadı; elle doğrulanmış plaka planı kapalı forma karşı
+  0.0000% farkla kuruluyor. CAD bu ölçümde kendini göstermedi.
+- **Kaynak:** 8B koşusunda takas 13 312 MB kullanımda sabit, boş sayfa en az 14.5 MB, ollama
+  RSS tepesi 8.3 GB. Ağırlığın disk boyutu bellek sayılmıyor.
+
+### Sonraki adım ve nasıl yeniden koşulur
+
+1. Raster aday kapısı: ok başı/kavis korumasını kılavuz moduna da sor; konum testini eksen
+   hizası varsayımından gerçek nokta–doğru parçası uzaklığına genelleştir (eksen hizalı
+   girdide aynı sonucu vermeli — regresyon testi yaz). Sonra **tüm vaka kümesinde** ölç:
+   kapsam, gürültü listesi, ölçek kuran pafta sayısı.
+2. Plan arayüzü: modelden istenen iç içe gövdeyi azalt; derleyiciye ulaşan aday oranını ölç.
+3. Eğitim ancak bu iki adımdan sonra ve Bölüm 18C koşulları sağlanınca.
+
+```
+PYTHONPATH=src .venv/bin/python eval/model_baseline.py --no-model --conditions reading,chain,verified_plan --label <etiket>
+PYTHONPATH=src .venv/bin/python eval/model_baseline.py --model qwen3-vl:8b-instruct --conditions relations --cases plate-pocket-1 --label <etiket>
+PYTHONPATH=src .venv/bin/python eval/baseline_report.py --write   # rapor tablolarını tazele
+PYTHONPATH=src .venv/bin/python eval/check_tables.py && .venv/bin/python -m pytest -q
+```
+
+## Önceki oturum kayıtları
+
 ## Güncel durum: genel plan sözleşmesi ve derleyici kuruldu — 2026-09-27 (2. oturum)
 
 Kullanıcı, verilen parçaların yalnız test örneği olduğunu ve her yeni parçaya özel tanıyıcı

@@ -48,7 +48,21 @@ PYTHONPATH=src .venv/bin/python eval/frontend.py          # reading front end, n
 PYTHONPATH=src .venv/bin/python eval/baseline.py          # reading turn over every eval sheet -> out/baseline/<case id>.json
 .venv-cad/bin/python eval/report.py                       # table + out/eval/report.json
 PYTHONPATH=src .venv/bin/python eval/check_tables.py      # do the tables below still match out/frontend?
+PYTHONPATH=src .venv/bin/python eval/model_baseline.py --no-model --conditions reading,chain,verified_plan --label <label>
+PYTHONPATH=src .venv/bin/python eval/model_baseline.py --model qwen3-vl:8b-instruct --conditions relations --cases plate-pocket-1 --label <label>
+PYTHONPATH=src .venv/bin/python eval/baseline_report.py --write    # section 7 tables, built from the run records
 ```
+
+`eval/model_baseline.py` measures section 18B's four conditions apart — `reading`, `chain`,
+`verified_plan` and `relations` — because an end-to-end score cannot say which layer failed. It writes one
+machine-readable record per run under `out/model-baseline/<label>/` with the code HEAD and dirty-file list,
+the manifest summary, the model digest and quantisation, the prompt/schema/evidence versions, the sampling
+settings, cold and warm start, per-stage seconds, the output status, swap and free-page samples and the ollama
+RSS peak. Reference STEPs, the correct plan and the file name never enter a model prompt; a `relations` run
+reads its context from a hand-verified table in `eval/relations/` and is a diagnosis, not an automatic
+PDF → STEP success. `eval/baseline_report.py` builds the tables of `eval/reports/model-baseline.md` from those
+records and from `out/frontend/`; `--check` fails when a run has changed a number the report still quotes.
+`eval/reports/model-baseline.md` carries the findings and the next-step decision.
 
 `eval/check_tables.py` reads every table in this file back against the runs in `out/frontend/` (which is
 git-ignored) and prints any row that has drifted, exiting non-zero if one has. The tables are the

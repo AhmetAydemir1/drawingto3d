@@ -40,6 +40,146 @@
       "expect_vector": "measure.txt"
     },
     {
+      "id": "exercise-1-vector",
+      "class": "self-made",
+      "part_group": "exercise-1",
+      "split": "seen-regression",
+      "drawing": "examples/pdf with steps/2/Drawing.pdf",
+      "step": "examples/pdf with steps/2/Part-2.STEP",
+      "unit": "mm",
+      "printed": [
+        6,
+        10,
+        20,
+        25,
+        26,
+        30,
+        35,
+        37,
+        40,
+        50,
+        57,
+        60,
+        80
+      ],
+      "radius_calls": [
+        20
+      ],
+      "diameter_calls": [
+        20,
+        25,
+        30,
+        40,
+        50
+      ],
+      "callouts": [],
+      "feature_ids": [],
+      "part": "A4 vektor PDF, olcek 1:2, 'Exercise 1' basligi; 7/ ile AYNI PARCA (jpg ve STEP bayt-es). Ayni parca grubunda oldugu icin bagimsiz ornek sayilmaz.",
+      "expect_vector": "measure.txt"
+    },
+    {
+      "id": "exercise-51",
+      "class": "practice-sheet",
+      "part_group": "exercise-51",
+      "split": "unassigned",
+      "drawing": "examples/pdf with steps/1/Exercise_51.PNG",
+      "step": "examples/pdf with steps/1/Exercise 51.STEP",
+      "unit": "mm",
+      "printed": [
+        5,
+        10,
+        12,
+        15,
+        16,
+        18,
+        30,
+        32,
+        50,
+        60,
+        70,
+        80,
+        100,
+        150
+      ],
+      "radius_calls": [
+        10,
+        15,
+        16,
+        60
+      ],
+      "diameter_calls": [
+        12,
+        15,
+        18,
+        50,
+        100
+      ],
+      "callouts": [],
+      "feature_ids": [],
+      "part": "A3 raster, olcek 1:5, mm, alloy steel: plan (delikler + R/Ø cagrilari) + iki gorunus + golgeli izometrik. Ayni parcanin referans STEP'i var; pilot/sakli ayrimi kullanicinin karari.",
+      "expect_vector": "measure.txt"
+    },
+    {
+      "id": "exercise-17",
+      "class": "practice-sheet",
+      "part_group": "exercise-17",
+      "split": "unassigned",
+      "drawing": "examples/pdf with steps/3/Exercise 17.PNG",
+      "step": "examples/pdf with steps/3/Exercise 17.STEP",
+      "unit": "mm",
+      "printed": [
+        3,
+        4,
+        5,
+        10,
+        14,
+        20,
+        22
+      ],
+      "diameter_calls": [
+        20,
+        22
+      ],
+      "callouts": [],
+      "feature_ids": [],
+      "part": "A3 raster, olcek 1:1, mm, AlSi 304: 90 derece dirsek; on + kesitli yan + kesit + izometrik, Ø20/Ø22/Ø-e bosluk zinciri. Referans STEP var; pilot/sakli ayrimi kullanicinin karari.",
+      "expect_vector": "measure.txt"
+    },
+    {
+      "id": "exercise-13",
+      "class": "practice-sheet",
+      "part_group": "exercise-13",
+      "split": "unassigned",
+      "drawing": "examples/pdf with steps/4/Exercise 13.PNG",
+      "step": "examples/pdf with steps/4/Exercise 13.STEP",
+      "unit": "mm",
+      "printed": [
+        10,
+        25,
+        30,
+        42,
+        50,
+        60,
+        170,
+        240
+      ],
+      "radius_calls": [
+        10,
+        25,
+        30,
+        50
+      ],
+      "diameter_calls": [
+        25,
+        60,
+        25
+      ],
+      "callouts": [],
+      "feature_ids": [],
+      "part": "A3 raster, olcek 1:5, mm, AlSi 304: yatak/braket; ust gorunus + on gorunus + iki yan gorunus + izometrik, Ø60 gobek + iki Ø25 delik. Referans STEP var; pilot/sakli ayrimi kullanicinin karari.",
+      "expect_vector": "measure.txt"
+    },
+    {
       "id": "plate-pocket-1",
       "class": "self-made",
       "part_group": "plate-pocket",
@@ -228,19 +368,32 @@
   "_split": {
     "seen-regression": [
       "exercise-1",
+      "exercise-1-vector",
       "plate-pocket-1",
       "studycadcam-60",
       "studycadcam-50",
       "plastic-enclosure-1",
       "flange-1"
     ],
+    "unassigned": [
+      "exercise-51",
+      "exercise-17",
+      "exercise-13"
+    ],
     "pilot": [],
     "hidden": [],
-    "_note": "PLAN.md Bolum 5: pilot en az 10 yeni parca, sakli degerlendirme en az 20 parca (en az 10'u raster). Yeni kayitlar id, part_group, split, kaynak/lisans bilgisi ve feature_ids ile girer; pilot ve hidden dizileri yeni parcalarla dolar. Paftalar artik `examples/pdf with steps/<no>/` alt klasorlerinde durur (cizim + referans STEP); yeni parcalar 1-4 (Exercise 51, Drawing/Part-2, Exercise 17, Exercise 13) henuz kayitli degil."
+    "_note": "PLAN.md Bolum 5: pilot en az 10 yeni parca, sakli degerlendirme en az 20 parca (en az 10'u raster). `unassigned`, deposuna sonradan giren ve pilot/sakli ayrimi henuz kullanicinin karari olan parcalardir: olcumde AYRI sutunda raporlanir ve SAKLI TEST SAYILMAZ, cunku bu olcumden sonra yapilan kod duzeltmeleri onlari regresyona cevirir (PLAN Bolum 5.6). `exercise-1-vector`, `exercise-1` ile ayni parca grubundadir (7/ ve 2/ ayni parca) ve bagimsiz ornek sayilmaz.",
+    "_counts": {
+      "part_groups": 8,
+      "independent_parts": 8,
+      "seen_regression_parts": 5,
+      "unassigned_parts": 3,
+      "note": "part_group ile sayilir: exercise-1 grubu iki dosyayla temsil edilir ama tek parcadir. 5 gorulmus + 3 atanmamis = 8 bagimsiz parca; pilot >= 10 ve sakli >= 20 hedefi hala aciktir."
+    }
   },
   "_fields": {
     "part_group": "Ayni parcanin varyantlari ayni grup; gruplar arasi bolunme varyant sizmasini engeller.",
-    "split": "seen-regression: gelistirmede gorulen paftalar. pilot/hidden: PLAN.md'deki yeni parca degerlendirmesi.",
+    "split": "seen-regression: gelistirmede gorulen paftalar. unassigned: yeni parca, ayrim karari kullanicida. pilot/hidden: PLAN.md'deki yeni parca degerlendirmesi.",
     "feature_ids": "Plan ve geometri denetiminin hesaba katmasi gereken adlandirilmis ozellikler; bos liste 'henuz kimliklendirilmedi' demektir."
   }
 }

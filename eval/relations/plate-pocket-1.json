@@ -1,0 +1,106 @@
+{
+  "version": 1,
+  "verified_by": "hand: bu tablo elle doğrulandı — her basılı sayı, ölçtüğü özelliğe referans STEP'e karşı bağlandı. Bu, teşhis koşulunun girdisidir; otomatik PDF → STEP başarısına sayılmaz (PLAN.md Bölüm 18B).",
+  "verified_against": "examples/pdf with steps/5/plate with a pocket.STEP + paftanın kendi basılı sayıları",
+  "sheet": {
+    "px_per_mm": 7.82,
+    "scale": "1:1",
+    "sheet": "A4 yatay",
+    "scale_known": true,
+    "frame": {"width_px": 1654, "height_px": 1169, "dpi": 200}
+  },
+  "printed": [
+    {"span_id": "d1", "text": "100,00", "value": 100.0, "unit": "mm", "kind": "linear", "count": 1},
+    {"span_id": "d2", "text": "80,00", "value": 80.0, "unit": "mm", "kind": "linear", "count": 1},
+    {"span_id": "d3", "text": "60,00", "value": 60.0, "unit": "mm", "kind": "linear", "count": 1},
+    {"span_id": "d4", "text": "4 x Ø6,80 THRU ALL", "value": 6.8, "unit": "mm", "kind": "diameter", "count": 4},
+    {"span_id": "d5", "text": "50,00", "value": 50.0, "unit": "mm", "kind": "diameter", "count": 1},
+    {"span_id": "d6", "text": "15,00", "value": 15.0, "unit": "mm", "kind": "linear", "count": 1},
+    {"span_id": "d7", "text": "8,00", "value": 8.0, "unit": "mm", "kind": "linear", "count": 1}
+  ],
+  "claims": [
+    {
+      "span_id": "d1",
+      "form": "distance",
+      "resolution": "confirmed",
+      "measures": "two hole centres, along the sheet's horizontal axis (hole spacing X)",
+      "between": ["h1", "h2"],
+      "measured_mm": 100.71,
+      "verified_mm": 100.0
+    },
+    {
+      "span_id": "d2",
+      "form": "distance",
+      "resolution": "confirmed",
+      "measures": "the same two corner arcs the outline is rounded with, on one side; it is the part's overall height",
+      "between": ["arc_top_left", "arc_bottom_left"],
+      "measured_mm": 80.46,
+      "verified_mm": 80.0
+    },
+    {
+      "span_id": "d3",
+      "form": "distance",
+      "resolution": "confirmed",
+      "measures": "two hole centres, along the sheet's vertical axis (hole spacing Y)",
+      "between": ["h1", "h3"],
+      "measured_mm": 60.43,
+      "verified_mm": 60.0
+    },
+    {
+      "span_id": "d4",
+      "form": "diameter",
+      "resolution": "confirmed",
+      "measures": "the four corner holes; 'THRU ALL' means the hole runs through the whole thickness",
+      "matched_geometry": ["h1", "h2", "h3", "h4"],
+      "measured_mm": 6.85,
+      "verified_mm": 6.8,
+      "through": true
+    },
+    {
+      "span_id": "d5",
+      "form": "diameter",
+      "resolution": "confirmed",
+      "measures": "the single circle at the centre of the plate: a pocket (a flat-bottomed recess), not a through hole",
+      "matched_geometry": ["pocket"],
+      "measured_mm": 50.36,
+      "verified_mm": 50.0
+    },
+    {
+      "span_id": "d6",
+      "form": "distance",
+      "resolution": "confirmed",
+      "measures": "the plate thickness, across the section view",
+      "between": ["top_face", "bottom_face"],
+      "measured_mm": 15.1,
+      "verified_mm": 15.0
+    },
+    {
+      "span_id": "d7",
+      "form": "distance",
+      "resolution": "confirmed",
+      "measures": "how deep the central pocket is cut from the top face",
+      "between": ["top_face", "pocket_floor"],
+      "measured_mm": 8.03,
+      "verified_mm": 8.0
+    }
+  ],
+  "geometry": {
+    "units": "mm, measured on the sheet at 7.82 px/mm; positions relative to the centre of the pocket circle",
+    "circles": [
+      {"id": "h1", "diameter_mm": 6.8, "centre_mm": [-50.0, -30.0], "kind": "hole"},
+      {"id": "h2", "diameter_mm": 6.8, "centre_mm": [50.0, -30.0], "kind": "hole"},
+      {"id": "h3", "diameter_mm": 6.8, "centre_mm": [-50.0, 30.0], "kind": "hole"},
+      {"id": "h4", "diameter_mm": 6.8, "centre_mm": [50.0, 30.0], "kind": "hole"},
+      {"id": "pocket", "diameter_mm": 50.0, "centre_mm": [0.0, 0.0], "kind": "circle"}
+    ],
+    "outline_mm": [120.0, 80.0],
+    "outline_note": "the outline is a rectangle rounded at all four corners; its width 120 is NOT printed — it is derived from the 100 hole spacing plus twice the corner radius, and the corner radius is derived from the 80 height less the 60 hole spacing, halved",
+    "through_features": ["h1", "h2", "h3", "h4"],
+    "blind_features": ["pocket"]
+  },
+  "notes": [
+    "The sheet is a flat plate seen from above with a section; every number on it is a length in mm.",
+    "There is no printed width: the outline width follows from the hole spacing and the round corners.",
+    "The pocket is drawn as a circle in the top view and as a broken line in the section, so it is a recess with a depth, not a hole."
+  ]
+}

@@ -10,7 +10,7 @@ from drawingto3d.plan import PARAMETERS, PlatePlan, build_plan, check_plan, edit
 from drawingto3d.reason import reason_drawing
 from drawingto3d.schema import BBox, Page, Span
 
-DRAWING = Path('examples/pdf with steps/Plate With A Pocket Drawing.PDF')
+DRAWING = Path('examples/pdf with steps/5/Plate With A Pocket Drawing.PDF')
 
 
 @pytest.fixture(scope='module')
@@ -86,8 +86,8 @@ def test_explicit_override_is_not_replaced_by_a_derivation(proposal):
 
 
 def test_other_examples_are_not_silently_treated_as_plates():
-    assert propose_plate(load_page('examples/pdf with steps/plastic enclosue.pdf')) is None
-    assert propose_plate(load_page('examples/pdf with steps/Flange.PNG')) is None
+    assert propose_plate(load_page('examples/pdf with steps/6/plastic enclosue.pdf')) is None
+    assert propose_plate(load_page('examples/pdf with steps/8/Flange.PNG')) is None
 
 
 def synthetic(tmp_path, width=160, height=100, margin=12, thickness=18, depth=5, scale=4, shift=(500, 600)):

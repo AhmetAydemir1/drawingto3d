@@ -20,8 +20,8 @@ from drawingto3d.cadrun import _cad_python
 
 
 def main():
-    drawing = ROOT / 'examples/pdf with steps/Plate With A Pocket Drawing.PDF'
-    truth = ROOT / 'examples/pdf with steps/plate with a pocket.STEP'
+    drawing = ROOT / 'examples/pdf with steps/5/Plate With A Pocket Drawing.PDF'
+    truth = ROOT / 'examples/pdf with steps/5/plate with a pocket.STEP'
     folder = ROOT / 'out/plate-plan'
     start = time.perf_counter()
     plan = propose_plate(load_page(drawing))

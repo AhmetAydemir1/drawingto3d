@@ -14,8 +14,8 @@ from drawingto3d.ingest import load_page
 from drawingto3d.observe import Unsupported, observe, vector_groups
 from drawingto3d.plan import source_hash
 
-PLATE = Path("examples/pdf with steps/Plate With A Pocket Drawing.PDF")
-PLASTIC = Path("examples/pdf with steps/plastic enclosue.pdf")
+PLATE = Path("examples/pdf with steps/5/Plate With A Pocket Drawing.PDF")
+PLASTIC = Path("examples/pdf with steps/6/plastic enclosue.pdf")
 PX_PER_MM = 200 / 25.4
 
 

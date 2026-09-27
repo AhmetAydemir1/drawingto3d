@@ -17,8 +17,8 @@ import drawingto3d.raster as raster
 from drawingto3d.observe import Unsupported, observe
 from drawingto3d.raster import observe_raster
 
-FLANGE = Path("examples/pdf with steps/Flange.PNG")
-EXERCISE = Path("examples/pdf with steps/my_part.jpg")
+FLANGE = Path("examples/pdf with steps/8/Flange.PNG")
+EXERCISE = Path("examples/pdf with steps/7/my_part.jpg")
 
 
 @pytest.fixture(scope="module")

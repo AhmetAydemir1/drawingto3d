@@ -16,8 +16,8 @@ from drawingto3d.bind import Unsupported, bind_page
 from drawingto3d.ingest import load_page
 from drawingto3d.perceive import perceive
 
-PLATE = Path("examples/pdf with steps/Plate With A Pocket Drawing.PDF")
-PLASTIC = Path("examples/pdf with steps/plastic enclosue.pdf")
+PLATE = Path("examples/pdf with steps/5/Plate With A Pocket Drawing.PDF")
+PLASTIC = Path("examples/pdf with steps/6/plastic enclosue.pdf")
 HOLES = {"g9", "g10", "g11", "g12"}
 CORNER_ROUNDS = {"g2", "g4"}
 PX_PER_MM = 200 / 25.4

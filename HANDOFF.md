@@ -77,7 +77,11 @@ ifade edilmiş hâli, ve genel derleyici iki farklı işlem birleşimiyle sınan
   daha geniş arketipler (zincir ölçüleri, ikiden çok çap, asimetrik yerleşim, kare köşeli kontur) —
   ret listesi bunların yol haritası.
 - Pilot (en az 10) ve saklı (en az 20, en az 10'u raster) veri toplama kullanıcıda; ayrım
-  altyapısı manifestte hazır, diziler boş.
+  altyapısı manifestte hazır. Kullanıcı `examples/pdf with steps/`'i 1–8 numaralı parça klasörlerine
+  ayırdı (her klasörde çizim + referans STEP; yollar depoda güncellendi, PLAN §17). Yeni parçalar
+  `1/` Exercise 51 (raster), `2/` Drawing (vektör + raster), `3/` Exercise 17 (raster), `4/`
+  Exercise 13 (raster) — referans STEP'leriyle hazır; pilot/saklı kaydı kullanıcının ayrım kararına
+  bağlı.
 - Plaka tanıyıcı henüz deneysel seçeneğe taşınmadı; `plan`/`build-plan` hâlâ PlatePlan konuşur.
 - Uygulama arayüzü (app.py, static/index.html) genel planı göstermiyor; beş çıktı durumu
   (needs_input/draft/validated/unsupported/failed) uçtan uca ayrıştırılmadı.
@@ -214,7 +218,7 @@ eski çalışma notları bu iki dosyanın tarihçe bölümünde korunur. `out/` 
 
 ## Ölçülen sonuç
 
-Kaynak: `examples/pdf with steps/Plate With A Pocket Drawing.PDF`
+Kaynak: `examples/pdf with steps/5/Plate With A Pocket Drawing.PDF`
 Referans **yalnız üretim bittikten sonra** değerlendirmede kullanıldı.
 
 | Özellik | Yeni çıktı | Referans |
@@ -239,8 +243,8 @@ flanş yanlış boyut. Yeni sonuçlar ayrı `out/plate-plan/` klasöründedir.
 Proje kökünde:
 
 ```sh
-PYTHONPATH=src .venv/bin/python -m drawingto3d plan "examples/pdf with steps/Plate With A Pocket Drawing.PDF" out/plate-plan
-PYTHONPATH=src .venv/bin/python -m drawingto3d build-plan "examples/pdf with steps/Plate With A Pocket Drawing.PDF" out/plate-plan/plan.json out/plate-plan
+PYTHONPATH=src .venv/bin/python -m drawingto3d plan "examples/pdf with steps/5/Plate With A Pocket Drawing.PDF" out/plate-plan
+PYTHONPATH=src .venv/bin/python -m drawingto3d build-plan "examples/pdf with steps/5/Plate With A Pocket Drawing.PDF" out/plate-plan/plan.json out/plate-plan
 PYTHONPATH=src .venv/bin/python eval/plate_plan.py
 PYTHONPATH=src .venv/bin/python -m drawingto3d.app
 ```

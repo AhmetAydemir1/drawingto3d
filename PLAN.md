@@ -303,8 +303,8 @@ ayır; testi sessizce atlayıp tam başarı raporlama.
 Dar plaka deneyini tekrarlamak için mevcut komutlar:
 
 ```sh
-PYTHONPATH=src .venv/bin/python -m drawingto3d plan "examples/pdf with steps/Plate With A Pocket Drawing.PDF" out/agent-baseline-01
-PYTHONPATH=src .venv/bin/python -m drawingto3d build-plan "examples/pdf with steps/Plate With A Pocket Drawing.PDF" out/agent-baseline-01/plan.json out/agent-baseline-01
+PYTHONPATH=src .venv/bin/python -m drawingto3d plan "examples/pdf with steps/5/Plate With A Pocket Drawing.PDF" out/agent-baseline-01
+PYTHONPATH=src .venv/bin/python -m drawingto3d build-plan "examples/pdf with steps/5/Plate With A Pocket Drawing.PDF" out/agent-baseline-01/plan.json out/agent-baseline-01
 ```
 
 `plan` / `build-plan` şu an yalnız `PlatePlan` kullanır. Bunları genel motor tamamlanmış
@@ -531,3 +531,25 @@ Beşinci dilim uygulandı (`64ed9d8`): `src/drawingto3d/raster.py`.
   bastırır (bore + havşa çifti tek daire verir); rasterda yay uydurulmuyor.
 - Sıradaki dilim: **raster ankrajları + ölçek kalibrasyonu** (ölçü oklarını/uzatmalarını piksellerden
   bulup mm/px kurmak) — zincirin anlam/öneri yarısını rasterda da açar; ondan sonra geniş arketipler.
+
+## 17. Veri düzeni: numaralı parça klasörleri (2026-09-27, aynı oturum)
+
+Kullanıcı `examples/pdf with steps/` klasörünü **1–8 numaralı parça klasörlerine** ayırdı; her
+klasörde çizim ile referans STEP birlikte durur. Depodaki bütün yol referansları (testler, `eval/`,
+`PLAN.md`, `HANDOFF.md`) yeni yollara taşındı; `eval/cases.json` kayıtları yeni yolları taşır.
+
+- `1/` Exercise_51.PNG + Exercise 51.STEP — **yeni parça (raster)**
+- `2/` Drawing.pdf + Drawing.jpg + Part-2.STEP — **yeni klasör; `7/` ile aynı parçanın kopyası**
+  (jpg ve STEP bayt-eş) ve ek olarak aynı parçanın **vektör PDF sürümü** — aynı geometri için iki
+  kaynak (raster + vektör) ilk kez birlikte duruyor.
+- `3/` Exercise 17.PNG + Exercise 17.STEP — **yeni parça (raster)**
+- `4/` Exercise 13.PNG + Exercise 13.STEP — **yeni parça (raster)**
+- `5/` Plate With A Pocket Drawing.PDF + plate with a pocket.STEP (plaka, görülmüş)
+- `6/` plastic enclosue.pdf + plastic enclosue.STEP (görülmüş)
+- `7/` my_part.jpg + my_part.STEP (exercise-1, görülmüş)
+- `8/` Flange.PNG + Flange.STEP (görülmüş)
+
+Yeni parçalar (1–4) henüz manifeste kayıtlı değil: id ve pilot/saklı ayrımı kullanıcının kararı
+olunca `cases.json`'a girerler (PLAN §5 ölçütü: pilot ≥10, saklı ≥20, en az 10'u raster). Bu, "dosyayı
+at → STEP al" hedefinin ölçüm verisinin başlangıcıdır; yolları bugün koddan sınanabilir (testler ve
+`eval/` bu klasörlerden okuyor).

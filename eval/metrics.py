@@ -4,7 +4,7 @@ A drawing does not carry enough information to rebuild the same B-rep (catalog f
 fillets, blends and tapers that nobody dimensions). So the eval asks the engineering question
 instead: is this a functionally equal part?
 
-    .venv-cad/bin/python eval/metrics.py out/eval/flange-1/part.step "examples/pdf with steps/Flange.STEP"
+    .venv-cad/bin/python eval/metrics.py out/eval/flange-1/part.step "examples/pdf with steps/8/Flange.STEP"
 
 Checks, in order of how much they matter:
   solids      exactly one closed solid                  (hard)

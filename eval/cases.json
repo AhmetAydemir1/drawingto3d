@@ -6,8 +6,8 @@
       "class": "self-made",
       "part_group": "exercise-1",
       "split": "seen-regression",
-      "drawing": "examples/pdf with steps/my_part.jpg",
-      "step": "examples/pdf with steps/my_part.STEP",
+      "drawing": "examples/pdf with steps/7/my_part.jpg",
+      "step": "examples/pdf with steps/7/my_part.STEP",
       "unit": "mm",
       "printed": [
         6,
@@ -44,8 +44,8 @@
       "class": "self-made",
       "part_group": "plate-pocket",
       "split": "seen-regression",
-      "drawing": "examples/pdf with steps/Plate With A Pocket Drawing.PDF",
-      "step": "examples/pdf with steps/plate with a pocket.STEP",
+      "drawing": "examples/pdf with steps/5/Plate With A Pocket Drawing.PDF",
+      "step": "examples/pdf with steps/5/plate with a pocket.STEP",
       "unit": "mm",
       "printed": [
         100,
@@ -147,8 +147,8 @@
       "class": "self-made",
       "part_group": "plastic-enclosure",
       "split": "seen-regression",
-      "drawing": "examples/pdf with steps/plastic enclosue.pdf",
-      "step": "examples/pdf with steps/plastic enclosue.STEP",
+      "drawing": "examples/pdf with steps/6/plastic enclosue.pdf",
+      "step": "examples/pdf with steps/6/plastic enclosue.STEP",
       "unit": "mm",
       "printed": [
         1.5,
@@ -176,8 +176,8 @@
       "class": "self-made",
       "part_group": "flange",
       "split": "seen-regression",
-      "drawing": "examples/pdf with steps/Flange.PNG",
-      "step": "examples/pdf with steps/Flange.STEP",
+      "drawing": "examples/pdf with steps/8/Flange.PNG",
+      "step": "examples/pdf with steps/8/Flange.STEP",
       "unit": "mm",
       "printed": [
         1,
@@ -236,7 +236,7 @@
     ],
     "pilot": [],
     "hidden": [],
-    "_note": "PLAN.md Bolum 5: pilot en az 10 yeni parca, sakli degerlendirme en az 20 parca (en az 10'u raster). Yeni kayitlar id, part_group, split, kaynak/lisans bilgisi ve feature_ids ile girer; pilot ve hidden dizileri yeni parcalarla dolar."
+    "_note": "PLAN.md Bolum 5: pilot en az 10 yeni parca, sakli degerlendirme en az 20 parca (en az 10'u raster). Yeni kayitlar id, part_group, split, kaynak/lisans bilgisi ve feature_ids ile girer; pilot ve hidden dizileri yeni parcalarla dolar. Paftalar artik `examples/pdf with steps/<no>/` alt klasorlerinde durur (cizim + referans STEP); yeni parcalar 1-4 (Exercise 51, Drawing/Part-2, Exercise 17, Exercise 13) henuz kayitli degil."
   },
   "_fields": {
     "part_group": "Ayni parcanin varyantlari ayni grup; gruplar arasi bolunme varyant sizmasini engeller.",

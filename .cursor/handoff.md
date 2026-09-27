@@ -199,7 +199,7 @@ eski çalışma notları bu iki dosyanın tarihçe bölümünde korunur. `out/` 
 
 ## Ölçülen sonuç
 
-Kaynak: `examples/pdf with steps/Plate With A Pocket Drawing.PDF`
+Kaynak: `examples/pdf with steps/5/Plate With A Pocket Drawing.PDF`
 Referans **yalnız üretim bittikten sonra** değerlendirmede kullanıldı.
 
 | Özellik | Yeni çıktı | Referans |
@@ -224,8 +224,8 @@ flanş yanlış boyut. Yeni sonuçlar ayrı `out/plate-plan/` klasöründedir.
 Proje kökünde:
 
 ```sh
-PYTHONPATH=src .venv/bin/python -m drawingto3d plan "examples/pdf with steps/Plate With A Pocket Drawing.PDF" out/plate-plan
-PYTHONPATH=src .venv/bin/python -m drawingto3d build-plan "examples/pdf with steps/Plate With A Pocket Drawing.PDF" out/plate-plan/plan.json out/plate-plan
+PYTHONPATH=src .venv/bin/python -m drawingto3d plan "examples/pdf with steps/5/Plate With A Pocket Drawing.PDF" out/plate-plan
+PYTHONPATH=src .venv/bin/python -m drawingto3d build-plan "examples/pdf with steps/5/Plate With A Pocket Drawing.PDF" out/plate-plan/plan.json out/plate-plan
 PYTHONPATH=src .venv/bin/python eval/plate_plan.py
 PYTHONPATH=src .venv/bin/python -m drawingto3d.app
 ```

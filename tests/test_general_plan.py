@@ -24,7 +24,7 @@ from drawingto3d.ingest import load_page
 from drawingto3d.plan import build_plan
 from drawingto3d.plate import propose_plate
 
-DRAWING = Path("examples/pdf with steps/Plate With A Pocket Drawing.PDF")
+DRAWING = Path("examples/pdf with steps/5/Plate With A Pocket Drawing.PDF")
 PLANS = Path("eval/plans")
 EXAMPLES = ("bracket_linear_pattern", "shaft_revolve_cross_hole")
 

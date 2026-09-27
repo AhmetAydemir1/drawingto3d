@@ -18,8 +18,8 @@ from drawingto3d.general import build_general, evaluate_parameters
 from drawingto3d.observe import Unsupported
 from drawingto3d.proposal import Proposal, _frame_loops, _rounded_rectangle, propose_general
 
-PLATE = Path("examples/pdf with steps/Plate With A Pocket Drawing.PDF")
-PLASTIC = Path("examples/pdf with steps/plastic enclosue.pdf")
+PLATE = Path("examples/pdf with steps/5/Plate With A Pocket Drawing.PDF")
+PLASTIC = Path("examples/pdf with steps/6/plastic enclosue.pdf")
 
 ANALYTIC_VOLUME = (120 * 80 - (4 - math.pi) * 10 ** 2) * 15 \
     - 4 * math.pi * 3.4 ** 2 * 15 - math.pi * 25.0 ** 2 * 8

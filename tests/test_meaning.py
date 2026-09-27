@@ -14,8 +14,8 @@ import pytest
 from drawingto3d.meaning import Unsupported, meaning_page
 from drawingto3d.observe import observe
 
-PLATE = Path("examples/pdf with steps/Plate With A Pocket Drawing.PDF")
-PLASTIC = Path("examples/pdf with steps/plastic enclosue.pdf")
+PLATE = Path("examples/pdf with steps/5/Plate With A Pocket Drawing.PDF")
+PLASTIC = Path("examples/pdf with steps/6/plastic enclosue.pdf")
 HOLES = {"g9", "g10", "g11", "g12"}
 
 

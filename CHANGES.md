@@ -1153,3 +1153,33 @@ layer says exactly which printed number sits where in its rendered raster.
 
 Validation: `pytest` 234 -> 253 passed (17 planner, 2 report). No reading algorithm was changed in this slice,
 so the frontend tables are unchanged (`eval/check_tables.py`: 20 rows, zero drift).
+
+### Same date — the whole-case-set run, and one reader correction measured on it
+
+`floor-1` ran the three no-model conditions over all ten cases (`reading`, `chain`, `verified_plan`): 20 rows,
+error classes `ok=6`, `reading=16`. The chain's refusals turned out to have four different owners, not one:
+scale cannot be fitted (exercise-51, exercise-17, studycadcam-50, flange-1), the outer contour does not close
+(exercise-1, exercise-13, studycadcam-60), the part is outside this slice's archetype while its reading is
+complete (exercise-1-vector: "basılı sayıların tamamı bulundu" and then "bu dilim yalnız düz parça arketipini
+öneriyor"), and binding produces no diameter claim at all (plastic-enclosure-1: reading 11/11, then "tam iki
+çap ölçüsü bekleniyordu, 0 okundu"). Only `plate-pocket-1` reaches the end of the chain: a draft whose solid
+was built and whose plan check passed. `verified_plan` passes three hand-verified plans, including
+`bracket_linear_pattern` (22 084.3806 mm³) and `shaft_revolve_cross_hole` (13 544.7373 mm³), so the compiler is
+not implicated in this measurement — which is a record of not appearing, not a claim that CAD is correct.
+
+One reader correction was made and measured. The arrowhead guard — "this candidate is the line's own ink, not a
+printed number" — is now asked in leader mode as well, and its place test was rewritten from an axis-aligned
+assumption into a true point-to-segment distance. The old arithmetic measured a single coordinate whatever the
+anchor pair's direction, so on a diagonal dimension line it answered a number with no meaning; on axis-aligned
+pairs the new form is bit-for-bit the same, which `tests/test_reading_gate.py` holds over more than a thousand
+boxes against the old formula.
+
+Measured over the whole case set before and after (`out/frontend`, vector and raster modes): all 22 existing
+records identical, the five changed entries are cases and layers added in this same slice, and
+`eval/check_tables.py` still reads 20 rows with zero drift. So the correction buys no measured gain and is kept
+because it stops answering wrongly on diagonal anchors at zero measured cost. It also settles where the raster
+loss is not: inside a real run on `Exercise 17` the guard is asked about 40 candidates, drops 10 and passes 30
+to the reader, and 28 of those 30 are arrowheads, arcs and small circles whose boxes stand 7.5–39 px off the
+line's axis. The threshold is not the problem; "is this crop a printed number at all" is a separate question,
+and it is the one a small trained classifier would answer (`out/agent-s7/guardtruth.py`, `crops.py`, `readlog.py`
+are the instruments that measured it).

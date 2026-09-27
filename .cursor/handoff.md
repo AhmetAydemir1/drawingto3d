@@ -57,33 +57,47 @@ Kullanıcı isteği: PLAN.md'yi uygula, Bölüm 7'deki eğitim öncesi ölçümd
 
 - **Manifest:** `2/` ≡ `7/` bayt bayt; tek `part_group`, iki kaynak (`exercise-1` raster,
   `exercise-1-vector` vektör).
-- **Okuma:** vektör paftalar tam (`plate-pocket-1` 7/7, `plastic-enclosure-1` 11/11); aynı
-  paftaların render'ı 6/7 ve 8/11 (ölçek 4 haneye kadar aynı: 7.817 / 3.917 px/mm); gerçek
-  taramalar taban — `exercise-17` 2/7, `exercise-51` 4/14, `exercise-13` 2/8, `flange-1` 4/13
-  ve dördünde ölçek kurulmuyor. Zinciri durduran şey hata değil, `no-scale` reddi.
-- **Kaybın yeri:** `Exercise 17`'de kapı 30 kümeyi kabul ediyor, okuyucudan 2 span çıkıyor;
-  kabul edilen 30 kırpmanın 28'i ok başı/yay/daire, sayı değil. Yani kayıp aramada değil, aday
-  kümesinin kendisinde. `_collect_spans` ok başı korumasını yalnız `mode == "dimension"` için
-  soruyor; bu paftada ölçü modunda kalan ok başları içi boş çizildiği için `_is_drawn_solid`
-  onları ayıramıyor (kuralın docstring'indeki varsayım bu paftada ters).
-- **Planlama:** `qwen2.5vl:3b` (serbest metin, 2048 ve şema grameriyle 4096) nesneyi hiç
-  kapatamıyor; `parameters` liste olarak, anahtarlar tekrarlı, `value`+`expr` birlikte.
-  `qwen3-vl:8b-instruct` temiz kapanıyor (929 token, 147 s), yedi parametre değerini ve ölçü
-  atıflarını doğru veriyor, ama `sketches.*.entities[0]` tek dizeye çöküyor — kendi muhakemesi
-  JSON gövdesine sızıyor. Ölçülen ayrım: değer/atıf 8B'de doğru, gövde derinliği ikisinde de yok.
-- **CAD:** hiçbir aday derleyiciye ulaşmadı; elle doğrulanmış plaka planı kapalı forma karşı
-  0.0000% farkla kuruluyor. CAD bu ölçümde kendini göstermedi.
-- **Kaynak:** 8B koşusunda takas 13 312 MB kullanımda sabit, boş sayfa en az 14.5 MB, ollama
-  RSS tepesi 8.3 GB. Ağırlığın disk boyutu bellek sayılmıyor.
+- **Okuma:** vektör paftalar tam (`plate-pocket-1` 7/7, `plastic-enclosure-1` 11/11,
+  `exercise-1-vector` 13/13); aynı paftaların render'ı 6/7, 8/11 ve 8/13 (ölçek 4 haneye kadar
+  aynı: 7.817 / 3.917 / 3.825 px/mm); gerçek taramalar taban — `exercise-17` 2/7,
+  `exercise-51` 4/14, `exercise-13` 2/8, `flange-1` 4/13 ve beş taranmış paftanın yalnız ikisi
+  ölçek kuruyor.
+- **Zincir (`floor-1`, 20 satır: ok 6, okuma 16):** retlerin sahibi dört ayrı yerde —
+  ölçek yok (4 pafta), dış kontur kapanmıyor (3 pafta), parça bu dilimin arketipine girmiyor
+  (`exercise-1-vector`: okuma tam, ret "bu dilim yalnız düz parça arketipini öneriyor"),
+  ve bağlama çap iddiası üretmiyor (`plastic-enclosure-1`: okuma 11/11, sonra "tam iki çap
+  ölçüsü bekleniyordu, 0 okundu"). Yalnız `plate-pocket-1` zincirin sonuna gidiyor: `draft`.
+- **CAD (`verified_plan`):** elle doğrulanmış üç plan derleyiciden geçiyor
+  (`bracket_linear_pattern` 22 084.3806 mm³, `shaft_revolve_cross_hole` 13544.7373 mm³).
+  CAD bu ölçümde kendini göstermedi.
+- **Kaybın yeri:** `Exercise 17`'de koruma gerçek koşu içinde 40 adayın 10'unu düşürüyor,
+  30'unu okuyucuya geçiriyor; o 30'un 28'i ok/kavis/daire ve kutuları çizgi ekseninden
+  7.5–39 px uzakta. Yani sorun eşik değil, **sınıflandırma**: kırpma basılı sayı mı?
+- **Planlama:** `qwen2.5vl:3b` (2048'de de, şema grameriyle 4096'da da) nesneyi kapatamıyor;
+  `qwen3-vl:8b-instruct` temiz kapanıyor, yedi değeri ve atıfları doğru veriyor, ama
+  `sketches.*.entities[0]` tek dizeye çöküyor.
+- **Kaynak:** model koşusunda takas 13 312 MB'da sabit, boş sayfa en az 14.5 MB, ollama RSS
+  tepesi 8.3 GB; model dışı koşuda takas 12 288 → 10 240 MB. Ağırlığın disk boyutu bellek
+  sayılmıyor.
+
+### Bu dilimde yapılan okuyucu düzeltmesi
+
+Ok başı koruması artık kılavuz moduna da soruluyor ve konum testi gerçek nokta–doğru parçası
+uzaklığına genelleştirildi (eski hesap köşegen ankrajda tek koordinat ölçüyordu, yani yanlış
+cevap veriyordu; eksen hizalı girdide yeni hesap bit bit aynı — `tests/test_reading_gate.py`).
+Tüm vaka kümesinde önce/sonra ölçüldü: **22 kaydın 22'si aynı**, `check_tables` 20 satırda sıfır
+kayma. Yani kazanç yok, kayıp da yok; doğruluk için kalıyor.
 
 ### Sonraki adım ve nasıl yeniden koşulur
 
-1. Raster aday kapısı: ok başı/kavis korumasını kılavuz moduna da sor; konum testini eksen
-   hizası varsayımından gerçek nokta–doğru parçası uzaklığına genelleştir (eksen hizalı
-   girdide aynı sonucu vermeli — regresyon testi yaz). Sonra **tüm vaka kümesinde** ölç:
-   kapsam, gürültü listesi, ölçek kuran pafta sayısı.
-2. Plan arayüzü: modelden istenen iç içe gövdeyi azalt; derleyiciye ulaşan aday oranını ölç.
-3. Eğitim ancak bu iki adımdan sonra ve Bölüm 18C koşulları sağlanınca.
+1. **Ölçek kurulamıyor (4 pafta)** — kapsamı artırmak gerekiyor; kaybın yeri ölçüldü, sıradaki
+   iş eşik değil ayrı bir **sınıflandırma** sorusu: bu kırpma basılı sayı mı, çizimin kendi
+   mürekkebi mi. Etiket kaynağı hazır (vektör paftanın metin katmanı ↔ render'ı).
+2. **Dış kontur kapanmıyor (3 pafta)** — taramada çizgi/yay döngüsü birleşmiyor; `proposal`
+   dış profili bulamıyor.
+3. **Bağlama: çap iddiası (1 pafta)** — `plastic-enclosure-1`'in bilinen açık işi.
+4. **Plan arayüzü** — modelden istenen iç içe gövdeyi azalt, derleyiciye ulaşan aday oranını ölç.
+5. Eğitim ancak 1-4'ten sonra ve Bölüm 18C koşulları sağlanınca; geçiş eşiği raporda kayıtlı.
 
 ```
 PYTHONPATH=src .venv/bin/python eval/model_baseline.py --no-model --conditions reading,chain,verified_plan --label <etiket>

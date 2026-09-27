@@ -432,17 +432,27 @@ def _is_the_lines_own_ink(box: tuple[float, float, float, float], anchors) -> bo
     an end. The plate's `100,00` is the closest thing to that layout on these sheets and measures 21.0 px off
     the axis and 388 px from an end, so it does not come near the guard. Both limits are ratios of the
     candidate's own box, which is what keeps them readable at any dpi.
+
+    The question is asked of the ink and the stroke, not of how the stroke was found, so it is answered for a
+    leader as well: a leader's anchors are its tip and its tail, and its own arrowhead sits on that segment at
+    the tip end. On an axis-aligned pair this is exactly the arithmetic above (the perpendicular distance to
+    the line is the distance to its axis, and the distance along it to the nearer end is the distance in that
+    coordinate); it is written in the general form because a callout is usually a diagonal, where measuring
+    one coordinate would say nothing. A pair that is a single point is not a line, and nothing stands off it.
     """
     (ax, ay), (bx, by) = anchors
-    vertical = abs(bx - ax) < abs(by - ay)
-    axis = (ax + bx) / 2 if vertical else (ay + by) / 2
-    centre_across = (box[0] + box[2]) / 2 if vertical else (box[1] + box[3]) / 2
-    centre_along = (box[1] + box[3]) / 2 if vertical else (box[0] + box[2]) / 2
-    across, along = (box[2] - box[0]), (box[3] - box[1])
-    if abs(centre_across - axis) > max(1.0, 0.05 * min(across, along)):
+    dx, dy = bx - ax, by - ay
+    length = math.hypot(dx, dy)
+    if length <= 0:
         return False
-    reach = max(across, along)
-    return min(abs(centre_along - (ay if vertical else ax)), abs(centre_along - (by if vertical else bx))) <= reach
+    centre_x, centre_y = (box[0] + box[2]) / 2, (box[1] + box[3]) / 2
+    across = abs((centre_x - ax) * dy - (centre_y - ay) * dx) / length
+    along_from_start = ((centre_x - ax) * dx + (centre_y - ay) * dy) / length
+    along = min(abs(along_from_start), abs(along_from_start - length))
+    across_box, along_box = (box[2] - box[0]), (box[3] - box[1])
+    if across > max(1.0, 0.05 * min(across_box, along_box)):
+        return False
+    return along <= max(across_box, along_box)
 
 
 def _is_drawn_solid(glyphs: list[Glyph], cluster: list[int], text_mask: np.ndarray) -> bool:
@@ -495,9 +505,14 @@ def _collect_spans(
             # terminates and at one of that line's ends, and the reader answers a digit when it is handed
             # one. Six of `plastic-enclosure-1`'s readings were its own arrowheads, counted as covering a
             # printed `4`. Type that stands on its own line is kept by the solidity test.
+            #
+            # Asked of both modes: measured on `Exercise 17`, where the gate accepts 30 clusters and only two
+            # of them are printed numbers, eight of the rest are leader-mode arrowheads and arcs that the
+            # question was never put to, and on that sheet the dimension-mode arrowheads are drawn hollow, so
+            # the solidity half has nothing to separate them with. A leader's own arrowhead sits on its
+            # segment at the tip, exactly as a dimension's does at its end.
             if (
-                mode == "dimension"
-                and anchors
+                anchors
                 and _is_the_lines_own_ink(box, anchors)
                 and (text_mask is None or _is_drawn_solid(glyphs, cluster, text_mask))
             ):

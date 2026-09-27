@@ -118,36 +118,82 @@ hatasını raporluyordu — 8B'nin doğru yedi parametresi bu yüzden çöpe git
 kaynağı modelin verdiğinin yerine geçiyor ve durum `overrides` alanına yazılıyor
 (`tests/test_planner.py::test_the_source_identity_is_the_harness_not_the_model`).
 
-### 5. CAD katmanı henüz suçlanmıyor
+### 5. Zincirin retleri dört ayrı sahipli, ve CAD hiç suçlanmıyor
 
-Hiçbir model adayı derleyiciye ulaşamadı, çünkü ikisi de planlama katmanında düştü (madde 4).
-CAD sınırı yalnız elle doğrulanmış planlarla ölçülüyor (`verified_plan` koşulu): plaka planı
-kapalı formla 124 825.4 mm³'e karşı 0.0000% farkla kuruluyor. Yani ölçülen hata sınıfları
-şimdilik **okuma** ve **planlama**; CAD bu ölçümde kendini göstermedi. Bu, CAD'in doğru olduğu
-iddiası değildir — ölçülmüş planların küçük kümesi hakkındadır.
+`chain` koşulu (çizim → `bind` → `meaning` → `proposal` → derleyici) yirmi satırın on altısını
+**okuma** sınıfına yazdı, ama retlerin *sahibi* dört ayrı yerde. Vaka vaka tablodan:
+
+| ret gerekçesi | paftalar | gerçek sahibi |
+|---|---|---|
+| `pafta ölçeği okunamadı (kalibrasyon yok)` | exercise-51, exercise-17, studycadcam-50, flange-1 | ölçek kurulamıyor: ölçü sayıları geometriye bağlanamıyor |
+| `kapalı dış kontur bulunamadı` | exercise-1, exercise-13, studycadcam-60 | okuma: dış kontur döngü kurmuyor (raster çizgi/yay birleşmiyor) |
+| `en büyük kapalı döngü yuvarlatılmış dikdörtgen değil (3 ilkel, 20.54×35.95 mm; bu dilim yalnız düz parça arketipini öneriyor)` | exercise-1-vector | **kapsam sınırı**, okuma değil: okuma tam (`basılı sayıların tamamı bulundu`) ama parça bu dilimin önerdiği arketipe girmiyor |
+| `tam iki çap ölçüsü bekleniyordu (delik + cep), 0 okundu; doğrulanan iddia türleri: {'distance': 3, 'radius': 1}` | plastic-enclosure-1 | **bağlama**: okuma 11/11 tam, ama çap iddiası hiç oluşmuyor (bu paftanın bilinen açık işi) |
+
+Yalnız `plate-pocket-1` zinciri sonuna kadar gidiyor: `draft` — plan önerildi, katı kuruldu, plan
+denetimi geçti.
+
+CAD katmanı bu ölçümde **hiç suçlanmıyor**: elle doğrulanmış üç plan (`plate-pocket-1`,
+`bracket_linear_pattern` 22 084.3806 mm³, `shaft_revolve_cross_hole` 13544.7373 mm³) derleyiciden
+geçip plan denetimini veriyor. Yani ölçülen hata sınıfları **okuma** (16/20 satır) ve **planlama**
+(model yolu); CAD'in doğru olduğu iddiası değil, bu ölçümde kendini göstermediği kaydıdır — ve
+`verified_plan` koşulu onu ayrı ölçmeye devam eder, çünkü derleyicinin çalışması çizim
+yorumununun çözüldüğüne kanıt sayılmaz (PLAN §6).
+
+### 6. Okuyucuya yapılan düzeltme tüm kümede ölçüldü: kazanç yok, kayıp da yok
+
+Bir uygulama adımı da yapıldı: ok başı koruması artık **kılavuz moduna da** soruluyor ve konum
+testi eksen hizası varsayımından **gerçek nokta–doğru parçası uzaklığına** genelleştirildi
+(`src/drawingto3d/perceive.py`). İkincisi bir yanlış cevabı kaldırıyor: eski hesap, ankraj çifti
+köşegen olduğunda da tek bir koordinatı ölçüyordu, yani köşegen ölçü çizgilerinde koruma
+anlamsız bir sayı veriyordu. Eksen hizalı girdide yeni hesap bit bit aynı sonucu verir
+(`tests/test_reading_gate.py` 1000'den fazla kutu üzerinde eski formülle karşılaştırır).
+
+Ölçüm (kural: eklenti ancak ölçümle kalır): aynı vaka kümesi, iki kod durumu, `out/frontend`
+önce/sonra karşılaştırıldı — **22 kaydın 22'si aynı**, değişen 5 kayıt yalnızca bu dilimde
+eklenen yeni vaka/katmanlar. `eval/check_tables.py` de 20 satırda sıfır kayma veriyor. Yani
+düzeltme **ölçülebilir kazanç getirmiyor**; kalıyor çünkü köşegen ankrajlı bir çiftte yanlış
+cevap vermeyi bırakıyor ve tüm kümede bedeli sıfır.
+
+`Exercise 17`'de korumanın ne yaptığı gerçek koşu içinde sayıldı (`out/agent-s7/guardtruth.py`):
+40 aday soruluyor, **10'u düşüyor**, 30'u okuyucuya gidiyor. Yani bu paftanın kaybı korumanın
+eşiğinde değil: kalan 30 adayın 28'i ok, kavis ve küçük daire, ve onlar konum testini geçiyor
+(kutu merkezleri çizginin ekseninden 7.5–39 px uzakta). Bu yüzden sıradaki iş eşik ayarı değil,
+**ayrı bir sınıflandırma sorusu**: bu kırpma basılı bir sayı mı, çizimin kendi mürekkebi mi.
 
 ## Bir sonraki iyileştirme kararı (Bölüm 18C'ye göre)
 
-Baskın hata iki tanedir ve ikisi de **ölçülmüş olarak tasarım** sorunudur, model kapasitesi
-değil. Sıra:
+Baskın hata **okuma**dır (20 zincir satırının 16'sı) ama tek bir iş değil: ölçüm onu üç ayrı işe
+bölüyor, ve model yolu bir dördüncüsünü ekliyor. Sıra, kaç paftayı açtığına göre:
 
-1. **Raster aday kapısı** (Bölüm 18C satır 1: "küçük sayı/çap sembolü/ölçü oku kaçıyor → önce
-   kırpma, OCR ve raster ankrajlarını iyileştir"). Ölçüm net: adayların çoğu sayı değil. Ok
-   başı/kavis korumasını kılavuz moduna da sormak ve konum testini eksen hizası varsayımından
-   gerçek nokta–doğru parçası uzaklığına genelleştirmek ilk adım; sonra kapsam **tüm vaka
-   kümesinde** yeniden ölçülür (`found/printed` + gürültü listesi + ölçek), tek paftada değil.
-2. **Plan arayüzü**: modele plan gövdesini sözlü olarak yazdırmak yerine, kanıtı daraltıp
-   istenen iç içe yapıyı azaltmak (ve gerekirse şema sürümünü yükseltip eğitim verisini ona
-   göre sürümlemek — Bölüm 18A). Bu, derleyiciye ulaşan aday sayısını ölçülebilir biçimde
-   artırmalı.
-3. **Eğitim kararı henüz verilmedi.** Bölüm 18C'nin eğitim koşulu "tekrarlanan hata,
+1. **Ölçek kurulamıyor — 4 pafta** (exercise-51, exercise-17, studycadcam-50, flange-1). Bu,
+   Bölüm 18C satır 1'in tarif ettiği iş: küçük sayı/çap sembolü/ölçü oku kaçıyor, ve bu
+   paftalarda kaybın yeri ölçüldü (bkz. madde 3: kabul edilen 30 adayın 28'i sayı değil).
+   Kalibrasyon üç bağımsız ölçü çiftini istiyor; okuyucu bir paftada 2-4 sayı buldukça bu
+   hiçbir zaman dolmaz, yani iş "daha çok sayı oku"dur. İlk somut adım bu dilimde yapıldı ve
+   ölçüldü: ok başı koruması artık kılavuz moduna da soruluyor ve konum testi eksen hizası
+   varsayımından gerçek nokta–doğru parçası uzaklığına genelleştirildi (eksen hizalı girdide
+   bit bit aynı sonuç; `tests/test_reading_gate.py`). Ama ölçüm bu düzeltmenin *kendi başına yetmediğini*
+ gösteriyor: `Exercise 17`'de koruma **zaten** kabul edilen 40 adayın 10'unu düşürüyor
+ (`out/agent-s7/guardtruth.py` ile gerçek koşu içinde ölçüldü), geri kalan 30'un 28'i ok ve
+ kavis ve onlar konum testini geçiyor — yani sıradaki iş kırpma değil **sınıflandırma**: bir
+ adayın basılı sayı olup olmadığı ayrı bir sorudur. (Bu düzeltmenin tüm küme üzerindeki
+ etkisi ayrı ölçülür; eksen hizalı girdide bit bit aynı sonucu verdiği testle sabit.)
+2. **Dış kontur döngü kurmuyor — 3 pafta** (exercise-1, exercise-13, studycadcam-60; ikisi
+   tarama). Sayılar okunsa bile `proposal` dış profili bulamıyor; raster çizgi/yay birleşmesi
+   burada tıkanıyor.
+3. **Bağlama: çap iddiası hiç oluşmuyor — 1 pafta** (plastic-enclosure-1). Okuma 11/11 tam,
+   `proposal` "tam iki çap ölçüsü bekleniyordu, 0 okundu" diyor. Bağlama katmanının bilinen açık işi.
+4. **Plan arayüzü** (model yolu). Modele plan gövdesini sözlü olarak yazdırmak yerine, kanıtı
+   daraltıp istenen iç içe yapıyı azaltmak; derleyiciye ulaşan aday oranını ölçmek (Bölüm 18A).
+5. **Eğitim kararı henüz verilmedi.** Bölüm 18C'nin eğitim koşulu "tekrarlanan hata,
    doğrulanmış hedef etiket, ayrı doğrulama kümesi ve ölçülebilir iyileştirme hedefi"dir.
-   Bunlardan ikisi bugün yok: (a) 1. ve 2. adımlar uygulanmadan "tekrarlanan hata"nın model
+   Bunlardan ikisi bugün yok: (a) 1-4 arası işler uygulanmadan "tekrarlanan hata"nın model
    kapasitesine ait olduğu gösterilmedi, (b) ayrı doğrulama kümesi henüz kurulmadı (pilot ≥10,
    saklı ≥20 hedefi bekliyor). **Etiket kaynağı ise hazır ve ölçülmüş:** vektör paftaların
    metin katmanı, render edilmiş rasterinde hangi basılı sayının nerede olduğunu tam veriyor —
-   yani "bu kırpma basılı sayı mı, çizginin kendi mürekkebi mi" görevi için etiketli veri
-   üretilebilir. Hedef görev küçük bir algılayıcıdır (sınıflandırıcı), LoRA değil.
+   yani 1. maddedeki "bu kırpma basılı sayı mı, çizginin kendi mürekkebi mi" görevi için
+   etiketli veri üretilebilir. Hedef görev küçük bir algılayıcıdır (sınıflandırıcı), LoRA değil.
 
 Geçiş eşiği (eğitim başlamadan önce kayda geçen): raster kapsamı tüm vaka kümesinde
 `found/printed ≥ 0.8`; beş taranmış paftanın (`exercise-1`, `exercise-17`, `exercise-51`,
@@ -175,6 +221,7 @@ ulaşan aday oranı ≥ 1/2 — bugün 0/1. Bunlar tutmazsa eğitim gerekçesi d
 | relations-3b-structured | 2026-09-27 04:13 | qwen2.5vl:3b * | relations | json-schema | 1 | failed=1 | planning=1 | 243.7 |
 | relations-8b-structured | 2026-09-27 04:18 | qwen3-vl:8b-instruct * | relations | json-schema | 1 | failed=1 | planning=1 | 147.4 |
 | relations-8b-source-overridden | 2026-09-27 04:33 | qwen3-vl:8b-instruct * | relations | json-schema | 1 | failed=1 | planning=1 | 152.8 |
+| floor-1 | 2026-09-27 04:36 | yok (model dışı) | reading,chain,verified_plan | json-schema | 12 | draft=3 ok=3 partial=3 refused=13 | ok=6 reading=16 | 2129.7 |
 
 `*` bağlam, elle doğrulanmış ilişki tablosundan gelir (`eval/relations/`): bu koşu otomatik PDF → STEP başarısı değil, planlama ve CAD katmanlarının ayrı ölçümüdür (PLAN Bölüm 18B).
 
@@ -190,6 +237,28 @@ ulaşan aday oranı ≥ 1/2 — bugün 0/1. Bunlar tutmazsa eğitim gerekçesi d
 | relations-3b-structured | plate-pocket-1 | relations | failed | planning | model şemaya uyan plan vermedi: yanıtta JSON nesnesi yok (çıktı sınırında kesildi) |
 | relations-8b-structured | plate-pocket-1 | relations | failed | planning | model şemaya uyan plan vermedi: model plan kaynağını (source) veremez; kaynak kimliği koşuya aittir |
 | relations-8b-source-overridden | plate-pocket-1 | relations | failed | planning | model şemaya uyan plan vermedi: şema hatası: sketches.outline_sketch.entities.0: Unable to extract tag using discriminator 'type' |
+| floor-1 | exercise-1 | reading | partial | reading | basılı 13 sayının 6 tanesi bulundu; eksik: 6, 10, 25, 40, 57, 60, 80 |
+| floor-1 | exercise-1 | chain | refused | reading | kapalı dış kontur bulunamadı (çizgiler/yaylar döngü kurmuyor) |
+| floor-1 | exercise-1-vector | reading | ok | ok | basılı sayıların tamamı bulundu, yanlış okuma yok |
+| floor-1 | exercise-1-vector | chain | refused | reading | en büyük kapalı döngü yuvarlatılmış dikdörtgen değil (3 ilkel, 20.54×35.95 mm; bu dilim yalnız düz parça arketipini öneriyor) |
+| floor-1 | exercise-51 | reading | refused | reading | pafta ölçeği yok: ölçü sayıları geometriye bağlanamıyor (raster ankraj/ölçek eksik) |
+| floor-1 | exercise-51 | chain | refused | reading | pafta ölçeği okunamadı (kalibrasyon yok) |
+| floor-1 | exercise-17 | reading | refused | reading | pafta ölçeği yok: ölçü sayıları geometriye bağlanamıyor (raster ankraj/ölçek eksik) |
+| floor-1 | exercise-17 | chain | refused | reading | pafta ölçeği okunamadı (kalibrasyon yok) |
+| floor-1 | exercise-13 | reading | partial | reading | basılı 8 sayının 2 tanesi bulundu; eksik: 10, 30, 42, 50, 170, 240 |
+| floor-1 | exercise-13 | chain | refused | reading | kapalı dış kontur bulunamadı (çizgiler/yaylar döngü kurmuyor) |
+| floor-1 | plate-pocket-1 | reading | ok | ok | basılı sayıların tamamı bulundu, yanlış okuma yok |
+| floor-1 | plate-pocket-1 | chain | draft | ok | plan önerildi, katı kuruldu, plan denetimi geçti |
+| floor-1 | studycadcam-60 | reading | partial | reading | basılı 9 sayının 6 tanesi bulundu; eksik: 25, 30 |
+| floor-1 | studycadcam-60 | chain | refused | reading | kapalı dış kontur bulunamadı (sayfa çerçevesi dışında döngü yok) |
+| floor-1 | studycadcam-50 | reading | refused | reading | pafta ölçeği yok: ölçü sayıları geometriye bağlanamıyor (raster ankraj/ölçek eksik) |
+| floor-1 | studycadcam-50 | chain | refused | reading | pafta ölçeği okunamadı (kalibrasyon yok) |
+| floor-1 | plastic-enclosure-1 | reading | ok | ok | basılı sayıların tamamı bulundu, yanlış okuma yok |
+| floor-1 | plastic-enclosure-1 | chain | refused | reading | tam iki çap ölçüsü bekleniyordu (delik + cep), 0 okundu; doğrulanan iddia türleri: {'distance': 3, 'radius': 1} |
+| floor-1 | flange-1 | reading | refused | reading | pafta ölçeği yok: ölçü sayıları geometriye bağlanamıyor (raster ankraj/ölçek eksik) |
+| floor-1 | flange-1 | chain | refused | reading | pafta ölçeği okunamadı (kalibrasyon yok) |
+| floor-1 | bracket_linear_pattern | verified_plan | draft | ok | plan derleyiciden geçti; hacim 22084.3806 mm³, beklenti {'bbox': ['length', 'height', 'width'], 'volume': 'area * width - 2 * pi * (hole_d / 2) ** ... |
+| floor-1 | shaft_revolve_cross_hole | verified_plan | draft | ok | plan derleyiciden geçti; hacim 13544.7373 mm³, beklenti {'bbox': ['2 * flange_r', '2 * flange_r', 'length'], 'volume': None} |
 
 ### Koşu kaynakları (Apple M1, 16 GB, takas ölçülü)
 
@@ -200,6 +269,7 @@ ulaşan aday oranı ≥ 1/2 — bugün 0/1. Bunlar tutmazsa eğitim gerekçesi d
 | relations-3b-structured | 11264.0 | 11264.0 | 14.1 | 4953.1 |
 | relations-8b-structured | 13312.0 | 13312.0 | 14.5 | 8295.3 |
 | relations-8b-source-overridden | 13312.0 | 13312.0 | 14.5 | 8295.6 |
+| floor-1 | 12288.0 | 12288.0 | 3.7 | 31.3 |
 
 ### Okuma tabanı (kapı sonrası kapsam)
 

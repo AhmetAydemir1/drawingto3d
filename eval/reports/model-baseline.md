@@ -161,6 +161,43 @@ eşiğinde değil: kalan 30 adayın 28'i ok, kavis ve küçük daire, ve onlar k
 (kutu merkezleri çizginin ekseninden 7.5–39 px uzakta). Bu yüzden sıradaki iş eşik ayarı değil,
 **ayrı bir sınıflandırma sorusu**: bu kırpma basılı bir sayı mı, çizimin kendi mürekkebi mi.
 
+### 7. Aday sınıflandırması ölçüldü: ayrılabilir, ama arıza geri çağırma tarafında
+
+Ayrımın eğitilebilir olup olmadığı da ölçüldü, çünkü madde 1'deki işin şeklini bu belirliyor.
+Etiket kaynağı bedava: vektör paftada basılı sayıların konumunu PDF'in metin katmanı söylüyor, aynı
+pafta metin katmanı atılarak bir kez daha okunuyor, ve her aday "bu kutu basılı bir sayının üstünde mi"
+diye o konumlara karşı etiketleniyor (`eval/candidates.py`).
+
+Ölçülen: **150 aday, 37'si basılı sayı → kesinlik 0.247**, üç paftada da tutarlı (0.24 / 0.25 / 0.26).
+Yani okuyucuya verilen her dört kırpmadan üçü sayı değil — ve bu, `Exercise 17`'de elle görülen
+30'da 28'in taranmış paftalara özgü bir kötü şans olmadığını, vektör render'ında da aynı olduğunu
+söylüyor.
+
+Özelliklerin tek başına ayrımı (ortanca farkı / yayılım): `holes` 1.31 (sayıda 2 delik, ötekilerde 0),
+`ink_density` 1.20 (0.35 / 0.59), `hole_share` 0.98, `along_px` 0.95, `fill_mean` 0.90, `fill_min` 0.85,
+`size_vs_sheet` 0.71, `aspect` 0.80, `across_px` 0.41. `glyphs` (kümedeki glif sayısı) **hiç** ayrımıyor
+(2.00 / 2.00).
+
+Eğitim denemesi (`eval/classifier.py`, on bir özellik üzerinde lojistik regresyon, numpy ile, bağımlılık
+eklenmeden): bölme **parça grubuna göre**, kırpmaya göre değil — üç grup, her biri bir kez test
+ediliyor; eşik eğitim grubunda geri çağırma ≥ 0.9 olacak şekilde seçiliyor ki test grubuna sızmasın.
+
+| özellikler | kesinlik | geri çağırma | (tp / fp / fn) |
+|---|---|---|---|
+| kural yok (hepsini tut) | 0.247 | 1.000 | 37 / 113 / 0 |
+| piksel cinsinden (11) | **0.537** | 0.784 | 29 / 25 / 8 |
+| paftanın yazı ölçeğine göre (13) | **0.590** | 0.622 | 23 / 16 / 14 |
+
+Yani ayrım gerçek ve öğrenilebilir: kaba bir sınıflandırıcı aday kesinliğini ikiye katlıyor. Ama
+**ölçülen arıza bu tarafta değil.** Taranmış paftalarda kapsam 2/7, 4/14, 2/8, 4/13 — yani sorun
+fazla aday değil, **hiç önerilmemiş sayı**: bir sınıflandırıcı yalnız aday düşürebilir, olmayan bir
+adayı geri getiremez. Bölüm 18C'nin "tekrarlanan hata + ayrı doğrulama kümesi" koşuluna da bu yüzden
+henüz girilmiyor: sıradaki ölçüm, kaybolan sayının *hangi adımda* hiç aday olmadığını bulmak.
+
+Bunu ölçmenin yolu da hazır: aynı parçanın hem vektör paftası hem raster'ı var (`exercise-1` 6/13 ↔
+`exercise-1-vector` 13/13), yani kayıp sayıların yerini metin katmanı veriyor ve o noktalarda aday
+üretiminin nerede durduğu sorulabiliyor.
+
 ## Bir sonraki iyileştirme kararı (Bölüm 18C'ye göre)
 
 Baskın hata **okuma**dır (20 zincir satırının 16'sı) ama tek bir iş değil: ölçüm onu üç ayrı işe
@@ -173,12 +210,14 @@ bölüyor, ve model yolu bir dördüncüsünü ekliyor. Sıra, kaç paftayı aç
    hiçbir zaman dolmaz, yani iş "daha çok sayı oku"dur. İlk somut adım bu dilimde yapıldı ve
    ölçüldü: ok başı koruması artık kılavuz moduna da soruluyor ve konum testi eksen hizası
    varsayımından gerçek nokta–doğru parçası uzaklığına genelleştirildi (eksen hizalı girdide
-   bit bit aynı sonuç; `tests/test_reading_gate.py`). Ama ölçüm bu düzeltmenin *kendi başına yetmediğini*
- gösteriyor: `Exercise 17`'de koruma **zaten** kabul edilen 40 adayın 10'unu düşürüyor
- (`out/agent-s7/guardtruth.py` ile gerçek koşu içinde ölçüldü), geri kalan 30'un 28'i ok ve
- kavis ve onlar konum testini geçiyor — yani sıradaki iş kırpma değil **sınıflandırma**: bir
- adayın basılı sayı olup olmadığı ayrı bir sorudur. (Bu düzeltmenin tüm küme üzerindeki
- etkisi ayrı ölçülür; eksen hizalı girdide bit bit aynı sonucu verdiği testle sabit.)
+   bit bit aynı sonuç; `tests/test_reading_gate.py`) ve **tüm küme üzerinde ölçüldü: 22 kaydın
+   22'si aynı, kayıp da kazanç da yok** — doğruluk için kalıyor. Ölçüm sırayı da belirledi, ve
+   beklenenin tersine çıktı: kayıp, **hiç aday olmayan** sayıdadır, fazla adayda değil. Taranmış
+   paftalar sayıların yarısından çoğunu hiç önermiyor (2/7, 4/14, 2/8, 4/13); aday
+   sınıflandırması ise yalnız aday düşürebilir (madde 7: kesinlik 0.25 → 0.54, ama geri çağırma
+   tarafına dokunamaz). Yani ilk iş **önerme adımı**: aynı parçanın vektör paftası ile raster'ı
+   yan yana konup (`exercise-1` 6/13 ↔ `exercise-1-vector` 13/13) kayıp sayının hangi adımda hiç
+   aday olmadığı ölçülecek; sınıflandırıcı ancak o zaman, gerekiyorsa, gündeme gelir.
 2. **Dış kontur döngü kurmuyor — 3 pafta** (exercise-1, exercise-13, studycadcam-60; ikisi
    tarama). Sayılar okunsa bile `proposal` dış profili bulamıyor; raster çizgi/yay birleşmesi
    burada tıkanıyor.
@@ -190,10 +229,13 @@ bölüyor, ve model yolu bir dördüncüsünü ekliyor. Sıra, kaç paftayı aç
    doğrulanmış hedef etiket, ayrı doğrulama kümesi ve ölçülebilir iyileştirme hedefi"dir.
    Bunlardan ikisi bugün yok: (a) 1-4 arası işler uygulanmadan "tekrarlanan hata"nın model
    kapasitesine ait olduğu gösterilmedi, (b) ayrı doğrulama kümesi henüz kurulmadı (pilot ≥10,
-   saklı ≥20 hedefi bekliyor). **Etiket kaynağı ise hazır ve ölçülmüş:** vektör paftaların
-   metin katmanı, render edilmiş rasterinde hangi basılı sayının nerede olduğunu tam veriyor —
-   yani 1. maddedeki "bu kırpma basılı sayı mı, çizginin kendi mürekkebi mi" görevi için
-   etiketli veri üretilebilir. Hedef görev küçük bir algılayıcıdır (sınıflandırıcı), LoRA değil.
+   saklı ≥20 hedefi bekliyor). **Etiket kaynağı artık üretilmiş ve ölçülmüş:** vektör paftaların
+   metin katmanı, aynı paftanın raster'ında hangi basılı sayının nerede olduğunu tam veriyor, ve
+   bu dilimde 150 adaylık etiketli küme çıkarıldı (`eval/candidates.py`) ve üzerinde eğitim
+   denendi (`eval/classifier.py`, parça grubuna göre ayrılmış). Yani 1. maddedeki görev için ne
+   veri ne yöntem eksik; eksik olan, **sıranın ters kurulmuş olması**: kayıp geri çağırma
+   tarafında olduğu için önce önerme adımı ölçülmeli. Hedef görev küçük bir algılayıcıdır
+   (sınıflandırıcı), LoRA değil.
 
 Geçiş eşiği (eğitim başlamadan önce kayda geçen): raster kapsamı tüm vaka kümesinde
 `found/printed ≥ 0.8`; beş taranmış paftanın (`exercise-1`, `exercise-17`, `exercise-51`,

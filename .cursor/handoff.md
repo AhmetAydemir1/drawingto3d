@@ -90,16 +90,25 @@ kayma. Yani kazanç yok, kayıp da yok; doğruluk için kalıyor.
 
 ### Sonraki adım ve nasıl yeniden koşulur
 
-1. **Ölçek kurulamıyor (4 pafta)** — kapsamı artırmak gerekiyor; kaybın yeri ölçüldü, sıradaki
-   iş eşik değil ayrı bir **sınıflandırma** sorusu: bu kırpma basılı sayı mı, çizimin kendi
-   mürekkebi mi. Etiket kaynağı hazır (vektör paftanın metin katmanı ↔ render'ı).
-2. **Dış kontur kapanmıyor (3 pafta)** — taramada çizgi/yay döngüsü birleşmiyor; `proposal`
-   dış profili bulamıyor.
-3. **Bağlama: çap iddiası (1 pafta)** — `plastic-enclosure-1`'in bilinen açık işi.
-4. **Plan arayüzü** — modelden istenen iç içe gövdeyi azalt, derleyiciye ulaşan aday oranını ölç.
-5. Eğitim ancak 1-4'ten sonra ve Bölüm 18C koşulları sağlanınca; geçiş eşiği raporda kayıtlı.
+1. **Önerme adımı: hiç aday olmayan sayı (en büyük iş, 4 pafta).** Kapsam 2/7, 4/14, 2/8, 4/13 —
+   yani sayıların çoğu okuyucuya hiç *önerilmiyor*; aynı paftalarda ölçek de bu yüzden kurulamıyor.
+   Ölçümün yolu hazır: aynı parçanın vektör paftası ile raster'ı (`exercise-1` 6/13 ↔
+   `exercise-1-vector` 13/13) yan yana konur, metin katmanı kayıp sayının yerini söyler, ve o
+   noktada aday üretiminin hangi adımda durduğu sorulur (glif bulundu mu, küme kuruldu mu, kapı
+   kabul etti mi, okuyucu okudu mu).
+2. **Aday sınıflandırması — ölçüldü, sıraya girmiyor.** `eval/candidates.py` 150 adayı etiketliyor
+   (37 basılı sayı, kesinlik 0.247), `eval/classifier.py` kesinliği 0.54'e çıkarıyor (parça
+   grubuna göre ayrılmış), ama sınıflandırıcı yalnız aday düşürebilir — geri çağırma tarafına
+   dokunamaz. Önerme adımı düzeltilmeden gündeme gelmez.
+3. **Dış kontur kapanmıyor (3 pafta)** — taramada çizgi/yay döngüsü birleşmiyor; `proposal` dış
+   profili bulamıyor.
+4. **Bağlama: çap iddiası (1 pafta)** — `plastic-enclosure-1`'in bilinen açık işi.
+5. **Plan arayüzü** — modelden istenen iç içe gövdeyi azaltmak; derleyiciye ulaşan aday oranını
+   ölçmek (Bölüm 18A).
 
 ```
+PYTHONPATH=src .venv/bin/python eval/candidates.py            # etiketli aday kümesi (vektör metin katmanı)
+PYTHONPATH=src .venv/bin/python eval/classifier.py            # parça grubuna göre ayrılmış sınıflandırma denemesi
 PYTHONPATH=src .venv/bin/python eval/model_baseline.py --no-model --conditions reading,chain,verified_plan --label <etiket>
 PYTHONPATH=src .venv/bin/python eval/model_baseline.py --model qwen3-vl:8b-instruct --conditions relations --cases plate-pocket-1 --label <etiket>
 PYTHONPATH=src .venv/bin/python eval/baseline_report.py --write   # rapor tablolarını tazele

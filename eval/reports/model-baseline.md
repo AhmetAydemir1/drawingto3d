@@ -277,6 +277,8 @@ Katman `vektör` = PDF'in kendi metin katmanı, `raster` = aynı pafta görünt�
 
 | vaka | katman | span | basılı | kapsam | ankrajlı | px/mm | gürültü |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| exercise-1-vector | raster (vektör paftanın render'ı) | 18 | 13 | 8/13 | 18 | 3.8080 | 8 |
+| exercise-1-vector | vektör | 17 | 13 | 13/13 | 17 | 3.8250 | 0 |
 | exercise-1 | raster | 15 | 13 | 6/13 | 15 | 5.7310 | 6 |
 | exercise-13 | raster | 14 | 8 | 2/8 | 14 | 2.8830 | 10 |
 | exercise-17 | raster | 2 | 7 | 2/7 | 2 | - | 0 |

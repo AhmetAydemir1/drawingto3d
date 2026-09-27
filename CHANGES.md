@@ -1183,3 +1183,18 @@ to the reader, and 28 of those 30 are arrowheads, arcs and small circles whose b
 line's axis. The threshold is not the problem; "is this crop a printed number at all" is a separate question,
 and it is the one a small trained classifier would answer (`out/agent-s7/guardtruth.py`, `crops.py`, `readlog.py`
 are the instruments that measured it).
+
+### Same date — the runs that were stopped by hand, and what they did and did not cost
+
+The offering-step diagnosis was interrupted mid-run (`eval/offering.py --verbose`): its log holds 61 bytes,
+one line for the first case, so the first heavy sheet was still being read when it stopped. The measurement
+itself is therefore **not** made — what was lost is the measurement, not any data, and `eval/offering.py` is
+complete, lint-clean and ready to run again.
+
+Everything else finished normally (exit 0): `floor-1`, `frontend` in both modes, the model ceiling,
+`candidates`, and three `pytest` runs. Checked afterwards, so the next reader does not have to trust it:
+`git status` clean with only `eval/offering.py` untracked, `git diff` empty (no tracked file left half-written),
+`eval/baseline_report.py --check` agreeing with the runs, `eval/check_tables.py` reading 20 rows with no drift,
+all six `out/model-baseline/*/run.json` parsing, and `out/frontend` (26 records) and
+`out/candidates/candidates.jsonl` (150 rows) complete. `out/` is outside git, so a stopped run cannot leave a
+truncated record in the repository — and the two checkers are what would notice if one did.

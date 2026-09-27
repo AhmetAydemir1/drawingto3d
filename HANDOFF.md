@@ -88,6 +88,41 @@ cevap veriyordu; eksen hizalı girdide yeni hesap bit bit aynı — `tests/test_
 Tüm vaka kümesinde önce/sonra ölçüldü: **22 kaydın 22'si aynı**, `check_tables` 20 satırda sıfır
 kayma. Yani kazanç yok, kayıp da yok; doğruluk için kalıyor.
 
+### Kesilen koşular ve etkisi (27 Eylül, koşular elle durduruldu)
+
+Kesilenler:
+
+- **`eval/offering.py --verbose`** (önerme adımı teşhisi, tüm vektör katmanlı vakalar). Sonuç
+  üretmeden durdu: `out/agent-s7/offering.txt` yalnız **61 bayt**, içinde tek satır var
+  (`exercise-1  vektör metin katmanı yok — atlandı`), yani ilk ağır vaka (`exercise-1-vector`)
+  işlenirken kesildi. Yani **ölçüm yapılmadı** — kaybedilen ölçümün kendisi, veri değil.
+- Kesilen terminal çağrısı yalnız `sleep 270; ps; cat out/agent-s7/offering.txt` içeriyordu:
+  okuma amaçlı, yan etkisi yok. (`Orphan recovery` uyarısı bu çağrı içindi.)
+- Bundan önceki bütün koşular normal bitti (exit 0): `floor-1`, `frontend` (vektör + raster),
+  `ceiling`, `candidates`, üç `pytest`.
+
+Bozulmadığı ölçülenler (bu notun yazıldığı anda):
+
+| kontrol | sonuç |
+|---|---|
+| `git status --short` | temiz; tek yenilik commit'lenmemiş `eval/offering.py` |
+| `git diff --stat` | boş — takip edilen hiçbir dosya yarım yazılmamış |
+| `eval/baseline_report.py --check` | "rapor koşularla uyuşuyor" |
+| `eval/check_tables.py` | 20 satır, 0 kayma |
+| `out/model-baseline/*/run.json` (6 koşu) | hepsi JSON olarak okunuyor |
+| `out/frontend` | 26 kayıt yerinde |
+| `out/candidates/candidates.jsonl` | 150 satır, tam |
+
+`out/` zaten git dışı olduğu için kesilen koşuların artıkları repoya giremez; kayıtların
+tutarlılığını `--check` ve `check_tables` denetliyor, ikisi de geçiyor.
+
+**Eksik kalan tek iş:** offering ölçümünün kendisi (bir basılı sayının hangi adımda kaybolduğu).
+Araç hazır (`eval/offering.py`, lint'ten geçiyor) ve tekrar koşulmayı bekliyor:
+
+```
+PYTHONPATH=src .venv/bin/python -u eval/offering.py --verbose > out/agent-s7/offering.txt 2>&1
+```
+
 ### Sonraki adım ve nasıl yeniden koşulur
 
 1. **Önerme adımı: hiç aday olmayan sayı (en büyük iş, 4 pafta).** Kapsam 2/7, 4/14, 2/8, 4/13 —
@@ -107,6 +142,7 @@ kayma. Yani kazanç yok, kayıp da yok; doğruluk için kalıyor.
    ölçmek (Bölüm 18A).
 
 ```
+PYTHONPATH=src .venv/bin/python eval/offering.py --verbose      # hangi adım basılı sayıyı kaybediyor
 PYTHONPATH=src .venv/bin/python eval/candidates.py            # etiketli aday kümesi (vektör metin katmanı)
 PYTHONPATH=src .venv/bin/python eval/classifier.py            # parça grubuna göre ayrılmış sınıflandırma denemesi
 PYTHONPATH=src .venv/bin/python eval/model_baseline.py --no-model --conditions reading,chain,verified_plan --label <etiket>

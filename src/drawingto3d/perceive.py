@@ -313,7 +313,7 @@ def _oriented_spans(gray: np.ndarray, reader=None, report: dict | None = None) -
     )
     spans = _one_number_per_line(spans)
     promoted, unpaired = _promote_unplaced(
-        pending, spans, segments, float(np.median(sizes)) if sizes else None
+        pending, spans, segments, float(np.median(sizes)) if sizes else None, report=report
     )
     spans.extend(promoted)
     # Numbered after the promotions: a promoted reading was read with the serial of the pass it came from,
@@ -349,6 +349,7 @@ def _promote_unplaced(
     segments: list,
     text_height: float | None,
     tolerance: float = scale.RELATIVE_TOLERANCE,
+    report: dict | None = None,
 ) -> tuple[list[Span], list[dict]]:
     """Give a refused reading the stroke its own value names — only where the drawing leaves one answer.
 
@@ -379,7 +380,8 @@ def _promote_unplaced(
         # is bootstrapped from what is on the sheet: each readable number crossed with each stroke beside it,
         # and the ratio the most pairs agree on. The evidence is that majority, not one pairing, which is what
         # keeps a reading from naming the scale it was placed by (review5 V01).
-        calibration = _bootstrap_calibration(pending, placed, segments, text_height, tolerance)
+        calibration = _bootstrap_calibration(pending, placed, segments, text_height, tolerance,
+                                             report=report)
     if calibration is None:
         return [], [_unplaced_row(span, "no_scale_from_placed_readings") for span in pending]
     kept: list[Span] = []
@@ -416,6 +418,7 @@ def _bootstrap_calibration(
     text_height: float,
     tolerance: float = scale.RELATIVE_TOLERANCE,
     minimum: int = 3,
+    report: dict | None = None,
 ) -> scale.Calibration | None:
     """The sheet's scale from the ratios its own numbers and strokes agree on, when the gate named none.
 
@@ -435,10 +438,12 @@ def _bootstrap_calibration(
     # pairs. One `40` reading beside three 400 px strokes is one reading and one length, and counting it as
     # three let a single OCR answer name a scale of its own (review6 W01). A stroke is identified by its own
     # ends, so two segments of one line are one stroke.
-    pairs: list[tuple[float, tuple, tuple]] = []
-    for value, length in scale.measure(placed):
+    pairs: list[tuple[float, tuple, tuple, str, float, float]] = []
+    for span in placed:
+        value, length = float(span.value or 0), scale.line_length(span)
         if value > 0 and length > 0:
-            pairs.append((length / float(value), ("placed", value, length), ("placed", round(length))))
+            reading = ("placed", value, length)
+            pairs.append((length / value, reading, ("placed", round(length)), span.id, value, length))
     for span in pending:
         if not span.value or span.value <= 0:
             continue
@@ -447,7 +452,8 @@ def _bootstrap_calibration(
             if segment.length <= 0 or _beside_distance(span, segment, text_height) is None:
                 continue
             stroke = ("stroke", round(segment.x0), round(segment.y0), round(segment.x1), round(segment.y1))
-            pairs.append((segment.length / float(span.value), reading, stroke))
+            pairs.append((segment.length / float(span.value), reading, stroke, span.id,
+                          float(span.value), segment.length))
     pairs.sort(key=lambda row: row[0])
 
     def support(ratio: float) -> tuple[frozenset, frozenset]:
@@ -456,7 +462,7 @@ def _bootstrap_calibration(
         return (frozenset(row[1] for row in window), frozenset(row[2] for row in window))
 
     best: tuple[frozenset, frozenset, float] | None = None
-    for ratio, _reading, _stroke in pairs:
+    for ratio, _reading, _stroke, _ident, _value, _length in pairs:
         readings, strokes = support(ratio)
         if best is None or (len(readings), len(strokes)) > (len(best[0]), len(best[1])):
             best = (readings, strokes, ratio)
@@ -464,7 +470,7 @@ def _bootstrap_calibration(
         return None
     # A second scale explaining as many readings as the first — and sharing none of them — means the sheet
     # has not said which one it is drawn to: reporting either would be picking the first that was tried.
-    for ratio, _reading, _stroke in pairs:
+    for ratio, _reading, _stroke, _ident, _value, _length in pairs:
         readings, _strokes = support(ratio)
         if len(readings) >= len(best[0]) and not readings & best[0]:
             return None
@@ -472,6 +478,10 @@ def _bootstrap_calibration(
     window = sorted(row[0] for row in pairs if low <= row[0] <= high)
     winner = window[len(window) // 2]
     spread = (window[-1] - window[0]) / winner if winner else 0.0
+    if report is not None:
+        # Ölçeği kuran tanıklar: `scale.verdict` bunları okuma başına bir oyla kullanır, böylece yerleşmiş
+        # okumalar `minimum`a ulaşmadığında da pafta ölçeğini söyleyebiliyor (H-R17).
+        report["scale_witnesses"] = [[row[3], row[4], row[5]] for row in pairs if low <= row[0] <= high]
     return scale.Calibration(px_per_mm=winner, samples=len(best[0]), spread=spread)
 
 

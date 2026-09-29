@@ -158,7 +158,7 @@ class _Coder:
 
 def _build(tmp_path, records, monkeypatch):
     spans = [_span("ocr-0", 4.0, 54.0), _span("ocr-1", 9.0, 467.5), _span("ocr-2", 60.0, 506.0)]
-    monkeypatch.setattr("drawingto3d.reason.perceive", lambda page, reader=None: ([], spans))
+    monkeypatch.setattr("drawingto3d.reason.perceive_with_report", lambda page, reader=None: ([], spans, {}))
     return reason_drawing(DRAWING, tmp_path, coder=_Coder(), records=records)
 
 

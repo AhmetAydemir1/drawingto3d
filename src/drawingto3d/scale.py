@@ -10,6 +10,7 @@ report without being told the answer.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Sequence
 
 RELATIVE_TOLERANCE = 0.04
 # A dimension line can be drawn a pixel or two wrong end to end, and the 4% above is a fraction of the
@@ -170,8 +171,13 @@ def _agreeing_pair(usable: list[tuple[float, float]], tolerance: float = RELATIV
     return False
 
 
-def verdict(spans, minimum: int = 3) -> dict:
+def verdict(spans, minimum: int = 3, witnesses: Sequence = ()) -> dict:
     """The one thing that can be said about the sheet's own scale, in one of four states.
+
+    `witnesses` are the pairs that never made it into a record: `(reading kimliği, değer, ölçülen px)`, one
+    entry per reading-and-stroke candidate. They are what lets a sheet whose *placed* readings fall one short
+    of `minimum` still name its scale, because a reading does not stop being evidence when the gate declines
+    to place it (H-R17). They are counted per reading, never per pair (review6 W01).
 
     `calibrated` / `calibrated_with_suspects`: at least `minimum` readings hold the same scale, so the
     numbers are confirmed against the sheet's own geometry and `suspect` names the ones that do not fit.
@@ -185,11 +191,17 @@ def verdict(spans, minimum: int = 3) -> dict:
     """
     pairs = measure(spans)
     calibration, inliers = consensus(pairs, minimum=minimum)
+    witness_groups = _witness_groups(witnesses)
+    if calibration is None and witness_groups:
+        # Yerleşmiş okumalar `minimum`'a ulaşmadığında ölçek aday çiftlerden kurulur: bir okuma, kapı onu
+        # kayda çevirmedi diye kanıt olmaktan çıkmaz (H-R17). Okuma başına tek oy (review6 W01).
+        calibration = _calibration_from_witnesses(witness_groups, minimum=minimum)
     usable = [(value, measured) for value, measured in pairs if value > 0 and measured > 0]
     report = {
         "schema": "drawingto3d.sheet-scale/1",
         "readings": len(pairs),
         "usable_readings": len(usable),
+        "witness_readings": len(witness_groups),
         "px_per_mm": round(calibration.px_per_mm, 4) if calibration else None,
         "samples": calibration.samples if calibration else 0,
         "spread": round(calibration.spread, 4) if calibration else None,
@@ -202,6 +214,9 @@ def verdict(spans, minimum: int = 3) -> dict:
                     if calibration.disagrees(float(span.value), line_length(span))]
         report["suspect"] = suspects
         report["state"] = "calibrated" if not suspects else "calibrated_with_suspects"
+        if inliers == 0 and witness_groups:
+            report["note"] = (f"ölçek yerleşmiş okumalardan kurulamadı; {calibration.samples} okumanın aday "
+                              f"çiftleri {calibration.px_per_mm:.3f} px/mm diyor")
         return report
     if len(usable) >= 2 and not _agreeing_pair(usable):
         report["state"] = "contradictory"
@@ -235,3 +250,49 @@ def calibrate(pairs: list[tuple[float, float]], tolerance: float = RELATIVE_TOLE
     px_per_mm = fitted[len(fitted) // 2]
     spread = (fitted[-1] - fitted[0]) / px_per_mm if px_per_mm > 0 else 0.0
     return Calibration(px_per_mm=px_per_mm, samples=len(kept), spread=spread)
+
+
+def _witness_groups(witnesses: Sequence[tuple[str, float, float]]) -> dict[str, list[float]]:
+    """Aday çiftleri okuma kimliğine göre topla: her okumanın öne sürdüğü oranlar."""
+    groups: dict[str, list[float]] = {}
+    for reading_id, value, length in witnesses:
+        if value > 0 and length > 0:
+            groups.setdefault(str(reading_id), []).append(length / value)
+    return groups
+
+
+def _calibration_from_witnesses(groups: dict[str, list[float]], minimum: int,
+                                tolerance: float = RELATIVE_TOLERANCE) -> Calibration | None:
+    """Ölçek, aday çiftlerden: okuma başına bir oy (review6 W01).
+
+    Bir okumanın yanında üç çizgi bulunması üç okuma sayılmaz — kazanan kümede en az `minimum` **tekil
+    okuma** olmalı ve her okuma en yakın oranıyla bir kez oy verir. Aynı sayıda okumayı açıklayan ve
+    kazananla hiç örtüşmeyen ikinci bir küme varsa pafta hangisine çizildiğini söylemiyor demektir: ölçek
+    döndürülmez, çünkü ilk deneneni seçmek tahmin olurdu.
+    """
+    def window(ratio: float) -> dict[str, float]:
+        low, high = ratio / (1 + tolerance), ratio * (1 + tolerance)
+        inside: dict[str, float] = {}
+        for reading_id, ratios in groups.items():
+            near = [other for other in ratios if low <= other <= high]
+            if near:
+                inside[reading_id] = min(near, key=lambda other: abs(other - ratio))
+        return inside
+
+    best: dict[str, float] | None = None
+    for ratios in groups.values():
+        for ratio in ratios:
+            inside = window(ratio)
+            if best is None or len(inside) > len(best):
+                best = inside
+    if best is None or len(best) < minimum:
+        return None
+    for ratios in groups.values():
+        for ratio in ratios:
+            inside = window(ratio)
+            if len(inside) >= len(best) and not set(inside) & set(best):
+                return None
+    fitted = sorted(best.values())
+    px_per_mm = fitted[len(fitted) // 2]
+    spread = (fitted[-1] - fitted[0]) / px_per_mm if px_per_mm > 0 else 0.0
+    return Calibration(px_per_mm=px_per_mm, samples=len(fitted), spread=spread)

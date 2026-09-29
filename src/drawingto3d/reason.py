@@ -16,7 +16,7 @@ from drawingto3d import scale
 from drawingto3d.cadrun import GEO_MODULE, CadFailure, extract_code, run_program
 from drawingto3d.ingest import load_page
 from drawingto3d.llama import LlamaCoder, OllamaCoder, OllamaVision, retry_prompt
-from drawingto3d.perceive import perceive
+from drawingto3d.perceive import perceive, perceive_with_report
 from drawingto3d.roles import read_records
 from drawingto3d.schema import ROLES, Audit, ConvertResult, DimensionRecord, Page, Question
 from drawingto3d.plan import PlatePlan, build_plan
@@ -105,9 +105,12 @@ def sheet_scale(page: Page) -> dict:
     """
     spans = page.spans
     if not spans:
-        _primitives, spans = perceive(page)
+        _primitives, spans, report = perceive_with_report(page)
         page.spans = spans
-    return scale.verdict(spans)
+        # Ölçeği kuran tanıklar okumanın yanında duruyor: `perceive` pahalı ve bu fonksiyon birden çok kez
+        # çağrılıyor (kapı + kurulum). Tanıklar olmadan yerleşmiş iki okuma ölçeği adlandıramıyordu (H-R17).
+        page.scale_witnesses = [list(row) for row in report.get("scale_witnesses", [])]
+    return scale.verdict(spans, witnesses=page.scale_witnesses)
 
 
 def _sheet_needs_review(page: Page) -> str | None:

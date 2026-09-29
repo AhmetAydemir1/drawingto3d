@@ -232,6 +232,9 @@ class Page(BaseModel):
     views: list[View] = Field(default_factory=list)
     primitives: list[Primitive] = Field(default_factory=list)
     vector_text: bool = False
+    # Ölçeği kuran aday çiftler: `(okuma kimliği, değer, ölçülen px)`. Yerleşmiş okumalar yetmediğinde
+    # paftanın ölçeği bunlardan kurulur; kanıt okumanın yanında durur, ayrı bir yerde tutulmaz (H-R17).
+    scale_witnesses: list[list] = Field(default_factory=list)
 
 
 class ConvertResult(BaseModel):

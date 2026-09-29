@@ -8,6 +8,7 @@ birincinin kanıtını ezmemeli), T04 ise bütçeyi: süresi biten adım başlat
 from __future__ import annotations
 
 import importlib.util
+import json
 import sys
 from pathlib import Path
 
@@ -211,3 +212,162 @@ def test_the_summary_keeps_attempts_and_distinct_parts_apart():
         "kayıtsız satır ölçülmemiş sayılmalı, model kullanmamış gibi değil"
     assert summary["arms"]["product"]["unfinished_calls"] == 1, "kesilen çağrı özette görünmeli"
     assert summary["arms"]["model"]["ran"] == 1
+
+
+# --- U01/U02 regresyonu: review4'ün karşı örnekleri ------------------------------------------
+#
+# `eval/audits/20260929-hermes-review4/observations.json` iki sınıflama hatasını kaydetti:
+# `classification_probe` bilinmeyen kararı (`not_evaluated`, `error`, `null`) positive sayıyordu ve
+# `trace_probe` hiç çalışmamış `verdict_pass` adımını terminal hata yazıyordu. Aşağıdaki testler bu
+# karşı örnekleri sabit tutar.
+
+REVIEW4_OBSERVATIONS = ROOT / "eval" / "audits" / "20260929-hermes-review4" / "observations.json"
+
+
+def _row(**overrides) -> dict:
+    """Sınıflamanın okuduğu alanları taşıyan asgari satır; varsayılanı 'hiç çıktı yok'."""
+    row = {
+        "part_id": "p", "error_class": "girdi/sayfa/görünüş", "step_built": False,
+        "product_refusals": ["okunamadı"], "product_step": None, "not_started": [],
+        "input_file": "drawing.pdf", "input_sha256": "a" * 64, "reference_sha256": "b" * 64,
+        "product_input_leakage": "none", "evaluator": None,
+        "arms": {"product": {"arm": "rule"}, "model": {"inference_called": None,
+                                                       "plan_produced": False, "step_built": False,
+                                                       "evaluated": False, "verdict": None,
+                                                       "trace": {}}},
+    }
+    arms = overrides.pop("arms", None)
+    row.update(overrides)
+    if arms:
+        row["arms"] = {**row["arms"], **arms}
+    return row
+
+
+def _probe_rows(module) -> list[dict]:
+    """review4 `classification_probe` satırlarını gerçek satır biçiminde yeniden kurar.
+
+    Denetimde her karşı örnek "model kolu çıktı verdi, kararı bilinmiyor" durumuydu: çağrı yapılmış,
+    plan kurulmuş ve değerlendirme denenmiş. Eski kod bu üç bayrağa bakıp satırı `positive` yapıyordu.
+    """
+    rows = []
+    for index, probe in enumerate(json.loads(REVIEW4_OBSERVATIONS.read_text(encoding="utf-8"))[
+            "classification_probe"]):
+        rows.append(_row(part_id=f"probe-{index}", arms={"model": {
+            "inference_called": True, "plan_produced": True, "step_built": True, "evaluated": True,
+            "verdict": probe["verdict"]}}))
+    return rows
+
+
+def test_a_missing_or_invalid_verdict_is_unknown_and_never_positive():
+    """U01: `not_evaluated`, `error` ve `null` kararı olan satır positive sayılamaz."""
+    module = load_module()
+    entries = module._row_classification(_probe_rows(module), "probe")["entries"]
+    model = {entry["part_id"]: entry for entry in entries if entry["arm"] == "model"}
+
+    assert model["probe-0"]["usable_as"] == "unknown"      # not_evaluated
+    assert model["probe-1"]["usable_as"] == "unknown"      # error
+    assert model["probe-2"]["usable_as"] == "unknown"      # null
+    assert model["probe-3"]["usable_as"] == "negative"     # fail: yanlış çıktı, doğru hedef değil
+    assert model["probe-4"]["usable_as"] == "positive"     # pass: tek gerçek positive
+    assert all(entry["classified_verdict"] != "fail" or entry["usable_as"] == "negative"
+               for entry in entries)
+
+
+def test_the_recorded_classification_probe_still_shows_the_old_behaviour():
+    """Denetim kanıtı yerinde duruyor: karşı örnekler silinmedi, yalnız kod düzeltildi."""
+    recorded = json.loads(REVIEW4_OBSERVATIONS.read_text(encoding="utf-8"))["classification_probe"]
+    assert [item["verdict"] for item in recorded] == ["not_evaluated", "error", None, "fail", "pass"]
+    assert [item["classified"] for item in recorded] == ["positive", "positive", "positive",
+                                                        "negative", "positive"]
+
+
+def test_the_row_classification_counts_unknowns_apart_from_excluded():
+    """Bilinmeyen karar ile öğrenilecek çıktı yokluğu ayrı sayılır; ikisi de positive değil."""
+    module = load_module()
+    rows = _probe_rows(module) + [_row(part_id="no-output")]
+    classification = module._row_classification(rows, "probe")
+
+    assert classification["schema"] == "drawingto3d.lab.row-classification/1"
+    assert classification["counts"]["positive"] == 1
+    assert classification["counts"]["negative"] == 1
+    assert classification["counts"]["unknown"] == 3
+    assert classification["counts"]["excluded"] == 7, "5 parça × 2 kol − 4 sınıflı çıktı + 1 çıktısız"
+
+
+def test_the_training_decision_is_separate_and_needs_labelable_evidence():
+    """Satır sınıflaması karar değil: `train_targeted` üç ayrı parçada etiketli çıktı ister."""
+    module = load_module()
+    rule_rows = [_row(part_id=f"r{index}", error_class="kısıt/kalibrasyon") for index in range(4)]
+    classification = module._row_classification(rule_rows, "run")
+    decision = module._training_decision(rule_rows, classification, "run")
+
+    assert decision["schema"] == "drawingto3d.lab.training-decision/1"
+    assert decision["decision"] == "fix_rules_first", "kural/okuma hatası için model eğitilmez"
+    assert decision["narrow_task"] is None
+    assert decision["root_error"]["error_layers"] == {"kısıt/kalibrasyon": 4}
+    assert decision["threshold_evidence"]["labelable_parts"] == []
+    assert set(decision["gates"].values()) == {"unverified"}, "ölçülmemiş kapı doğrulanmış yazılamaz"
+    assert module._training_decision([], module._row_classification([], "run"), "run")["decision"] \
+        == "need_data"
+
+    labelable = [_row(part_id=f"m{index}", evaluator={"verdict": "pass"}, step_built=True,
+                      product_step=f"/x/{index}.step") for index in range(3)]
+    enough = module._row_classification(labelable, "run")
+    assert module._training_decision(labelable, enough, "run")["decision"] == "train_targeted", \
+        "model kolunda değil ürün kolunda olsa bile etiketlenebilir çıktı eşiği doldurur"
+
+
+def test_a_stage_that_never_ran_is_not_a_terminal_failure():
+    """U02: plan hiç oluşmadıysa terminal hata plan adımıdır, çalışılmamış `verdict_pass` değil."""
+    module = load_module()
+
+    trace = module._trace([("plan_produced", False, "not made", True),
+                           ("step_built", False, "not run", False),
+                           ("verdict_pass", False, "not evaluated", False)])
+    stages = {stage["stage"]: stage["status"] for stage in trace["stages"]}
+
+    assert stages == {"plan_produced": "failed", "step_built": "blocked_by_previous",
+                      "verdict_pass": "blocked_by_previous"}
+    assert trace["first_divergence"] == "plan_produced"
+    assert trace["terminal_failure"] == "plan_produced", "çalışılmayan adım terminal hata olamaz"
+    assert trace["last_stage_reached"] == "plan_produced"
+    assert trace["counts"] == {"completed": 0, "failed": 1, "not_started": 0,
+                               "blocked_by_previous": 2}
+
+
+def test_the_recorded_trace_probe_still_shows_the_old_behaviour():
+    """Denetimin iz kaydı korunuyor: eski kodun `terminal_failure`i kanıtta yazılı."""
+    recorded = json.loads(REVIEW4_OBSERVATIONS.read_text(encoding="utf-8"))["trace_probe"]
+    assert recorded["first_divergence"] == "plan_produced"
+    assert recorded["terminal_failure"] == "verdict_pass"
+
+
+def test_a_command_that_never_started_leaves_its_stages_unstarted():
+    """Komut hiç çağrılmadıysa adımlar `not_started`; önceki düşüş yoksa `blocked_by_previous` değil."""
+    module = load_module()
+
+    trace = module._trace([("command_started", False, "model-plan", False),
+                           ("plan_produced", False, "yok", False),
+                           ("step_built", False, "yok", False),
+                           ("evaluated", False, "step yok", False),
+                           ("verdict_pass", False, "step yok", False)])
+
+    assert trace["not_started"] == ["command_started", "plan_produced", "step_built", "evaluated",
+                                    "verdict_pass"]
+    assert trace["terminal_failure"] is None and trace["last_stage_reached"] is None
+
+
+def test_a_failed_build_is_the_terminal_failure_and_the_verdict_stage_is_blocked():
+    """Adımların ayrımı ürün kolunda da geçerli: derleme düştüyse değerlendirme koşmadı."""
+    module = load_module()
+
+    trace = module._trace([("command_started", True, "1 adım", True),
+                           ("plan_produced", True, "plan.json", True),
+                           ("step_built", False, "CadFailure", True),
+                           ("evaluated", False, "değerlendirilecek STEP yok", False),
+                           ("verdict_pass", False, "değerlendirilecek STEP yok", False)])
+
+    assert trace["first_divergence"] == "step_built"
+    assert trace["terminal_failure"] == "step_built"
+    assert trace["last_stage_reached"] == "step_built"
+    assert trace["blocked_by_previous"] == ["evaluated", "verdict_pass"]

@@ -12,9 +12,11 @@ import re
 from collections.abc import Callable, Sequence
 from pathlib import Path
 
+from drawingto3d import scale
 from drawingto3d.cadrun import GEO_MODULE, CadFailure, extract_code, run_program
 from drawingto3d.ingest import load_page
 from drawingto3d.llama import LlamaCoder, OllamaCoder, OllamaVision, retry_prompt
+from drawingto3d.perceive import perceive
 from drawingto3d.roles import read_records
 from drawingto3d.schema import ROLES, Audit, ConvertResult, DimensionRecord, Page, Question
 from drawingto3d.plan import PlatePlan, build_plan
@@ -95,6 +97,32 @@ def shape_note(records: Sequence[DimensionRecord]) -> str:
     return UNKNOWN_SHAPE
 
 
+def sheet_scale(page: Page) -> dict:
+    """Paftanın kendi ölçek kararı; span listesi yoksa (build yolu) pafta bir kez daha okunur.
+
+    Okuma zaten yapıldıysa (`read` yolu) tesseract yeniden koşmaz: `read_records` span listesini
+    `page.spans` üzerine bırakır.
+    """
+    spans = page.spans
+    if not spans:
+        _primitives, spans = perceive(page)
+        page.spans = spans
+    return scale.verdict(spans)
+
+
+def _verbatim_readings(records: Sequence[DimensionRecord], spans) -> bool:
+    """Tablo hâlâ tam olarak paftanın okuduğu sayılar mı — hiçbir değer incelenmemiş mi?
+
+    Kapı bunu sorar, "hangi sayı doğrulanmadı"yı değil: çelişen bir paftada hiçbir sayı
+    doğrulanamaz, o yüzden tek tek ayıklamak yanlış olurdu. Kullanıcı bir sayıyı değiştirdiği anda
+    tablo paftanın okuması olmaktan çıkar ve kurulum kullanıcının beyanıyla ilerler.
+    """
+    readings = sorted(float(span.value) for span in scale.measure_spans(spans))
+    values = sorted(float(record.value) for record in records)
+    return bool(readings) and values == readings
+
+
+
 def reason_drawing(
     path: str | Path,
     out_dir: str | Path,
@@ -141,6 +169,21 @@ def reason_drawing(
     records = list(records)
     if not records:
         raise CadFailure("kayıt yok; ölçü okunmadı", "")
+    # The sheet's own geometry is the only witness available without a reference: every dimension line is
+    # drawn to the number printed on it. When the sheet's readings contradict each other, the numbers are
+    # unverified and at least one of them is wrong — and which one is unknowable from this sheet. Building
+    # anyway produces a solid that looks authoritative and is a different part (measured: the raster path
+    # built a 60x10x10 mm plate with no hole from a sheet whose numbers implied 6.4, 51.9 and 8.4 px/mm on
+    # one sheet). A *reviewed* table is a different matter: once the user has changed a number, the sheet
+    # no longer speaks for the table, and the numbers being built are the user's assertion. So the guard
+    # holds only on the unreviewed case — the table that is still exactly what the sheet read.
+    sheet = sheet_scale(page)
+    if sheet["state"] == "contradictory" and _verbatim_readings(records, page.spans):
+        raise CadFailure(
+            "paftanın sayıları kendi ölçeğiyle çelişiyor (" + sheet["note"] + "): ölçü tablosu paftanın "
+            "okuduğu hâliyle duruyor, hiçbiri doğrulanmadı. Tabloyu inceleyip düzeltin; ölçülmüş "
+            "okumalar: " + ", ".join(f"{span.id}={float(span.value):g}"
+                                     for span in page.spans if span.value is not None) + ".", "")
 
     model = coder or _default_coder()
     folder = Path(out_dir)

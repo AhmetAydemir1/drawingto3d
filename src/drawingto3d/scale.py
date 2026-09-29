@@ -153,6 +153,62 @@ def view_scales(spans, tolerance: float = RELATIVE_TOLERANCE, minimum: int = 2) 
             "mixed_scale_views": sorted(name for name, row in views.items() if row["own_scale"])}
 
 
+def _agreeing_pair(usable: list[tuple[float, float]], tolerance: float = RELATIVE_TOLERANCE) -> bool:
+    """Do any two readings imply the same scale? Two is not enough to calibrate, but enough to contradict."""
+    for index, (value, measured) in enumerate(usable):
+        for other_value, other_measured in usable[index + 1:]:
+            if abs((other_measured / other_value) / (measured / value) - 1.0) <= tolerance:
+                return True
+    return False
+
+
+def verdict(spans, minimum: int = 3) -> dict:
+    """The one thing that can be said about the sheet's own scale, in one of four states.
+
+    `calibrated` / `calibrated_with_suspects`: at least `minimum` readings hold the same scale, so the
+    numbers are confirmed against the sheet's own geometry and `suspect` names the ones that do not fit.
+    `uncalibrated`: the readings cannot settle a scale — either there are fewer than two, or some pair
+    agrees but fewer than `minimum` readings support it. Nothing contradicts anything here.
+    `contradictory`: two or more readings and *no* pair of them holds the same scale. This is not "the
+    scale could not be read": the numbers deny each other, so at least one of them is wrong and which one
+    is unknowable from this sheet. One sheet is not drawn at three different scales; building a solid from
+    such a set of readings is the shortest way to call a wrong part right. Measured on `pilot-block-01`:
+    4, 9 and 60 mm read off 54, 467.5 and 506 px lines — 13.5, 51.9 and 8.4 px/mm on one sheet.
+    """
+    pairs = measure(spans)
+    calibration, inliers = consensus(pairs, minimum=minimum)
+    usable = [(value, measured) for value, measured in pairs if value > 0 and measured > 0]
+    report = {
+        "schema": "drawingto3d.sheet-scale/1",
+        "readings": len(pairs),
+        "usable_readings": len(usable),
+        "px_per_mm": round(calibration.px_per_mm, 4) if calibration else None,
+        "samples": calibration.samples if calibration else 0,
+        "spread": round(calibration.spread, 4) if calibration else None,
+        "ratios": [round(measured / value, 4) for value, measured in usable],
+        "inliers": inliers,
+        "suspect": [],
+    }
+    if calibration is not None:
+        suspects = [span.id for span in measure_spans(spans)
+                    if calibration.disagrees(float(span.value), line_length(span))]
+        report["suspect"] = suspects
+        report["state"] = "calibrated" if not suspects else "calibrated_with_suspects"
+        return report
+    if len(usable) >= 2 and not _agreeing_pair(usable):
+        report["state"] = "contradictory"
+        report["note"] = (f"{len(usable)} okuma var ve hiçbiri ötekilerle aynı ölçeği tutmuyor: "
+                          f"paftanın sayıları birbirini yalanlıyor")
+        return report
+    report["state"] = "uncalibrated"
+    if len(usable) >= 2:
+        report["note"] = (f"ölçülecek okuma sayısı {len(usable)}: en az ikisi aynı ölçeği tutuyor ama "
+                          f"ölçek için {minimum} okuma gerekiyor")
+    else:
+        report["note"] = f"ölçülecek okuma sayısı {len(usable)} < 2: ölçek doğrulanamadı"
+    return report
+
+
 def calibrate(pairs: list[tuple[float, float]], tolerance: float = RELATIVE_TOLERANCE) -> Calibration | None:
     """Fit pixels per millimetre to (value, measured length) pairs, ignoring the ones far off the pack.
 

@@ -16,6 +16,7 @@ from pathlib import Path
 
 from pydantic import ValidationError
 
+from drawingto3d import reason
 from drawingto3d.reason import reason_drawing
 from drawingto3d.schema import DimensionRecord
 from drawingto3d.ingest import load_page
@@ -232,7 +233,13 @@ def _read(args) -> None:
     path = folder / "records.json"
     payload = [record.model_dump(mode="json") for record in result.records]
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(json.dumps({"records": len(payload), "file": str(path)}, ensure_ascii=False, indent=2))
+    # Paftanın kendi ölçek kararı kayıtların yanında durur: sayılar paftanın kendi geometrisiyle
+    # doğrulandı mı, doğrulanamadı mı, yoksa birbirini mi yalanlıyor. Bu bir cümle değil, kayıt.
+    sheet = reason.sheet_scale(result.page)
+    (folder / "scale.json").write_text(json.dumps(sheet, ensure_ascii=False, indent=2),
+                                       encoding="utf-8")
+    print(json.dumps({"records": len(payload), "file": str(path), "scale": sheet},
+                     ensure_ascii=False, indent=2))
 
 
 def _build(args) -> None:

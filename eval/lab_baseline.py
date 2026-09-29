@@ -270,16 +270,58 @@ def _model_step(drawing: Path, workdir: Path, *, case: "Budget | None" = None) -
     return step
 
 
-def _trace(stages: list[tuple[str, bool, str]]) -> dict:
-    """Bir kolun izi: ilk ayrıldığı adım ve en son düşen adım ayrı ayrı adlandırılır.
+def _trace(stages: list[tuple]) -> dict:
+    """Bir kolun izi: hangi adım gerçekten çalıştı, hangisi düştü, hangisi hiç başlamadı.
 
     "Nerede ayrıldı" ile "nasıl bitti" aynı şey değildir: kural yolu planı üretip kurulumda düşebilir,
-    model kolu hiç çağrı almadan bitebilir. İkisi ayrı yazılmazsa rapor ikisini karıştırır.
+    model kolu hiç çağrı almadan bitebilir. Daha önemlisi, çalışılmayan bir adımın `false` bayrağı bir
+    hata *değildir*; onu terminal hata saymak kök hatayı hiç koşmamış bir adımda gösterir
+    (review4/U02: plan hiç oluşmadığı hâlde `terminal_failure=verdict_pass` yazılıyordu).
+
+    Bu yüzden her adım durumunu taşır:
+
+    * `completed` — çalıştı ve geçti;
+    * `failed` — çalıştı ve düştü;
+    * `not_started` — hiç başlamadı (ör. kolu başlatan komut çağrılmadı);
+    * `blocked_by_previous` — önceki adım düştüğü için hiç çalışamadı.
+
+    Adımlar `(name, ok, detail)` ya da `(name, ok, detail, ran)` olarak verilir; `ran` biliniyorsa
+    durum ondan okunur. `first_divergence` geçmeyen ilk adımdır (ilk anlamsal sapma), `terminal_failure`
+    ise gerçekten çalışıp düşen **son** adım — çalışılmamış bir adım asla terminal hata olmaz.
     """
-    first = next((name for name, ok, _ in stages if not ok), None)
-    last = next((name for name, ok, _ in reversed(stages) if not ok), None)
-    return {"stages": [{"stage": name, "ok": ok, "detail": detail} for name, ok, detail in stages],
-            "first_divergence": first, "terminal_failure": last}
+    resolved: list[tuple[str, bool, str, str]] = []
+    blocked = False
+    for entry in stages:
+        name, ok, detail = entry[0], entry[1], entry[2]
+        ran = entry[3] if len(entry) > 3 else None
+        if ok:
+            status = "completed"
+        elif ran is True:
+            status = "failed"
+        elif blocked:
+            status = "blocked_by_previous"
+        elif ran is False:
+            status = "not_started"
+        else:
+            # `ran` bilinmiyor ve kendisinden önce düşen adım yok: ilk düşüş buraya yazılır.
+            status = "failed"
+        if status == "failed":
+            blocked = True
+        resolved.append((name, ok, detail, status))
+    failed = [name for name, _ok, _detail, status in resolved if status == "failed"]
+    reached = [name for name, _ok, _detail, status in resolved if status in ("completed", "failed")]
+    return {
+        "stages": [{"stage": name, "ok": ok, "detail": detail, "status": status}
+                   for name, ok, detail, status in resolved],
+        "first_divergence": next((name for name, ok, _detail, _status in resolved if not ok), None),
+        "terminal_failure": failed[-1] if failed else None,
+        "last_stage_reached": reached[-1] if reached else None,
+        "not_started": [name for name, _ok, _detail, status in resolved if status == "not_started"],
+        "blocked_by_previous": [name for name, _ok, _detail, status in resolved
+                                if status == "blocked_by_previous"],
+        "counts": {status: sum(1 for _n, _o, _d, value in resolved if value == status)
+                   for status in ("completed", "failed", "not_started", "blocked_by_previous")},
+    }
 
 
 def _call_fields(log: dict | None) -> dict:
@@ -312,14 +354,16 @@ def _arms(product_log: dict | None, model_log: dict | None, model_step: dict | N
     plan_produced = bool((model_step or {}).get("plan_produced")) or bool(
         ((model_step or {}).get("result") or {}).get("plan"))
     model_trace = _trace([
-        ("command_started", bool(model_step), "model-plan"),
-        ("plan_produced", plan_produced, "plan.json" if plan_produced else "yok"),
+        ("command_started", bool(model_step), "model-plan", bool(model_step)),
+        ("plan_produced", plan_produced, "plan.json" if plan_produced else "yok", bool(model_step)),
         ("step_built", bool(model_built.get("step")), model_built.get("step") or
-         (model_built.get("failure") or "yok")),
+         (model_built.get("failure") or "yok"), plan_produced),
         ("evaluated", model_verdict is not None,
-         "" if model_verdict is None else str(model_verdict.get("verdict"))),
+         "" if model_verdict is None else str(model_verdict.get("verdict")),
+         bool(model_built.get("step"))),
         ("verdict_pass", bool(model_verdict and model_verdict.get("verdict") == "pass"),
-         "" if model_verdict is None else str(model_verdict.get("verdict"))),
+         "" if model_verdict is None else str(model_verdict.get("verdict")),
+         model_verdict is not None),
     ])
     return {
         "product": {
@@ -424,13 +468,16 @@ def run_part(row: dict, corpus: Path, out_root: Path, metrics, *, with_model: bo
     produced_program = bool(sorted(product.glob("*.py")))
     produced_plan = (product / "plan.json").exists()
     product_trace = _trace([
-        ("command_started", bool(steps), f"{len(steps)} adım"),
+        ("command_started", bool(steps), f"{len(steps)} adım", bool(steps)),
         ("plan_produced", produced_plan or produced_records,
-         "plan.json" if produced_plan else ("records.json" if produced_records else "yok")),
-        ("step_built", bool(produced), produced[0].name if produced else "yok"),
-        ("evaluated", verdict is not None, "" if verdict else "değerlendirilecek STEP yok"),
+         "plan.json" if produced_plan else ("records.json" if produced_records else "yok"),
+         bool(steps)),
+        ("step_built", bool(produced), produced[0].name if produced else "yok",
+         produced_plan or produced_records),
+        ("evaluated", verdict is not None, "" if verdict else "değerlendirilecek STEP yok",
+         bool(produced)),
         ("verdict_pass", bool(verdict and verdict.get("verdict") == "pass"),
-         "" if verdict is None else str(verdict.get("verdict"))),
+         "" if verdict is None else str(verdict.get("verdict")), verdict is not None),
     ])
     return {
         "part_id": part_id, "input_kind": row["kind"], "input_file": row["file"],
@@ -568,13 +615,15 @@ def _fields_from_disk(workdir: Path, row: dict, steps: list[dict], produced: lis
         model_verdict = metrics.compare(metrics.extract(model_built["step"]), truth)
     product = workdir / "product"
     product_trace = _trace([
-        ("command_started", bool(steps), f"{len(steps)} adım"),
+        ("command_started", bool(steps), f"{len(steps)} adım", bool(steps)),
         ("plan_produced", (product / "plan.json").exists() or (product / "records.json").exists(),
-         "plan.json" if (product / "plan.json").exists() else "records.json"),
-        ("step_built", bool(produced), produced[0].name if produced else "yok"),
-        ("evaluated", verdict is not None, "" if verdict else "değerlendirilecek STEP yok"),
+         "plan.json" if (product / "plan.json").exists() else "records.json", bool(steps)),
+        ("step_built", bool(produced), produced[0].name if produced else "yok",
+         (product / "plan.json").exists() or (product / "records.json").exists()),
+        ("evaluated", verdict is not None, "" if verdict else "değerlendirilecek STEP yok",
+         bool(produced)),
         ("verdict_pass", bool(verdict and verdict.get("verdict") == "pass"),
-         "" if verdict is None else str(verdict.get("verdict"))),
+         "" if verdict is None else str(verdict.get("verdict")), verdict is not None),
     ])
     return {
         "command_started": bool(steps),
@@ -663,52 +712,187 @@ def summarise_from_disk(row: dict, workdir: Path, corpus: Path, metrics) -> dict
     }
 
 
-def _training_decision(rows: list[dict], run_id: str) -> dict:
-    """Hangi kolun kaydı eğitim karışımına girebilir, hangisi giremez ve neden.
+PASS_VERDICT, FAIL_VERDICT = "pass", "fail"
 
-    Bir kayıt karışıma ancak *kanonik çıktısı* ve *bağımsız kararı* varsa girebilir: doğru parça
-    `positive`, yanlış parça `negative`. Çıktı yoksa ya da karar verilemediyse kayıt `excluded` — çünkü
-    neyi öğreteceği bilinmiyor. Model kolunun çıktısı ayrıca **çağrı kanıtı** ister: model derlenmiş bir
-    plan üretmiş ama adapter kaydı çağrı göstermiyorsa çıktı modele atfedilemez.
+# H04'ün dört eğitim kararı: karar, satır sınıflamasından ayrı bir belge olarak verilir.
+TRAINING_DECISIONS = ("train_targeted", "fix_rules_first", "need_data", "training_not_justified")
+
+# `train_targeted` en az bu kadar ayrı parçada etiketlenebilir hata ister (plan §H04).
+TRAIN_TARGETED_MIN_PARTS = 3
+
+# Bir hata "model şeması" dışındaki katmanlarda ise ilk iş kural/okuma/CAD onarımıdır; kural, CAD ve
+# değerlendirici hatası için model eğitilmez (plan §H04).
+MODEL_LAYER = "model şeması"
+
+# Karar belgesinin bulut kapıları: bu sürücü hiçbirini ölçmez, o yüzden hiçbiri `verified` yazılamaz.
+TRAINING_GATES = ("targeted_training_justified", "dataset_and_script_ready",
+                  "m1_base_inference_verified", "export_path_checked", "current_rate_recorded",
+                  "shutdown_mechanism_verified", "cost_reserve_available")
+
+
+def _row_classification(rows: list[dict], run_id: str) -> dict:
+    """Satır başına sınıflama: bu kayıt eğitim karışımına hangi rolle girebilir.
+
+    Kural kanıta bağlıdır ve bilinmeyeni uydurmaz:
+
+    * `positive` — kanonik çıktı var ve bağımsız karar gerçekten `pass`;
+    * `negative` — kanonik çıktı var ve bağımsız karar gerçekten `fail`: yanlış çıktı yanlış olarak
+      etiketlenir, doğru hedef yerine konmaz;
+    * `unknown` — çıktı var ama karar yok ya da okunamıyor (`not_evaluated`, `error`, `null`): neyin
+      öğretileceği bilinmiyor, bu satır `positive` sayılamaz (review4/U01'in karşı örneği);
+    * `excluded` — öğrenilecek çıktı yok: ürün katı kurmadan reddetti ya da hiç çıktı vermedi.
+
+    Model kolunun çıktısı ayrıca *çağrı kanıtı* ister: model derlenmiş bir plan üretmiş ama adapter
+    kaydı çağrı göstermiyorsa çıktı modele atfedilemez.
+
+    Bu bir satır sınıflamasıdır, eğitim gerekliliği kararı **değildir**: karar `_training_decision`
+    içinde, ayrı belge olarak ve yalnız bu sınıflamanın kanıtıyla verilir.
     """
+
+    def _bucket(*, has_output: bool, verdict, evidence_ok: bool, no_output_reason: str,
+                no_evidence_reason: str) -> tuple[str, str]:
+        if not has_output:
+            return "excluded", no_output_reason
+        if not evidence_ok:
+            return "excluded", no_evidence_reason
+        if verdict == PASS_VERDICT:
+            return "positive", "kanonik çıktı + bağımsız `pass` kararı"
+        if verdict == FAIL_VERDICT:
+            return "negative", ("kanonik çıktı + bağımsız `fail` kararı: yanlış çıktı negatif hedef "
+                                "olarak etiketlenir, doğru hedef sayılmaz")
+        return "unknown", (f"bağımsız karar okunamadı ({verdict!r}): çıktının doğru olduğu "
+                           "bilinmiyor, `positive` sayılamaz")
+
     entries = []
     for row in rows:
         product = (row.get("arms") or {}).get("product") or {}
         model = (row.get("arms") or {}).get("model") or {}
-        verdict = (row.get("evaluator") or {}).get("verdict")
-        if row["step_built"] and verdict in {"pass", "fail"}:
-            product_use = "negative" if verdict == "fail" else "positive"
-            product_reason = f"kanonik çıktı + değerlendirici kararı ({verdict}); girdi yalnız çizim dosyası"
-        elif row["product_refusals"]:
-            product_use, product_reason = "excluded", "ürün katı kurmadan reddetti: öğrenilecek çıktı yok"
-        else:
-            product_use, product_reason = "excluded", "ürün katı kurmadı: karşılaştırılacak çıktı yok"
-        if model.get("step_built") and model.get("evaluated") and model.get("inference_called"):
-            model_use = "negative" if model.get("verdict") == "fail" else "positive"
-            model_reason = "model planı kuruldu ve aynı kabul sözleşmesiyle değerlendirildi"
-        else:
-            model_use = "excluded"
-            model_reason = (f"model kolundan öğrenilecek çıktı yok (çağrı: {model.get('inference_called')}, "
-                            f"plan: {model.get('plan_produced')}, kurulan: {bool(model.get('step_built'))})")
-        entries.append({"part_id": row["part_id"], "arm": product.get("arm") or "product",
+        product_use, product_reason = _bucket(
+            has_output=bool(row.get("step_built")),
+            verdict=(row.get("evaluator") or {}).get("verdict"), evidence_ok=True,
+            no_output_reason=("ürün katı kurmadan reddetti: öğrenilecek çıktı yok"
+                              if row.get("product_refusals")
+                              else "ürün katı kurmadı: karşılaştırılacak çıktı yok"),
+            no_evidence_reason="")
+        model_use, model_reason = _bucket(
+            has_output=bool(model.get("step_built")), verdict=model.get("verdict"),
+            evidence_ok=bool(model.get("inference_called")),
+            no_output_reason=(f"model kolundan öğrenilecek çıktı yok (çağrı: "
+                              f"{model.get('inference_called')}, plan: {model.get('plan_produced')}, "
+                              f"kurulan: {bool(model.get('step_built'))})"),
+            no_evidence_reason="model çıktısı var ama adapter kaydı çağrı göstermiyor: çıktı modele "
+                              "atfedilemez")
+        shared = {"part_id": row["part_id"], "input_file": row["input_file"],
+                  "input_sha256": row["input_sha256"], "reference_sha256": row["reference_sha256"],
+                  "input_leakage": row["product_input_leakage"],
+                  "not_started": row.get("not_started") or []}
+        entries.append({**shared, "arm": product.get("arm") or "product",
                         "usable_as": product_use, "reason": product_reason,
-                        "input_file": row["input_file"], "input_sha256": row["input_sha256"],
-                        "produced_step": row["product_step"], "reference_sha256": row["reference_sha256"],
-                        "input_leakage": row["product_input_leakage"],
-                        "not_started": row.get("not_started") or []})
-        entries.append({"part_id": row["part_id"], "arm": "model", "usable_as": model_use,
-                        "reason": model_reason, "input_file": row["input_file"],
-                        "input_sha256": row["input_sha256"],
-                        "produced_step": None,  # model kolunun çıktısı: model-verdict.json + SATIR'daki model_path
-                        "reference_sha256": row["reference_sha256"],
-                        "input_leakage": row["product_input_leakage"],
-                        "not_started": row.get("not_started") or []})
+                        "classified_verdict": (row.get("evaluator") or {}).get("verdict"),
+                        "produced_step": row["product_step"]})
+        entries.append({**shared, "arm": "model", "usable_as": model_use, "reason": model_reason,
+                        "classified_verdict": model.get("verdict"),
+                        # model kolunun çıktısı: model-verdict.json + satırdaki model_path
+                        "produced_step": None})
     counts = {name: sum(1 for entry in entries if entry["usable_as"] == name)
-              for name in ("positive", "negative", "excluded")}
-    return {"schema": "drawingto3d.lab.training-decision/1", "run_id": run_id, "counts": counts,
-            "rule": "Kanonik çıktı + bağımsız karar şart; `positive` doğru, `negative` yanlış parça, "
-                    "`excluded` öğrenilecek çıktı yok. Model çıktısı ayrıca çağrı kanıtı ister.",
+              for name in ("positive", "negative", "excluded", "unknown")}
+    return {"schema": "drawingto3d.lab.row-classification/1", "run_id": run_id, "counts": counts,
+            "rule": "Yalnız gerçek `pass` positive, gerçek `fail` negative; karar yok/okunamıyorsa "
+                    "`unknown`, öğrenilecek çıktı yoksa `excluded`. Negatif çıktı doğru hedef sayılmaz; "
+                    "model çıktısı ayrıca çağrı kanıtı ister.",
             "entries": entries}
+
+
+def _training_decision(rows: list[dict], classification: dict, run_id: str) -> dict:
+    """Eğitim doğru müdahale mi — satır sınıflamasından ayrı, dört karardan biri.
+
+    `train_targeted` en az `TRAIN_TARGETED_MIN_PARTS` ayrı parçada *okunabilir ve doğru
+    etiketlenebilir* hata ister: o parçalarda model kolu gerçekten çalışmış, bir çıktı üretmiş ve
+    bağımsız karar `pass`/`fail` olarak okunabilmiş olmalı. Bu eşiğin altında — ve hata kural, okuma,
+    CAD ya da değerlendirici katmanındaysa — ilk iş o katmanı onarmaktır (`fix_rules_first`): kural ve
+    CAD hatası için model eğitilmez. Hiç ölçülmüş satır yoksa `need_data`, okuma zincirinde öğrenilecek
+    hata kalmadıysa `training_not_justified`.
+    """
+    entries = classification.get("entries") or []
+    labelable_parts = sorted({entry["part_id"] for entry in entries
+                              if entry["usable_as"] in ("positive", "negative")})
+    model_labelable_parts = sorted({entry["part_id"] for entry in entries
+                                    if entry["arm"] == "model"
+                                    and entry["usable_as"] in ("positive", "negative")})
+    product_labelable_parts = sorted({entry["part_id"] for entry in entries
+                                      if entry["arm"] != "model"
+                                      and entry["usable_as"] in ("positive", "negative")})
+    layers: dict[str, int] = {}
+    for row in rows:
+        layers[row["error_class"]] = layers.get(row["error_class"], 0) + 1
+    rule_layers = {name: count for name, count in layers.items() if name != MODEL_LAYER and count}
+    # Kök hata, adım adım izden okunur: her kolun gerçekten çalışıp düşen son adımı.
+    stopping_points = [{"part_id": row["part_id"], "arm": arm,
+                        "terminal_failure": (row.get("arms") or {}).get(arm, {}).get("trace", {}).get(
+                            "terminal_failure"),
+                        "first_divergence": (row.get("arms") or {}).get(arm, {}).get("trace", {}).get(
+                            "first_divergence")}
+                       for row in rows for arm in ("product", "model")]
+
+    if not rows:
+        decision, reason = "need_data", "ölçülmüş satır yok: karar verecek kanıt yok"
+    elif len(labelable_parts) >= TRAIN_TARGETED_MIN_PARTS:
+        decision = "train_targeted"
+        reason = (f"{len(labelable_parts)} ayrı parçada bağımsız kararı okunabilen çıktı var "
+                  f"(model kolu: {len(model_labelable_parts)}, ürün kolu: "
+                  f"{len(product_labelable_parts)}): {', '.join(labelable_parts)}")
+    elif rule_layers:
+        decision = "fix_rules_first"
+        reason = ("hatalar okuma/kural/CAD katmanında (" +
+                  ", ".join(f"{name}: {count}" for name, count in sorted(rule_layers.items())) +
+                  "); kural, CAD ya da değerlendirici hatası için model eğitilmez")
+    elif layers.get(MODEL_LAYER):
+        decision = "need_data"
+        reason = (f"hata yalnız `{MODEL_LAYER}` katmanında ve etiketlenebilir çıktı "
+                  f"{len(labelable_parts)}/{TRAIN_TARGETED_MIN_PARTS} parçada: dar görev için "
+                  "yeterli doğru etiketli örnek yok")
+    else:
+        decision = "training_not_justified"
+        reason = "okuma zincirinde öğrenilecek hata görünmüyor: model eğitimi gerekçesiz"
+
+    return {
+        "schema": "drawingto3d.lab.training-decision/1", "run_id": run_id,
+        "decision": decision, "reason": reason,
+        "allowed_decisions": list(TRAINING_DECISIONS),
+        "narrow_task": None,
+        "root_error": {"error_layers": layers, "stopping_points": stopping_points},
+        "label_origin": {
+            "drawings": "korpustaki çizim dosyaları (ürün girdisi)",
+            "labels": "korpustaki referans STEP + bağımsız evaluator kararı (eval/feature_metrics.py)",
+            "verified_for_training": False,
+            "note": "v2 parçaları development_exposed'dır: bağımsız gizli test değildir ve çizim→özellik "
+                    "etiketleri bağımsız doğrulanmış sayılmaz",
+        },
+        "threshold_evidence": {
+            "min_parts_for_targeted_training": TRAIN_TARGETED_MIN_PARTS,
+            "labelable_parts": labelable_parts, "model_labelable_parts": model_labelable_parts,
+            "product_labelable_parts": product_labelable_parts,
+            "classification_counts": classification.get("counts"),
+        },
+        "gates": {name: "unverified" for name in TRAINING_GATES},
+        "gates_note": "Bu sürücü bulut kapılarını ölçmez: hiçbiri doğrulanmış sayılmaz ve karar tek "
+                      "başına ücretli kaynak açmaz.",
+        "classification_schema": classification.get("schema"),
+        "decided_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
+    }
+
+
+def _decision_documents(rows: list[dict], run_id: str, decision_out: Path) -> tuple[dict, dict]:
+    """Satır sınıflaması + ondan türeyen eğitim kararı; karar belgesi diske yazılır.
+
+    İkisi ayrı belgedir: sınıflama "bu kayıt hangi rolle kullanılabilir"i satır satır söyler, karar
+    "eğitim doğru müdahale mi"yi kanıt sayısıyla verir. Aynı sözlüğü iki iş için kullanmak, ölçülmemiş
+    bir satırı eğitim hedefi gibi göstermenin yoluydu (review4/U01).
+    """
+    classification = _row_classification(rows, run_id)
+    decision = _training_decision(rows, classification, run_id)
+    write_json(decision_out, decision)
+    return classification, decision
 
 
 def main() -> None:
@@ -717,6 +901,8 @@ def main() -> None:
     parser.add_argument("--out", type=Path, default=ROOT / "out/lab/baseline")
     parser.add_argument("--results", type=Path,
                         default=ROOT / "out/lab/review-checkpoint/baseline-results.json")
+    parser.add_argument("--decision-out", type=Path, default=ROOT / "out/lab/training-decision.json",
+                        help="satır sınıflamasından türeyen eğitim kararı belgesi (H04 artefaktı)")
     parser.add_argument("--part", action="append", default=None,
                         help="yalnız bu parçayı koş (tekrarlanabilir)")
     parser.add_argument("--reuse", action="store_true",
@@ -732,8 +918,10 @@ def main() -> None:
     args.corpus = args.corpus.resolve()
     args.out = args.out.resolve()
     args.results = args.results.resolve()
+    args.decision_out = args.decision_out.resolve()
 
     metrics = _load_metrics()
+    run_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     if args.reuse:
         runs = []
         for run_dir in sorted(path for path in args.out.iterdir() if path.is_dir()):
@@ -745,8 +933,9 @@ def main() -> None:
             if rows:
                 runs.append({"run_id": run_dir.name, "parts": rows})
         rows = [row for run in runs for row in run["parts"]]
+        classification, decision = _decision_documents(rows, run_id, args.decision_out)
         payload = {
-            "schema": BASELINE_SCHEMA, "lab_version": LAB_VERSION,
+            "schema": BASELINE_SCHEMA, "lab_version": LAB_VERSION, "run_id": run_id,
             "created_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
             "mode": "reuse (her koşu ayrı kayıt; raster okuma koşudan koşuya değişiyor)",
             "corpus": str(args.corpus),
@@ -755,6 +944,9 @@ def main() -> None:
             "error_classes": list(ERROR_CLASSES),
             "runs": runs,
             "summary": _summary(rows),
+            "row_classification": classification,
+            "training_decision": decision,
+            "training_decision_doc": str(args.decision_out),
             "model_path": {
                 "runs": [{"run_id": run["run_id"], "part_id": row["part_id"],
                           **(row.get("model_path") or {})}
@@ -770,8 +962,6 @@ def main() -> None:
                           "summary": payload["summary"]}, ensure_ascii=False, indent=2))
         return
 
-    run_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-    metrics = _load_metrics()
     run_budget = Budget(RUN_BUDGET_SECONDS, label=f"run {run_id}")
     # One heavy job at a time: the lab's own slot (`state.acquire_heavy`, H02) is taken for the whole
     # run, so a baseline started by hand and one started by the lab queue cannot run two model arms at
@@ -798,6 +988,7 @@ def main() -> None:
     finally:
         lab.release_heavy(token)
 
+    classification, decision = _decision_documents(rows, run_id, args.decision_out)
     payload = {
         "schema": BASELINE_SCHEMA, "lab_version": LAB_VERSION, "run_id": run_id,
         "created_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
@@ -809,7 +1000,9 @@ def main() -> None:
                            "başlatılmaz ve satırda `not_started` olarak yazılır. Koşu bütçesi 7200 s."},
         "parts": rows,
         "summary": _summary(rows),
-        "training_decision": _training_decision(rows, run_id),
+        "row_classification": classification,
+        "training_decision": decision,
+        "training_decision_doc": str(args.decision_out),
         "splits": {
             "measured": [row["part_id"] for row in rows],
             "development_exposed": [row["part_id"] for row in rows],

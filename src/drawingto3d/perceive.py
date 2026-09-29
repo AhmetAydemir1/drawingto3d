@@ -10,7 +10,7 @@ import shutil
 import subprocess
 import tempfile
 from pathlib import Path
-from typing import NamedTuple
+from typing import NamedTuple, TypeGuard
 
 import cv2
 import numpy as np
@@ -866,16 +866,35 @@ def _read_cluster(
     # one is turned by another angle, and asking at this row's angle reads the two together.
     own = _digits_angle(glyphs, cluster) if _one_pen(glyphs, cluster) else 0.0
     text = ""
+    printed_word = False
+    saw_digit = False
     for delta in _reading_angles(own + (turn or 0), angle)[skip:]:
         text = _ocr_upright(crop, delta, whitelist=False)
+        # A word is not a number. `_ocr_upright` is asked without a whitelist first, at the angles the
+        # drawing itself suggests, and if it answers letters here the crop is printed *text* — a view
+        # label, a note, a title-block word — not a dimension. The whitelisted pass below forces an
+        # answer out of any ink at all, and forcing it on a word is how `FRONT` became the dimension
+        # `2` (review4: the leader gate had accepted the view label, and the quarter-turn pass then
+        # read a digit into it). Printed numbers carry at most one letter mark (`R`, `C`, `Ø`).
+        if sum(1 for character in text if character.isalpha()) >= 2:
+            printed_word = True
+            break
+        saw_digit = saw_digit or any(character.isdigit() for character in text)
         kind, value, unit = _clean_dimension(text)
         if _usable(value):
             return _make_span(serial, text, kind, value, unit, x0, y0, x1, y1, anchors, mode)
-    for delta in (0, 90, -90, -angle):
-        text = _ocr_upright(crop, delta, whitelist=True)
-        kind, value, unit = _clean_dimension(text)
-        if _usable(value):
-            return _make_span(serial, text, kind, value, unit, x0, y0, x1, y1, anchors, mode)
+    # The whitelisted pass settles a number the honest passes already reached; it never introduces one.
+    # Measured on `pilot-block-01`: a cluster of one blob whose honest passes answer `A`, `>`, `—` and
+    # nothing — the ink is the drawing's own triangle symbol, not type — is answered `4` when tesseract is
+    # restricted to digits, and that `4` was read as a 4 mm dimension off a 54 px line. A pass that cannot
+    # say "this is not a number" will name a number for any ink, so it is asked only where a digit was
+    # already seen; where nothing was, the crop stays unread and the sheet answers for it instead.
+    if not printed_word and saw_digit:
+        for delta in (0, 90, -90, -angle):
+            text = _ocr_upright(crop, delta, whitelist=True)
+            kind, value, unit = _clean_dimension(text)
+            if _usable(value):
+                return _make_span(serial, text, kind, value, unit, x0, y0, x1, y1, anchors, mode)
     return None
 
 
@@ -933,7 +952,7 @@ def _same_word(a: Glyph, b: Glyph) -> bool:
     return (same_row and gap_x <= 12 and gap_y <= max(a.h, b.h)) or (same_col and gap_y <= 12 and gap_x <= max(a.w, b.w))
 
 
-def _usable(value: float | None) -> bool:
+def _usable(value: float | None) -> TypeGuard[float]:
     """A span with a number is kept whatever its size: a printed 6 is a dimension, not noise.
 
     Noise is rejected where it can be told apart (letters in the token, a four-digit number that is

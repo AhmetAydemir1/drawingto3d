@@ -1,0 +1,282 @@
+{
+  "schema_version": 1,
+  "document_kind": "review_snapshot_not_an_executable_scheduler",
+  "updated_at": "2026-09-29T19:04:22.000000+00:00",
+  "execution_started": true,
+  "plan": "docs/HERMES_IMPLEMENTATION_PLAN.md",
+  "goal_prompt": "HERMES_PROMPT.md",
+  "current_task": "H04",
+  "first_code_task": "H04",
+  "goal_state": "out/lab/product-goal/state.json",
+  "goal_acceptance": "out/lab/product-goal/acceptance.json",
+  "budget": {
+    "currency": "USD",
+    "runpod_service_total": 20,
+    "first_checkpoint_total": 3,
+    "training_phase": 12,
+    "reserve": 5,
+    "taxes_included": false,
+    "deepseek_api_included": false,
+    "followup_paid_training_requires_checkpoint_review": true,
+    "automatic_topup": false
+  },
+  "limits": {
+    "heavy_local_jobs": 1,
+    "cloud_gpu_count": 1,
+    "first_cloud_run_max_hours": 2,
+    "initial_development_parts": 10,
+    "case_timeout_seconds": 600,
+    "local_pilot_timeout_seconds": 7200,
+    "download_attempts": 2,
+    "training_configurations": 2,
+    "attempts_per_hypothesis": 3,
+    "after_failed_hypothesis": "Change hypothesis and continue; not a global goal stop."
+  },
+  "cloud_preconditions": [
+    "targeted_training_justified",
+    "dataset_and_script_ready",
+    "m1_base_inference_verified",
+    "export_path_checked",
+    "current_rate_recorded",
+    "shutdown_mechanism_verified",
+    "cost_reserve_available"
+  ],
+  "evidence_note": "U01/U02 closed: row classification (row-classification/1) is separate from the training decision (training-decision/1); only a real `pass` is positive and only a stage that actually ran can be the terminal failure — the review4 counter-examples are held as regression tests. First raster error measured with a read trace: printed `55` read `09`, a printed view label read as `2`, and a lone glyph on no printed number read `4`; the sheet's own readings imply three scales (13.5/51.94/8.43 px/mm), so an unreviewed table is now refused at build while a reviewed one proceeds. Training decision: fix_rules_first, 0 labelable parts, no paid resources. Recall (5 of 8 printed dims have no candidate) and view/datum separation remain open.",
+  "tasks": [
+    {
+      "id": "H00",
+      "title": "Başlangıç ve bağlantı kaydı",
+      "status": "verified",
+      "depends_on": [],
+      "expected_artifacts": [
+        "out/lab/bootstrap.json",
+        "out/lab/next.md"
+      ],
+      "acceptance": "Sırlar olmadan güncel ortam, çalışma ağacı ve erişim kanıtı.",
+      "requires_training_justification": false,
+      "requires_first_checkpoint_review": false,
+      "evidence": [
+        "out/lab/bootstrap.json"
+      ],
+      "review_note": "Historical Hermes bootstrap inspected; live cloud recheck in Codex failed with network_error. No current cloud inventory claim."
+    },
+    {
+      "id": "H01",
+      "title": "Bağımsız özellik değerlendiricisi",
+      "status": "verified",
+      "depends_on": [
+        "H00"
+      ],
+      "expected_artifacts": [
+        "out/lab/evaluator-audit/"
+      ],
+      "acceptance": "Yanlış delik sayısı/merkezi/derinliği/birimi/ekseni reddedilir; eşdeğer CAD geçer.",
+      "requires_training_justification": false,
+      "requires_first_checkpoint_review": false,
+      "review_status": "verified_in_tested_scope",
+      "review_findings": [],
+      "evidence": [
+        "out/lab/evaluator-audit/report.md",
+        "eval/audits/20260929-hermes-progress/observations.json"
+      ],
+      "review_note": "31 evaluator tests passed in this review; no universal geometry/production guarantee."
+    },
+    {
+      "id": "H02",
+      "title": "Devam edebilen yerel deney koşucusu",
+      "status": "verified",
+      "depends_on": [
+        "H01"
+      ],
+      "expected_artifacts": [
+        "src/drawingto3d_lab/",
+        "out/lab/state.json"
+      ],
+      "acceptance": "Kesinti, resume, timeout, duplicate ve eksik JSON doğru sınıflanır.",
+      "requires_training_justification": false,
+      "requires_first_checkpoint_review": false,
+      "review_status": "verified_in_tested_scope",
+      "review_findings": [],
+      "evidence": [
+        "src/drawingto3d_lab/runner.py",
+        "tests/test_lab_runner.py",
+        "eval/audits/20260929-hermes-progress/observations.json"
+      ],
+      "review_note": "Runner and baseline shared deadlines checked; T04 closed in reviewed scope."
+    },
+    {
+      "id": "H03",
+      "title": "Kaynak, etiket ve veri ayrımı",
+      "status": "running",
+      "depends_on": [
+        "H02"
+      ],
+      "expected_artifacts": [
+        "out/lab/data/"
+      ],
+      "acceptance": "Bir yeni parçanın bütün zinciri kayıtlı; etiket kökeni ve grup ayrımı doğrulanmış.",
+      "requires_training_justification": false,
+      "requires_first_checkpoint_review": false,
+      "review_status": "synthetic_qa_passed_independent_data_incomplete",
+      "review_findings": [],
+      "evidence": [
+        "out/lab/data/v2/manifest.json",
+        "out/lab/data/v2/qa.json"
+      ],
+      "review_note": "V2 immutable; all four exposed; preserve split correction and no hidden-test claim."
+    },
+    {
+      "id": "H04",
+      "title": "Baseline ve eğitim kararı",
+      "status": "running",
+      "depends_on": [
+        "H03"
+      ],
+      "expected_artifacts": [
+        "out/lab/baseline/",
+        "out/lab/training-decision.json"
+      ],
+      "acceptance": "Hata katmanları ölçülmüş, eğitim kararı somut örneklerle gerekçelendirilmiş.",
+      "requires_training_justification": false,
+      "requires_first_checkpoint_review": false,
+      "review_status": "U01_U02_closed_first_reading_error_measured",
+      "review_findings": [
+        "reading_and_semantic_geometry_errors",
+        "raster_sheet_numbers_contradict_their_own_scale",
+        "raster_recall_low_five_of_eight_printed_dims_have_no_candidate"
+      ],
+      "evidence": [
+        "out/lab/model-baseline-checkpoint/report.md",
+        "eval/audits/20260929-hermes-review4/observations.json",
+        "out/lab/training-decision.json",
+        "out/lab/product-goal/iterations/raster-trace-block01/record.json",
+        "out/lab/product-goal/iterations/u01-u02-repair/record.json"
+      ],
+      "review_note": "U01/U02 closed with the review4 counter-examples held as regression tests; the row classification and the training decision are now separate documents. First raster error measured: the sheet's own readings imply three scales (13.5/51.94/8.43 px/mm), the unreviewed table is refused at build, and a reviewed table is not. Recall and view/datum separation are the next open items."
+    },
+    {
+      "id": "H05",
+      "title": "Dar görev ve M1 aday seçimi",
+      "status": "pending",
+      "depends_on": [
+        "H04"
+      ],
+      "expected_artifacts": [
+        "out/lab/model-selection.md"
+      ],
+      "acceptance": "Seçili base model M1'de gerçek görsel girdiyi işler; export yolu doğrulanır.",
+      "requires_training_justification": true,
+      "requires_first_checkpoint_review": false
+    },
+    {
+      "id": "H06",
+      "title": "Eğitim paketi ve maliyet ön kontrolü",
+      "status": "pending",
+      "depends_on": [
+        "H05"
+      ],
+      "expected_artifacts": [
+        "training/",
+        "out/lab/cloud-plan.json"
+      ],
+      "acceptance": "Paket/dry-run, canlı fiyat, süre ve gerçek kaynak kapatma tasarımı hazır.",
+      "requires_training_justification": true,
+      "requires_first_checkpoint_review": false
+    },
+    {
+      "id": "H07",
+      "title": "İlk bulut teknik eğitim denemesi",
+      "status": "pending",
+      "depends_on": [
+        "H06"
+      ],
+      "expected_artifacts": [
+        "out/lab/runs/",
+        "out/lab/resources.json",
+        "out/lab/cost-ledger.json"
+      ],
+      "acceptance": "Gerçek görsel görevde gradient, checkpoint ve reload; H08 dahil en fazla 3 USD.",
+      "requires_training_justification": true,
+      "requires_first_checkpoint_review": false
+    },
+    {
+      "id": "H08",
+      "title": "M1 aktarımı ve ilk rapor",
+      "status": "pending",
+      "depends_on": [
+        "H07"
+      ],
+      "expected_artifacts": [
+        "out/lab/checkpoint-1/report.md",
+        "out/lab/checkpoint-1/artifact-manifest.json",
+        "out/lab/checkpoint-1/cleanup.json"
+      ],
+      "acceptance": "Dosya hash'leri, yerel inference, maliyet ve kaynak kapanışı doğrulanmış.",
+      "requires_training_justification": true,
+      "requires_first_checkpoint_review": false
+    },
+    {
+      "id": "H09",
+      "title": "Sınırlı asıl eğitim",
+      "status": "pending",
+      "depends_on": [
+        "H08"
+      ],
+      "expected_artifacts": [
+        "out/lab/runs/"
+      ],
+      "acceptance": "Önceden belirlenen metriklerle validation; en fazla iki konfigürasyon ve 12 USD.",
+      "requires_training_justification": true,
+      "requires_first_checkpoint_review": true
+    },
+    {
+      "id": "H10",
+      "title": "M1 entegrasyonu ve terfi kararı",
+      "status": "pending",
+      "depends_on": [
+        "H09"
+      ],
+      "expected_artifacts": [
+        "out/lab/integration/"
+      ],
+      "acceptance": "Eğitim/backend/kuantizasyon etkileri ayrılmış; kabul yoksa eski model korunmuş.",
+      "requires_training_justification": true,
+      "requires_first_checkpoint_review": true
+    },
+    {
+      "id": "H11",
+      "title": "Son test, paket ve kapanış",
+      "status": "pending",
+      "depends_on": [
+        "H04"
+      ],
+      "expected_artifacts": [
+        "out/lab/product-goal/final/report.md",
+        "out/lab/product-goal/acceptance.json"
+      ],
+      "acceptance": "PLAN P01–P08, fixed v2 cases, >=20 new parts including >=10 raster, all defined positives geometrically pass and negatives not falsely accepted, offline M1 UI/store/CAD, resources/cost closed.",
+      "requires_training_justification": false,
+      "requires_first_checkpoint_review": false,
+      "conditional_dependencies": [
+        "H10 if training selected; otherwise training stages must be explicitly not_required"
+      ]
+    }
+  ],
+  "review": "docs/HERMES_PROGRESS_REVIEW_4_20260929.md",
+  "next_checkpoint": "out/lab/product-goal/final/report.md",
+  "active_goal_scope": [
+    "H04_reading_semantics_and_U01_U02",
+    "four_fixed_v2_cases",
+    "PLAN_P01_P08_product_acceptance",
+    "new_final_set_min20_min10_raster",
+    "offline_M1_UI_store_CAD",
+    "conditional_training_with_existing_budget_gates"
+  ],
+  "paid_actions_in_current_goal": {
+    "conditional_first_smoke_max_usd": 3,
+    "requires_H05_H06": true,
+    "further_paid_training_requires_user_checkpoint_review": true
+  },
+  "persistent_goal": true,
+  "completion_policy": "All scoped product acceptance gates; intermediate reports are not completion."
+}

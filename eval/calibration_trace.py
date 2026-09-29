@@ -109,12 +109,75 @@ def _consensus_rows(pairs: list[tuple[float, float]]) -> dict:
     return rows
 
 
+def _row_facts(gray: np.ndarray, binary: np.ndarray, segments, span) -> dict | None:
+    """Bir sayının satırında ölçülen gerçekler — uçlar seçilmeden.
+
+    `_row_diagnostics` ile aynı ölçümler, ama `span.anchors`'a bakmaz: eleme nedenini zincirin *seçtiği*
+    uçlara değil, satırda duran mürekkebe bakarak yazabilmek için ayrıldı.
+    """
+    box = _box(span)
+    reading_across, size, text_span, text_offset, reach, near = lines._row_near(box, segments)
+    row = [segment for segment in near
+           if abs(lines._row_offset(segment, reading_across) - text_offset) <= 1.2 * size]
+    candidates = []
+    for segment in row:
+        start = lines._row_start(segment, reading_across)
+        end = lines._row_end(segment, reading_across)
+        candidates.append({"extent": [round(start, 3), round(end, 3)],
+                           "offset": round(lines._row_offset(segment, reading_across), 3),
+                           "arrow_at_start": lines.arrow_steps(binary, segment, 0),
+                           "arrow_at_end": lines.arrow_steps(binary, segment, 1)})
+    arrowed = [candidate for candidate in candidates
+               if candidate["arrow_at_start"] >= ARROW_STEPS and candidate["arrow_at_end"] >= ARROW_STEPS
+               and candidate["extent"][0] - 0.2 * size <= text_span[0]
+               and text_span[1] <= candidate["extent"][1] + 0.2 * size]
+    row_span = (min(candidate["extent"][0] for candidate in candidates),
+                max(candidate["extent"][1] for candidate in candidates)) if candidates else (0.0, 0.0)
+    crossings = lines._crossings(segments, reading_across, text_offset, row_span, size) if candidates else []
+    along = 0 if reading_across else 1
+    spanning = []
+    for first, second in lines.crossing_pairs(segments, box):
+        low, high = sorted((float(first[along]), float(second[along])))
+        spanning.append([round(low, 3), round(high, 3)])
+    return {"reading_across": reading_across, "text_size_px": round(size, 3),
+            "text_span": [round(text_span[0], 3), round(text_span[1], 3)],
+            "row_offset": round(text_offset, 3), "reach_px": round(reach, 3),
+            "candidates": candidates, "arrowed_lines_that_bracket_the_text": arrowed,
+            "crossings": [round(value, 3) for value in crossings],
+            "span_pairs_the_row_offers": spanning}
+
+
+def _why_dropped(span, facts: dict | None) -> str:
+    """Elenen sayının nedeni: satırda ölçülen gerçeklerden, tahminden değil."""
+    if facts is None:
+        return "değer okunamadı (sayı olarak ayrıştırılamadı)"
+    if str(span.kind) in {"SpanKind.diameter", "SpanKind.radius"}:
+        return ("çağrı ölçüsü (Ø/R): çapa/yarıçapa bağlanır, uçları anket edilmediği için "
+                "kalibrasyon çifti olarak kullanılmaz")
+    if not facts["candidates"]:
+        return "satırda aday çizgi yok: sayının yanında ölçü çizgisi bulunamadı"
+    if not facts["reading_across"]:
+        return "satır dikey okunuyor: sayının satırı yatay değil"
+    if not facts["crossings"]:
+        return ("satırda kesişme yok: sayı bir ölçü çizgisinin üstünde değil "
+                f"(aday={len(facts['candidates'])}, ok uçlu={len(facts['arrowed_lines_that_bracket_the_text'])})")
+    if len(facts["crossings"]) < 2:
+        return (f"satır tek kesişme veriyor ({len(facts['crossings'])}): çiftin öteki ucu bulunamadı "
+                f"(ok uçlu aday={len(facts['arrowed_lines_that_bracket_the_text'])})")
+    if not facts["span_pairs_the_row_offers"]:
+        return f"kesişme var ({len(facts['crossings'])}) ama iki kesişimi birleştiren çift kurulamadı"
+    return "satır çift sunuyor ama zincir bu sayıyı okumadı (bağlama aşamasında düştü)"
+
+
 def trace_part(part_dir: Path) -> dict:
     drawing = part_dir / "drawing.pdf"
     page = load_page(drawing)
+    # `perceive` `page.spans`'ı yerinde daraltıyor: basılı sayıların tam listesi ondan **önce** alınır,
+    # yoksa "algılayıcı bu sayıyı hiç okumadı" diye bir katman kalmaz ve eleme sessizce kaybolur.
+    original = list(page.spans)
     printed = [{"id": span.id, "text": span.text, "value": span.value, "kind": str(span.kind),
                 "bbox": {"x": span.bbox.x, "y": span.bbox.y, "w": span.bbox.w, "h": span.bbox.h}}
-               for span in page.spans]
+               for span in original]
     _, spans = perceive(page)
     image = cv2.imdecode(np.frombuffer(page.image_png, dtype=np.uint8), cv2.IMREAD_COLOR)
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -137,13 +200,37 @@ def trace_part(part_dir: Path) -> dict:
 
     pairs = scale.measure(spans)
     fits = _consensus_rows(pairs)
-    kept_texts = {span.text for span in spans}
-    dropped = [row for row in printed if row["text"] not in kept_texts and row["value"] is not None]
+    # Kimlik düzeyinde iz: katmanlar `span.id` ile eşleştirilir, metnin kendisiyle değil. Aynı sayı
+    # paftada iki kez basılıysa metin eşleştirmesi ikisini birden "tutuldu" sayardı. İki ayrı eleme
+    # katmanı var ve karıştırılmamalı: (a) algılayıcı sayıyı hiç okumamış, (b) okumuş ama bağlayamamış.
+    perceived_ids = {span.id for span in spans}
+    perceived = [{"id": span.id, "text": span.text, "anchor_mode": span.anchor_mode,
+                  "anchors": [list(point) for point in span.anchors]} for span in spans]
+    kept_ids = {record["id"] for record in kept}
+    dropped = []
+    for span in original:
+        if span.id in perceived_ids or span.value is None:
+            continue
+        facts = _row_facts(gray, binary, segments, span)
+        dropped.append({"id": span.id, "text": span.text, "value": span.value, "kind": str(span.kind),
+                        "bbox": {"x": span.bbox.x, "y": span.bbox.y, "w": span.bbox.w, "h": span.bbox.h},
+                        "row": facts, "reason": _why_dropped(span, facts)})
+    unbound = []
+    for span in spans:
+        if span.id in kept_ids or span.value is None:
+            continue
+        facts = _row_facts(gray, binary, segments, span)
+        unbound.append({"id": span.id, "text": span.text, "value": span.value, "kind": str(span.kind),
+                        "anchor_mode": span.anchor_mode,
+                        "anchors": [list(point) for point in span.anchors],
+                        "reason": _why_dropped(span, facts)})
     return {
         "part": part_dir.name, "drawing": str(drawing.relative_to(ROOT)),
         "printed_numbers": printed,
+        "perceived": perceived,
         "kept": kept,
         "dropped_by_the_gate": dropped,
+        "perceived_but_not_bound": unbound,
         "calibration_pairs": [[value, round(measured, 3)] for value, measured in pairs],
         "fits": fits,
         "view_scales": scale.view_scales(spans),
@@ -217,8 +304,16 @@ def main() -> None:
             continue
         row = trace_part(part_dir)
         target = overlays / f"{part_dir.name}.png"
-        row["overlay"] = str(target.relative_to(ROOT)) if draw_overlay(
-            part_dir / "drawing.png", target, row["printed_numbers"], row["kept"]) else None
+        drawn = draw_overlay(part_dir / "drawing.png", target, row["printed_numbers"], row["kept"])
+        # `--out` deponun dışındaysa `relative_to` patlıyordu: araç, kanıtı yazdığı hâlde düşüyordu.
+        # Yol ya depoya göre yazılır ya da olduğu gibi; ikisi de geçerli kanıt.
+        if drawn:
+            try:
+                row["overlay"] = str(target.relative_to(ROOT))
+            except ValueError:
+                row["overlay"] = str(target)
+        else:
+            row["overlay"] = None
         parts.append(row)
         print(f"--- {row['part']}: tutulan={len(row['kept'])} elenen={len(row['dropped_by_the_gate'])} "
               f"çift={row['calibration_pairs']}", flush=True)

@@ -479,9 +479,11 @@ def _bootstrap_calibration(
     winner = window[len(window) // 2]
     spread = (window[-1] - window[0]) / winner if winner else 0.0
     if report is not None:
-        # Ölçeği kuran tanıklar: `scale.verdict` bunları okuma başına bir oyla kullanır, böylece yerleşmiş
-        # okumalar `minimum`a ulaşmadığında da pafta ölçeğini söyleyebiliyor (H-R17).
-        report["scale_witnesses"] = [[row[3], row[4], row[5]] for row in pairs if low <= row[0] <= high]
+        # Ölçeği kuran tanıklar `(okuma kimliği, değer, px)`: kimlik, desteğin sayıldığı anahtardır
+        # (`span.id` değil — okuma anında kimlikler henüz verilmemiş ya da aynı olabiliyor, ölçüldü:
+        # 3 farklı okuma tanık listesinde 2'ye düşüyordu).
+        report["scale_witnesses"] = [[str(row[1]), row[4], row[5]]
+                                     for row in pairs if low <= row[0] <= high]
     return scale.Calibration(px_per_mm=winner, samples=len(best[0]), spread=spread)
 
 

@@ -110,6 +110,25 @@ def sheet_scale(page: Page) -> dict:
     return scale.verdict(spans)
 
 
+def _sheet_needs_review(page: Page) -> str | None:
+    """Why this sheet asks for a review, or None when it speaks for itself.
+
+    Two states ask: a sheet whose numbers contradict its own scale (`contradictory`), and one whose scale
+    fits most readings but not all (`calibrated_with_suspects`). The second used to pass: the guard asked only
+    about the first, so a reading the sheet's own scale had already named as impossible walked into CAD as a
+    parameter nobody had verified (review6 W02).
+    """
+    sheet = sheet_scale(page)
+    if sheet["state"] == "contradictory":
+        return "paftanın sayıları kendi ölçeğiyle çelişiyor (" + sheet["note"] + ")"
+    if sheet["state"] == "calibrated_with_suspects":
+        # `note` yalnız `contradictory` ve `uncalibrated` durumlarında yazılıyor; şüpheli ölçü dalı hiç
+        # çalışmadığı için arkasındaki bu eksik alan da görünmemişti. Mesaj şüpheli listesinden kuruluyor.
+        suspects = ", ".join(str(name) for name in sheet.get("suspect") or []) or "bazı okumalar"
+        return f"paftanın ölçeği bazı okumalarla uyuşmuyor (şüpheli ölçü: {suspects})"
+    return None
+
+
 def _unreviewed(records: Sequence[DimensionRecord], spans) -> list[dict]:
     """This sheet's readings that no user has verified, each with the reason.
 
@@ -188,14 +207,20 @@ def reason_drawing(
     # no longer speaks for the table, and the numbers being built are the user's assertion. So the guard
     # holds only on the unreviewed case — the table that is still exactly what the sheet read.
     sheet = sheet_scale(page)
-    if sheet["state"] == "contradictory":
+    # Suspects count as a contradiction here. A sheet whose scale fits most of its readings but not all of
+    # them has already named the reading that is wrong — and until somebody looks, that reading is a CAD
+    # parameter nobody verified, which is the one thing this guard exists to prevent (review6 W02: with three
+    # agreeing readings and one wrong `9` the verdict is `calibrated_with_suspects`, and the guard stepped
+    # aside because it only asked about `contradictory`).
+    why = _sheet_needs_review(page)
+    if why:
         unreviewed = _unreviewed(records, page.spans)
         if unreviewed:
             raise CadFailure(
-                "paftanın sayıları kendi ölçeğiyle çelişiyor (" + sheet["note"] + "): tabloda kullanıcı "
-                "doğrulaması olmayan okumalar var — " + ", ".join(
+                why + ": tabloda kullanıcı doğrulaması olmayan okumalar var — " + ", ".join(
                     f"{row['span_id']}={row['value']:g} ({row['reason']})" for row in unreviewed) +
-                ". Her okuma kullanıcı tarafından doğrulanmadan kurulum yapılmaz.", "")
+                ". Şüpheli ölçü kesin CAD parametresi olmadan önce ya yeniden okunur ya da kullanıcı "
+                "tarafından doğrulanır.", "")
 
     model = coder or _default_coder()
     folder = Path(out_dir)

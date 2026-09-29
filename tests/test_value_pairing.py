@@ -141,6 +141,39 @@ def test_a_number_far_across_from_a_stroke_is_not_beside_it():
     assert _beside_distance(span, stroke, TEXT_HEIGHT) is None
 
 
+# --- Review6 W01: destek okuma ve cizgi kimligiyle sayilir, cift sayisiyla degil ---
+
+
+def test_one_reading_beside_three_strokes_is_one_witness_not_three():
+    """Denetimin karşı örneği: tek `40` okuması üç 400 px çizgiyle eşleşince ölçek adlandırılamaz."""
+    reading = _span("one_number", 40.0, x=340.0, y=290.0)
+    strokes = [_segment(x, 300.0, x, 700.0) for x in (365.0, 400.0, 440.0)]
+
+    kept, rows = _promote_unplaced([reading], [], strokes, TEXT_HEIGHT)
+
+    assert kept == [], "tek okuma üç kez sayılıp ölçeği adlandırmamalı"
+    assert {row["reason"] for row in rows} == {"no_scale_from_placed_readings"}
+
+
+def test_two_equally_supported_scales_leave_the_sheet_without_one():
+    """Eşit güçlü, birbirinden bağımsız iki küme kesin ölçek yapmaz: pafta hangisine çizildiğini söylemiyor."""
+    readings = [_span("p1", 40.0, x=100.0, y=100.0), _span("p2", 50.0, x=100.0, y=200.0),
+                _span("p3", 60.0, x=100.0, y=300.0),
+                _span("q1", 20.0, x=700.0, y=100.0), _span("q2", 25.0, x=700.0, y=200.0),
+                _span("q3", 30.0, x=700.0, y=300.0)]
+    strokes = [_segment(140.0, 90.0, 140.0, 490.0),    # 400 px / 40 mm = 10
+               _segment(140.0, 190.0, 140.0, 690.0),   # 500 px / 50 mm = 10
+               _segment(140.0, 290.0, 140.0, 890.0),   # 600 px / 60 mm = 10
+               _segment(740.0, 90.0, 740.0, 440.0),    # 350 px / 20 mm = 17.5
+               _segment(740.0, 190.0, 740.0, 627.5),   # 437.5 px / 25 mm = 17.5
+               _segment(740.0, 290.0, 740.0, 815.0)]   # 525 px / 30 mm = 17.5
+
+    kept, rows = _promote_unplaced(readings, [], strokes, TEXT_HEIGHT)
+
+    assert kept == []
+    assert {row["reason"] for row in rows} == {"no_scale_from_placed_readings"}
+
+
 # --- Okunan ama baglanamayan sayi: kayit mi, soru mu? (review5: once oku, sonra bagla) ---
 
 

@@ -18,9 +18,10 @@ import numpy as np
 import pytest
 
 from drawingto3d import perceive as perceive_module
+from drawingto3d import reason as reason_module
 from drawingto3d import scale
 from drawingto3d.cadrun import CadFailure
-from drawingto3d.reason import _unreviewed, reason_drawing
+from drawingto3d.reason import _sheet_needs_review, _unreviewed, reason_drawing
 from drawingto3d.schema import BBox, DimensionRecord, Source, Span
 
 DRAWING = Path("examples/flange-elbow-90.png")

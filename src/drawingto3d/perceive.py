@@ -430,28 +430,49 @@ def _bootstrap_calibration(
     plastic sheet: the gate placed two readings and its own 60 mm / 506 px is one of the three pairs that
     name the scale, so bootstrapping from the pending readings alone found no majority at all.
     """
-    ratios = [length / float(value) for value, length in scale.measure(placed) if value > 0 and length > 0]
-    ratios += [
-        segment.length / float(span.value)
-        for span in pending
-        for segment in segments
-        for distance in [_beside_distance(span, segment, text_height)]
-        if span.value and span.value > 0 and segment.length > 0 and distance is not None
-    ]
-    ratios.sort()
-    best: tuple[int, float, float] | None = None
-    for start, low in enumerate(ratios):
-        high = low * (1 + tolerance)
-        end = start
-        while end < len(ratios) and ratios[end] <= high:
-            end += 1
-        window = ratios[start:end]
-        if best is None or len(window) > best[0]:
-            best = (len(window), window[len(window) // 2], (window[-1] - window[0]) / window[0])
-    if best is None or best[0] < minimum:
+    # Every pair carries the identities behind it - the reading it came from and the stroke it was measured
+    # against - because support has to be counted by *distinct* readings and *distinct* strokes, never by
+    # pairs. One `40` reading beside three 400 px strokes is one reading and one length, and counting it as
+    # three let a single OCR answer name a scale of its own (review6 W01). A stroke is identified by its own
+    # ends, so two segments of one line are one stroke.
+    pairs: list[tuple[float, tuple, tuple]] = []
+    for value, length in scale.measure(placed):
+        if value > 0 and length > 0:
+            pairs.append((length / float(value), ("placed", value, length), ("placed", round(length))))
+    for span in pending:
+        if not span.value or span.value <= 0:
+            continue
+        reading = ("reading", round(span.bbox.x), round(span.bbox.y))
+        for segment in segments:
+            if segment.length <= 0 or _beside_distance(span, segment, text_height) is None:
+                continue
+            stroke = ("stroke", round(segment.x0), round(segment.y0), round(segment.x1), round(segment.y1))
+            pairs.append((segment.length / float(span.value), reading, stroke))
+    pairs.sort(key=lambda row: row[0])
+
+    def support(ratio: float) -> tuple[frozenset, frozenset]:
+        low, high = ratio / (1 + tolerance), ratio * (1 + tolerance)
+        window = [row for row in pairs if low <= row[0] <= high]
+        return (frozenset(row[1] for row in window), frozenset(row[2] for row in window))
+
+    best: tuple[frozenset, frozenset, float] | None = None
+    for ratio, _reading, _stroke in pairs:
+        readings, strokes = support(ratio)
+        if best is None or (len(readings), len(strokes)) > (len(best[0]), len(best[1])):
+            best = (readings, strokes, ratio)
+    if best is None or len(best[0]) < minimum or len(best[1]) < minimum:
         return None
-    support, winner, spread = best
-    return scale.Calibration(px_per_mm=winner, samples=support, spread=spread)
+    # A second scale explaining as many readings as the first — and sharing none of them — means the sheet
+    # has not said which one it is drawn to: reporting either would be picking the first that was tried.
+    for ratio, _reading, _stroke in pairs:
+        readings, _strokes = support(ratio)
+        if len(readings) >= len(best[0]) and not readings & best[0]:
+            return None
+    low, high = best[2] / (1 + tolerance), best[2] * (1 + tolerance)
+    window = sorted(row[0] for row in pairs if low <= row[0] <= high)
+    winner = window[len(window) // 2]
+    spread = (window[-1] - window[0]) / winner if winner else 0.0
+    return scale.Calibration(px_per_mm=winner, samples=len(best[0]), spread=spread)
 
 
 def _one_number_per_line(spans: list[Span], step: float = 8.0) -> list[Span]:

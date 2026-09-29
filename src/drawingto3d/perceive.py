@@ -309,12 +309,14 @@ def _oriented_spans(gray: np.ndarray, reader=None, report: dict | None = None) -
         gray, glyphs, "gap", gate, reader, clusters, text_mask, pending
     )
     spans = _one_number_per_line(spans)
-    for index, span in enumerate(spans):
-        span.id = f"ocr-{index}"
     promoted, unpaired = _promote_unplaced(
         pending, spans, segments, float(np.median(sizes)) if sizes else None
     )
     spans.extend(promoted)
+    # Numbered after the promotions: a promoted reading was read with the serial of the pass it came from,
+    # so it would otherwise arrive under a name another span already has (measured: two spans called `ocr-1`).
+    for index, span in enumerate(spans):
+        span.id = f"ocr-{index}"
     # The pairing first, the value second: the re-read judges a candidate against the line it would sit on,
     # so a reading anchored to somebody else's line has to be given its own before it can be judged at all.
     spans = _repoint_lines_that_are_not_their_own(segments, spans)
@@ -369,6 +371,13 @@ def _promote_unplaced(
         return [], [_unplaced_row(span, "no_strokes_or_no_text_height") for span in pending]
     calibration, _agreeing = scale.consensus(scale.measure(placed), tolerance=tolerance)
     if calibration is None:
+        # The gate placed too few readings to name a scale — measured, two on the plastic sheet, where
+        # `consensus` asks for three — and without a scale every reading here stayed a question. So the scale
+        # is bootstrapped from what is on the sheet: each readable number crossed with each stroke beside it,
+        # and the ratio the most pairs agree on. The evidence is that majority, not one pairing, which is what
+        # keeps a reading from naming the scale it was placed by (review5 V01).
+        calibration = _bootstrap_calibration(pending, placed, segments, text_height, tolerance)
+    if calibration is None:
         return [], [_unplaced_row(span, "no_scale_from_placed_readings") for span in pending]
     kept: list[Span] = []
     rows: list[dict] = []
@@ -395,6 +404,51 @@ def _promote_unplaced(
         span.anchor_source = "value"
         kept.append(span)
     return kept, rows
+
+
+def _bootstrap_calibration(
+    pending: list[Span],
+    placed: list[Span],
+    segments: list,
+    text_height: float,
+    tolerance: float = scale.RELATIVE_TOLERANCE,
+    minimum: int = 3,
+) -> scale.Calibration | None:
+    """The sheet's scale from the ratios its own numbers and strokes agree on, when the gate named none.
+
+    Every readable number is crossed with every stroke beside it and the ratio (pixels per millimetre) is
+    kept; the ratio the most pairs fall within tolerance of is the sheet's scale. The support is what makes
+    it evidence: one pairing can be a coincidence of lengths, three agreeing pairs on a drawing whose lines
+    are drawn to their numbers cannot.
+
+    The readings the gate already placed are counted here, and they are honest witnesses: the gate chooses a
+    line by proximity, before anything is read, so its ratios do not depend on the number. What must never
+    count is a span placed *by* its value — `scale.measure` leaves those out (review5 V01). Measured on the
+    plastic sheet: the gate placed two readings and its own 60 mm / 506 px is one of the three pairs that
+    name the scale, so bootstrapping from the pending readings alone found no majority at all.
+    """
+    ratios = [length / float(value) for value, length in scale.measure(placed) if value > 0 and length > 0]
+    ratios += [
+        segment.length / float(span.value)
+        for span in pending
+        for segment in segments
+        for distance in [_beside_distance(span, segment, text_height)]
+        if span.value and span.value > 0 and segment.length > 0 and distance is not None
+    ]
+    ratios.sort()
+    best: tuple[int, float, float] | None = None
+    for start, low in enumerate(ratios):
+        high = low * (1 + tolerance)
+        end = start
+        while end < len(ratios) and ratios[end] <= high:
+            end += 1
+        window = ratios[start:end]
+        if best is None or len(window) > best[0]:
+            best = (len(window), window[len(window) // 2], (window[-1] - window[0]) / window[0])
+    if best is None or best[0] < minimum:
+        return None
+    support, winner, spread = best
+    return scale.Calibration(px_per_mm=winner, samples=support, spread=spread)
 
 
 def _one_number_per_line(spans: list[Span], step: float = 8.0) -> list[Span]:

@@ -205,3 +205,69 @@ def test_the_same_reading_seen_by_two_passes_is_promoted_once():
     kept, rows = _promote_unplaced([span, twin], PLACED3, segments, TEXT_HEIGHT)
 
     assert len(kept) == 1 and rows == []
+
+
+# --- Olcek, kapinin adlandiramadigi yerde aday ciftlerin cogunlugundan (H-R11) ---
+
+
+def _three_agreeing_readings() -> tuple[list, list]:
+    """Uc okuma, her birinin yaninda kendi degerinin 8 px/mm karsiligi kadar uzun bir cizgi."""
+    readings = [_span("p1", 50.0, x=100.0, y=100.0), _span("p2", 30.0, x=100.0, y=200.0),
+                _span("p3", 20.0, x=100.0, y=300.0)]
+    strokes = [_segment(140.0, 90.0, 140.0, 490.0),   # 400 px / 50 mm = 8.0
+               _segment(140.0, 190.0, 140.0, 430.0),  # 240 px / 30 mm = 8.0
+               _segment(140.0, 290.0, 140.0, 450.0)]  # 160 px / 20 mm = 8.0
+    return readings, strokes
+
+
+def test_the_scale_is_bootstrapped_when_the_gate_placed_too_few_readings():
+    """Kapi iki okuma tuttuysa olcek yoktu ve bu okumalar soru olarak kaliyordu; cogunluk olcegi adlandirir."""
+    readings, strokes = _three_agreeing_readings()
+
+    kept, rows = _promote_unplaced(readings, [], strokes, TEXT_HEIGHT)
+
+    assert rows == []
+    assert sorted(span.text for span in kept) == ["20", "30", "50"]
+    assert all(span.anchor_source == "value" for span in kept)
+    assert scale.measure(kept) == [], "terfi eden okumalar olcegin kaniti olamaz"
+
+
+def test_two_agreeing_pairs_are_not_a_scale():
+    """Iki cift tesaduf olabilir: destek ucun altindaysa hicbir okuma terfi etmez."""
+    readings, strokes = _three_agreeing_readings()
+
+    kept, rows = _promote_unplaced(readings[:2], [], strokes[:2], TEXT_HEIGHT)
+
+    assert kept == [] and len(rows) == 2
+    assert {row["reason"] for row in rows} == {"no_scale_from_placed_readings"}
+
+
+def test_the_readings_the_gate_placed_count_as_witnesses_for_the_bootstrap():
+    """Olculdu: kapi iki okuma yerleştirdi ve olcegi adlandiran uc ciftin biri onun kendi cizgisiydi.
+
+    Kapi cizgiyi sayiya bakmadan (yakinlikla) secer, bu yuzden orani bagimsiz bir taniktir; yalniz
+    `pending` okumalara bakmak cogunlugu bulamaz ve terfi hic olmaz.
+    """
+    placed = [_anchored("a", 50.0, 100.0, 100.0, 500.0, 100.0),   # 400 px / 50 mm = 8.0
+              _anchored("b", 30.0, 100.0, 200.0, 340.0, 200.0)]   # 240 px / 30 mm = 8.0
+    pending = _span("p", 20.0, x=100.0, y=300.0)
+    strokes = [_segment(140.0, 290.0, 140.0, 450.0)]              # 160 px / 20 mm = 8.0
+
+    assert scale.consensus(scale.measure(placed))[0] is None, "iki okuma tek basina olcek degil"
+    kept, rows = _promote_unplaced([pending], placed, strokes, TEXT_HEIGHT)
+
+    assert rows == [] and kept == [pending]
+    assert pending.anchors == [[140.0, 290.0], [140.0, 450.0]]
+    assert pending.anchor_source == "value"
+
+
+def test_a_stroke_that_is_not_beside_the_number_supports_nothing():
+    """1500 px otedeki uzun cizgi ne olcek kurar ne okuma yerlesir."""
+    readings, strokes = _three_agreeing_readings()
+    far = [_segment(1500.0, 90.0, 1500.0, 490.0), _segment(1500.0, 190.0, 1500.0, 430.0),
+           _segment(1500.0, 290.0, 1500.0, 450.0)]
+
+    kept, rows = _promote_unplaced(readings, [], far, TEXT_HEIGHT)
+
+    assert kept == [] and len(rows) == 3
+    assert {row["reason"] for row in rows} == {"no_scale_from_placed_readings"}

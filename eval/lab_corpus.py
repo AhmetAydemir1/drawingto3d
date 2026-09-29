@@ -266,15 +266,20 @@ def build(out_root: Path) -> dict:
     groups = [{"part_id": spec.id, "family": spec.family, "group": spec.family,
                "template": spec.template} for spec in PARTS]
     splits = {
-        "schema": "drawingto3d.lab.splits/1",
+        "schema": "drawingto3d.lab.splits/2",
         "rule": "the split follows the base part's family, decided before any view or crop is derived",
         "groups": groups,
         "development": [spec.id for spec in PARTS if spec.family not in HELD_OUT_FAMILIES],
+        "development_exposed": [spec.id for spec in PARTS],
         "held_out": [spec.id for spec in PARTS if spec.family in HELD_OUT_FAMILIES],
         "regression": [],
         "caveat": "The pilot target is 10 independent parts with different sheet layouts (PLAN §5); "
                   "this corpus has 4, so no independent/hidden test is claimed and the held-out "
                   "family is a smoke set only.",
+        "note": "`held_out` names a family, it is not an independent hidden test: these parts were used "
+                "for the baseline and for error diagnosis, so they are counted in `development_exposed`. "
+                "An independent test needs new part families; re-parameterising the same `plate_holes` "
+                "template is not template generalisation.",
     }
     _immutable_json(out_root / "splits.json", splits)
 

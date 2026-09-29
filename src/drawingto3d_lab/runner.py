@@ -65,15 +65,17 @@ class Job:
                 "notes": self.notes}
 
 
-def subprocess_runner(command: list[str], *, timeout: int) -> dict:
+def subprocess_runner(command: list[str], *, timeout: int, env: dict | None = None) -> dict:
     """The real runner: its own process group, a hard timeout, and both streams captured.
 
     A timeout kills the whole group, not just the direct child: a wrapper that started a compiler, a
-    python worker or a download would otherwise keep running after the case was declared dead.
+    python worker or a download would otherwise keep running after the case was declared dead. `env`
+    replaces the child's environment when the caller must hand one over (a driver running the product
+    from a source tree has to set `PYTHONPATH`); None inherits this process's environment.
     """
     started = time.perf_counter()
     process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                               start_new_session=True)
+                               start_new_session=True, env=env)
     try:
         stdout, stderr = process.communicate(timeout=timeout)
         return {"timed_out": False, "exit_code": process.returncode,

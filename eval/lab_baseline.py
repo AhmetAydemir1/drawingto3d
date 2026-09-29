@@ -31,6 +31,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 from drawingto3d_lab import LAB_VERSION  # noqa: E402
+from drawingto3d_lab.runner import subprocess_runner  # noqa: E402
 from drawingto3d_lab.state import sha256_file, write_json  # noqa: E402
 
 BASELINE_SCHEMA = "drawingto3d.lab.baseline/1"
@@ -56,14 +57,28 @@ def _load_metrics():
     return module
 
 
-def _cli(arguments: list[str], workdir: Path) -> dict:
+CLI_TIMEOUT = 900
+
+
+def _cli(arguments: list[str], workdir: Path, *, log: Path | None = None) -> dict:
+    """Run one product command under the lab runner's proven timeout/process-tree protection.
+
+    `subprocess.run(timeout=...)` kills the direct child only: a product command that starts children of
+    its own — the raster arm runs vision and code models — would leave them running, which is exactly how
+    a local experiment slips into the background. `subprocess_runner` signals the whole process group.
+
+    `log` is where the product writes its model-call evidence (adapter boundary); the file is the record,
+    not a sentence about one.
+    """
+    command = [sys.executable, "-m", "drawingto3d.cli", *arguments]
+    if log is not None:
+        command += ["--inference-log", str(log)]
     environment = dict(os.environ, PYTHONPATH=str(ROOT / "src"))
-    completed = subprocess.run([sys.executable, "-m", "drawingto3d.cli", *arguments], cwd=workdir,
-                               env=environment, capture_output=True, text=True)
+    completed = subprocess_runner(command, timeout=CLI_TIMEOUT, env=environment)
     # A refusal is printed by `parser.exit(2, json)`, which writes to *stderr*; a success goes to
     # stdout. Both are the CLI's own JSON, so both are read as the result.
     payload = None
-    for stream in (completed.stdout, completed.stderr):
+    for stream in (completed.get("stdout"), completed.get("stderr")):
         text = (stream or "").strip()
         if not text.startswith("{"):
             continue
@@ -73,8 +88,23 @@ def _cli(arguments: list[str], workdir: Path) -> dict:
             payload = None
         if payload is not None:
             break
-    return {"command": ["python", "-m", "drawingto3d.cli", *arguments], "exit_code": completed.returncode,
-            "result": payload, "stdout_tail": completed.stdout[-1200:], "stderr_tail": completed.stderr[-1200:]}
+    return {"command": ["python", "-m", "drawingto3d.cli", *arguments], "exit_code": completed["exit_code"],
+            "seconds": completed.get("seconds"), "timed_out": bool(completed.get("timed_out")),
+            "descendants_alive": completed.get("descendants_alive"),
+            "result": payload, "stdout_tail": (completed.get("stdout") or "")[-1200:],
+            "stderr_tail": (completed.get("stderr") or "")[-1200:]}
+
+
+def _call_evidence(workdir: Path, name: str) -> dict | None:
+    """The product's own model-call record; None when the product wrote none."""
+    path = workdir / name
+    if not path.exists():
+        return None
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return None
+    return payload if isinstance(payload, dict) else None
 
 
 def _classify(steps: list[dict], verdict: dict | None) -> tuple[str, str]:
@@ -135,29 +165,65 @@ def _failure_lines(steps: list[dict]) -> list[str]:
 
 
 def _model_step(drawing: Path, workdir: Path) -> dict:
-    """Run the local model path on the same drawing and keep its own record."""
-    try:
-        completed = subprocess.run(
-            [sys.executable, "-m", "drawingto3d.cli", "model-plan", str(drawing), str(workdir / "model")],
-            cwd=workdir, env=dict(os.environ, PYTHONPATH=str(ROOT / "src")),
-            capture_output=True, text=True, timeout=300)
-        payload = None
-        for stream in (completed.stdout, completed.stderr):
-            text = (stream or "").strip()
-            if text.startswith("{"):
-                try:
-                    payload = json.loads(text)
-                except json.JSONDecodeError:
-                    payload = None
-                if payload is not None:
-                    break
-        return {"command": ["python", "-m", "drawingto3d.cli", "model-plan", str(drawing),
-                            str(workdir / "model")],
-                "exit_code": completed.returncode, "result": payload,
-                "stderr_tail": completed.stderr[-600:], "timeout": False}
-    except subprocess.TimeoutExpired:
-        return {"command": ["model-plan"], "exit_code": None, "result": None,
-                "stderr_tail": "", "timeout": True}
+    """Run the local model path on the same drawing and keep its own record.
+
+    The model path is a second arm, not a footnote: if it produces a plan, that plan is built and
+    evaluated under the same acceptance contract as the rule path, so the model's geometry has a
+    measured result. If it produces none, the reason is recorded instead.
+    """
+    log = workdir / "model" / "inference-log.json"
+    log.parent.mkdir(parents=True, exist_ok=True)
+    step = _cli(["model-plan", str(drawing), str(workdir / "model")], workdir, log=log)
+    step["timeout"] = bool(step.get("timed_out"))
+    evidence = _call_evidence(log.parent, log.name)
+    step["inference_log"] = str(log) if evidence is not None else None
+    step["inference"] = evidence
+    plan = Path((step.get("result") or {}).get("plan") or "")
+    step["plan_produced"] = bool(plan.name) and plan.exists()
+    step["built"] = None
+    step["evaluated"] = None
+    if step["plan_produced"]:
+        built = _cli(["build-general", str(plan), str(workdir / "model")], workdir)
+        step["built"] = {"command": built["command"], "exit_code": built["exit_code"],
+                         "failure": _failure_lines([built]) or (built.get("result") or {}).get("refusals")}
+        produced = sorted((workdir / "model").glob("*.step"))
+        step["built"]["step"] = str(produced[0]) if produced else None
+        step["evaluated"] = bool(produced)
+    return step
+
+
+def _arms(product_log: dict | None, model_log: dict | None, model_step: dict | None,
+          model_built: dict, model_verdict: dict | None, raster: bool) -> dict:
+    """Kol başına gerçek boru hattı, model kimliği ve ayarı.
+
+    The raster arm is named for what it is — a free-code program written by models over OCR records —
+    and not as a structured product path; the vector rule path prints no model call at all.
+    """
+    return {
+        "product": {
+            "pipeline": ("raster: OCR'den ölçü kayıtları, görüntü okuyan model + kod modeli geo.* "
+                         "programı yazar, sonra katı kurulur (serbest kod kolu)"
+                         if raster else
+                         "vektör: kural okuyucusu paftayı okur, katı kurulur (model çağrısı yok)"),
+            "inference_called": None if product_log is None else bool(product_log.get("inference_called")),
+            "image_sent": None if product_log is None else bool(product_log.get("image_sent")),
+            "models": (product_log or {}).get("models"),
+        },
+        "model": {
+            "pipeline": "model-plan: yerel sohbet modeli okuma zincirinin kanıtından plan çıkarır, "
+                        "plan aynı kabul sözleşmesiyle derlenip değerlendirilir",
+            "ran": model_step is not None and not model_step["timeout"],
+            "command_started": bool(model_step),
+            "inference_called": None if model_log is None else bool(model_log.get("inference_called")),
+            "image_sent": None if model_log is None else bool(model_log.get("image_sent")),
+            "plan_produced": bool((model_step or {}).get("plan_produced")),
+            "step_built": bool(model_built.get("step")),
+            "evaluated": model_verdict is not None,
+            "models": (model_log or {}).get("models"),
+            "build_failure": model_built.get("failure"),
+            "verdict": None if model_verdict is None else model_verdict.get("verdict"),
+        },
+    }
 
 
 def run_part(row: dict, corpus: Path, out_root: Path, metrics, *, with_model: bool = True) -> dict:
@@ -171,13 +237,15 @@ def run_part(row: dict, corpus: Path, out_root: Path, metrics, *, with_model: bo
     shutil.copyfile(source, drawing)
 
     steps: list[dict] = []
+    product_log = workdir / "product" / "inference-log.json"
     if row["kind"] == "raster":
-        steps.append(_cli(["read", str(drawing), str(workdir / "product")], workdir))
+        steps.append(_cli(["read", str(drawing), str(workdir / "product")], workdir, log=product_log))
         records = workdir / "product" / "records.json"
         if records.exists():
-            steps.append(_cli(["build", str(drawing), str(records), str(workdir / "product")], workdir))
+            steps.append(_cli(["build", str(drawing), str(records), str(workdir / "product")], workdir,
+                              log=product_log))
     else:
-        steps.append(_cli(["propose", str(drawing), str(workdir / "product")], workdir))
+        steps.append(_cli(["propose", str(drawing), str(workdir / "product")], workdir, log=product_log))
         plan = workdir / "product" / "plan.json"
         if plan.exists():
             steps.append(_cli(["build-general", str(plan), str(workdir / "product"),
@@ -194,11 +262,11 @@ def run_part(row: dict, corpus: Path, out_root: Path, metrics, *, with_model: bo
                                              "model_step": model_step})
 
     produced = sorted((workdir / "product").glob("*.step"))
+    truth_record = metrics.extract(str(corpus / part_id / "part.step"))
     verdict = None
     produced_summary = None
     if produced:
         produced_record = metrics.extract(str(produced[0]))
-        truth_record = metrics.extract(str(corpus / part_id / "part.step"))
         verdict = metrics.compare(produced_record, truth_record)
         write_json(workdir / "evaluator-verdict.json", verdict)
         produced_summary = {"bbox_size": produced_record.get("bbox_size"),
@@ -208,23 +276,54 @@ def run_part(row: dict, corpus: Path, out_root: Path, metrics, *, with_model: bo
                             "reference_bbox_size": truth_record.get("bbox_size"),
                             "reference_volume_mm3": truth_record.get("volume_mm3")}
 
+    # The model arm's own artefact is judged by the same contract as the rule path's: "the model planned
+    # something" and "the model got the part right" must not be the same sentence.
+    model_built = (model_step or {}).get("built") or {}
+    model_verdict = None
+    if model_built.get("step"):
+        model_verdict = metrics.compare(metrics.extract(model_built["step"]), truth_record)
+        write_json(workdir / "model-verdict.json", model_verdict)
+
     error_class, detail = _classify(steps, verdict)
+    product_log = _call_evidence(workdir / "product", "inference-log.json")
+    model_log = (model_step or {}).get("inference")
+    raster = row["kind"] == "raster"
     return {
         "part_id": part_id, "input_kind": row["kind"], "input_file": row["file"],
         "input_sha256": sha256_file(drawing),
         "reference_sha256": sha256_file(corpus / part_id / "part.step"),
         "commands": [step["command"] for step in steps],
         "exit_codes": [step["exit_code"] for step in steps],
+        "timed_out": [bool(step.get("timed_out")) for step in steps],
         "product_stage_reached": [step["command"][3] for step in steps],
         "product_refusals": [refusal for step in steps
                              for refusal in ((step.get("result") or {}).get("refusals") or [])],
         "product_step": str(produced[0]) if produced else None,
         "produced_part": produced_summary,
         "product_failure": _failure_lines(steps),
+        # -- S03: each step asked separately, each answer an artifact rather than a sentence ----------
+        # `command_started` is the arm's own command list; `inference_called` and `image_sent` come from
+        # the adapter-boundary log the product wrote (`product/inference-log.json`), and stay null when
+        # the product wrote none — "no evidence" is not "no calls". `plan_produced` is the plan artifact
+        # (rule path: plan.json, raster arm: records.json), `step_built` the STEP file, `evaluated` the
+        # evaluator's verdict on it.
+        "command_started": bool(steps),
+        "inference_called": None if product_log is None else bool(product_log.get("inference_called")),
+        "image_sent": None if product_log is None else bool(product_log.get("image_sent")),
+        "plan_produced": (workdir / "product" / "plan.json").exists()
+                         or (workdir / "product" / "records.json").exists(),
+        "step_built": bool(produced),
+        "evaluated": verdict is not None,
+        "inference_log": str(workdir / "product" / "inference-log.json") if product_log else None,
+        "arms": _arms(product_log, model_log, model_step, model_built, model_verdict, raster),
         "evaluator": None if verdict is None else {
             "verdict": verdict.get("verdict"), "failed_checks": verdict.get("failed_checks"),
             "issues": verdict.get("issues"), "alignment": verdict.get("alignment"),
             "not_evaluated": verdict.get("not_evaluated"),
+        },
+        "model_evaluator": None if model_verdict is None else {
+            "verdict": model_verdict.get("verdict"), "failed_checks": model_verdict.get("failed_checks"),
+            "issues": model_verdict.get("issues"),
         },
         "error_class": error_class, "error_detail": detail,
         "model_path": {
@@ -233,21 +332,32 @@ def run_part(row: dict, corpus: Path, out_root: Path, metrics, *, with_model: bo
             "model": (model_step or {}).get("result", {}).get("model") if (model_step or {}).get("result") else None,
             "plan_produced": bool((model_step or {}).get("result", {}).get("plan")) if (model_step or {}).get("result") else False,
             "evidence": (model_step or {}).get("result"),
-            "note": "the model step receives the drawing (a vision model is chosen when installed, and "
-                    "the request carries the image); it plans from the chain's evidence, so an empty "
-                    "evidence means the picture was never interpreted",
+            "note": "model-plan komutu okuma zincirinin kanıtını gönderir; çağrının kendisi ve görüntü "
+                    "durumu `model/inference-log.json` içinde, adapter sınırında kayıtlıdır",
         },
         "product_input_leakage": "none: the run received the drawing file only "
                                  "(no STEP, labels, parameters, part id or verified plan)",
         "user_interventions": 0,
         "evidence": {"product_steps": str(steps_path),
-                     "verdict": str(workdir / "evaluator-verdict.json") if verdict else None},
+                     "verdict": str(workdir / "evaluator-verdict.json") if verdict else None,
+                     "inference_log": str(workdir / "product" / "inference-log.json") if product_log else None,
+                     "model_verdict": str(workdir / "model-verdict.json") if model_verdict else None},
     }
 
 
 def _summary(rows: list[dict]) -> dict:
+    """Denominators that do not hide the work, and each arm's own.
+
+    Four of the five runs are different parts, so `attempt_count` (runs) and `unique_part_count`
+    (distinct parts) are separate numbers — "5 attempts, 4 parts" — and every rate is given beside the
+    denominator it came from. `inference_log_missing` counts rows where the product wrote no call
+    evidence: those are unmeasured, not model-free.
+    """
+    model_arms = [(row.get("arms") or {}).get("model") or {} for row in rows]
     return {
         "parts": len(rows),
+        "attempt_count": len(rows),
+        "unique_part_count": len({row["part_id"] for row in rows}),
         "by_error_class": {name: sum(1 for row in rows if row["error_class"] == name)
                            for name in ERROR_CLASSES},
         "evaluated": sum(1 for row in rows if row["evaluator"]),
@@ -255,6 +365,57 @@ def _summary(rows: list[dict]) -> dict:
         "product_wrong_part": sum(1 for row in rows
                                  if (row["evaluator"] or {}).get("verdict") == "fail"),
         "refused_before_cad": sum(1 for row in rows if not row["product_step"] and row["product_refusals"]),
+        "arms": {
+            "product": {
+                "ran": sum(1 for row in rows if row.get("command_started")),
+                "inference_called": sum(1 for row in rows if row.get("inference_called") is True),
+                "inference_log_missing": sum(1 for row in rows if row.get("inference_called") is None),
+                "image_sent": sum(1 for row in rows if row.get("image_sent") is True),
+                "plan_produced": sum(1 for row in rows if row.get("plan_produced")),
+                "step_built": sum(1 for row in rows if row.get("step_built")),
+                "evaluated": sum(1 for row in rows if row.get("evaluated")),
+            },
+            "model": {
+                "ran": sum(1 for arm in model_arms if arm.get("ran")),
+                "inference_called": sum(1 for arm in model_arms if arm.get("inference_called") is True),
+                "image_sent": sum(1 for arm in model_arms if arm.get("image_sent") is True),
+                "plan_produced": sum(1 for arm in model_arms if arm.get("plan_produced")),
+                "step_built": sum(1 for arm in model_arms if arm.get("step_built")),
+                "evaluated": sum(1 for arm in model_arms if arm.get("evaluated")),
+            },
+        },
+    }
+
+
+def _fields_from_disk(workdir: Path, row: dict, steps: list[dict], produced: list, model_step,
+                      verdict: dict | None, metrics, corpus: Path) -> dict:
+    """S03'ün altı alanı, yeniden kullanılan bir koşunun kendi dosyalarından kurulur.
+
+    The run already wrote its call logs, plan and STEP; rebuilding the fields from those files keeps
+    `--reuse` honest instead of filling the fields with a default that looks like a measurement.
+    """
+    product_log = _call_evidence(workdir / "product", "inference-log.json")
+    model_log = (model_step or {}).get("inference") or _call_evidence(workdir / "model", "inference-log.json")
+    model_built = (model_step or {}).get("built") or {}
+    model_verdict = None
+    if model_built.get("step"):
+        truth = metrics.extract(str(corpus / row["part_id"] / "part.step"))
+        model_verdict = metrics.compare(metrics.extract(model_built["step"]), truth)
+    return {
+        "command_started": bool(steps),
+        "inference_called": None if product_log is None else bool(product_log.get("inference_called")),
+        "image_sent": None if product_log is None else bool(product_log.get("image_sent")),
+        "plan_produced": (workdir / "product" / "plan.json").exists()
+                         or (workdir / "product" / "records.json").exists(),
+        "step_built": bool(produced),
+        "evaluated": verdict is not None,
+        "inference_log": str(workdir / "product" / "inference-log.json") if product_log else None,
+        "arms": _arms(product_log, model_log, model_step, model_built, model_verdict,
+                      row["kind"] == "raster"),
+        "model_evaluator": None if model_verdict is None else {
+            "verdict": model_verdict.get("verdict"), "failed_checks": model_verdict.get("failed_checks"),
+            "issues": model_verdict.get("issues"),
+        },
     }
 
 
@@ -319,6 +480,7 @@ def summarise_from_disk(row: dict, workdir: Path, corpus: Path, metrics) -> dict
         "evidence": {"product_steps": str(workdir / "product-steps.json"),
                      "verdict": str(workdir / "evaluator-verdict.json") if verdict else None,
                      "model_step": str(workdir / "model-step.json")},
+        **_fields_from_disk(workdir, row, steps, produced, model_step, verdict, metrics, corpus),
     }
 
 
@@ -403,11 +565,28 @@ def main() -> None:
         "error_classes": list(ERROR_CLASSES),
         "parts": rows,
         "summary": _summary(rows),
+        "splits": {
+            "measured": [row["part_id"] for row in rows],
+            "development_exposed": [row["part_id"] for row in rows],
+            "note": "Bu koşuda ölçülen parçalar geliştirme sırasında görüldü: `held_out` bir aile adıdır, "
+                    "bağımsız gizli test değildir (üretici tarafı: eval/lab_corpus.py, splits/2). Bağımsız "
+                    "test yeni parça aileleri ister; aynı `plate_holes` şablonunun parametreleri değişmiş "
+                    "hâli yeni aile sayılmaz. Korpus dosyaları bu dilimde değiştirilmedi.",
+        },
+        "arms": {
+            "product_pipelines": sorted({(row.get("arms") or {}).get("product", {}).get("pipeline", "")
+                                         for row in rows}),
+            "note": "İki kol aynı girdi dosyasıyla koşar; hangi kolun hangi boru hattını çalıştırdığı satır "
+                    "satır `arms` alanında, model kimliği ve ayarı ise adapter sınırındaki çağrı kaydında "
+                    "yazılıdır. Raster kol serbest kod üretir ve yapılandırılmış ürün yolu gibi "
+                    "adlandırılmaz.",
+        },
         "model_path": {
             "runs": [{"part_id": row["part_id"], **(row.get("model_path") or {})} for row in rows],
-            "comparison": "model-less: `propose` (vector) / `read`+`build` (raster); model: `model-plan` "
-                          "on the same file. The model path plans from the reading chain's evidence, so "
-                          "where the chain refuses, the model is never asked to interpret the picture.",
+            "comparison": "product: `propose` (vektör kural yolu) ya da `read`+`build` (raster serbest kod "
+                          "kolu; kural değil model kullanır); model: aynı dosyaya `model-plan`. Model-plan "
+                          "okuma zincirinin kanıtını gönderir; görüntünün gidip gitmediği iddia değil, "
+                          "`model/inference-log.json` kaydıdır. Zincir reddederse model hiç çağrılmaz.",
         },
     }
     write_json(args.results, payload)

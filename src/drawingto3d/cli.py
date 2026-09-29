@@ -32,6 +32,20 @@ from drawingto3d.planner import chain_evidence, propose_plan, propose_plan_split
 from drawingto3d.proposal import propose_general, read_sheet
 from drawingto3d.catalog import build_catalog
 from drawingto3d.planner import suggested_names
+from drawingto3d.inference_log import Recorder, RecordedChat, recording_raster_models
+
+
+def _add_log_flag(command) -> None:
+    """`--inference-log`: model çağrılarının adapter sınırındaki kaydı (baseline kanıtı)."""
+    command.add_argument("--inference-log", default=None, dest="inference_log",
+                         help="model çağrılarının yazılacağı JSON kaydı")
+
+
+def _recorder(args) -> "Recorder | None":
+    path = getattr(args, "inference_log", None)
+    if not path:
+        return None
+    return Recorder(Path(path), label=f"{args.command}: {Path(args.drawing).name}")
 
 
 def main() -> None:
@@ -41,11 +55,13 @@ def main() -> None:
     read = commands.add_parser("read", help="paftayı oku, ölçü kayıtlarını JSON olarak yaz")
     read.add_argument("drawing")
     read.add_argument("out_dir")
+    _add_log_flag(read)
 
     build = commands.add_parser("build", help="düzeltilmiş kayıtlardan katıyı kur")
     build.add_argument("drawing")
     build.add_argument("records")
     build.add_argument("out_dir")
+    _add_log_flag(build)
 
     plan = commands.add_parser("plan", help="desteklenen vektör paftadan model çağırmadan CAD planı çıkar")
     plan.add_argument("drawing")
@@ -71,6 +87,7 @@ def main() -> None:
     propose_command = commands.add_parser("propose", help="okumalardan genel plan önerisi çıkar; reddedilirse nedenini yaz")
     propose_command.add_argument("drawing")
     propose_command.add_argument("out_dir")
+    _add_log_flag(propose_command)
     catalog_command = commands.add_parser(
         "catalog", help="basılı ölçüleri kaynak/birim tablosu olarak incele; model çağrısı yapmaz")
     catalog_command.add_argument("drawing")
@@ -80,6 +97,7 @@ def main() -> None:
     model_plan_command.add_argument("drawing")
     model_plan_command.add_argument("out_dir")
     model_plan_command.add_argument("--model", default=None, help="yerel Ollama etiketi (varsayılan: kurulu talimat modeli)")
+    _add_log_flag(model_plan_command)
     model_plan_command.add_argument("--num-ctx", type=int, default=16384)
     model_plan_command.add_argument("--predict", type=int, default=4096)
     model_plan_command.add_argument("--split", action="store_true",
@@ -167,6 +185,10 @@ def main() -> None:
                           "forms": forms, "resolution": resolutions},
                          ensure_ascii=False, indent=2))
         return
+    if getattr(args, "inference_log", None):
+        # Çağrı kaydı komutun başında doğar: model hiç çağrılmazsa da "sıfır çağrı" ölçülmüş olur ve
+        # satır `inference_called: null` (kanıt yok) yerine `false` yazar.
+        _recorder(args)
     if args.command == "propose":
         try:
             proposal = propose_general(args.drawing)
@@ -196,7 +218,9 @@ def main() -> None:
 
 
 def _read(args) -> None:
-    result = reason_drawing(args.drawing, args.out_dir, progress=_tell)
+    recorder = _recorder(args)
+    reader, coder = recording_raster_models(recorder) if recorder is not None else (None, None)
+    result = reason_drawing(args.drawing, args.out_dir, coder=coder, reader=reader, progress=_tell)
     folder = Path(args.out_dir)
     folder.mkdir(parents=True, exist_ok=True)
     path = folder / "records.json"
@@ -208,7 +232,10 @@ def _read(args) -> None:
 def _build(args) -> None:
     raw = json.loads(Path(args.records).read_text(encoding="utf-8"))
     records = [DimensionRecord.model_validate(item) for item in raw]
-    result = reason_drawing(args.drawing, args.out_dir, records=records, progress=_tell)
+    recorder = _recorder(args)
+    reader, coder = recording_raster_models(recorder) if recorder is not None else (None, None)
+    result = reason_drawing(args.drawing, args.out_dir, coder=coder, reader=reader, records=records,
+                            progress=_tell)
     print(
         json.dumps(
             {"step": result.step_path, "stl": result.stl_path, "accepted": result.audit.accepted},
@@ -308,8 +335,11 @@ def _model_plan(args, parser) -> None:
     reason: str | None = None
     try:
         label = args.model or _default_model()
-        chat = OllamaChat(label, settings=ChatSettings(model=label, num_ctx=args.num_ctx,
-                                                      num_predict=args.predict))
+        settings = ChatSettings(model=label, num_ctx=args.num_ctx, num_predict=args.predict)
+        recorder = _recorder(args)
+        # Çağrı kanıtı adapter sınırında: kayıt varsa sohbet nesnesi kaydeden sarmalayıcıdır.
+        chat = (OllamaChat(label, settings=settings) if recorder is None else
+                RecordedChat(label, settings=settings, recorder=recorder))
         payload, reason = plan_from_drawing(drawing, folder, chat, split=args.split)
     except (UnavailableModel, ValueError) as exc:
         reason = f"Plan çıkarılamadı: {_readable(exc)}"

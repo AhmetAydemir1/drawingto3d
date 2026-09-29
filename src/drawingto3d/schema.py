@@ -56,6 +56,7 @@ class Span(BaseModel):
     bbox: BBox
     anchors: list[list[float]] = Field(default_factory=list)
     anchor_mode: AnchorMode = "dimension"
+    anchor_source: str | None = None
     view_id: str | None = None
     source: Source = Source.ocr
 

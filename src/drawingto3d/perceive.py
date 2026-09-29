@@ -304,17 +304,97 @@ def _oriented_spans(gray: np.ndarray, reader=None, report: dict | None = None) -
         text_height=float(np.median(sizes)) if sizes else None,
     )
     clusters: dict[int, list[int]] = {}
-    spans = _collect_spans(gray, glyphs, "center", gate, reader, clusters, text_mask, report) + _collect_spans(
-        gray, glyphs, "gap", gate, reader, clusters, text_mask, report
+    pending: list[Span] = []
+    spans = _collect_spans(gray, glyphs, "center", gate, reader, clusters, text_mask, pending) + _collect_spans(
+        gray, glyphs, "gap", gate, reader, clusters, text_mask, pending
     )
     spans = _one_number_per_line(spans)
     for index, span in enumerate(spans):
         span.id = f"ocr-{index}"
+    promoted, unpaired = _promote_unplaced(
+        pending, spans, segments, float(np.median(sizes)) if sizes else None
+    )
+    spans.extend(promoted)
     # The pairing first, the value second: the re-read judges a candidate against the line it would sit on,
     # so a reading anchored to somebody else's line has to be given its own before it can be judged at all.
     spans = _repoint_lines_that_are_not_their_own(segments, spans)
     spans = _reread_against_the_sheet_scale(gray, glyphs, spans, clusters, reader)
+    if report is not None:
+        report.setdefault("unpaired", []).extend(unpaired)
     return spans
+
+
+def _unplaced_row(span: Span, reason: str, candidates: int = 0) -> dict:
+    """One refused reading as the caller sees it: what it says, where it sits, and why it was left alone."""
+    return {
+        "id": None,
+        "text": span.text,
+        "value": span.value,
+        "box": [span.bbox.x, span.bbox.y, span.bbox.x + span.bbox.w, span.bbox.y + span.bbox.h],
+        "reason": reason,
+        "expected_px": None,
+        "resolved": False,
+        "candidates": candidates,
+    }
+
+
+def _promote_unplaced(
+    pending: list[Span],
+    placed: list[Span],
+    segments: list,
+    text_height: float | None,
+    tolerance: float = scale.RELATIVE_TOLERANCE,
+) -> tuple[list[Span], list[dict]]:
+    """Give a refused reading the stroke its own value names — only where the drawing leaves one answer.
+
+    The gate could not place these numbers, so on the plastic sheet the readings it dropped and the numbers
+    it never read looked the same. Reading them is not enough to make them records: a reading may only be
+    promoted when the drawing itself settles it, and the sheet must not be asked to confirm a choice its own
+    scale made (review5 V01). So the scale comes from the readings the *drawing* placed (`scale.measure`,
+    which skips value-placed spans), and a reading is promoted only when exactly one stroke is as long as its
+    value implies, that stroke lies beside the number, and no rival stroke is nearly as close.
+
+    Everything else stays a question and is handed back: a number beside two parallel strokes of the same
+    length is not placed by guessing, and a misread (`29` where the sheet prints `25`) has no stroke to sit on.
+    """
+    if not pending:
+        return [], []
+    # The two clustering passes read the same number twice, so the same reading arrives twice: promote one.
+    unique: dict[tuple, Span] = {}
+    for span in pending:
+        key = (span.text, round(span.bbox.x), round(span.bbox.y), round(span.bbox.w), round(span.bbox.h))
+        unique.setdefault(key, span)
+    pending = list(unique.values())
+    if not segments or text_height is None:
+        return [], [_unplaced_row(span, "no_strokes_or_no_text_height") for span in pending]
+    calibration, _agreeing = scale.consensus(scale.measure(placed), tolerance=tolerance)
+    if calibration is None:
+        return [], [_unplaced_row(span, "no_scale_from_placed_readings") for span in pending]
+    kept: list[Span] = []
+    rows: list[dict] = []
+    for span in pending:
+        if span.value is None or span.kind == SpanKind.text:
+            rows.append(_unplaced_row(span, "not_a_number"))
+            continue
+        found = [
+            (distance, segment)
+            for segment in segments
+            for distance in [_beside_distance(span, segment, text_height)]
+            if distance is not None and not calibration.disagrees(float(span.value), segment.length)
+        ]
+        found.sort(key=lambda row: row[0])
+        if not found:
+            rows.append(_unplaced_row(span, "no_stroke_of_its_length"))
+            continue
+        if len(found) > 1 and found[0][0] > BESIDE_MARGIN * found[1][0]:
+            rows.append(_unplaced_row(span, "no_single_stroke", candidates=len(found)))
+            continue
+        chosen = found[0][1]
+        span.anchors = [[chosen.x0, chosen.y0], [chosen.x1, chosen.y1]]
+        span.anchor_mode = "dimension"
+        span.anchor_source = "value"
+        kept.append(span)
+    return kept, rows
 
 
 def _one_number_per_line(spans: list[Span], step: float = 8.0) -> list[Span]:
@@ -641,7 +721,7 @@ def _collect_spans(
     reader=None,
     clusters: dict[int, list[int]] | None = None,
     text_mask: np.ndarray | None = None,
-    report: dict | None = None,
+    pending: list | None = None,
 ) -> list[Span]:
     spans: list[Span] = []
     for cluster in _cluster_glyphs(glyphs, mode):
@@ -656,25 +736,14 @@ def _collect_spans(
             accepted, anchors, mode = gate.accepts(box, _printed_block(glyphs, cluster))
             if not accepted:
                 # Read first, pair second (review5): the gate picks a line *before* any read, so a number it
-                # cannot place is dropped without anyone knowing whether it was even readable — on the plastic
+                # cannot place was dropped without anyone knowing whether it was even readable — on the plastic
                 # sheet that is the difference between "the gate dropped a number" and "nothing was read here".
-                # When the caller asked for a report the cluster is read anyway, and the reading is handed back
-                # as an unpaired number: reported, never promoted, because a reading the sheet's own scale
-                # selected cannot then be evidence for that scale (V01).
-                if report is not None:
+                # The reading goes to the caller, which decides: promoted where the drawing itself leaves one
+                # answer (and then kept out of the scale's evidence, V01), reported otherwise.
+                if pending is not None:
                     dropped = _read_cluster(gray, glyphs, cluster, len(spans), reader, anchors, mode)
                     if dropped is not None:
-                        report.setdefault("unpaired", []).append({
-                            "id": None,
-                            "text": dropped.text,
-                            "value": dropped.value,
-                            "box": [dropped.bbox.x, dropped.bbox.y,
-                                    dropped.bbox.x + dropped.bbox.w, dropped.bbox.y + dropped.bbox.h],
-                            "reason": "gate_refused_but_readable",
-                            "expected_px": None,
-                            "resolved": False,
-                            "candidates": [],
-                        })
+                        pending.append(dropped)
                 continue
             # The line's own ink is not a printed number: an arrowhead lies on the axis of the line it
             # terminates and at one of that line's ends, and the reader answers a digit when it is handed

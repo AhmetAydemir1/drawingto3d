@@ -90,11 +90,19 @@ def audit(spans) -> tuple[Calibration | None, list[str]]:
 
 
 def measure_spans(spans) -> list:
-    """The spans that carry a printed value and the two ends of their own dimension line."""
+    """The spans that carry a printed value and the two ends of their own dimension line.
+
+    A span whose anchors came from its own value (`anchor_source == "value"`) is left out: its line was
+    picked with the sheet's scale, so letting it back into `measure` would make the scale evidence for
+    itself (review5 V01). It stays geometry for the coder — it is just not calibration evidence.
+    """
     return [
         span
         for span in spans
-        if span.anchor_mode == "dimension" and span.value is not None and len(span.anchors) == 2
+        if span.anchor_mode == "dimension"
+        and span.value is not None
+        and len(span.anchors) == 2
+        and getattr(span, "anchor_source", None) != "value"
     ]
 
 

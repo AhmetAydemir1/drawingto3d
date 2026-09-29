@@ -60,17 +60,109 @@ def _gated_text_layer(page: Page, gray: np.ndarray) -> list[Span]:
         text_height=float(np.median(heights)) if heights else None,
     )
     kept: list[Span] = []
+    unpaired: list[Span] = []
     for span in page.spans:
         if span.value is None or span.kind == SpanKind.text:
             continue
         box = (span.bbox.x, span.bbox.y, span.bbox.x + span.bbox.w, span.bbox.y + span.bbox.h)
         accepted, anchors, mode = gate.accepts(box)
         if not accepted:
+            unpaired.append(span)
             continue
         span.anchors = anchors or []
         span.anchor_mode = mode
         kept.append(span)
+    # The second route, for the numbers the gate could not place by *proximity*: a dimension line is drawn
+    # to the number printed on it, so the number names a length of its own line, and the sheet states its
+    # own scale in the readings that *were* placed. Measured on `pilot-step-01`: the three anchored numbers
+    # agree on 7.875 px/mm (spread 0.1%) while the gate drops five of eight numbers — 28 and 40 own exactly
+    # one stroke of their own length that they sit beside, the two 6 mm callouts own none (their only
+    # length-matches are 150 px away), and a 3 mm line does not survive thinning at all. So this attaches
+    # only what the drawing leaves one answer for, and leaves the rest exactly as the gate left them.
+    for span, anchors in _pair_by_value(unpaired, kept, segments, float(np.median(heights)) if heights else None):
+        span.anchors = anchors
+        span.anchor_mode = "dimension"
+        kept.append(span)
     return kept or [span for span in page.spans if span.value is not None]
+
+
+# How far across its own line a number may be printed and still belong to it, in text heights. A number sits
+# beside its dimension line rather than on it when the line carries arrows at both ends, and the sheet may
+# put it either side; measured distances on the v2 sheets run from 8 px to 141 px against a 21 px text
+# height, so the reach is generous and the *nearest* candidate is what decides between parallel lines.
+BESIDE_TEXT_HEIGHTS = 8.0
+# A second candidate this much further away than the first is not a real rival; nearer than that and the
+# drawing has not said which line the number labels, so the number stays unpaired.
+BESIDE_MARGIN = 0.5
+
+
+def _beside_distance(span: Span, segment: "lines.Segment", text_height: float) -> float | None:
+    """How far across this stroke the number lies, or None if it is not beside it at all.
+
+    Two halves, because a number beside a line is beside it in a specific way: along the stroke's own axis
+    the number's box has to fall inside the stroke's span (one text height of slack at the ends, where a
+    number may sit just past an arrowhead), and across the stroke it has to lie off to one side, within
+    `BESIDE_TEXT_HEIGHTS` text heights.
+    """
+    box = (span.bbox.x, span.bbox.y, span.bbox.x + span.bbox.w, span.bbox.y + span.bbox.h)
+    if segment.horizontal:
+        along_lo, along_hi = sorted((segment.x0, segment.x1))
+        box_lo, box_hi = box[0], box[2]
+        across = abs(segment.y0 - (box[1] + box[3]) / 2)
+    else:
+        along_lo, along_hi = sorted((segment.y0, segment.y1))
+        box_lo, box_hi = box[1], box[3]
+        across = abs(segment.x0 - (box[0] + box[2]) / 2)
+    if box_lo < along_lo - text_height or box_hi > along_hi + text_height:
+        return None
+    if across > BESIDE_TEXT_HEIGHTS * text_height:
+        return None
+    return across
+
+
+def _pair_by_value(
+    unpaired: list[Span],
+    kept: list[Span],
+    segments: list,
+    text_height: float | None,
+    tolerance: float = scale.RELATIVE_TOLERANCE,
+) -> list[tuple[Span, list[list[float]]]]:
+    """Numbers the gate could not place, paired with the stroke as long as the number says it is.
+
+    The pairing is only made where the drawing leaves one answer: a stroke whose length is the number's own
+    value at the sheet's own scale, which the number sits beside, and no second stroke nearly as close.
+    Everything else is left unpaired — a wrong pairing here would put a correct number on the wrong feature,
+    which is the same failure as reading the wrong number, and harder to see.
+    """
+    if text_height is None or text_height <= 0:
+        return []
+    pairs = [(float(span.value), scale.line_length(span)) for span in kept if len(span.anchors) == 2]
+    calibration, _inliers = scale.consensus(pairs, minimum=2)
+    if calibration is None:
+        return []
+    attached: list[tuple[Span, list[list[float]]]] = []
+    for span in unpaired:
+        if span.value is None:
+            continue
+        expected = float(span.value) * calibration.px_per_mm
+        if expected <= 0:
+            continue
+        found: list[tuple[float, "lines.Segment"]] = []
+        for segment in segments:
+            if abs(segment.length - expected) > max(tolerance * expected, scale.ABSOLUTE_PX):
+                continue
+            distance = _beside_distance(span, segment, text_height)
+            if distance is None:
+                continue
+            found.append((distance, segment))
+        found.sort(key=lambda row: row[0])
+        if not found:
+            continue
+        if len(found) > 1 and found[0][0] > BESIDE_MARGIN * found[1][0]:
+            continue
+        segment = found[0][1]
+        attached.append((span, [[segment.x0, segment.y0], [segment.x1, segment.y1]]))
+    return attached
 
 
 MARGIN_FRACTION = 0.04

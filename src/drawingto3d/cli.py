@@ -238,7 +238,13 @@ def _read(args) -> None:
     sheet = reason.sheet_scale(result.page)
     (folder / "scale.json").write_text(json.dumps(sheet, ensure_ascii=False, indent=2),
                                        encoding="utf-8")
-    print(json.dumps({"records": len(payload), "file": str(path), "scale": sheet},
+    # Ölçekle çelişen okuma sessizce düzeltilmez, soruya çevrilir: ne yazdığı, ölçeğin ne dediği ve aday
+    # değer birlikte yazılır (review6 W02). Kayıt olduğu gibi kalır; kararı kullanıcı verir.
+    questions = reason.suspect_questions(result.page) if result.page else []
+    (folder / "questions.json").write_text(json.dumps(questions, ensure_ascii=False, indent=2),
+                                           encoding="utf-8")
+    print(json.dumps({"records": len(payload), "file": str(path), "scale": sheet,
+                      "questions": questions},
                      ensure_ascii=False, indent=2))
 
 

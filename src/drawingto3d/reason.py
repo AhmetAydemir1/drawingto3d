@@ -113,6 +113,42 @@ def sheet_scale(page: Page) -> dict:
     return scale.verdict(spans, witnesses=page.scale_witnesses)
 
 
+def suspect_questions(page: Page) -> list[dict]:
+    """Paftanın kendi ölçeğiyle çelişen okumalar: ne yazdıkları, ölçeğin ne dediği ve neden.
+
+    Bu bir düzeltme değil bir sorudur. Ölçekten türetilmiş değeri kayda yazmak, basılı sayının yerine çizgi
+    uzunluğunu koymak olurdu (review5 V01) — bu yüzden kayıt olduğu gibi kalır, aday yanına yazılır ve karar
+    kullanıcıya bırakılır (review6 W02). Ölçüldü: `pilot-block-01`'de kutu `55` basıyor, OCR `09` okuyor ve
+    yeniden okuma (başka açı) bunu düzeltmiyor; ölçek 467.5 px'i 55.41 mm diyor.
+    """
+    sheet = sheet_scale(page)
+    px_per_mm = sheet.get("px_per_mm")
+    if not sheet.get("suspect") or not px_per_mm:
+        return []
+    by_id = {span.id: span for span in page.spans}
+    rows: list[dict] = []
+    for span_id in sheet["suspect"]:
+        span = by_id.get(span_id)
+        if span is None or not span.value or not span.anchors or len(span.anchors) != 2:
+            continue
+        drawn = scale.line_length(span) / px_per_mm
+        # Aday, paftanın kendi toleransı içinde bir tam sayıysa yazılır; değilse uydurulmaz, okuma istenir.
+        candidate = float(round(drawn))
+        tolerance = max(scale.RELATIVE_TOLERANCE * candidate, scale.ABSOLUTE_PX / px_per_mm)
+        rows.append({
+            "span_id": span_id,
+            "yazilan": span.text,
+            "olcek_ne_diyor_mm": round(drawn, 2),
+            "tam_sayi_adayi": candidate if abs(drawn - candidate) <= tolerance else None,
+            "neden": (f"paftanın ölçeği {px_per_mm:.4g} px/mm; bu okumanın çizgisi "
+                      f"{scale.line_length(span):.1f} px = {drawn:.2f} mm"),
+            "soru": (f"`{span.text}` doğru mu? Paftanın ölçeği bu çizgiyi {drawn:.2f} mm yapıyor"
+                     + (f" (basılı sayı {candidate:g} olmalı)" if abs(drawn - candidate) <= tolerance
+                        else " (tam bir sayıya denk gelmiyor)")),
+        })
+    return rows
+
+
 def _sheet_needs_review(page: Page) -> str | None:
     """Why this sheet asks for a review, or None when it speaks for itself.
 

@@ -58,6 +58,22 @@ def test_a_calibrated_sheet_asks_for_nothing(monkeypatch):
     assert reason_module._sheet_needs_review(_FakePage(spans)) is None
 
 
+def test_a_suspect_reading_becomes_a_question_with_the_scale_candidate(monkeypatch):
+    """Ölçekle çelişen okuma sessizce düzeltilmez: ölçeğin dediği değer aday olarak sorulur (review6 W02)."""
+    spans = [_span("nine", 9.0, 467.5), _span("sixty", 60.0, 506.0)]
+    witnesses = [("a", 55.0, 467.5), ("b", 60.0, 506.0), ("c", 8.0, 67.5)]
+    sheet = scale.verdict(spans, witnesses=witnesses)
+    assert sheet["suspect"] == ["nine"], sheet
+    monkeypatch.setattr(reason_module, "sheet_scale", lambda _page: sheet)
+
+    rows = reason_module.suspect_questions(_FakePage(spans))
+
+    assert [row["span_id"] for row in rows] == ["nine"], rows
+    assert rows[0]["yazilan"] == "9"
+    assert rows[0]["tam_sayi_adayi"] == 55.0, rows[0]
+    assert "55" in rows[0]["soru"], rows[0]
+
+
 def test_the_suspect_reading_is_among_the_unreviewed(monkeypatch):
     """Kullanıcı doğrulaması yoksa şüpheli okuma da doğrulanmamış okumalar listesinde görünür."""
     spans = _suspect_spans()

@@ -3,7 +3,9 @@
     drawingto3d read  sheet.pdf out/                   read every printed dimension and its role
     drawingto3d build sheet.pdf out/records.json out/  build the solid from the (corrected) records
 
-Nothing leaves the machine: the reader and the code model are local only.
+`propose` reads the sheet with the reading chain and proposes the plan the rules support;
+`model-plan` asks the local model the same question from the same measurements, so a sheet the rules
+refuse can still be planned. Nothing leaves the machine: the reader and the model are local only.
 """
 
 from __future__ import annotations
@@ -21,10 +23,15 @@ from drawingto3d.plate import propose_plate
 from drawingto3d.plan import PlatePlan, build_plan
 from drawingto3d.cadrun import CadFailure
 from drawingto3d.general import GeneralPlan, build_general
+from drawingto3d.llama import (ChatSettings, OllamaChat, UnavailableModel, choose_text_model,
+                                choose_vision_model, installed_models)
 from drawingto3d.observe import observe
 from drawingto3d.bind import bind_page
 from drawingto3d.meaning import meaning_page
-from drawingto3d.proposal import propose_general
+from drawingto3d.planner import chain_evidence, propose_plan, propose_plan_split
+from drawingto3d.proposal import propose_general, read_sheet
+from drawingto3d.catalog import build_catalog
+from drawingto3d.planner import suggested_names
 
 
 def main() -> None:
@@ -64,8 +71,28 @@ def main() -> None:
     propose_command = commands.add_parser("propose", help="okumalardan genel plan önerisi çıkar; reddedilirse nedenini yaz")
     propose_command.add_argument("drawing")
     propose_command.add_argument("out_dir")
+    catalog_command = commands.add_parser(
+        "catalog", help="basılı ölçüleri kaynak/birim tablosu olarak incele; model çağrısı yapmaz")
+    catalog_command.add_argument("drawing")
+    catalog_command.add_argument("out_dir")
+    model_plan_command = commands.add_parser(
+        "model-plan", help="çizimin kendi ölçümlerinden yerel modelle genel plan çıkar (kanıt + ham plan kaydı)")
+    model_plan_command.add_argument("drawing")
+    model_plan_command.add_argument("out_dir")
+    model_plan_command.add_argument("--model", default=None, help="yerel Ollama etiketi (varsayılan: kurulu talimat modeli)")
+    model_plan_command.add_argument("--num-ctx", type=int, default=16384)
+    model_plan_command.add_argument("--predict", type=int, default=4096)
+    model_plan_command.add_argument("--split", action="store_true",
+                                    help="kanıtı üç dar soruya böl (PLAN §19.4); her adım ayrı çağrı")
 
     args = parser.parse_args()
+    if args.command == "catalog":
+        try:
+            payload = catalog_from_drawing(Path(args.drawing), Path(args.out_dir))
+        except (ValueError, OSError) as exc:
+            parser.exit(2, f"Katalog çıkarılamadı: {exc}\n")
+        print(json.dumps(payload, ensure_ascii=False, indent=2))
+        return
     if args.command == "plan":
         proposal = propose_plate(load_page(args.drawing))
         if proposal is None:
@@ -162,6 +189,9 @@ def main() -> None:
     if args.command == "read":
         _read(args)
         return
+    if args.command == "model-plan":
+        _model_plan(args, parser)
+        return
     _build(args)
 
 
@@ -192,7 +222,126 @@ def _tell(title: str, detail: str) -> None:
     print(f"{title}: {detail}", flush=True)
 
 
-def _readable(exc: ValueError) -> str:
+def catalog_from_drawing(drawing: Path, folder: Path) -> dict:
+    """Expose fixed source quantities for review, including partial geometry readings."""
+    paths = {name: folder / name for name in ("catalog.json", "evidence.json", "review.md")}
+    if any(path.exists() for path in paths.values()):
+        raise ValueError("bu klasörde katalog/kanıt kaydı var; yeni çıktı klasörü seçin")
+    reading = read_sheet(drawing)
+    evidence = chain_evidence(reading)
+    errors = []
+    catalog = None
+    if evidence["printed"]:
+        try:
+            catalog = build_catalog(evidence, suggested_names(evidence))
+        except ValueError as exc:
+            errors.append(str(exc))
+    else:
+        errors.append("sayısal basılı ölçü okunamadı")
+    status = "needs_input" if errors or reading.refusals else "needs_review"
+    record = {"version": 1, "source_ref": reading.source_ref, "source_sha256": reading.source_sha256,
+              "status": status, "catalog": None if catalog is None else catalog.model_dump(mode="json"),
+              "geometry_refusals": reading.refusals, "errors": errors,
+              "interpretation_verified": False, "geometry_verified": False}
+
+    def cell(value):
+        return str(value).replace("|", "\\|").replace("\n", " ").replace("\r", " ")
+
+    lines = ["# Basılı ölçü incelemesi", "", "Durum: " + (
+        "Eksik bilgi var." if status == "needs_input" else "İnceleme gerekli."), "",
+        "Bu tablo çizimden okunan sayıları ve kaynaklarını gösterir. Ölçülerin parçadaki anlamı",
+        "ve geometri henüz doğrulanmadı. CAD üretmeden önce kaynak metnini ve eşleşmeleri inceleyin.", ""]
+    if catalog:
+        lines += ["| Ad | Değer | Birim | Kaynak | Metin | Geometri bağı |",
+                  "|---|---:|---|---|---|---|"]
+        for entry in catalog.entries:
+            binding = "otomatik eşleşme" if entry.measurement.get("resolution") == "confirmed" else "çözülemedi"
+            lines.append("| " + " | ".join(cell(value) for value in (
+                entry.name, str(entry.value), entry.unit, entry.span_id, entry.text, binding)) + " |")
+    if reading.refusals or errors:
+        lines += ["", "## Eksikler", ""] + [f"- {cell(text)}" for text in reading.refusals + errors]
+    folder.mkdir(parents=True, exist_ok=True)
+    paths["evidence.json"].write_text(json.dumps(evidence, ensure_ascii=False, indent=2), encoding="utf-8")
+    paths["catalog.json"].write_text(json.dumps(record, ensure_ascii=False, indent=2), encoding="utf-8")
+    paths["review.md"].write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return {"status": status, "entries": len(catalog.entries) if catalog else 0,
+            **{name.split(".")[0]: str(path) for name, path in paths.items()}}
+
+
+def plan_from_drawing(drawing: Path, folder: Path, chat, *, split: bool = False) -> tuple[dict, str | None]:
+    """One real drawing in, the evidence and the model's plan out.
+
+    Returns the payload to print and, when the run stopped short, the one-line reason — the caller
+    turns that into an exit code. Everything the run produced is written before returning, so a
+    refusal can be read afterwards: the evidence the model was asked with, its raw reply, the plan.
+    """
+    folder.mkdir(parents=True, exist_ok=True)
+    reading = read_sheet(drawing)
+    evidence = chain_evidence(reading)
+    evidence_path = folder / "evidence.json"
+    evidence_path.write_text(json.dumps(evidence, ensure_ascii=False, indent=2), encoding="utf-8")
+    payload = {"evidence": str(evidence_path), "printed": len(evidence["printed"]),
+               "claims": len(evidence["claims"]), "circles": len(evidence["geometry"]["circles"]),
+               "scale_known": bool(evidence["sheet"]["scale_known"]),
+               "model": getattr(chat, "model", "?")}
+    if reading.refusals:
+        return payload, "Çizim milimetreye çevrilemedi: " + "; ".join(reading.refusals)
+    candidate = (propose_plan_split if split else propose_plan)(
+        chat, evidence, ref=str(drawing), sha256=_sha256_file(drawing))
+    candidate_path = folder / "candidate.json"
+    candidate_path.write_text(candidate.model_dump_json(indent=2), encoding="utf-8")
+    payload.update({"candidate": str(candidate_path), "prompt_version": candidate.prompt_version,
+                    "seconds": candidate.seconds, "status": candidate.status, "errors": candidate.errors})
+    if candidate.plan is None:
+        return payload, "Model şemaya uyan plan vermedi; ham yanıt candidate.json içinde."
+    plan_path = folder / "plan.json"
+    plan_path.write_text(candidate.plan.model_dump_json(indent=2), encoding="utf-8")
+    payload["plan"] = str(plan_path)
+    return payload, None
+
+
+def _model_plan(args, parser) -> None:
+    drawing = Path(args.drawing)
+    folder = Path(args.out_dir)
+    chat = None
+    payload: dict = {}
+    reason: str | None = None
+    try:
+        label = args.model or _default_model()
+        chat = OllamaChat(label, settings=ChatSettings(model=label, num_ctx=args.num_ctx,
+                                                      num_predict=args.predict))
+        payload, reason = plan_from_drawing(drawing, folder, chat, split=args.split)
+    except (UnavailableModel, ValueError) as exc:
+        reason = f"Plan çıkarılamadı: {_readable(exc)}"
+    finally:
+        if chat is not None:
+            chat.unload()
+    if payload:
+        print(json.dumps(payload, ensure_ascii=False, indent=2))
+    if reason is not None:
+        parser.exit(2, reason + "\n")
+
+
+def _default_model() -> str:
+    """The model a plan request goes to when none was named: a reader if this box has one, else any
+    installed model — the request carries an image, and the model's own answer says what it made of it."""
+    try:
+        return choose_vision_model()
+    except UnavailableModel:
+        pass
+    models = installed_models()
+    if not models:
+        raise UnavailableModel("Ollama'da kurulu model yok; --model ile etiket ver")
+    return choose_text_model()
+
+
+def _sha256_file(path: Path) -> str:
+    import hashlib
+
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _readable(exc: Exception) -> str:
     """Validation errors read as one line: location and message, no pydantic internals."""
     if isinstance(exc, ValidationError):
         parts = []

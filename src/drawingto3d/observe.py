@@ -202,6 +202,34 @@ class PathObservation(BaseModel):
     method: str = "pdf-vector"
 
 
+def _diameter_prefix_glyph(text: TextObservation, primitives: list[Primitive]) -> str | None:
+    """The Ø prefix of a callout can be stroke art, not text: a small circle drawn beside the digits.
+
+    Measured on a sheet whose text layer carries no Ø at all (468 characters, none of them Ø): five
+    diameter callouts sit 8-21 px from a 24 px circle *glyph*, while every real circle or arc on the
+    same sheet is 138 px or more away. The rule is relative to the phrase, so it needs no scale: a
+    circle no bigger than 60% of the phrase's height, centred inside the phrase's box grown by half
+    its height. Returns the primitive id of the glyph, or None.
+    """
+    if text.kind != "linear" or not text.bbox.h:
+        return None
+    height = float(text.bbox.h)
+    for primitive in primitives:
+        if primitive.kind != "circle" or primitive.radius is None or not primitive.centre:
+            continue
+        if primitive.radius > 0.6 * height:
+            continue
+        # Distance to the box, not a fixed margin: on the measured sheet the glyphs sit 8-21 px out
+        # (0.3-0.8 of the phrase height, leader callouts furthest) and every real circle is 138 px or
+        # more away, so 1.2 x height separates them with a factor of five to spare.
+        cx = min(max(primitive.centre[0], text.bbox.x), text.bbox.x + text.bbox.w)
+        cy = min(max(primitive.centre[1], text.bbox.y), text.bbox.y + text.bbox.h)
+        distance = ((primitive.centre[0] - cx) ** 2 + (primitive.centre[1] - cy) ** 2) ** 0.5
+        if distance <= 1.2 * height:
+            return primitive.id
+    return None
+
+
 class TextObservation(BaseModel):
     """One printed phrase: the raw string, and what the shared reader makes of it."""
 
@@ -234,6 +262,123 @@ class Frame(BaseModel):
     detail: str = "the page rendered at 200 dpi from PDF points; text boxes placed on the sheet's ink"
 
 
+FRAME_COVERAGE = 0.80  # a closed path covering this share of both page sides is the sheet's own border
+ANGLE_SNAP_DEGREES = 2.0
+
+
+class SheetAxis(BaseModel):
+    """One of the sheet's own axes, as a unit vector in the rendered page frame (px, y down)."""
+
+    name: Literal["x", "y"]
+    page: list[float]
+    source: str
+
+
+class SheetFrame(BaseModel):
+    """The sheet's own frame, published as a product (PLAN 8.6).
+
+    The rendered page frame is not the part's frame: a sheet can be drawn or stored rotated, so "page x"
+    may not be "part x". What the flow publishes instead is where the sheet's own border sits and which
+    way its axes point, so the interface can show it and the user can confirm it. Nothing here is a
+    decision: `axes` carries directions and their provenance, not approved signs.
+    """
+
+    found: bool = False
+    rect: list[float] | None = None                          # [x0, y0, x1, y1] px, rendered frame
+    corners: list[list[float]] = Field(default_factory=list)  # the frame's own (possibly tilted) box
+    angle_degrees: float | None = None                        # long edge against the page's x axis
+    aligned: bool | None = None                               # within ANGLE_SNAP_DEGREES of a page axis
+    long_side_px: float | None = None
+    short_side_px: float | None = None
+    coverage: list[float] | None = None                       # the border path's share of both sides
+    rotation: int = 0                                         # the source's own /Rotate
+    axes: list[SheetAxis] = Field(default_factory=list)
+    provenance: str = ""
+    notes: list[str] = Field(default_factory=list)
+
+
+def rotation_axes(rotation: int) -> list[SheetAxis]:
+    """The sheet's axes from the source's own quarter turn: /Rotate=90 turns the sheet clockwise."""
+    turn = rotation % 360
+    table = {0: (1.0, 0.0, 0.0, -1.0), 90: (0.0, 1.0, 1.0, 0.0),
+             180: (-1.0, 0.0, 0.0, 1.0), 270: (0.0, -1.0, -1.0, 0.0)}
+    if turn not in table:
+        return []  # the format stores quarter turns only; anything else is not an axis reading
+    x_dx, x_dy, y_dx, y_dy = table[turn]
+    source = f"sayfa /Rotate={turn}"
+    return [SheetAxis(name="x", page=[x_dx, x_dy], source=source),
+            SheetAxis(name="y", page=[y_dx, y_dy], source=source)]
+
+
+def sheet_frame(paths, frame: Frame, rotation: int = 0, coverage: float = FRAME_COVERAGE) -> SheetFrame:
+    """Find the sheet's own border among the drawn paths and say which way its axes point (PLAN 8.6).
+
+    The border is the biggest closed path covering most of both page sides, the same rule `proposal` uses
+    to skip it, asked the other way round: what it is, not that it is in the way. On a rotated sheet the
+    frame is measured from that border itself, never from the page's visual extents, and the two are
+    compared: a disagreement is reported, not smoothed over.
+    """
+    width, height = float(frame.width or 0), float(frame.height or 0)
+    if width <= 0 or height <= 0:
+        return SheetFrame(rotation=rotation % 360,
+                          provenance="sayfa çerçevesi okunamadı: genişlik/yükseklik sıfır")
+    best = None
+    considered = 0
+    for path in paths:
+        points = np.asarray(getattr(path, "points", []), dtype=float)
+        if len(points) < 3 or not getattr(path, "closed", False):
+            continue
+        considered += 1
+        low, high = points.min(axis=0), points.max(axis=0)
+        share = [(high[0] - low[0]) / width, (high[1] - low[1]) / height]
+        if min(share) < coverage:
+            continue
+        if best is None or share[0] * share[1] > best[0]:
+            best = (share[0] * share[1], path, points, share)
+    axes = rotation_axes(rotation)
+    if best is None:
+        reason = (f"kapalı çerçeve yolu bulunamadı ({considered} kapalı yolun hiçbiri sayfanın "
+                  f"%{round(coverage * 100)}×%{round(coverage * 100)}'ini kaplamıyor)")
+        return SheetFrame(rotation=rotation % 360, axes=axes,
+                          provenance=f"{reason}: eksen yönü sayfanın kendi /Rotate değerinden okundu",
+                          notes=["Çerçeve bulunamadı: yön kararı kullanıcı onayına sunulmalı (PLAN 8.6)."])
+    _area, path, points, share = best
+    box = cv2.minAreaRect(points.astype(np.float32))
+    corners = cv2.boxPoints(box)
+    sides = [corners[(i + 1) % 4] - corners[i] for i in range(4)]
+    lengths = [float(np.hypot(side[0], side[1])) for side in sides]
+    longest = sides[int(np.argmax(np.asarray(lengths)))]
+    # A rectangle cannot tell which of its sides was drawn first, and on a portrait sheet its *long* edge
+    # is the vertical one — measuring only that side called a perfectly axis-aligned portrait frame a 90°
+    # deviation (measured on 2/Drawing.pdf, 1653x2339: box 1496 x 2260, angle read as 90). The honest
+    # reading is the smaller deviation of the frame's two edge directions from the page's own axes.
+    angles = [float(np.degrees(np.arctan2(side[1], side[0]))) % 90.0 for side in sides]
+    angle = min(min(value, 90.0 - value) for value in angles)
+    aligned = angle <= ANGLE_SNAP_DEGREES
+    provenance = (f"pafta çerçevesi {getattr(path, 'id', '?')}: kapalı yol sayfanın "
+                  f"%{100 * share[0]:.1f}×%{100 * share[1]:.1f}'ini kaplıyor; kenarları sayfa "
+                  f"eksenlerinden en fazla {angle:.1f}° sapıyor")
+    notes: list[str] = []
+    if not axes:
+        notes.append("Kaynağın /Rotate değeri çeyrek tur değil: eksen yönü yalnız çerçevenin kendisinden "
+                     "okunur, sayfa yönünden varsayılmaz.")
+    elif aligned:
+        provenance += f" (sayfa eksenlerine {ANGLE_SNAP_DEGREES:.0f}° içinde hizalı)"
+    else:
+        notes.append(f"Çerçevenin kenarları sayfa eksenlerinden {angle:.1f}° sapıyor: çerçeve paftanın "
+                     "kendi çerçevesinden kuruldu, görsel kenarlardan değil; yön kararı kullanıcı onayına "
+                     "sunulmalı (PLAN 8.6).")
+    low, high = points.min(axis=0), points.max(axis=0)
+    return SheetFrame(found=True,
+                      rect=[_rounded(low[0]), _rounded(low[1]), _rounded(high[0]), _rounded(high[1])],
+                      corners=[[_rounded(x), _rounded(y)] for x, y in corners],
+                      angle_degrees=round(angle, 1), aligned=aligned,
+                      long_side_px=_rounded(max(lengths)), short_side_px=_rounded(min(lengths)),
+                      coverage=[round(share[0], 4), round(share[1], 4)],
+                      rotation=rotation % 360, axes=axes,
+                      provenance=provenance, notes=notes)
+
+
 class Skipped(BaseModel):
     object_index: int
     curves: int = 0
@@ -244,6 +389,7 @@ class Observations(BaseModel):
     version: int = 1
     source: SourceRef
     frame: Frame
+    sheet_frame: SheetFrame | None = None
     text_placement: Literal["mirrored", "as-is"]
     paths: list[PathObservation] = Field(default_factory=list)
     primitives: list[Primitive] = Field(default_factory=list)
@@ -336,6 +482,15 @@ def observe(path: str | Path, page_index: int = 0) -> Observations:
             bbox=BBox(x=_rounded(x), y=_rounded(y), w=_rounded(w), h=_rounded(h)),
             char_range=list(char_range),
         ))
+    # A Ø drawn as stroke art is invisible to the text layer; the glyph circle beside the digits is not.
+    glyphs: list[str] = []
+    for observation in observations.texts:
+        glyph = _diameter_prefix_glyph(observation, observations.primitives)
+        if glyph is not None:
+            observation.kind = "diameter"
+            glyphs.append(f"{observation.id}/{glyph}")
+    glyph_note = (f"{len(glyphs)} sayı Ø glifiyle çaplı sayıldı ({', '.join(glyphs)}): önek metin değil, "
+                  "rakamların yanına çizilmiş küçük daire") if glyphs else None
     observations.skipped = [Skipped(object_index=item.object_index, curves=item.curves, reason=item.reason)
                             for item in skipped]
     observations.notes = [
@@ -343,4 +498,9 @@ def observe(path: str | Path, page_index: int = 0) -> Observations:
         "Görünüş ayrımı (plan/kesit/izometrik) bir sonraki dilimde.",
         "Raster paftalar ayrı gözlemciden geçiyor (`raster.py`: CV çizgi/daire + OCR ifade).",
     ]
+    if glyph_note:
+        observations.notes.append(glyph_note)
+    # PLAN 8.6: the sheet's own frame and axis directions are a product, not an assumption about the page.
+    observations.sheet_frame = sheet_frame(observations.paths, observations.frame, rotation)
+    observations.notes.append(f"Görüş çerçevesi (PLAN 8.6): {observations.sheet_frame.provenance}.")
     return observations

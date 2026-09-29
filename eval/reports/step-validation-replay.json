@@ -1,0 +1,413 @@
+{
+  "scope": "offline replay of recorded model answers; no fresh model call, no geometry repair or CAD output",
+  "source_run": "out/model-baseline/names-3b-05/run.json",
+  "source_run_sha256": "648570d468f99a5b9ab1dcd71f29cce90b94b45db68c5f6ec3e1b61b638facc1",
+  "input_evidence": {
+    "version": 1,
+    "verified_by": "hand: bu tablo elle doğrulandı — her basılı sayı, ölçtüğü özelliğe referans STEP'e karşı bağlandı. Bu, teşhis koşulunun girdisidir; otomatik PDF → STEP başarısına sayılmaz (PLAN.md Bölüm 18B).",
+    "verified_against": "examples/pdf with steps/5/plate with a pocket.STEP + paftanın kendi basılı sayıları",
+    "sheet": {
+      "px_per_mm": 7.82,
+      "scale": "1:1",
+      "sheet": "A4 yatay",
+      "scale_known": true,
+      "frame": {
+        "width_px": 1654,
+        "height_px": 1169,
+        "dpi": 200
+      }
+    },
+    "printed": [
+      {
+        "span_id": "d1",
+        "text": "100,00",
+        "value": 100.0,
+        "unit": "mm",
+        "kind": "linear",
+        "count": 1
+      },
+      {
+        "span_id": "d2",
+        "text": "80,00",
+        "value": 80.0,
+        "unit": "mm",
+        "kind": "linear",
+        "count": 1
+      },
+      {
+        "span_id": "d3",
+        "text": "60,00",
+        "value": 60.0,
+        "unit": "mm",
+        "kind": "linear",
+        "count": 1
+      },
+      {
+        "span_id": "d4",
+        "text": "4 x Ø6,80 THRU ALL",
+        "value": 6.8,
+        "unit": "mm",
+        "kind": "diameter",
+        "count": 4
+      },
+      {
+        "span_id": "d5",
+        "text": "50,00",
+        "value": 50.0,
+        "unit": "mm",
+        "kind": "diameter",
+        "count": 1
+      },
+      {
+        "span_id": "d6",
+        "text": "15,00",
+        "value": 15.0,
+        "unit": "mm",
+        "kind": "linear",
+        "count": 1
+      },
+      {
+        "span_id": "d7",
+        "text": "8,00",
+        "value": 8.0,
+        "unit": "mm",
+        "kind": "linear",
+        "count": 1
+      }
+    ],
+    "claims": [
+      {
+        "span_id": "d1",
+        "form": "distance",
+        "resolution": "confirmed",
+        "measures": "two hole centres, along the sheet's horizontal axis (hole spacing X)",
+        "between": [
+          "h1",
+          "h2"
+        ],
+        "measured_mm": 100.71,
+        "verified_mm": 100.0
+      },
+      {
+        "span_id": "d2",
+        "form": "distance",
+        "resolution": "confirmed",
+        "measures": "the same two corner arcs the outline is rounded with, on one side; it is the part's overall height",
+        "between": [
+          "arc_top_left",
+          "arc_bottom_left"
+        ],
+        "measured_mm": 80.46,
+        "verified_mm": 80.0
+      },
+      {
+        "span_id": "d3",
+        "form": "distance",
+        "resolution": "confirmed",
+        "measures": "two hole centres, along the sheet's vertical axis (hole spacing Y)",
+        "between": [
+          "h1",
+          "h3"
+        ],
+        "measured_mm": 60.43,
+        "verified_mm": 60.0
+      },
+      {
+        "span_id": "d4",
+        "form": "diameter",
+        "resolution": "confirmed",
+        "measures": "the four corner holes; 'THRU ALL' means the hole runs through the whole thickness",
+        "matched_geometry": [
+          "h1",
+          "h2",
+          "h3",
+          "h4"
+        ],
+        "measured_mm": 6.85,
+        "verified_mm": 6.8,
+        "through": true
+      },
+      {
+        "span_id": "d5",
+        "form": "diameter",
+        "resolution": "confirmed",
+        "measures": "the single circle at the centre of the plate: a pocket (a flat-bottomed recess), not a through hole",
+        "matched_geometry": [
+          "pocket"
+        ],
+        "measured_mm": 50.36,
+        "verified_mm": 50.0
+      },
+      {
+        "span_id": "d6",
+        "form": "distance",
+        "resolution": "confirmed",
+        "measures": "the plate thickness, across the section view",
+        "between": [
+          "top_face",
+          "bottom_face"
+        ],
+        "measured_mm": 15.1,
+        "verified_mm": 15.0
+      },
+      {
+        "span_id": "d7",
+        "form": "distance",
+        "resolution": "confirmed",
+        "measures": "how deep the central pocket is cut from the top face",
+        "between": [
+          "top_face",
+          "pocket_floor"
+        ],
+        "measured_mm": 8.03,
+        "verified_mm": 8.0
+      }
+    ],
+    "geometry": {
+      "units": "mm, measured on the sheet at 7.82 px/mm; positions relative to the centre of the pocket circle",
+      "circles": [
+        {
+          "id": "h1",
+          "diameter_mm": 6.8,
+          "centre_mm": [
+            -50.0,
+            -30.0
+          ],
+          "kind": "hole"
+        },
+        {
+          "id": "h2",
+          "diameter_mm": 6.8,
+          "centre_mm": [
+            50.0,
+            -30.0
+          ],
+          "kind": "hole"
+        },
+        {
+          "id": "h3",
+          "diameter_mm": 6.8,
+          "centre_mm": [
+            -50.0,
+            30.0
+          ],
+          "kind": "hole"
+        },
+        {
+          "id": "h4",
+          "diameter_mm": 6.8,
+          "centre_mm": [
+            50.0,
+            30.0
+          ],
+          "kind": "hole"
+        },
+        {
+          "id": "pocket",
+          "diameter_mm": 50.0,
+          "centre_mm": [
+            0.0,
+            0.0
+          ],
+          "kind": "circle"
+        }
+      ],
+      "outline_mm": [
+        120.0,
+        80.0
+      ],
+      "outline_note": "the outline is a rectangle rounded at all four corners; its width 120 is NOT printed — it is derived from the 100 hole spacing plus twice the corner radius, and the corner radius is derived from the 80 height less the 60 hole spacing, halved",
+      "through_features": [
+        "h1",
+        "h2",
+        "h3",
+        "h4"
+      ],
+      "blind_features": [
+        "pocket"
+      ]
+    },
+    "notes": [
+      "The sheet is a flat plate seen from above with a section; every number on it is a length in mm.",
+      "There is no printed width: the outline width follows from the hole spacing and the round corners.",
+      "The pocket is drawn as a circle in the top view and as a broken line in the section, so it is a recess with a depth, not a hole."
+    ]
+  },
+  "before": {
+    "version": 1,
+    "prompt_version": "general-plan-v3-split",
+    "evidence_version": 1,
+    "evidence_kind": "verified",
+    "settings": {
+      "model": "qwen2.5vl:3b",
+      "num_ctx": 16384,
+      "temperature": 0.0,
+      "num_predict": 4096,
+      "keep_alive": "5m",
+      "timeout_s": 400.0,
+      "image_max_side": null,
+      "images_per_call": 1,
+      "response_format": "json-schema:GeneralPlan reply v4 split (3 calls)",
+      "name_normalization": "off"
+    },
+    "model_info": {
+      "name": "qwen2.5vl:3b",
+      "digest": "fb90415cde1ef08aa669ae74b082d49b158729b6db1ab183c941417d507e71a1",
+      "size_bytes": 3200627168,
+      "size_gb": 3.201,
+      "parameter_size": "3.8B",
+      "quantization": "Q4_K_M",
+      "context_length": 128000,
+      "families": [
+        "qwen25vl"
+      ],
+      "capabilities": [
+        "vision",
+        "completion"
+      ]
+    },
+    "source_ref": "plate-pocket-1",
+    "status": "invalid",
+    "plan": null,
+    "answer": "",
+    "answer_truncated": true,
+    "steps": [
+      {
+        "step": "parameters",
+        "response_format": "GeneralPlan reply v4 split: parameters",
+        "prompt_version": "general-plan-v3-split",
+        "schema_sha256": "7f340aa40b7844f576f707b9dd23fa182e1f1ff915ccc142b1b951f8c88fe069",
+        "prompt_sha256": "01e0bc397f36b19319e270df9956aaaf55bf5a07b568ce188ab3d3ef84ac9667",
+        "seconds": 14.82,
+        "answer": "{\n  \"parameters\": {\n    \"hole_spacing_x\": {\"unit\": \"mm\", \"source\": \"printed\", \"value\": 100.71, \"span_ids\": [\"h1\", \"h2\"], \"explanation\": \"The distance between the two hole centres along the sheet's horizontal axis\"},\n    \"hole_spacing_y\": {\"unit\": \"mm\", \"source\": \"printed\", \"value\": 60.43, \"span_ids\": [\"h1\", \"h3\"], \"explanation\": \"The distance between the two hole centres along the sheet's vertical axis\"},\n    \"corner_radius\": {\"unit\": \"mm\", \"source\": \"derived\", \"expr\": \"(80 - 60) / 2\", \"explanation\": \"The radius of the rounded corners is half the difference in height and hole spacing\"},\n    \"pocket_depth\": {\"unit\": \"mm\", \"source\": \"assumed\", \"value\": 15.0, \"explanation\": \"The depth of the central pocket cut from the top face\"}\n  }\n}",
+        "stats": {
+          "done_reason": "stop",
+          "eval_count": 227,
+          "prompt_eval_count": 1579,
+          "total_duration_ns": 14816361750,
+          "load_duration_ns": 148970916
+        },
+        "answer_truncated": false,
+        "keys": [
+          "parameters"
+        ],
+        "errors": []
+      },
+      {
+        "step": "profile",
+        "response_format": "GeneralPlan reply v4 split: profile",
+        "prompt_version": "general-plan-v3-split",
+        "schema_sha256": "95760266e72a728a0cd6562d44b410b9e3ab712a7b31fb20db4006c2df2a8adf",
+        "prompt_sha256": "ebc1f6617ee099a5389b72c87928e1e7e2e7a0b94aa75dab3a347c2183fe2e1e",
+        "seconds": 178.47,
+        "answer": "{\n  \"sketches\": {\n    \"hole_spacing_x\": {\n      \"entities\": [\n        {\"type\": \"line\", \"start\": [\"-50.0\", \"-30.0\"], \"end\": [\"50.0\", \"-30.0\"]},\n        {\"type\": \"line\", \"start\": [\"-50.0\", \"30.0\"], \"end\": [\"50.0\", \"30.0\"]}\n      ]\n    },\n    \"hole_spacing_y\": {\n      \"entities\": [\n        {\"type\": \"line\", \"start\": [\"-50.0\", \"-30.0\"], \"end\": [\"-50.0\", \"30.0\"]},\n        {\"type\": \"line\", \"start\": [\"50.0\", \"-30.0\"], \"end\": [\"50.0\", \"30.0\"]}\n      ]\n    },\n    \"corner_radius\": {\n      \"entities\": [\n        {\"type\": \"circle\", \"center\": [\"/2, 0]\", \"radius_exprs_1d_array_2d_array_3d_array_4d_array_5d_array_6d_array_7d_array_8d_array_9d_array_10d_array_11d_array_12d_array_13d_array_14d_array_15d_array_16d_array_17d_array_18d_array_19d_array_20d_array_21d_array_22d_array_23d_array_24d_array_25d_array_26d_array_27d_array_28d_array_29d_array_30d_array_31d_array_32d_array_33d_array_34d_array_35d_array_36d_array_37d_array_38d_array_39d_array_40d_array_41d_array_42d_array_43d_array_44d_array_45d_array_46d_array_47d_array_48d_array_49d_array_50d_array_51d_array_52d_array_53d_array_54d_array_55d_array_56d_array_57d_array_58d_array_59d_array_60d_array_61d_array_62d_array_63d_array_64d_array_65d_array_66d_array_67d_array_68d_array_69d_array_70d_array_71d_array_72d_array_73d_array_74d_array_75d_array_76d_array_77d_array_78d_array_79d_array_80d_array_81d_array_82d_array_83d_array_84d_array_85d_array_86d_array_87d_array_88d_array_89d_array_90d_array_91d_array_92d_array_93d_array_94d_array_95d_array_96d_array_97d_array_98d_array_99d_array_100d_array_101d_array_102d_array_103d_array_104d_array_105d_array_106d_array_107d_array_108d_array_109d_array_110d_array_111d_array_112d_array_113d_array_114d_array_115d_array_116d_array_117d_array_118d_array_119d_array_120d_array_121d_array_122d_array_123d_array_124d_array_125d_array_126d_array_127d_array_128d_array_129d_array_130d_array_131d_array_132d_array_133d_array_134d_array_135d_array_136d_array_137d_array_138d_array_139d_array_140d_array_141d_array_142d_array_143d_array_144d_array_145d_array_146d_array_147d_array_148d_array_149d_array_150d_array_151d_array_152d_array_153d_array_154d_array_155d_array_156d_array_157d_array_158d_array_159d_array_160d_array_161d_array_162d_array_163d_array_164d_array_165d_array_166d_array_167d_array_168d_array_169d_array_170d_array_171d_array_172d_array_173d_array_174d_array_175d_array_176d_array_177d_array_178d_array_179d_array_180d_array_181d_array_182d_array_183d_array_184d_array_185d_array_186d_array_187d_array_188d_array_189d_array_190d_array_191d_array_192d_array_193d_array_194d_array_195d_array_196d_array_197d_array_198d_array_199d_array_200d_array_201d_array_202d_array_203d_array_204d_array_205d_array_206d_array_207d_array_208d_array_209d_array_210d_array_211d_array_212d_array_213d_array_214d_array_215d_array_216d_array_217d_array_218d_array_219d_array_220d_array_221d_array_222d_array_223d_array_224d_array_225d_array_226d_array_227d_array_228d_array_229d_array_230d_array_231d_array_232d_array_233d_array_234d_array_235d_array_236d_array_237d_array_238d_array_239d_array_240d_array_241d_array_242d_array_243d_array_244d_array_245d_array_246d_array_247d_array_248d_array_249d_array_250d_array_251d_array_252d_array_253d_array_254d_array_255d_array_256d_array_257d_array_258d_array_259d_array_260d_array_261d_array_262d_array_263d_array_264d_array_265d_array_266d_array_267d_array_268d_array_269d_array_270d_array_271d_array_272d_array_273d_array_274d_array_275d_array_276d_array_277d_array_278d_array_279d_array_280d_array_281d_array_282d_array_283d_array_284d_array_285d_array_286d_array_287d_array_288d_array_289d_array_290d_array_291d_array_292d_array_293d_array_294d_array_295d_array_296d_array_297d_array_298d_array_299d_array_300d_array_301d_array_302d_array_303d_array_304d_array_305d_array_306d_array_307d_array_308d_array_309d_array_310d_array_311d_array_312d_array_313d_array_314d_array_315d_array_316d_array_317d_array_318d_array_319d_array_320d_array_321d_array_322d_array_323d_array_324d_array_325d_array_326d_array_327d_array_328d_array_329d_array_330d_array_331d_array_332d_array_333d_array_334d_array_335d_array_336d_array_337d_array_338d_array_339d_array_340d_array_341d_array_342d_array_343d_array_344d_array_345d_array_346d_array_347d_array_348d_array_349d_array_350d_array_351d_array_352d_array_353d_array_354d_array_355d_array_356d_array_357d_array_358d_array_359d_array_360d_array_361d_array_362d_array_363d_array_364d_array_365d_array_366d_array_367d_array_368d_array_369d_array_370d_array_371d_array_372d_array_373d_array_374d_array_375d_array_376d_array_377d_array_378d_array_379d_array_380d_array_381d_array_382d_array_383d_array_384d_array_385d_array_386d_array_387d_array_388d_array_389d_array_390d_array_391d_array_392d_array_393d_array_394d_array_395d_array_396d_array_397d_array_398d_array_399d_array_400d_array_401d_array_402d_array_403d_array_404d_array_405d_array_406d_array_407d_array_408d_array_409d_array_410d_array_411d_array_412d_array_413d_array_414d_array_415d_array_416d_array_417d_array_418d_array_419d_array_420d_array_421d_array_422d_array_423d_array_424d_array_425d_array_426d_array_427d_array_428d_array_429d_array_430d_array_431d_array_432d_array_433d_array_434d_array_435d_array_436d_array_437d_array_438d_array_439d_array_440d_array_441d_array_442d_array_443d_array_444d_array_445d_array_446d_array_447d_array_448d_array_449d_array_450d_array_451d_array_452d_array_453d_array_454d_array_455d_array_456d_array_457d_array_458d_array_459d_array_460d_array_461d_array_462d_array_463d_array_464d_array_465d_array_466d_array_467d_array_468d_array_469d_array_470d_array_471d_array_472d_array_473d_array_474d_array_475d_array_476d_array_477d_array_478d_array_479d_array_480d_array_481d_array_482d_array_483d_array_484d_array_485d_array_486d_array_487d_array_488d_array_489d_array_490d_array_491d_array_492d_array_493d_array_494d_array_495d_array_496d_array_497d_array_498d_array_499d_array_500d_array_501d_array_502d_array_503d_array_504d_array_505d_array_506d_array_507d_array_508d_array_509d_array_510d_array_511d_array_512d_array_513d_array_514d_array_515d_array_516d_array_517d_array_518d_array_519d_array_520d_array_521d_array_522d_array_523d_array_524d_array_525d_array_526d_array_527d_array_528d_array_529d_array_530d_array_531d_array_532d_array_533d_array_534d_array_535d_array_536d_array_537d_array_538d_array_539d_array_540d_array_541d_array_542d_array_543d_array_544d_array_545d_array_546d_array_547d_array_548d_array_549d_array_550d_array_551d_array_552d_array_553d_array_554d_array_555d_array_556d_array_557d_array_558d_array_559d_array_560d_array_561d_array_562d_array_563d_array_564d_array_565d_array_566d_array_567d_array_568d_array_569d_array_570d_array_571d_array_572d_array_573d_array_574d_array_575d_array_576d_array_577d_array_578d_array_579d_array_580d_array_581d_array_582d_array_583d_array_584d_array_585d_array_586d_array_587d_array_588d_array_589d_array_590d_array_591d_array_592d_array_593d_array_594d_array_595d_array_596d_array_597d_array_598d_array_599d_array_600d_array_601d_array_602d_array_603d_array_604d_array_605d_array_606d_array_607d_array_608d_array_609d_array_610d_array_611d_array_612d_array_613d_array_614d_array_615d_array_616d_array_617d_array_618d_array_619d_array_620d_array_621d_array_622d_array_623d_array_624d_array_625d_array_626d_array_627d_array_628d_array_629d_array_630d_array_631d_array_632d_array_633d_array_634d_array_635d_array_636d_array_637d_array_638d_array_639d_array_640d_array_641d_array_642d_array_643d_array_644d_array_645d_array_646d_array_647d_array_648d_array_649d_array_650d_array_651d_array_652d_array_653d_array_654d_array_655d_array_656d_array_657d_array_658d_array_659d_array_660d_array_661d_array_662d_array_663d_array",
+        "stats": {
+          "done_reason": "length",
+          "eval_count": 4096,
+          "prompt_eval_count": 1719,
+          "total_duration_ns": 178439239750,
+          "load_duration_ns": 149619291
+        },
+        "answer_truncated": true,
+        "errors": [
+          "yanıtta JSON nesnesi yok (çıktı sınırında kesildi)"
+        ]
+      }
+    ],
+    "questions": [],
+    "assumptions": [],
+    "errors": [
+      "adım profile: yanıtta JSON nesnesi yok (çıktı sınırında kesildi)"
+    ],
+    "overrides": [],
+    "renames": [],
+    "citations": {},
+    "resolved_parameters": {},
+    "stats": {
+      "steps": 2,
+      "eval_count": 4323,
+      "prompt_eval_count": 3298,
+      "total_duration_ns": 193255601500
+    },
+    "seconds": 193.31
+  },
+  "after": {
+    "version": 1,
+    "prompt_version": "general-plan-v3-split",
+    "evidence_version": 1,
+    "evidence_kind": "verified",
+    "settings": {
+      "model": "qwen2.5vl:3b",
+      "num_ctx": 16384,
+      "temperature": 0.0,
+      "num_predict": 4096,
+      "keep_alive": "5m",
+      "timeout_s": 400.0,
+      "image_max_side": null,
+      "images_per_call": 1,
+      "response_format": "json-schema:GeneralPlan reply v4 split (3 calls)",
+      "name_normalization": "off",
+      "step_validation": "general-plan-step-validation-v1"
+    },
+    "model_info": {},
+    "source_ref": "plate-pocket-1",
+    "status": "invalid",
+    "plan": null,
+    "answer": "",
+    "answer_truncated": null,
+    "steps": [
+      {
+        "step": "parameters",
+        "response_format": "GeneralPlan reply v4 split: parameters",
+        "prompt_version": "general-plan-v3-split",
+        "validation_version": "general-plan-step-validation-v1",
+        "accepted": false,
+        "schema_sha256": "7f340aa40b7844f576f707b9dd23fa182e1f1ff915ccc142b1b951f8c88fe069",
+        "prompt_sha256": "01e0bc397f36b19319e270df9956aaaf55bf5a07b568ce188ab3d3ef84ac9667",
+        "seconds": 0.0,
+        "answer": "{\n  \"parameters\": {\n    \"hole_spacing_x\": {\"unit\": \"mm\", \"source\": \"printed\", \"value\": 100.71, \"span_ids\": [\"h1\", \"h2\"], \"explanation\": \"The distance between the two hole centres along the sheet's horizontal axis\"},\n    \"hole_spacing_y\": {\"unit\": \"mm\", \"source\": \"printed\", \"value\": 60.43, \"span_ids\": [\"h1\", \"h3\"], \"explanation\": \"The distance between the two hole centres along the sheet's vertical axis\"},\n    \"corner_radius\": {\"unit\": \"mm\", \"source\": \"derived\", \"expr\": \"(80 - 60) / 2\", \"explanation\": \"The radius of the rounded corners is half the difference in height and hole spacing\"},\n    \"pocket_depth\": {\"unit\": \"mm\", \"source\": \"assumed\", \"value\": 15.0, \"explanation\": \"The depth of the central pocket cut from the top face\"}\n  }\n}",
+        "stats": {
+          "done_reason": "stop",
+          "eval_count": 227,
+          "prompt_eval_count": 1579,
+          "total_duration_ns": 14816361750,
+          "load_duration_ns": 148970916
+        },
+        "answer_truncated": false,
+        "keys": [
+          "parameters"
+        ],
+        "errors": [
+          "parametre 'hole_spacing_x': kanıtta olmayan ölçü kaydına atıf ['h1', 'h2']",
+          "parametre 'hole_spacing_y': kanıtta olmayan ölçü kaydına atıf ['h1', 'h3']"
+        ]
+      }
+    ],
+    "questions": [],
+    "assumptions": [],
+    "errors": [
+      "adım parameters: parametre 'hole_spacing_x': kanıtta olmayan ölçü kaydına atıf ['h1', 'h2']",
+      "adım parameters: parametre 'hole_spacing_y': kanıtta olmayan ölçü kaydına atıf ['h1', 'h3']"
+    ],
+    "overrides": [],
+    "renames": [],
+    "citations": {},
+    "resolved_parameters": {},
+    "stats": {
+      "steps": 1,
+      "eval_count": 227,
+      "prompt_eval_count": 1579,
+      "total_duration_ns": 14816361750
+    },
+    "seconds": 0.01
+  },
+  "calls_replayed": [
+    "parameters"
+  ],
+  "first_prompt_unchanged": true,
+  "first_schema_unchanged": true,
+  "skipped_recorded_steps": [
+    "profile"
+  ],
+  "note": "Replay seconds are CPU validation time, not model inference speed."
+}

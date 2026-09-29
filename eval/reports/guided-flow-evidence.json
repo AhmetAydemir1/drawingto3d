@@ -1,0 +1,427 @@
+{
+  "date": "2026-09-28",
+  "checkpoint_usage_percent": 91,
+  "requested_checkpoint_percent": 90,
+  "usage_note": "First observed usage after crossing the threshold was 91%; scope stopped for checkpoint.",
+  "session": "91411e3ebeca454596d8bec4f4b1a1c5",
+  "source": "examples/pdf with steps/5/Plate With A Pocket Drawing.PDF",
+  "source_sha256": "9e34e6713de6ef8d95bad464e0c87330b515976abc7e5e2e0f9bb0fe701d96ef",
+  "measured_build": "out/guided/91411e3ebeca454596d8bec4f4b1a1c5/build-1-9b4ff278",
+  "geometry": {
+    "valid": true,
+    "solids": 1,
+    "volume": 124797.96221540702,
+    "volume_before_export": 124797.96221541917,
+    "size": [
+      119.99568292341401,
+      79.986540878905,
+      15.0
+    ],
+    "cylinders": [
+      [
+        9.967367979989,
+        9.96734961078,
+        9.968564166103,
+        0.0,
+        15.0
+      ],
+      [
+        9.976256078825,
+        110.01940847538,
+        9.976182536534,
+        0.0,
+        15.0
+      ],
+      [
+        9.97752580723,
+        9.978777166425,
+        70.00767180098,
+        0.0,
+        15.0
+      ],
+      [
+        9.986413906065,
+        110.00798091974,
+        70.000053430549,
+        0.0,
+        15.0
+      ],
+      [
+        3.4,
+        9.997823092502,
+        9.9926890058,
+        0.0,
+        15.0
+      ],
+      [
+        3.4,
+        109.9978230925,
+        9.9926890058,
+        0.0,
+        15.0
+      ],
+      [
+        3.4,
+        9.997823092502,
+        69.991165331714,
+        0.0,
+        15.0
+      ],
+      [
+        3.4,
+        109.9978230925,
+        69.991165331714,
+        0.0,
+        15.0
+      ],
+      [
+        25.0,
+        59.997188228299,
+        39.991292304554,
+        7.0,
+        15.0
+      ]
+    ],
+    "cylinders_axis": [
+      [
+        9.967367979989,
+        9.96734961078,
+        9.968564166103,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        15.0
+      ],
+      [
+        9.976256078825,
+        110.01940847538,
+        9.976182536534,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        15.0
+      ],
+      [
+        9.97752580723,
+        9.978777166425,
+        70.00767180098,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        15.0
+      ],
+      [
+        9.986413906065,
+        110.00798091974,
+        70.000053430549,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        15.0
+      ],
+      [
+        3.4,
+        9.997823092502,
+        9.9926890058,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        15.0
+      ],
+      [
+        3.4,
+        109.9978230925,
+        9.9926890058,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        15.0
+      ],
+      [
+        3.4,
+        9.997823092502,
+        69.991165331714,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        15.0
+      ],
+      [
+        3.4,
+        109.9978230925,
+        69.991165331714,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        15.0
+      ],
+      [
+        25.0,
+        59.997188228299,
+        39.991292304554,
+        7.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        8.0
+      ]
+    ]
+  },
+  "audit": {
+    "status": "draft",
+    "passed": true,
+    "checks": {
+      "valid_solid": true,
+      "export_round_trip": true
+    },
+    "tool_checks": [
+      {
+        "operation": "hole_0_cut",
+        "ok": true,
+        "unverified": false,
+        "cylinders": 1
+      },
+      {
+        "operation": "hole_1_cut",
+        "ok": true,
+        "unverified": false,
+        "cylinders": 1
+      },
+      {
+        "operation": "hole_2_cut",
+        "ok": true,
+        "unverified": false,
+        "cylinders": 1
+      },
+      {
+        "operation": "hole_3_cut",
+        "ok": true,
+        "unverified": false,
+        "cylinders": 1
+      },
+      {
+        "operation": "hole_4_cut",
+        "ok": true,
+        "unverified": false,
+        "cylinders": 1
+      }
+    ],
+    "scope": "CAD geometry matches the proposed plan; the drawing reading is not part of this check."
+  },
+  "comparison": {
+    "reference_size": [
+      119.99999999999999,
+      80.00000000000003,
+      15.000000000000002
+    ],
+    "reference_volume": 124825.41704790584,
+    "generated_size": [
+      119.99568292341401,
+      79.986540878905,
+      15.0
+    ],
+    "generated_volume": 124797.96221540702,
+    "relative_volume_error": 0.00021994585035735903,
+    "note": "Reference opened only after draft generation; traced profile is not a fully constrained reconstruction."
+  },
+  "decisions": {
+    "calibration": {
+      "first": [
+        435.56,
+        658.22
+      ],
+      "second": [
+        1223.13,
+        658.22
+      ],
+      "value": 100.0,
+      "unit": "mm",
+      "span_id": null
+    },
+    "profile_id": "outline_1",
+    "thickness": 15.0,
+    "holes": [
+      {
+        "circle_id": "g9",
+        "kind": "through",
+        "diameter": 6.8,
+        "depth": null
+      },
+      {
+        "circle_id": "g10",
+        "kind": "through",
+        "diameter": 6.8,
+        "depth": null
+      },
+      {
+        "circle_id": "g11",
+        "kind": "through",
+        "diameter": 6.8,
+        "depth": null
+      },
+      {
+        "circle_id": "g12",
+        "kind": "through",
+        "diameter": 6.8,
+        "depth": null
+      },
+      {
+        "circle_id": "g8",
+        "kind": "pocket",
+        "diameter": 50.0,
+        "depth": 8.0
+      }
+    ],
+    "trace_acknowledged": true
+  },
+  "tests": {
+    "full_suite": {
+      "passed": 488,
+      "seconds": 238.59,
+      "log": "out/guided-dev/pytest-full.txt",
+      "scope": "Before startup recovery, two final tests, CSS hit tolerance and explicit thickness-save button."
+    },
+    "final_guided_suite": {
+      "passed": 16,
+      "seconds": 3.57,
+      "log": "out/guided-dev/pytest-guided.txt",
+      "scope": "Latest backend, including startup recovery and live HTTP revision/artifact test."
+    }
+  },
+  "ui_verified": [
+    "Existing session loads drawing and decisions",
+    "Completed STL preview visible",
+    "Coordinate click on Undo removed current artifacts and restored decisions",
+    "Hidden pocket depth is hidden after reload"
+  ],
+  "ui_pending": [
+    "Fresh upload through all decisions with actual UI interaction",
+    "Browser retest of final CSS-coordinate hit tolerance and explicit thickness-save button",
+    "User intervention count and time against manual CAD baseline"
+  ],
+  "limits": [
+    "Draft traced geometry; no exact dimensional constraint solver",
+    "First page; detected closed contours only; no manual contour repair",
+    "Some arc combinations unsupported",
+    "Numeric text candidates include title block numbers; circle candidates can include other views",
+    "No evidence of unseen-part general accuracy or model benefit",
+    "Reference comparison checks bounding box and volume, not full feature equivalence"
+  ],
+  "code_sha256": {
+    "src/drawingto3d/guided.py": "09de52c7ed3d4eade4624de67a3d1e7daf72e6c7d863bcd0fdde50a4cc761bf1",
+    "src/drawingto3d/app.py": "6e37ffe005e76417f2f6ee4a82d9c5024447dc2bf4e4805558e7faa5a18f6083",
+    "src/drawingto3d/static/guided.html": "d1896a01da6248e1f1cfe3044d415e45e04fe60eed46c8ede8853d588ff25a8f",
+    "src/drawingto3d/static/guided.js": "3d9e38b1a53a288ce7e3305e37b92a42db2ef9b9d463b778afc0bc40f40550f7",
+    "src/drawingto3d/static/preview.js": "43fde2d7c300730fa7297cd6673e5037fc524bd16539151e864529835adb5b4a",
+    "tests/test_guided.py": "812b483da7770ba4d5363b888517ba4f5ca3ad791dc78c06171e03b8dd7a6f89"
+  },
+  "acceptance_a_browser": {
+    "date": "2026-09-28",
+    "session": "1ad6f871e3fc4021bfbc5763f8f17b5e",
+    "source": "examples/pdf with steps/5/Plate With A Pocket Drawing.PDF",
+    "how": "gerçek tarayıcı, gerçek fare/klavye; API girişi kabul sayılmadı",
+    "steps": [
+      "dosya yükle",
+      "iki noktalı kalibrasyon (787,6 px = okumanın 1 00,00 satırı)",
+      "kontur tıklaması (outline_1)",
+      "kalınlık 'Kalınlığı kaydet' düğmesiyle (15)",
+      "4 × Ø6,8 geçişli delik daire tıklamasıyla",
+      "Ø50 kör cep (tür klavyeyle, derinlik 8)",
+      "onay kutusu",
+      "üret",
+      "indir",
+      "yeniden aç",
+      "geri al"
+    ],
+    "download_sha256": "matches the server artifact byte for byte",
+    "elapsed_from_log": "2 dk 48 sn (yükleme → geri alma)",
+    "user_decisions_in_log": {
+      "edit": 11,
+      "accept": 2,
+      "veto": 1,
+      "undo": 2
+    },
+    "ui_fixes_from_this_run": [
+      "büyük dairenin içine/ortasına tıklama artık en küçük kapsayan daireyi seçer",
+      "kör cep derinliği alanı tür geçişli iken gizli ve devre dışı, değer boşaltılır"
+    ],
+    "measured_build": "out/guided/1ad6f871e3fc4021bfbc5763f8f17b5e/build-14-966e529e"
+  },
+  "bindings_b1": {
+    "date": "2026-09-28",
+    "module": "src/drawingto3d/sketch.py",
+    "session_with_binding": "1ad6f871e3fc4021bfbc5763f8f17b5e",
+    "browser_binding": "80,00 satırı (t1) çizimin iki sol köşesine bağlandı; panel: 7.8741 px/mm, sapma 0 mm",
+    "calibration_scale_px_per_mm": 7.8757,
+    "bound_scale_px_per_mm": 7.8741,
+    "measurement": "60 px = 80 mm",
+    "built_without_binding": {
+      "folder": "out/guided/1ad6f871e3fc4021bfbc5763f8f17b5e/build-14-966e529e",
+      "size_mm": [
+        119.9957,
+        79.9865,
+        15.0
+      ],
+      "volume_mm3": 124797.96
+    },
+    "built_with_binding": {
+      "folder": "out/guided/1ad6f871e3fc4021bfbc5763f8f17b5e/build-17-d88676e6",
+      "size_mm": [
+        120.0199,
+        80.0027,
+        15.0
+      ],
+      "volume_mm3": 124855.47,
+      "plan_parameter": {
+        "binding_0": {
+          "value": 80.0,
+          "source": "user"
+        }
+      }
+    },
+    "reference": {
+      "file": "examples/pdf with steps/5/plate with a pocket.STEP",
+      "size_mm": [
+        120,
+        80,
+        15
+      ],
+      "volume_mm3": 124825.42
+    },
+    "conflicting_binding": {
+      "rows_flagged": 2,
+      "question": "Bağlanan ölçüler tek ölçekle tutarlı değil",
+      "build_refused": true,
+      "http_status": 400
+    },
+    "limits": [
+      "yalnız tek ölçek çözülür; konum (kenar kaydırma) ve açık kontur kapama yok",
+      "görülmemiş ikinci parçaya genişletilmedi"
+    ],
+    "parallel_work_in_tree": {
+      "files": [
+        "src/drawingto3d/sketch_constraints.py",
+        "tests/test_sketch_constraints.py"
+      ],
+      "by": "a concurrent agent in the same working tree (11:48, ~13 min before sketch.py)",
+      "note": "coordinate-difference constraints (B-2's position solver); not wired into guided.py, not imported by this slice — the two must be joined deliberately, not by merging edits"
+    }
+  }
+}

@@ -29,10 +29,91 @@ from drawingto3d.meaning import Meanings, SpanMeaning, meaning_page
 from drawingto3d.observe import observe
 
 LOOP_TOLERANCE_PX = 3.0
+# A tangent joint breaks endpoint proximity: at the corner the line's ink and the arc's ink are the
+# same ink, so an arc that was trimmed to its own ink stops some ten pixels short of the corner and an
+# arc that was not overshoots it by about the same. The join is therefore kept when a point stands *on
+# the arc's circle*, inside the arc's own angular range — that is where the corner is.
+ARC_JOIN_SLACK_PX = 2.5
+ARC_JOIN_DEGREES = 25.0
+ARC_JOIN_PENALTY_PX = 8.0
+ARC_JOIN_SNAP_PX = 16.0   # how far apart a corner and a trimmed arc end may sit and still be one corner
+# A raster outline is broken by the drawing's own dimension lines, leaders and print noise: measured on
+# `1/Exercise_51.PNG` the part's own pieces sit 1.6 … 32.7 px apart where a vector reading's joins are
+# exact. The widening is a raster rule only — a vector reading's chains were measured at 3 px, and the
+# least-turn rule is what keeps the wider tolerance from walking off along a dimension line.
+# Measured sweep (2026-09-28, four real sheets): 6 px leaves 15-31 small junk wires per sheet, 36 px
+# collapses Flange to 4 wires and 52x121 px; 20 px keeps 9-17 wires with a part-scale outline on top
+# (723x718 / 730x816 / 356x568 / 427x334) and no sheet-frame box. 20 px ~ 1.6 mm on these sheets.
+# (The sweep reused one `observe` per sheet and may carry per-call state; a fresh-process re-measure
+# at 20 px follows — /tmp/guided-raster2-run8.txt.)
+RASTER_JOIN_TOLERANCE_PX = 20.0
+
+
+def _line_arc_corner(line_start: np.ndarray, line_end: np.ndarray, meta: dict) -> np.ndarray | None:
+    """Where a line meets an arc: the arc's centre projected onto the line — the tangent point.
+
+    Endpoints will not do here. The merge pass extends a straight stroke over the arc's own tangent
+    ink (that ink runs parallel to the line), so a line's recorded end can sit thirty pixels past the
+    corner; and the arc's end is trimmed back for the same reason. The corner is where the two
+    geometries meet, so the arc's centre is projected onto the line and that foot is the join.
+    """
+    if meta.get("kind") != "arc":
+        return None
+    centre = np.asarray(meta["centre"], dtype=float)
+    start = np.asarray(line_start, dtype=float)
+    direction = np.asarray(line_end, dtype=float) - start
+    length = float(np.linalg.norm(direction))
+    if length <= 0.0:
+        return None
+    unit = direction / length
+    along = float((centre - start) @ unit)
+    if along < -LOOP_TOLERANCE_PX or along > length + LOOP_TOLERANCE_PX:
+        return None
+    foot = start + along * unit
+    if abs(float(np.linalg.norm(foot - centre)) - float(meta["radius"])) > LOOP_TOLERANCE_PX + ARC_JOIN_SLACK_PX:
+        return None
+    return foot
+
+
+def _arc_hit(point: np.ndarray, meta: dict) -> np.ndarray | None:
+    """The point projected onto an arc's ring when it stands at that arc's end, else None."""
+    if meta.get("kind") != "arc":
+        return None
+    centre = np.asarray(meta["centre"], dtype=float)
+    radius = float(meta["radius"])
+    offset = np.asarray(point, dtype=float) - centre
+    distance = float(np.linalg.norm(offset))
+    if abs(distance - radius) > LOOP_TOLERANCE_PX + ARC_JOIN_SLACK_PX:
+        return None
+    angle = float(np.degrees(np.arctan2(offset[1], offset[0]))) % 360.0
+    span = float(meta["end_degrees"]) - float(meta["start_degrees"])
+    delta = (angle - float(meta["start_degrees"])) % 360.0
+    if delta > span + ARC_JOIN_DEGREES and delta < 360.0 - ARC_JOIN_DEGREES:
+        return None
+    return centre + offset / (distance or 1.0) * radius
 ARC_SAMPLES = 12
 CHECK_RELATIVE = 0.01
 CHECK_ABSOLUTE_MM = 0.5
 FRAME_COVERAGE = 0.80
+# A closed loop that carries printed phrases inside it is an annotation region, not the part: a title
+# block, a parts table or the sheet's own border. Measured on the four vector sheets this project has:
+# every part loop holds 0 phrases, the border holds 25-66, and one sheet's title-block box (a plain
+# 4-line rectangle, the biggest loop left once the border is skipped) held 18 phrases, 16 of them
+# words. The share test is what keeps a dimension text printed inside a view from condemning a real
+# outline: a part loop that happens to hold a number or two still holds almost no words.
+ANNOTATION_MIN_PHRASES = 3
+ANNOTATION_WORD_SHARE = 0.5
+# A rotational body seen face-on carries a stack of circles about one centre. Measured on the four vector
+# sheets: the flanged elbow's stack has 5 circles at 5 distinct diameters with its biggest circle 0.193 of
+# the page width, against 0.011 for the plastic's small holes and no stack at all on the two flat sheets.
+FLANGE_FAMILY_MIN_CIRCLES = 3
+FLANGE_FAMILY_MIN_STEPS = 3
+FLANGE_DIAMETER_SHARE = 0.15
+OUTLINE_REFUSALS = {
+    "no-loops": "kapalı dış kontur bulunamadı (çizgiler/yaylar döngü kurmuyor)",
+    "frame-only": "kapalı dış kontur bulunamadı (sayfa çerçevesi dışında döngü yok)",
+    "annotation-only": "kapalı dış kontur bulunamadı (döngüler yalnız çerçeve ve antet/tablo bölgesi)",
+}
 
 
 class Proposal(BaseModel):
@@ -67,9 +148,43 @@ def _arc_points(centre: np.ndarray, radius: float, start_degrees: float,
             for t in np.linspace(start, start + delta, samples)]
 
 
+def _turn_degrees(direction: np.ndarray, following: np.ndarray) -> float:
+    """How sharply a chain would turn if it continued with `following`: 0 is straight on."""
+    a = direction / (float(np.linalg.norm(direction)) or 1.0)
+    b = following / (float(np.linalg.norm(following)) or 1.0)
+    return float(np.degrees(np.arccos(float(np.clip(np.dot(a, b), -1.0, 1.0)))))
+
+
+def raster_arcs(observations) -> bool:
+    """True when the arcs came off image ink: only then do the tangent-corner joins apply.
+
+    A raster reading shares the corner between a line and its tangent arc (the ink is one blob there),
+    so endpoint proximity alone can never close a curved outline; a vector reading has real endpoints
+    and its chains were measured without the corner join, so it keeps that rule.
+    """
+    return any(getattr(primitive, "method", "") == "hough-arc"
+               for primitive in getattr(observations, "primitives", ()))
+
+
 def _loops(lines: dict[str, tuple[np.ndarray, np.ndarray]],
-           arcs: dict[str, tuple[np.ndarray, float, float, float]]) -> list[dict]:
-    """Chain lines and arcs into closed loops by endpoint proximity; biggest first."""
+           arcs: dict[str, tuple[np.ndarray, float, float, float]],
+           corner_joins: bool = False, join_tolerance_px: float = LOOP_TOLERANCE_PX) -> list[dict]:
+    """Chain lines and arcs into closed loops by endpoint proximity; biggest first.
+
+    `corner_joins` turns on the tangent-corner join (below): it is what lets a *raster* outline close —
+    image ink shares the corner between a line and its tangent arc — but on a *vector* reading it also
+    closes small chains the sheet did not intend, which changed which loop the refusal named, so it is
+    off unless the caller knows its arcs came off pixels.
+
+    Three rules pick the chain, and each one exists because the first cut of this walked into a
+    drawing's dimension lines and lost the part: a segment whose far end returns to the chain's
+    start is taken at once (the drawing's own outline is a closed run; letting a neighbour in first
+    walks off along a dimension line), otherwise the continuation that turns least is taken (a drawn
+    contour carries on smoothly where an extension or a leader leaves at an angle), and a chain that
+    dead-ends claims nothing — its segments stay in the pool, so one greedy dead end cannot swallow
+    the runs a real loop is made of. On `Drawing.pdf` the previous version chained 239 lines into
+    three loops, because the first chains ate the outline's own segments.
+    """
     segments: list[tuple[str, np.ndarray, np.ndarray, dict]] = []
     for geometry_id, (start, end) in lines.items():
         segments.append((geometry_id, start, end, {"kind": "line"}))
@@ -79,32 +194,81 @@ def _loops(lines: dict[str, tuple[np.ndarray, np.ndarray]],
                          {"kind": "arc", "centre": centre, "radius": radius,
                           "start_degrees": start_degrees, "end_degrees": end_degrees}))
     loops: list[dict] = []
-    consumed: set[int] = set()
-    for index, (geometry_id, start, end, meta) in enumerate(segments):
-        if index in consumed:
+    claimed: set[int] = set()
+    for index in range(len(segments)):
+        if index in claimed:
             continue
+        geometry_id, start, end, meta = segments[index]
         chain = [(geometry_id, start, end, meta)]
-        consumed.add(index)
+        chain_indexes = [index]
         tail = end
-        while True:
-            found = None
+        direction = end - start
+        while len(chain) < len(segments):
+            candidates = []
             for other_index, (other_id, other_start, other_end, other_meta) in enumerate(segments):
-                if other_index in consumed:
+                if other_index in chain_indexes or other_index in claimed:
                     continue
-                if float(np.linalg.norm(other_start - tail)) <= LOOP_TOLERANCE_PX:
-                    found = (other_index, other_id, other_start, other_end, other_meta, other_end)
-                elif float(np.linalg.norm(other_end - tail)) <= LOOP_TOLERANCE_PX:
-                    found = (other_index, other_id, other_end, other_start, other_meta, other_start)
-                if found:
-                    break
-            if found is None:
+                for near, far in ((other_start, other_end), (other_end, other_start)):
+                    gap = float(np.linalg.norm(near - tail))
+                    meet, terminal = near, far
+                    if gap > join_tolerance_px:
+                        if not corner_joins:
+                            continue
+                        previous = chain[-1]
+                        corner = _line_arc_corner(previous[1], previous[2], other_meta)   # candidate is the arc
+                        if corner is None:
+                            corner = _line_arc_corner(near, far, previous[3])             # the chain's is
+                        if corner is not None:
+                            if float(np.linalg.norm(corner - near)) > float(np.linalg.norm(corner - far)):
+                                continue   # that corner sits at this candidate's far end: it is a U-turn
+                            meet = corner
+                            gap = float(np.linalg.norm(corner - tail)) + ARC_JOIN_PENALTY_PX
+                        else:
+                            corner = _arc_hit(tail, other_meta)
+                            if corner is not None:
+                                meet, gap = corner, gap + ARC_JOIN_PENALTY_PX
+                            else:
+                                corner = _arc_hit(near, chain[-1][3])
+                                if corner is None:
+                                    continue
+                                gap = float(np.linalg.norm(corner - tail)) + ARC_JOIN_PENALTY_PX
+                    closing = float(np.linalg.norm(far - start)) <= join_tolerance_px
+                    if not closing and corner_joins:
+                        corner = _line_arc_corner(chain[0][1], chain[0][2], other_meta)
+                        if corner is not None and float(np.linalg.norm(corner - far)) <= ARC_JOIN_SNAP_PX:
+                            closing = True
+                        else:
+                            corner = _line_arc_corner(near, far, chain[0][3])
+                            if corner is not None and float(np.linalg.norm(corner - start)) <= ARC_JOIN_SNAP_PX:
+                                closing = True
+                            else:
+                                closing = (_arc_hit(far, chain[0][3]) is not None
+                                           or _arc_hit(start, other_meta) is not None)
+                    closing = closing and len(chain) >= 3   # two segments cannot be a loop
+                    candidates.append((not closing, _turn_degrees(direction, terminal - meet), gap,
+                                       other_index, other_id, meet, terminal, other_meta))
+            if not candidates:
                 break
-            other_index, other_id, near, far, other_meta, new_tail = found
-            consumed.add(other_index)
+            candidates.sort(key=lambda item: item[:3])
+            _, _, _, other_index, other_id, near, far, other_meta = candidates[0]
+            if corner_joins and float(np.linalg.norm(near - tail)) > LOOP_TOLERANCE_PX:
+                previous_id, previous_start, _previous_end, previous_meta = chain[-1]
+                chain[-1] = (previous_id, previous_start, near, previous_meta)  # the corner, not the end
             chain.append((other_id, near, far, other_meta))
-            tail = new_tail
-            if float(np.linalg.norm(tail - start)) <= LOOP_TOLERANCE_PX and len(chain) >= 3:
+            chain_indexes.append(other_index)
+            tail = far
+            direction = far - near
+            closed = float(np.linalg.norm(tail - start)) <= join_tolerance_px
+            if not closed and corner_joins:
+                corner = _line_arc_corner(chain[0][1], chain[0][2], chain[-1][3])
+                if corner is not None and float(np.linalg.norm(corner - tail)) <= ARC_JOIN_SNAP_PX:
+                    closed = True
+                else:
+                    closed = (_arc_hit(tail, chain[0][3]) is not None
+                              or _arc_hit(start, chain[-1][3]) is not None)
+            if closed and len(chain) >= 3:
                 loops.append({"entities": chain, "area_px": _loop_area(chain)})
+                claimed.update(chain_indexes)
                 break
     loops.sort(key=lambda loop: -loop["area_px"])
     return loops
@@ -174,6 +338,85 @@ def _frame_loops(loops: list[dict], page_width: float, page_height: float) -> se
     return frames
 
 
+def _annotation_loops(loops: list[dict], phrases) -> set[int]:
+    """Indexes of loops that are annotation regions: their inside carries printed phrases, and most of
+    those phrases are words rather than numbers — a title block, a parts table, a note column.
+
+    An outline of the part itself holds no phrases at all on the sheets measured; a *view* can hold a
+    dimension number or two, which is why the test asks for a minimum count and a word share instead
+    of "any phrase at all".
+    """
+    regions: set[int] = set()
+    for index, loop in enumerate(loops):
+        (x0, y0), (x1, y1) = _loop_box(loop)
+        inside = [item for item in phrases
+                  if x0 < item[2] + item[4] / 2 < x1 and y0 < item[3] + item[5] / 2 < y1]
+        if len(inside) < ANNOTATION_MIN_PHRASES:
+            continue
+        words = [item for item in inside if item[1] is None and any(ch.isalpha() for ch in item[0])]
+        if len(words) >= ANNOTATION_WORD_SHARE * len(inside):
+            regions.add(index)
+    return regions
+
+
+def _phrases(observations) -> list[tuple[str, float | None, float, float, float, float]]:
+    """The sheet's printed phrases as `(text, value, x, y, w, h)` in the sheet's own pixels."""
+    return [(item.text, item.value, float(item.bbox.x), float(item.bbox.y),
+             float(item.bbox.w), float(item.bbox.h)) for item in observations.texts]
+
+
+def _concentric_families(circles: dict, tolerance_px: float = 2.0,
+                         tolerance_share: float = 0.03) -> list[list[tuple[str, np.ndarray, float]]]:
+    """Circles that share a centre: one flange's diameter stack, a bore with its counterbore, a boss."""
+    families: list[list[tuple[str, np.ndarray, float]]] = []
+    for geometry_id, (centre, radius) in sorted(circles.items()):
+        for family in families:
+            if float(np.linalg.norm(centre - family[0][1])) <= max(tolerance_px,
+                                                                   tolerance_share * max(radius, family[0][2])):
+                family.append((geometry_id, centre, radius))
+                break
+        else:
+            families.append([(geometry_id, centre, radius)])
+    return families
+
+
+def part_class(observations) -> dict:
+    """Which class of part the sheet's own geometry supports, and the evidence that decided it.
+
+    Read from the drawing, never from a file name: a stack of circles about one centre whose biggest
+    circle covers a real part of the page is a rotational body seen face-on, and it is checked before
+    the flat-part test. Measured on the four vector sheets this project reads: `10/Exercise 12` (a
+    flanged elbow) carries a five-circle stack — Ø274/Ø160/Ø142/Ø93/Ø77 mm against the printed
+    Ø270/Ø158/Ø140/Ø92/Ø76 — whose largest circle is 0.193 of the page width, while the plate and
+    `Drawing.pdf` have no stack at all and the plastic's stacks are 0.011 of the width (its small
+    holes).
+    """
+    lines, arcs, circles = _primitives(observations)
+    width = float(observations.frame.width) if observations.frame else 0.0
+    height = float(observations.frame.height) if observations.frame else 0.0
+    stacks = []
+    for family in _concentric_families(circles):
+        diameters = {round(2.0 * radius, 1) for _gid, _centre, radius in family}
+        if len(family) < FLANGE_FAMILY_MIN_CIRCLES or len(diameters) < FLANGE_FAMILY_MIN_STEPS:
+            continue
+        biggest = max(2.0 * radius for _gid, _centre, radius in family)
+        stacks.append({"centre_px": [round(float(v), 1) for v in family[0][1]], "circles": len(family),
+                       "diameters_px": sorted(diameters),
+                       "biggest_share_of_page": round(biggest / width, 3) if width else 0.0,
+                       "geometry_ids": [gid for gid, _centre, _radius in family]})
+    stacks.sort(key=lambda row: -row["biggest_share_of_page"])
+    if stacks and stacks[0]["biggest_share_of_page"] >= FLANGE_DIAMETER_SHARE:
+        return {"class": "rotational-flanged", "evidence": stacks[0], "reason": None}
+    loops = _loops(lines, arcs)
+    frames = _frame_loops(loops, width, height) if observations.frame else set()
+    tables = _annotation_loops(loops, _phrases(observations)) - frames
+    if any(index not in frames and index not in tables for index in range(len(loops))):
+        return {"class": "flat-part", "evidence": {"loops": len(loops) - len(frames) - len(tables)},
+                "reason": None}
+    return {"class": "unknown", "evidence": None,
+            "reason": "ne kapalı parça konturu ne de eş merkezli çap yığını okunabildi"}
+
+
 def _classify_claims(meanings: Meanings, loop_ids: set[str], circle_ids: set[str]) -> dict:
     """Sort the confirmed claims by the geometry they touch: outline, spacing, section, sizes."""
     classified: dict = {"outline": [], "spacing": [], "section": [], "diameters": []}
@@ -216,18 +459,33 @@ def _measurement_check(name: str, measured_mm: float, printed_mm: float,
         readings.append(line)
 
 
-def propose_general(path: str | Path) -> Proposal:
-    """Read the sheet and propose the general plan it supports, or refuse with the reasons."""
-    drawing = Path(path)
-    observations = observe(drawing)
-    meanings = meaning_page(drawing)
-    proposal = Proposal(source_ref=str(drawing), source_sha256=meanings.source_sha256,
-                        sheet_px_per_mm=meanings.sheet_px_per_mm)
-    scale = meanings.sheet_px_per_mm
-    if scale is None:
-        proposal.refusals.append("pafta ölçeği okunamadı (kalibrasyon yok)")
-        return proposal
+class SheetReading(BaseModel):
+    """What one sheet measures, in millimetres, with no plan and no model involved.
 
+    The reading chain's own product, kept apart from the proposal on purpose: `propose_general`
+    refines it into the flat-part archetype's plan, while the model planner is asked the *same*
+    measurements — so a comparison between the rules-based proposal and the model's plan is a
+    comparison of the planner, not of the reading. A sheet whose outline is not this archetype's
+    rounded rectangle still gets its measured regions here, because the model is asked about shapes
+    the archetype refuses; a sheet with no fitted scale gets no millimetres at all and says so.
+    """
+
+    version: int = 1
+    source_ref: str
+    source_sha256: str = ""
+    sheet_px_per_mm: float | None = None
+    frame: dict = Field(default_factory=dict)
+    printed: list[dict] = Field(default_factory=list)
+    claims: list[dict] = Field(default_factory=list)
+    outline_mm: dict | None = None
+    circles_mm: list[dict] = Field(default_factory=list)
+    components: dict = Field(default_factory=dict)
+    notes: list[str] = Field(default_factory=list)
+    refusals: list[str] = Field(default_factory=list)
+
+
+def _primitives(observations) -> tuple[dict, dict, dict]:
+    """The sheet's fitted lines, arcs and circles, by geometry id, in the sheet's own pixels."""
     lines: dict[str, tuple[np.ndarray, np.ndarray]] = {}
     arcs: dict[str, tuple[np.ndarray, float, float, float]] = {}
     circles: dict[str, tuple[np.ndarray, float]] = {}
@@ -240,20 +498,149 @@ def propose_general(path: str | Path) -> Proposal:
                                   primitive.start_degrees or 0.0, primitive.end_degrees or 360.0)
         elif primitive.kind == "circle" and primitive.centre and primitive.radius:
             circles[primitive.id] = (np.array(primitive.centre, dtype=float), primitive.radius)
+    return lines, arcs, circles
 
+
+def _outline_of(observations, lines: dict, arcs: dict) -> tuple[dict | None, dict]:
+    """The biggest closed loop that is not the sheet frame, and how it was chosen.
+
+    Returns the loop and a small record (`loops`, `frame_loops`, `reason`) instead of raising, so
+    the two callers below can phrase the same refusal without repeating the search.
+    """
     loops = _loops(lines, arcs)
     if not loops:
-        proposal.refusals.append("kapalı dış kontur bulunamadı (çizgiler/yaylar döngü kurmuyor)")
-        return proposal
+        return None, {"loops": 0, "frame_loops": 0, "annotation_loops": 0, "reason": "no-loops"}
     frame_indexes = (_frame_loops(loops, observations.frame.width, observations.frame.height)
                      if observations.frame else set())
-    if frame_indexes:
-        proposal.notes.append(f"sayfa çerçevesi atlandı ({len(frame_indexes)} döngü)")
-    part_loops = [loop for index, loop in enumerate(loops) if index not in frame_indexes]
+    annotation_indexes = _annotation_loops(loops, _phrases(observations))
+    tables = annotation_indexes - frame_indexes
+    part_loops = [loop for index, loop in enumerate(loops)
+                  if index not in frame_indexes and index not in annotation_indexes]
     if not part_loops:
-        proposal.refusals.append("kapalı dış kontur bulunamadı (sayfa çerçevesi dışında döngü yok)")
+        reason = "frame-only" if frame_indexes else "annotation-only"
+        return None, {"loops": len(loops), "frame_loops": len(frame_indexes),
+                      "annotation_loops": len(tables), "reason": reason}
+    return part_loops[0], {"loops": len(loops), "frame_loops": len(frame_indexes),
+                           "annotation_loops": len(tables), "reason": None}
+
+
+def read_sheet(path: str | Path) -> SheetReading:
+    """Read one real sheet into millimetres: components, the closed outline, the circles inside it."""
+    drawing = Path(path)
+    observations = observe(drawing)
+    meanings = meaning_page(drawing)
+    reading = SheetReading(source_ref=str(drawing), source_sha256=meanings.source_sha256,
+                           sheet_px_per_mm=meanings.sheet_px_per_mm)
+    # Printed quantities do not depend on recovering a closed outline or a drawing scale.
+    # Keep them even when the geometry stage below has to stop.
+    for span in meanings.spans:
+        if span.printed_value is not None:
+            reading.printed.append({"span_id": span.span_id, "text": span.text,
+                                    "value": span.printed_value, "unit": span.unit,
+                                    "kind": span.kind, "count": span.count})
+    if observations.frame:
+        reading.frame = {"width_px": observations.frame.width, "height_px": observations.frame.height,
+                         "dpi": observations.frame.dpi}
+    lines, arcs, circles = _primitives(observations)
+    outline, selection = _outline_of(observations, lines, arcs)
+    reading.components = {"lines": len(lines), "arcs": len(arcs), "circles": len(circles),
+                          "loops": selection["loops"], "frame_loops": selection["frame_loops"],
+                          "annotation_loops": selection["annotation_loops"]}
+    dropped = sum(1 for span in meanings.spans if span.printed_value is None)
+    scale = meanings.sheet_px_per_mm
+    if scale is not None and any(getattr(primitive, "method", "") == "hough-arc"
+                                 for primitive in getattr(observations, "primitives", ())):
+        # A raster sheet's anchors are pixel-fitted geometry, so a scale built on them is an unverified
+        # measurement dressed as the sheet's own — and the arcs this reader now fits would hand it such
+        # a scale out of nothing (measured: an unmeasurable .jpg gained 3.28 px/mm and reached a
+        # planner). The reading refuses instead; on a raster the scale is the user's calibration in the
+        # guided flow, which is where a clicked two-point measurement belongs.
+        reading.notes.append("raster pafta: ölçek kullanıcı kalibrasyonunda — pikselden uyarlanan "
+                             "geometri paftanın kendi ölçüsü sayılmadı")
+        scale = None
+    if selection["frame_loops"]:
+        reading.notes.append(f"sayfa çerçevesi atlandı ({selection['frame_loops']} döngü)")
+    if selection["annotation_loops"]:
+        reading.notes.append(f"antet/tablo bölgesi atlandı ({selection['annotation_loops']} döngü)")
+    if scale is None:
+        reading.refusals.append("pafta ölçeği okunamadı (kalibrasyon yok)")
+        return reading
+    if outline is None:
+        reading.refusals.append(OUTLINE_REFUSALS[selection["reason"]])
+        return reading
+
+    (x0, y0), (x1, y1) = _loop_box(outline)
+    rectangle = _rounded_rectangle(outline["entities"], scale)
+    reading.outline_mm = {"width_mm": _round((x1 - x0) / scale), "height_mm": _round((y1 - y0) / scale),
+                          "rounded_rectangle": rectangle is not None,
+                          "primitives": len(outline["entities"])}
+    if rectangle is not None:
+        width_mm, height_mm, corner_radius_mm = rectangle
+        reading.outline_mm.update({"width_mm": _round(width_mm), "height_mm": _round(height_mm),
+                                   "corner_radius_mm": _round(corner_radius_mm)})
+    points = np.array([point for _gid, start, end, _meta in outline["entities"] for point in (start, end)])
+    min_xy, max_xy = points.min(axis=0), points.max(axis=0)
+    centre = (min_xy + max_xy) / 2
+
+    def in_mm(point) -> list[float]:
+        """One measured point, relative to the outline's centre and divided by the fitted scale."""
+        return [_round((point[0] - centre[0]) / scale), _round((point[1] - centre[1]) / scale)]
+
+    for geometry_id, (position, radius) in sorted(circles.items()):
+        if (min_xy[0] - 1 <= position[0] <= max_xy[0] + 1
+                and min_xy[1] - 1 <= position[1] <= max_xy[1] + 1):
+            reading.circles_mm.append({"id": geometry_id, "diameter_mm": _round(2.0 * radius / scale),
+                                       "centre_mm": in_mm(position)})
+    for span in meanings.spans:
+        if span.printed_value is None:
+            continue
+        if span.claim is None:
+            continue
+        claim = {"span_id": span.span_id, "form": span.claim.form, "resolution": span.resolution,
+                 "anchor_mode": span.anchor_mode, "printed_mm": _round(span.claim.printed_mm),
+                 "drawn_mm": _round(span.claim.drawn_mm), "deviation_mm": _round(span.claim.deviation_mm),
+                 "anchors": [{"geometry_id": point.geometry_id, "kind": point.kind,
+                              "point_mm": in_mm(point.point)} for point in span.claim.points],
+                 "matched_geometry": list(span.claim.matched_geometry)}
+        for field in ("count", "covered"):
+            value = getattr(span, field, None)
+            if value is not None:
+                claim[field] = value
+        if span.notes:
+            claim["notes"] = list(span.notes)
+        reading.claims.append(claim)
+    reading.notes.append(f"{len(reading.printed)} sayısal ölçü; {len(reading.claims)} tanesi "
+                         f"geometriye bağlandı ({sum(len(claim['anchors']) for claim in reading.claims)} "
+                         f"çapa noktası)")
+    if dropped:
+        reading.notes.append(f"{dropped} sayısal olmayan metin ölçü sayılmadı")
+    reading.notes.append(
+        f"konumlar konturun merkezine göre, paftanın kendi piksel çerçevesinde ölçüldü "
+        f"({_round(scale)} px/mm)")
+    return reading
+
+
+def propose_general(path: str | Path) -> Proposal:
+    """Read the sheet and propose the general plan it supports, or refuse with the reasons."""
+    drawing = Path(path)
+    observations = observe(drawing)
+    meanings = meaning_page(drawing)
+    proposal = Proposal(source_ref=str(drawing), source_sha256=meanings.source_sha256,
+                        sheet_px_per_mm=meanings.sheet_px_per_mm)
+    scale = meanings.sheet_px_per_mm
+    if scale is None:
+        proposal.refusals.append("pafta ölçeği okunamadı (kalibrasyon yok)")
         return proposal
-    outline = part_loops[0]
+
+    lines, arcs, circles = _primitives(observations)
+    outline, selection = _outline_of(observations, lines, arcs)
+    if selection["frame_loops"]:
+        proposal.notes.append(f"sayfa çerçevesi atlandı ({selection['frame_loops']} döngü)")
+    if selection["annotation_loops"]:
+        proposal.notes.append(f"antet/tablo bölgesi atlandı ({selection['annotation_loops']} döngü)")
+    if outline is None:
+        proposal.refusals.append(OUTLINE_REFUSALS[selection["reason"]])
+        return proposal
     loop_ids = {item[0] for item in outline["entities"]}
     rectangle = _rounded_rectangle(outline["entities"], scale)
     if rectangle is None:

@@ -1,0 +1,41 @@
+{
+  "html_parser": {
+    "ids": {
+      "bind-axis": "select",
+      "bind-direction": "select",
+      "bind-start": null,
+      "bind-cancel": "button"
+    },
+    "malformed_buttons": [
+      {
+        "<div": null,
+        "class": "row"
+      }
+    ],
+    "live_browser_verified": false,
+    "browser_limitation": "file:// URL blocked by browser security policy; no bypass attempted"
+  },
+  "calibration_overwritten": {
+    "base_width_mm": 100.0,
+    "width_after_local_centre_binding_mm": 50.0,
+    "reported_px_per_mm": 2.0
+  },
+  "valid_xy_blocked_by_scale": [
+    "Bağlanan ölçüler tek ölçekle tutarlı değil: 50.0 mm → çizili 42.5 mm (-7.500 mm) · 30.0 mm → çizili 42.5 mm (+12.500 mm). Bir bağı düzeltin ya da kaldırın."
+  ],
+  "changed_profile_with_reused_edge_ids": [],
+  "dropped_bound_edge_not_marked_stale": [],
+  "arc_solver": {
+    "status": "unsupported",
+    "notes": [
+      "yaylı veya dairesel dış konturda yalnız daire merkezleri ölçülendirilebilir"
+    ],
+    "conflicts": [],
+    "moved": 0,
+    "dof": null
+  },
+  "unsupported_make_plan": {
+    "accepted": true,
+    "entity_count": 4
+  }
+}

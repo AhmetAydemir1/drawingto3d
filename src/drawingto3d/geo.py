@@ -402,11 +402,12 @@ def _profile_edges(entities: list[dict], frame: cq.Plane, name: str) -> list[cq.
             start_degrees = _field(entity, "start_degrees", where)
             end_degrees = _field(entity, "end_degrees", where)
             _positive(where, radius=radius)
-            if not 0 < end_degrees - start_degrees < 360:
-                raise ValueError(f"{where}: arc sweep must be between 0 and 360 degrees, got {end_degrees - start_degrees:g}")
+            sweep = end_degrees - start_degrees
+            if sweep == 0 or abs(sweep) >= 360:
+                raise ValueError(f"{where}: arc sweep must be between -360 and 360 degrees and non-zero, got {sweep:g}")
             points = [_world(frame, center[0] + radius * math.cos(math.radians(a)),
                              center[1] + radius * math.sin(math.radians(a)))
-                      for a in (start_degrees, (start_degrees + end_degrees) / 2, end_degrees)]
+                      for a in (start_degrees, start_degrees + sweep / 2, end_degrees)]
             edges.append(cq.Edge.makeThreePointArc(*points))
         elif kind == "circle":
             center = _point2(entity, "center", where)

@@ -1,0 +1,6 @@
+migration accepts changed edge IDs / measurement IDs: True
+legacy binding after profile changed to entirely different edges: []
+clearing selected profile with stable bindings: AttributeError 'NoneType' object has no attribute 'get'
+failed migration keeps complete STEP advertised: True complete /guided-session/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/part.step
+failed migration reason exposed publicly: False None
+All four independently constructed defect probes reproduced.

@@ -1,0 +1,4311 @@
+{
+  "scope": "decoder constraint probes; prompts intentionally conflict with the contract",
+  "code": {
+    "git_head": "96e01189f5f39d6e24154580453092f585a268f5",
+    "git_branch": "main",
+    "dirty": true,
+    "dirty_files": [
+      "M .cursor/handoff.md",
+      " M CHANGES.md",
+      " M HANDOFF.md",
+      " M PLAN.md",
+      " M eval/README.md",
+      " M eval/baseline_report.py",
+      " M eval/model_baseline.py",
+      " M eval/reports/model-baseline.md",
+      " M src/drawingto3d/cli.py",
+      " M src/drawingto3d/planner.py",
+      " M src/drawingto3d/proposal.py",
+      " M tests/test_baseline_report.py",
+      " M tests/test_planner.py",
+      "?? eval/reports/audit-evidence.json",
+      "?? eval/reports/planner-v2-live-evidence.json",
+      "?? eval/reports/progress-audit.md",
+      "?? eval/schema_probe.py",
+      "?? tests/test_baseline_resources.py",
+      "?? tests/test_chain_model.py",
+      "?? tests/test_plan_reply_schema.py"
+    ],
+    "diff_stat": ".cursor/handoff.md             |  98 +++++++\n CHANGES.md                     | 123 +++++++++\n HANDOFF.md                     | 121 +++++++++\n PLAN.md                        | 141 ++++++++--\n eval/README.md                 |  19 +-\n eval/baseline_report.py        |  29 ++-\n eval/model_baseline.py         | 344 ++++++++++++++++++-------\n eval/reports/model-baseline.md | 569 ++++++++++++++++++++++-------------------\n src/drawingto3d/cli.py         |  91 ++++++-\n src/drawingto3d/planner.py     | 418 ++++++++++++++++++++++++++++--\n src/drawingto3d/proposal.py    | 156 +++++++++--\n tests/test_baseline_report.py  |  22 ++\n tests/test_planner.py          | 238 ++++++++++++++++-\n 13 files changed, 1927 insertions(+), 442 deletions(-)",
+    "file_sha256": {
+      "eval/baseline.py": "fd7bc9471a9a43cc10c4661f7724549dd07b563280a45a6e9a9635a6b90ff2b6",
+      "eval/baseline_report.py": "a1c71b75a89affae0cab0f1b6a98f039a07e0fcc73db04457052941bbe1fe9b3",
+      "eval/candidates.py": "ba976857d1b42fbab5a0866924e74cc0a32ec512f3fe2b65744b29e81452f675",
+      "eval/check_tables.py": "65d093c86842da8daa71e0324ab415df52554729fa95533f2a8fbfde08f0ded9",
+      "eval/classifier.py": "7423ad129c65dc1c0143c17a3683c9bcaa08971a395c9ea0928f4ea893f75167",
+      "eval/frontend.py": "0d24aec76855c8008d43c6757647e1fb9b8a8574d9e621ccc214886d678b8776",
+      "eval/metrics.py": "0799715f83d09eb4b10d6d640fef1da6d2b2e5a6e367d074252ba991748f3348",
+      "eval/model_baseline.py": "b5ce8f1f5f5b3286d610c9151f7b82abfdb4de69c8f898a64fe3dff95231e561",
+      "eval/offering.py": "9aeeab20b7c143e22bf0df15328c72aadac913166d12d6deb8c68eb3183037af",
+      "eval/plate_plan.py": "bc711e0db6ed5b45dd7aa844aed011938f61ff8b0e5a610d214eceb6e61ffa70",
+      "eval/report.py": "977337a0b2e6cc9deebe6ef1b66fe9947b2669a128eecd015d4c9358cdf6ef66",
+      "eval/schema_probe.py": "2d9f59bee0d40d3f3d2e1c27aa778d8487e592ab0e1366ecd726b4bb94ad22b7",
+      "pyproject.toml": "ad770798646517f2e0daa22bd4c49f0154b309b6d28240db750d0286a224ece4",
+      "src/drawingto3d/__init__.py": "8ed013af947f6451a2f658eaaa3a76cc9bfdec2c7c7572c303138db4b97a0f95",
+      "src/drawingto3d/__main__.py": "dbbdd03fa6bdf68ad8fe17fe9b224a8ce489be7d173bf0a1fd2f052ab3aa795f",
+      "src/drawingto3d/app.py": "29e9cb8a3f0d2dfe01c22f3520b455ec8d186fd13fbff0575379fa9c4282972a",
+      "src/drawingto3d/bind.py": "37c16af9facec99248091d394d5e2b701c14f1f1eb34ac7d550d5d11bb9c93f8",
+      "src/drawingto3d/cadrun.py": "0ad6bacc8a517a6bf696dc1708fe402d85ee88f0d538cfdd0dbde1ecb0ad7060",
+      "src/drawingto3d/cli.py": "248f80dded767f26b31a3ebd873a4209500a2b263d69fcad431fc5576a1f390b",
+      "src/drawingto3d/errors.py": "67cb564420b013bb30339efb653dc63e85afce600a6d731287f0e7ffcb5a6aa5",
+      "src/drawingto3d/general.py": "0b18651c3570e693178d36cc1ef052c94e4917722fb8669e57e698f3c4a01d8d",
+      "src/drawingto3d/geo.py": "329019d1c49e6df58c62d6c6eee1e4bf65d1555876be50d5bde37be969c0785a",
+      "src/drawingto3d/ingest.py": "0099c35cbcd4f1cb3d1c7668dd12b51db16cc5c7df17ec232c442e9ff80074cb",
+      "src/drawingto3d/legacy/__init__.py": "3373ac6db37e23fb04af06775279ebf14264db58d688bfda6e81560c32937b64",
+      "src/drawingto3d/legacy/bind.py": "0e08beb4d7be79a0e6a3608a4a9d654484aff43ba57da372010b9190158311be",
+      "src/drawingto3d/legacy/contours.py": "8e306d38756b85f7734ca6e0730baf37cc2876ee3f2e5a76e1f3520d7d11c504",
+      "src/drawingto3d/legacy/pipeline.py": "f2d42bbc191a9632c1abab1a374dfc027e9b3b14444c75b8834bc2b291dfa622",
+      "src/drawingto3d/legacy/solid.py": "0873652f782ffb8c7b324e061d15426d13b7d99f2d99b614f979a7f3227ae44f",
+      "src/drawingto3d/legacy/strategies.py": "c5e9e1ca81d88c4e557e7eb31d89de9ac3671cee8ecc3b56e6f6c6259cce7c10",
+      "src/drawingto3d/legacy/tests/test_binding.py": "1e911162e9bce9d005a3ddf0713925a8b8751d742687bfb6e12210ddfe874f3e",
+      "src/drawingto3d/legacy/tests/test_fixture.py": "09a9f138b52898c335cbd1b4a91353b649e5ab8e9926dc20ec5c07c6eea57dbe",
+      "src/drawingto3d/legacy/tests/test_lever_solid.py": "e50a7e298f22c27d2e6fafc68a730660a288a5968e62a9c07dc09ced639dad05",
+      "src/drawingto3d/legacy/tests/test_prismatic.py": "5bb2861b36066ddc22d6e01bb09d9742604ff7d07df52d7583b7ed7ccff3e228",
+      "src/drawingto3d/lines.py": "a7ea08ffb1b254ea072f9da5ac8884908f6f0c3426e16aa6028208ee9df798ff",
+      "src/drawingto3d/llama.py": "b87494f40a17a5d25e9373c9c65906d710e8475a1300f5d87306224f07bbd5a0",
+      "src/drawingto3d/meaning.py": "2fcb6a9a8c425c970814df1b71bb800d803ee30d46c06098df5f08785d2490d7",
+      "src/drawingto3d/observe.py": "0be0a2cdf4071beb125c535f13085fb2b676e7b2cc69723eaf3e5d6e56a8e3ff",
+      "src/drawingto3d/perceive.py": "3744312a7b4b7abc747a4efa5cf5d04d094e0b9d808b3456cb963ca604dcaece",
+      "src/drawingto3d/plan.py": "1e97ba6ec7bb0cc721f4e7e350304ea498aa0da39004bf13cb483a537e687067",
+      "src/drawingto3d/planner.py": "6917eeaae211684e42ff78e24990caef6f80b822e8a85ed839289b787b09b3c7",
+      "src/drawingto3d/plate.py": "dd4177902c531decccd01d3ea27c20f242b5bd571102d87a1debd15ad86a0bac",
+      "src/drawingto3d/proposal.py": "b8e847d339b5ab2572f02f9a55be5eba49408e2437face70426783c325270d9f",
+      "src/drawingto3d/raster.py": "fe054bd92a350fce033aacb9fc9ac06c0e78cbc4acf5639a2e355fba117d3647",
+      "src/drawingto3d/reader.py": "2639c86888fae4f05282b1786058a36878fda433ac6d8d191a019d2b0afaa2b0",
+      "src/drawingto3d/reason.py": "6c8fcaadb72fe29c810c62e53db4cf226c5c9fbe5462230dd7f6bf58f3f186a3",
+      "src/drawingto3d/roles.py": "81d18635e142132fa6674bf9a8ffc134c12d4720974a1a8f10c3d589fc85b8cf",
+      "src/drawingto3d/scale.py": "b2527cd48c5fff73742ac809574e6f0e3cc4555d2ee4b605d103329c5fab83c9",
+      "src/drawingto3d/schema.py": "d4d3fc9bdf93a9bf661a7864e6cc7e875f7cb16e41b7aac16feb9f49b2f6a8ef",
+      "src/drawingto3d/views.py": "a458112a107e3113ababb7009b6ee3faae6d8b44fc25a4d27131004977eadca1"
+    },
+    "python": "3.12.8",
+    "executable": "/Users/aydemir/Desktop/drawingto3d/.venv/bin/python",
+    "platform": "macOS-26.5.2-arm64-arm-64bit",
+    "machine": "Apple M1",
+    "memory_bytes": 17179869184,
+    "tesseract": "tesseract 5.5.1",
+    "cadquery": true
+  },
+  "model": {
+    "name": "qwen2.5vl:3b",
+    "digest": "fb90415cde1ef08aa669ae74b082d49b158729b6db1ab183c941417d507e71a1",
+    "size_bytes": 3200627168,
+    "size_gb": 3.201,
+    "parameter_size": "3.8B",
+    "quantization": "Q4_K_M",
+    "context_length": 128000,
+    "families": [
+      "qwen25vl"
+    ],
+    "capabilities": [
+      "vision",
+      "completion"
+    ]
+  },
+  "settings": {
+    "model": "qwen2.5vl:3b",
+    "num_ctx": 8192,
+    "temperature": 0,
+    "num_predict": 700,
+    "keep_alive": "5m",
+    "timeout_s": 180,
+    "image_max_side": null,
+    "images_per_call": 1,
+    "response_format": "text"
+  },
+  "schemas": {
+    "v2": {
+      "parameters": {
+        "title": "GeneralPlan reply v2 split: parameters",
+        "type": "object",
+        "properties": {
+          "unit": {
+            "const": "mm",
+            "default": "mm",
+            "title": "Unit",
+            "type": "string"
+          },
+          "parameters": {
+            "additionalProperties": {
+              "$ref": "#/$defs/Parameter"
+            },
+            "minProperties": 1,
+            "title": "Parameters",
+            "type": "object"
+          },
+          "assumptions": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Assumptions",
+            "type": "array"
+          },
+          "questions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "parameters"
+        ],
+        "$defs": {
+          "ArcEntity": {
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "const": "arc",
+                "default": "arc",
+                "title": "Type",
+                "type": "string"
+              },
+              "center": {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 2,
+                "minItems": 2,
+                "title": "Center",
+                "type": "array"
+              },
+              "radius": {
+                "title": "Radius",
+                "type": "string"
+              },
+              "start_degrees": {
+                "title": "Start Degrees",
+                "type": "number"
+              },
+              "end_degrees": {
+                "title": "End Degrees",
+                "type": "number"
+              }
+            },
+            "required": [
+              "center",
+              "radius",
+              "start_degrees",
+              "end_degrees"
+            ],
+            "title": "ArcEntity",
+            "type": "object"
+          },
+          "CircleEntity": {
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "const": "circle",
+                "default": "circle",
+                "title": "Type",
+                "type": "string"
+              },
+              "center": {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 2,
+                "minItems": 2,
+                "title": "Center",
+                "type": "array"
+              },
+              "radius": {
+                "title": "Radius",
+                "type": "string"
+              }
+            },
+            "required": [
+              "center",
+              "radius"
+            ],
+            "title": "CircleEntity",
+            "type": "object"
+          },
+          "CircularRepeat": {
+            "additionalProperties": false,
+            "properties": {
+              "axis": {
+                "default": "Z",
+                "enum": [
+                  "X",
+                  "Y",
+                  "Z"
+                ],
+                "title": "Axis",
+                "type": "string"
+              },
+              "count": {
+                "default": 2,
+                "title": "Count",
+                "type": "integer"
+              },
+              "span_degrees": {
+                "default": 360,
+                "title": "Span Degrees",
+                "type": "number"
+              }
+            },
+            "title": "CircularRepeat",
+            "type": "object"
+          },
+          "CutOp": {
+            "additionalProperties": false,
+            "properties": {
+              "op": {
+                "const": "cut",
+                "default": "cut",
+                "title": "Op",
+                "type": "string"
+              },
+              "id": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Id",
+                "type": "string"
+              },
+              "output": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Output",
+                "type": "string"
+              },
+              "target": {
+                "title": "Target",
+                "type": "string"
+              },
+              "tool": {
+                "title": "Tool",
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "output",
+              "target",
+              "tool"
+            ],
+            "title": "CutOp",
+            "type": "object"
+          },
+          "Expect": {
+            "additionalProperties": false,
+            "description": "What the plan says the built solid must measure: bounding box extents (x, y, z)\nand volume, both as millimetre expressions. Optional, checked only when present.",
+            "properties": {
+              "bbox": {
+                "anyOf": [
+                  {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Bbox"
+              },
+              "volume": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Volume"
+              }
+            },
+            "title": "Expect",
+            "type": "object"
+          },
+          "ExtrudeOp": {
+            "additionalProperties": false,
+            "properties": {
+              "op": {
+                "const": "extrude",
+                "default": "extrude",
+                "title": "Op",
+                "type": "string"
+              },
+              "id": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Id",
+                "type": "string"
+              },
+              "output": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Output",
+                "type": "string"
+              },
+              "sketch": {
+                "title": "Sketch",
+                "type": "string"
+              },
+              "distance": {
+                "title": "Distance",
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "output",
+              "sketch",
+              "distance"
+            ],
+            "title": "ExtrudeOp",
+            "type": "object"
+          },
+          "FuseOp": {
+            "additionalProperties": false,
+            "properties": {
+              "op": {
+                "const": "fuse",
+                "default": "fuse",
+                "title": "Op",
+                "type": "string"
+              },
+              "id": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Id",
+                "type": "string"
+              },
+              "output": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Output",
+                "type": "string"
+              },
+              "inputs": {
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 2,
+                "title": "Inputs",
+                "type": "array"
+              }
+            },
+            "required": [
+              "id",
+              "output",
+              "inputs"
+            ],
+            "title": "FuseOp",
+            "type": "object"
+          },
+          "LineEntity": {
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "const": "line",
+                "default": "line",
+                "title": "Type",
+                "type": "string"
+              },
+              "start": {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 2,
+                "minItems": 2,
+                "title": "Start",
+                "type": "array"
+              },
+              "end": {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 2,
+                "minItems": 2,
+                "title": "End",
+                "type": "array"
+              }
+            },
+            "required": [
+              "start",
+              "end"
+            ],
+            "title": "LineEntity",
+            "type": "object"
+          },
+          "LinearRepeat": {
+            "additionalProperties": false,
+            "properties": {
+              "x_pitch": {
+                "default": "0",
+                "title": "X Pitch",
+                "type": "string"
+              },
+              "x_count": {
+                "default": 1,
+                "title": "X Count",
+                "type": "integer"
+              },
+              "y_pitch": {
+                "default": "0",
+                "title": "Y Pitch",
+                "type": "string"
+              },
+              "y_count": {
+                "default": 1,
+                "title": "Y Count",
+                "type": "integer"
+              }
+            },
+            "title": "LinearRepeat",
+            "type": "object"
+          },
+          "Parameter": {
+            "additionalProperties": false,
+            "description": "One named quantity. `value` is the number as printed, in `unit`; `expr` is\narithmetic over other parameter names. Exactly one of the two is set.",
+            "properties": {
+              "unit": {
+                "default": "mm",
+                "enum": [
+                  "mm",
+                  "in",
+                  "deg",
+                  "count"
+                ],
+                "title": "Unit",
+                "type": "string"
+              },
+              "source": {
+                "default": "printed",
+                "enum": [
+                  "printed",
+                  "derived",
+                  "assumed",
+                  "user"
+                ],
+                "title": "Source",
+                "type": "string"
+              },
+              "value": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Value"
+              },
+              "expr": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Expr"
+              },
+              "span_ids": {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Span Ids",
+                "type": "array"
+              },
+              "explanation": {
+                "default": "",
+                "title": "Explanation",
+                "type": "string"
+              }
+            },
+            "title": "Parameter",
+            "type": "object"
+          },
+          "RepeatOp": {
+            "additionalProperties": false,
+            "properties": {
+              "op": {
+                "const": "repeat",
+                "default": "repeat",
+                "title": "Op",
+                "type": "string"
+              },
+              "id": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Id",
+                "type": "string"
+              },
+              "output": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Output",
+                "type": "string"
+              },
+              "input": {
+                "title": "Input",
+                "type": "string"
+              },
+              "linear": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/LinearRepeat"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "circular": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/CircularRepeat"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              }
+            },
+            "required": [
+              "id",
+              "output",
+              "input"
+            ],
+            "title": "RepeatOp",
+            "type": "object"
+          },
+          "RevolveOp": {
+            "additionalProperties": false,
+            "properties": {
+              "op": {
+                "const": "revolve",
+                "default": "revolve",
+                "title": "Op",
+                "type": "string"
+              },
+              "id": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Id",
+                "type": "string"
+              },
+              "output": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Output",
+                "type": "string"
+              },
+              "sketch": {
+                "title": "Sketch",
+                "type": "string"
+              },
+              "angle": {
+                "default": "360",
+                "title": "Angle",
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "output",
+              "sketch"
+            ],
+            "title": "RevolveOp",
+            "type": "object"
+          },
+          "Sketch": {
+            "additionalProperties": false,
+            "description": "One named closed profile in a plane's local x/y. Coordinates are expressions\nover the plan's parameters, evaluated in millimetres; `offset` moves the profile\nalong the plane normal before an operation uses it.",
+            "properties": {
+              "plane": {
+                "default": "XY",
+                "enum": [
+                  "XY",
+                  "XZ",
+                  "YZ"
+                ],
+                "title": "Plane",
+                "type": "string"
+              },
+              "offset": {
+                "default": "0",
+                "title": "Offset",
+                "type": "string"
+              },
+              "entities": {
+                "items": {
+                  "discriminator": {
+                    "mapping": {
+                      "arc": "#/$defs/ArcEntity",
+                      "circle": "#/$defs/CircleEntity",
+                      "line": "#/$defs/LineEntity"
+                    },
+                    "propertyName": "type"
+                  },
+                  "oneOf": [
+                    {
+                      "$ref": "#/$defs/LineEntity"
+                    },
+                    {
+                      "$ref": "#/$defs/ArcEntity"
+                    },
+                    {
+                      "$ref": "#/$defs/CircleEntity"
+                    }
+                  ]
+                },
+                "minItems": 1,
+                "title": "Entities",
+                "type": "array"
+              }
+            },
+            "required": [
+              "entities"
+            ],
+            "title": "Sketch",
+            "type": "object"
+          },
+          "SourceRef": {
+            "additionalProperties": false,
+            "description": "Where the plan came from. A drawing must carry its SHA256 so replay cannot\nsilently use another file; synthetic compiler examples say so instead.",
+            "properties": {
+              "kind": {
+                "default": "drawing",
+                "enum": [
+                  "drawing",
+                  "synthetic"
+                ],
+                "title": "Kind",
+                "type": "string"
+              },
+              "ref": {
+                "default": "",
+                "title": "Ref",
+                "type": "string"
+              },
+              "sha256": {
+                "anyOf": [
+                  {
+                    "pattern": "^[0-9a-f]{64}$",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Sha256"
+              },
+              "page": {
+                "default": 1,
+                "title": "Page",
+                "type": "integer"
+              }
+            },
+            "title": "SourceRef",
+            "type": "object"
+          }
+        }
+      },
+      "profile": {
+        "title": "GeneralPlan reply v2 split: profile",
+        "type": "object",
+        "properties": {
+          "sketches": {
+            "additionalProperties": {
+              "$ref": "#/$defs/Sketch"
+            },
+            "minProperties": 1,
+            "title": "Sketches",
+            "type": "object"
+          },
+          "assumptions": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Assumptions",
+            "type": "array"
+          },
+          "questions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "sketches"
+        ],
+        "$defs": {
+          "ArcEntity": {
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "const": "arc",
+                "default": "arc",
+                "title": "Type",
+                "type": "string"
+              },
+              "center": {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 2,
+                "minItems": 2,
+                "title": "Center",
+                "type": "array"
+              },
+              "radius": {
+                "title": "Radius",
+                "type": "string"
+              },
+              "start_degrees": {
+                "title": "Start Degrees",
+                "type": "number"
+              },
+              "end_degrees": {
+                "title": "End Degrees",
+                "type": "number"
+              }
+            },
+            "required": [
+              "center",
+              "radius",
+              "start_degrees",
+              "end_degrees"
+            ],
+            "title": "ArcEntity",
+            "type": "object"
+          },
+          "CircleEntity": {
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "const": "circle",
+                "default": "circle",
+                "title": "Type",
+                "type": "string"
+              },
+              "center": {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 2,
+                "minItems": 2,
+                "title": "Center",
+                "type": "array"
+              },
+              "radius": {
+                "title": "Radius",
+                "type": "string"
+              }
+            },
+            "required": [
+              "center",
+              "radius"
+            ],
+            "title": "CircleEntity",
+            "type": "object"
+          },
+          "CircularRepeat": {
+            "additionalProperties": false,
+            "properties": {
+              "axis": {
+                "default": "Z",
+                "enum": [
+                  "X",
+                  "Y",
+                  "Z"
+                ],
+                "title": "Axis",
+                "type": "string"
+              },
+              "count": {
+                "default": 2,
+                "title": "Count",
+                "type": "integer"
+              },
+              "span_degrees": {
+                "default": 360,
+                "title": "Span Degrees",
+                "type": "number"
+              }
+            },
+            "title": "CircularRepeat",
+            "type": "object"
+          },
+          "CutOp": {
+            "additionalProperties": false,
+            "properties": {
+              "op": {
+                "const": "cut",
+                "default": "cut",
+                "title": "Op",
+                "type": "string"
+              },
+              "id": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Id",
+                "type": "string"
+              },
+              "output": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Output",
+                "type": "string"
+              },
+              "target": {
+                "title": "Target",
+                "type": "string"
+              },
+              "tool": {
+                "title": "Tool",
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "output",
+              "target",
+              "tool"
+            ],
+            "title": "CutOp",
+            "type": "object"
+          },
+          "Expect": {
+            "additionalProperties": false,
+            "description": "What the plan says the built solid must measure: bounding box extents (x, y, z)\nand volume, both as millimetre expressions. Optional, checked only when present.",
+            "properties": {
+              "bbox": {
+                "anyOf": [
+                  {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Bbox"
+              },
+              "volume": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Volume"
+              }
+            },
+            "title": "Expect",
+            "type": "object"
+          },
+          "ExtrudeOp": {
+            "additionalProperties": false,
+            "properties": {
+              "op": {
+                "const": "extrude",
+                "default": "extrude",
+                "title": "Op",
+                "type": "string"
+              },
+              "id": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Id",
+                "type": "string"
+              },
+              "output": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Output",
+                "type": "string"
+              },
+              "sketch": {
+                "title": "Sketch",
+                "type": "string"
+              },
+              "distance": {
+                "title": "Distance",
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "output",
+              "sketch",
+              "distance"
+            ],
+            "title": "ExtrudeOp",
+            "type": "object"
+          },
+          "FuseOp": {
+            "additionalProperties": false,
+            "properties": {
+              "op": {
+                "const": "fuse",
+                "default": "fuse",
+                "title": "Op",
+                "type": "string"
+              },
+              "id": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Id",
+                "type": "string"
+              },
+              "output": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Output",
+                "type": "string"
+              },
+              "inputs": {
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 2,
+                "title": "Inputs",
+                "type": "array"
+              }
+            },
+            "required": [
+              "id",
+              "output",
+              "inputs"
+            ],
+            "title": "FuseOp",
+            "type": "object"
+          },
+          "LineEntity": {
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "const": "line",
+                "default": "line",
+                "title": "Type",
+                "type": "string"
+              },
+              "start": {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 2,
+                "minItems": 2,
+                "title": "Start",
+                "type": "array"
+              },
+              "end": {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 2,
+                "minItems": 2,
+                "title": "End",
+                "type": "array"
+              }
+            },
+            "required": [
+              "start",
+              "end"
+            ],
+            "title": "LineEntity",
+            "type": "object"
+          },
+          "LinearRepeat": {
+            "additionalProperties": false,
+            "properties": {
+              "x_pitch": {
+                "default": "0",
+                "title": "X Pitch",
+                "type": "string"
+              },
+              "x_count": {
+                "default": 1,
+                "title": "X Count",
+                "type": "integer"
+              },
+              "y_pitch": {
+                "default": "0",
+                "title": "Y Pitch",
+                "type": "string"
+              },
+              "y_count": {
+                "default": 1,
+                "title": "Y Count",
+                "type": "integer"
+              }
+            },
+            "title": "LinearRepeat",
+            "type": "object"
+          },
+          "Parameter": {
+            "additionalProperties": false,
+            "description": "One named quantity. `value` is the number as printed, in `unit`; `expr` is\narithmetic over other parameter names. Exactly one of the two is set.",
+            "properties": {
+              "unit": {
+                "default": "mm",
+                "enum": [
+                  "mm",
+                  "in",
+                  "deg",
+                  "count"
+                ],
+                "title": "Unit",
+                "type": "string"
+              },
+              "source": {
+                "default": "printed",
+                "enum": [
+                  "printed",
+                  "derived",
+                  "assumed",
+                  "user"
+                ],
+                "title": "Source",
+                "type": "string"
+              },
+              "value": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Value"
+              },
+              "expr": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Expr"
+              },
+              "span_ids": {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Span Ids",
+                "type": "array"
+              },
+              "explanation": {
+                "default": "",
+                "title": "Explanation",
+                "type": "string"
+              }
+            },
+            "title": "Parameter",
+            "type": "object"
+          },
+          "RepeatOp": {
+            "additionalProperties": false,
+            "properties": {
+              "op": {
+                "const": "repeat",
+                "default": "repeat",
+                "title": "Op",
+                "type": "string"
+              },
+              "id": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Id",
+                "type": "string"
+              },
+              "output": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Output",
+                "type": "string"
+              },
+              "input": {
+                "title": "Input",
+                "type": "string"
+              },
+              "linear": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/LinearRepeat"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "circular": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/CircularRepeat"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              }
+            },
+            "required": [
+              "id",
+              "output",
+              "input"
+            ],
+            "title": "RepeatOp",
+            "type": "object"
+          },
+          "RevolveOp": {
+            "additionalProperties": false,
+            "properties": {
+              "op": {
+                "const": "revolve",
+                "default": "revolve",
+                "title": "Op",
+                "type": "string"
+              },
+              "id": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Id",
+                "type": "string"
+              },
+              "output": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Output",
+                "type": "string"
+              },
+              "sketch": {
+                "title": "Sketch",
+                "type": "string"
+              },
+              "angle": {
+                "default": "360",
+                "title": "Angle",
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "output",
+              "sketch"
+            ],
+            "title": "RevolveOp",
+            "type": "object"
+          },
+          "Sketch": {
+            "additionalProperties": false,
+            "description": "One named closed profile in a plane's local x/y. Coordinates are expressions\nover the plan's parameters, evaluated in millimetres; `offset` moves the profile\nalong the plane normal before an operation uses it.",
+            "properties": {
+              "plane": {
+                "default": "XY",
+                "enum": [
+                  "XY",
+                  "XZ",
+                  "YZ"
+                ],
+                "title": "Plane",
+                "type": "string"
+              },
+              "offset": {
+                "default": "0",
+                "title": "Offset",
+                "type": "string"
+              },
+              "entities": {
+                "items": {
+                  "discriminator": {
+                    "mapping": {
+                      "arc": "#/$defs/ArcEntity",
+                      "circle": "#/$defs/CircleEntity",
+                      "line": "#/$defs/LineEntity"
+                    },
+                    "propertyName": "type"
+                  },
+                  "oneOf": [
+                    {
+                      "$ref": "#/$defs/LineEntity"
+                    },
+                    {
+                      "$ref": "#/$defs/ArcEntity"
+                    },
+                    {
+                      "$ref": "#/$defs/CircleEntity"
+                    }
+                  ]
+                },
+                "minItems": 1,
+                "title": "Entities",
+                "type": "array"
+              }
+            },
+            "required": [
+              "entities"
+            ],
+            "title": "Sketch",
+            "type": "object"
+          },
+          "SourceRef": {
+            "additionalProperties": false,
+            "description": "Where the plan came from. A drawing must carry its SHA256 so replay cannot\nsilently use another file; synthetic compiler examples say so instead.",
+            "properties": {
+              "kind": {
+                "default": "drawing",
+                "enum": [
+                  "drawing",
+                  "synthetic"
+                ],
+                "title": "Kind",
+                "type": "string"
+              },
+              "ref": {
+                "default": "",
+                "title": "Ref",
+                "type": "string"
+              },
+              "sha256": {
+                "anyOf": [
+                  {
+                    "pattern": "^[0-9a-f]{64}$",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Sha256"
+              },
+              "page": {
+                "default": 1,
+                "title": "Page",
+                "type": "integer"
+              }
+            },
+            "title": "SourceRef",
+            "type": "object"
+          }
+        }
+      },
+      "operations": {
+        "title": "GeneralPlan reply v2 split: operations",
+        "type": "object",
+        "properties": {
+          "operations": {
+            "items": {
+              "discriminator": {
+                "mapping": {
+                  "cut": "#/$defs/CutOp",
+                  "extrude": "#/$defs/ExtrudeOp",
+                  "fuse": "#/$defs/FuseOp",
+                  "repeat": "#/$defs/RepeatOp",
+                  "revolve": "#/$defs/RevolveOp"
+                },
+                "propertyName": "op"
+              },
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/ExtrudeOp"
+                },
+                {
+                  "$ref": "#/$defs/RevolveOp"
+                },
+                {
+                  "$ref": "#/$defs/RepeatOp"
+                },
+                {
+                  "$ref": "#/$defs/CutOp"
+                },
+                {
+                  "$ref": "#/$defs/FuseOp"
+                }
+              ]
+            },
+            "minItems": 1,
+            "title": "Operations",
+            "type": "array"
+          },
+          "result": {
+            "pattern": "^[a-z][a-z0-9_]*$",
+            "title": "Result",
+            "type": "string"
+          },
+          "assumptions": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Assumptions",
+            "type": "array"
+          },
+          "questions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "operations",
+          "result"
+        ],
+        "$defs": {
+          "ArcEntity": {
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "const": "arc",
+                "default": "arc",
+                "title": "Type",
+                "type": "string"
+              },
+              "center": {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 2,
+                "minItems": 2,
+                "title": "Center",
+                "type": "array"
+              },
+              "radius": {
+                "title": "Radius",
+                "type": "string"
+              },
+              "start_degrees": {
+                "title": "Start Degrees",
+                "type": "number"
+              },
+              "end_degrees": {
+                "title": "End Degrees",
+                "type": "number"
+              }
+            },
+            "required": [
+              "center",
+              "radius",
+              "start_degrees",
+              "end_degrees"
+            ],
+            "title": "ArcEntity",
+            "type": "object"
+          },
+          "CircleEntity": {
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "const": "circle",
+                "default": "circle",
+                "title": "Type",
+                "type": "string"
+              },
+              "center": {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 2,
+                "minItems": 2,
+                "title": "Center",
+                "type": "array"
+              },
+              "radius": {
+                "title": "Radius",
+                "type": "string"
+              }
+            },
+            "required": [
+              "center",
+              "radius"
+            ],
+            "title": "CircleEntity",
+            "type": "object"
+          },
+          "CircularRepeat": {
+            "additionalProperties": false,
+            "properties": {
+              "axis": {
+                "default": "Z",
+                "enum": [
+                  "X",
+                  "Y",
+                  "Z"
+                ],
+                "title": "Axis",
+                "type": "string"
+              },
+              "count": {
+                "default": 2,
+                "title": "Count",
+                "type": "integer"
+              },
+              "span_degrees": {
+                "default": 360,
+                "title": "Span Degrees",
+                "type": "number"
+              }
+            },
+            "title": "CircularRepeat",
+            "type": "object"
+          },
+          "CutOp": {
+            "additionalProperties": false,
+            "properties": {
+              "op": {
+                "const": "cut",
+                "default": "cut",
+                "title": "Op",
+                "type": "string"
+              },
+              "id": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Id",
+                "type": "string"
+              },
+              "output": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Output",
+                "type": "string"
+              },
+              "target": {
+                "title": "Target",
+                "type": "string"
+              },
+              "tool": {
+                "title": "Tool",
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "output",
+              "target",
+              "tool"
+            ],
+            "title": "CutOp",
+            "type": "object"
+          },
+          "Expect": {
+            "additionalProperties": false,
+            "description": "What the plan says the built solid must measure: bounding box extents (x, y, z)\nand volume, both as millimetre expressions. Optional, checked only when present.",
+            "properties": {
+              "bbox": {
+                "anyOf": [
+                  {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Bbox"
+              },
+              "volume": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Volume"
+              }
+            },
+            "title": "Expect",
+            "type": "object"
+          },
+          "ExtrudeOp": {
+            "additionalProperties": false,
+            "properties": {
+              "op": {
+                "const": "extrude",
+                "default": "extrude",
+                "title": "Op",
+                "type": "string"
+              },
+              "id": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Id",
+                "type": "string"
+              },
+              "output": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Output",
+                "type": "string"
+              },
+              "sketch": {
+                "title": "Sketch",
+                "type": "string"
+              },
+              "distance": {
+                "title": "Distance",
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "output",
+              "sketch",
+              "distance"
+            ],
+            "title": "ExtrudeOp",
+            "type": "object"
+          },
+          "FuseOp": {
+            "additionalProperties": false,
+            "properties": {
+              "op": {
+                "const": "fuse",
+                "default": "fuse",
+                "title": "Op",
+                "type": "string"
+              },
+              "id": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Id",
+                "type": "string"
+              },
+              "output": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Output",
+                "type": "string"
+              },
+              "inputs": {
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 2,
+                "title": "Inputs",
+                "type": "array"
+              }
+            },
+            "required": [
+              "id",
+              "output",
+              "inputs"
+            ],
+            "title": "FuseOp",
+            "type": "object"
+          },
+          "LineEntity": {
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "const": "line",
+                "default": "line",
+                "title": "Type",
+                "type": "string"
+              },
+              "start": {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 2,
+                "minItems": 2,
+                "title": "Start",
+                "type": "array"
+              },
+              "end": {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 2,
+                "minItems": 2,
+                "title": "End",
+                "type": "array"
+              }
+            },
+            "required": [
+              "start",
+              "end"
+            ],
+            "title": "LineEntity",
+            "type": "object"
+          },
+          "LinearRepeat": {
+            "additionalProperties": false,
+            "properties": {
+              "x_pitch": {
+                "default": "0",
+                "title": "X Pitch",
+                "type": "string"
+              },
+              "x_count": {
+                "default": 1,
+                "title": "X Count",
+                "type": "integer"
+              },
+              "y_pitch": {
+                "default": "0",
+                "title": "Y Pitch",
+                "type": "string"
+              },
+              "y_count": {
+                "default": 1,
+                "title": "Y Count",
+                "type": "integer"
+              }
+            },
+            "title": "LinearRepeat",
+            "type": "object"
+          },
+          "Parameter": {
+            "additionalProperties": false,
+            "description": "One named quantity. `value` is the number as printed, in `unit`; `expr` is\narithmetic over other parameter names. Exactly one of the two is set.",
+            "properties": {
+              "unit": {
+                "default": "mm",
+                "enum": [
+                  "mm",
+                  "in",
+                  "deg",
+                  "count"
+                ],
+                "title": "Unit",
+                "type": "string"
+              },
+              "source": {
+                "default": "printed",
+                "enum": [
+                  "printed",
+                  "derived",
+                  "assumed",
+                  "user"
+                ],
+                "title": "Source",
+                "type": "string"
+              },
+              "value": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Value"
+              },
+              "expr": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Expr"
+              },
+              "span_ids": {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Span Ids",
+                "type": "array"
+              },
+              "explanation": {
+                "default": "",
+                "title": "Explanation",
+                "type": "string"
+              }
+            },
+            "title": "Parameter",
+            "type": "object"
+          },
+          "RepeatOp": {
+            "additionalProperties": false,
+            "properties": {
+              "op": {
+                "const": "repeat",
+                "default": "repeat",
+                "title": "Op",
+                "type": "string"
+              },
+              "id": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Id",
+                "type": "string"
+              },
+              "output": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Output",
+                "type": "string"
+              },
+              "input": {
+                "title": "Input",
+                "type": "string"
+              },
+              "linear": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/LinearRepeat"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "circular": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/CircularRepeat"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              }
+            },
+            "required": [
+              "id",
+              "output",
+              "input"
+            ],
+            "title": "RepeatOp",
+            "type": "object"
+          },
+          "RevolveOp": {
+            "additionalProperties": false,
+            "properties": {
+              "op": {
+                "const": "revolve",
+                "default": "revolve",
+                "title": "Op",
+                "type": "string"
+              },
+              "id": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Id",
+                "type": "string"
+              },
+              "output": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Output",
+                "type": "string"
+              },
+              "sketch": {
+                "title": "Sketch",
+                "type": "string"
+              },
+              "angle": {
+                "default": "360",
+                "title": "Angle",
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "output",
+              "sketch"
+            ],
+            "title": "RevolveOp",
+            "type": "object"
+          },
+          "Sketch": {
+            "additionalProperties": false,
+            "description": "One named closed profile in a plane's local x/y. Coordinates are expressions\nover the plan's parameters, evaluated in millimetres; `offset` moves the profile\nalong the plane normal before an operation uses it.",
+            "properties": {
+              "plane": {
+                "default": "XY",
+                "enum": [
+                  "XY",
+                  "XZ",
+                  "YZ"
+                ],
+                "title": "Plane",
+                "type": "string"
+              },
+              "offset": {
+                "default": "0",
+                "title": "Offset",
+                "type": "string"
+              },
+              "entities": {
+                "items": {
+                  "discriminator": {
+                    "mapping": {
+                      "arc": "#/$defs/ArcEntity",
+                      "circle": "#/$defs/CircleEntity",
+                      "line": "#/$defs/LineEntity"
+                    },
+                    "propertyName": "type"
+                  },
+                  "oneOf": [
+                    {
+                      "$ref": "#/$defs/LineEntity"
+                    },
+                    {
+                      "$ref": "#/$defs/ArcEntity"
+                    },
+                    {
+                      "$ref": "#/$defs/CircleEntity"
+                    }
+                  ]
+                },
+                "minItems": 1,
+                "title": "Entities",
+                "type": "array"
+              }
+            },
+            "required": [
+              "entities"
+            ],
+            "title": "Sketch",
+            "type": "object"
+          },
+          "SourceRef": {
+            "additionalProperties": false,
+            "description": "Where the plan came from. A drawing must carry its SHA256 so replay cannot\nsilently use another file; synthetic compiler examples say so instead.",
+            "properties": {
+              "kind": {
+                "default": "drawing",
+                "enum": [
+                  "drawing",
+                  "synthetic"
+                ],
+                "title": "Kind",
+                "type": "string"
+              },
+              "ref": {
+                "default": "",
+                "title": "Ref",
+                "type": "string"
+              },
+              "sha256": {
+                "anyOf": [
+                  {
+                    "pattern": "^[0-9a-f]{64}$",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Sha256"
+              },
+              "page": {
+                "default": 1,
+                "title": "Page",
+                "type": "integer"
+              }
+            },
+            "title": "SourceRef",
+            "type": "object"
+          }
+        }
+      }
+    },
+    "v3": {
+      "parameters": {
+        "title": "GeneralPlan reply v3 split: parameters",
+        "type": "object",
+        "properties": {
+          "unit": {
+            "const": "mm",
+            "default": "mm",
+            "title": "Unit",
+            "type": "string"
+          },
+          "parameters": {
+            "additionalProperties": {
+              "$ref": "#/$defs/Parameter"
+            },
+            "minProperties": 1,
+            "title": "Parameters",
+            "type": "object"
+          },
+          "assumptions": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Assumptions",
+            "type": "array"
+          },
+          "questions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "parameters"
+        ],
+        "additionalProperties": false,
+        "$defs": {
+          "ArcEntity": {
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "const": "arc",
+                "default": "arc",
+                "title": "Type",
+                "type": "string"
+              },
+              "center": {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 2,
+                "minItems": 2,
+                "title": "Center",
+                "type": "array"
+              },
+              "radius": {
+                "title": "Radius",
+                "type": "string"
+              },
+              "start_degrees": {
+                "title": "Start Degrees",
+                "type": "number"
+              },
+              "end_degrees": {
+                "title": "End Degrees",
+                "type": "number"
+              }
+            },
+            "required": [
+              "center",
+              "radius",
+              "start_degrees",
+              "end_degrees",
+              "type"
+            ],
+            "title": "ArcEntity",
+            "type": "object"
+          },
+          "CircleEntity": {
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "const": "circle",
+                "default": "circle",
+                "title": "Type",
+                "type": "string"
+              },
+              "center": {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 2,
+                "minItems": 2,
+                "title": "Center",
+                "type": "array"
+              },
+              "radius": {
+                "title": "Radius",
+                "type": "string"
+              }
+            },
+            "required": [
+              "center",
+              "radius",
+              "type"
+            ],
+            "title": "CircleEntity",
+            "type": "object"
+          },
+          "CircularRepeat": {
+            "additionalProperties": false,
+            "properties": {
+              "axis": {
+                "default": "Z",
+                "enum": [
+                  "X",
+                  "Y",
+                  "Z"
+                ],
+                "title": "Axis",
+                "type": "string"
+              },
+              "count": {
+                "default": 2,
+                "title": "Count",
+                "type": "integer"
+              },
+              "span_degrees": {
+                "default": 360,
+                "title": "Span Degrees",
+                "type": "number"
+              }
+            },
+            "title": "CircularRepeat",
+            "type": "object"
+          },
+          "CutOp": {
+            "additionalProperties": false,
+            "properties": {
+              "op": {
+                "const": "cut",
+                "default": "cut",
+                "title": "Op",
+                "type": "string"
+              },
+              "id": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Id",
+                "type": "string"
+              },
+              "output": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Output",
+                "type": "string"
+              },
+              "target": {
+                "title": "Target",
+                "type": "string"
+              },
+              "tool": {
+                "title": "Tool",
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "output",
+              "target",
+              "tool",
+              "op"
+            ],
+            "title": "CutOp",
+            "type": "object"
+          },
+          "Expect": {
+            "additionalProperties": false,
+            "description": "What the plan says the built solid must measure: bounding box extents (x, y, z)\nand volume, both as millimetre expressions. Optional, checked only when present.",
+            "properties": {
+              "bbox": {
+                "anyOf": [
+                  {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Bbox"
+              },
+              "volume": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Volume"
+              }
+            },
+            "title": "Expect",
+            "type": "object"
+          },
+          "ExtrudeOp": {
+            "additionalProperties": false,
+            "properties": {
+              "op": {
+                "const": "extrude",
+                "default": "extrude",
+                "title": "Op",
+                "type": "string"
+              },
+              "id": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Id",
+                "type": "string"
+              },
+              "output": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Output",
+                "type": "string"
+              },
+              "sketch": {
+                "title": "Sketch",
+                "type": "string"
+              },
+              "distance": {
+                "title": "Distance",
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "output",
+              "sketch",
+              "distance",
+              "op"
+            ],
+            "title": "ExtrudeOp",
+            "type": "object"
+          },
+          "FuseOp": {
+            "additionalProperties": false,
+            "properties": {
+              "op": {
+                "const": "fuse",
+                "default": "fuse",
+                "title": "Op",
+                "type": "string"
+              },
+              "id": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Id",
+                "type": "string"
+              },
+              "output": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Output",
+                "type": "string"
+              },
+              "inputs": {
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 2,
+                "title": "Inputs",
+                "type": "array"
+              }
+            },
+            "required": [
+              "id",
+              "output",
+              "inputs",
+              "op"
+            ],
+            "title": "FuseOp",
+            "type": "object"
+          },
+          "LineEntity": {
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "const": "line",
+                "default": "line",
+                "title": "Type",
+                "type": "string"
+              },
+              "start": {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 2,
+                "minItems": 2,
+                "title": "Start",
+                "type": "array"
+              },
+              "end": {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 2,
+                "minItems": 2,
+                "title": "End",
+                "type": "array"
+              }
+            },
+            "required": [
+              "start",
+              "end",
+              "type"
+            ],
+            "title": "LineEntity",
+            "type": "object"
+          },
+          "LinearRepeat": {
+            "additionalProperties": false,
+            "properties": {
+              "x_pitch": {
+                "default": "0",
+                "title": "X Pitch",
+                "type": "string"
+              },
+              "x_count": {
+                "default": 1,
+                "title": "X Count",
+                "type": "integer"
+              },
+              "y_pitch": {
+                "default": "0",
+                "title": "Y Pitch",
+                "type": "string"
+              },
+              "y_count": {
+                "default": 1,
+                "title": "Y Count",
+                "type": "integer"
+              }
+            },
+            "title": "LinearRepeat",
+            "type": "object"
+          },
+          "Parameter": {
+            "oneOf": [
+              {
+                "additionalProperties": false,
+                "description": "One named quantity. `value` is the number as printed, in `unit`; `expr` is\narithmetic over other parameter names. Exactly one of the two is set.",
+                "properties": {
+                  "unit": {
+                    "default": "mm",
+                    "enum": [
+                      "mm",
+                      "in",
+                      "deg",
+                      "count"
+                    ],
+                    "title": "Unit",
+                    "type": "string"
+                  },
+                  "source": {
+                    "type": "string",
+                    "const": "printed"
+                  },
+                  "value": {
+                    "type": "number"
+                  },
+                  "span_ids": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "title": "Span Ids",
+                    "type": "array",
+                    "minItems": 1
+                  },
+                  "explanation": {
+                    "default": "",
+                    "title": "Explanation",
+                    "type": "string"
+                  }
+                },
+                "title": "Parameter",
+                "type": "object",
+                "required": [
+                  "unit",
+                  "source",
+                  "value",
+                  "span_ids"
+                ]
+              },
+              {
+                "additionalProperties": false,
+                "description": "One named quantity. `value` is the number as printed, in `unit`; `expr` is\narithmetic over other parameter names. Exactly one of the two is set.",
+                "properties": {
+                  "unit": {
+                    "type": "string",
+                    "enum": [
+                      "mm",
+                      "deg"
+                    ]
+                  },
+                  "source": {
+                    "type": "string",
+                    "const": "derived"
+                  },
+                  "expr": {
+                    "type": "string"
+                  },
+                  "span_ids": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "title": "Span Ids",
+                    "type": "array"
+                  },
+                  "explanation": {
+                    "default": "",
+                    "title": "Explanation",
+                    "type": "string"
+                  }
+                },
+                "title": "Parameter",
+                "type": "object",
+                "required": [
+                  "unit",
+                  "source",
+                  "expr"
+                ]
+              },
+              {
+                "additionalProperties": false,
+                "description": "One named quantity. `value` is the number as printed, in `unit`; `expr` is\narithmetic over other parameter names. Exactly one of the two is set.",
+                "properties": {
+                  "unit": {
+                    "default": "mm",
+                    "enum": [
+                      "mm",
+                      "in",
+                      "deg",
+                      "count"
+                    ],
+                    "title": "Unit",
+                    "type": "string"
+                  },
+                  "source": {
+                    "type": "string",
+                    "const": "assumed"
+                  },
+                  "value": {
+                    "type": "number"
+                  },
+                  "span_ids": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "title": "Span Ids",
+                    "type": "array"
+                  },
+                  "explanation": {
+                    "default": "",
+                    "title": "Explanation",
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "title": "Parameter",
+                "type": "object",
+                "required": [
+                  "unit",
+                  "source",
+                  "value",
+                  "explanation"
+                ]
+              },
+              {
+                "additionalProperties": false,
+                "description": "One named quantity. `value` is the number as printed, in `unit`; `expr` is\narithmetic over other parameter names. Exactly one of the two is set.",
+                "properties": {
+                  "unit": {
+                    "default": "mm",
+                    "enum": [
+                      "mm",
+                      "in",
+                      "deg",
+                      "count"
+                    ],
+                    "title": "Unit",
+                    "type": "string"
+                  },
+                  "source": {
+                    "type": "string",
+                    "const": "user"
+                  },
+                  "value": {
+                    "type": "number"
+                  },
+                  "span_ids": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "title": "Span Ids",
+                    "type": "array"
+                  },
+                  "explanation": {
+                    "default": "",
+                    "title": "Explanation",
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "title": "Parameter",
+                "type": "object",
+                "required": [
+                  "unit",
+                  "source",
+                  "value",
+                  "explanation"
+                ]
+              }
+            ]
+          },
+          "RepeatOp": {
+            "oneOf": [
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "op": {
+                    "const": "repeat",
+                    "default": "repeat",
+                    "title": "Op",
+                    "type": "string"
+                  },
+                  "id": {
+                    "pattern": "^[a-z][a-z0-9_]*$",
+                    "title": "Id",
+                    "type": "string"
+                  },
+                  "output": {
+                    "pattern": "^[a-z][a-z0-9_]*$",
+                    "title": "Output",
+                    "type": "string"
+                  },
+                  "input": {
+                    "title": "Input",
+                    "type": "string"
+                  },
+                  "linear": {
+                    "$ref": "#/$defs/LinearRepeat"
+                  }
+                },
+                "required": [
+                  "id",
+                  "output",
+                  "input",
+                  "op",
+                  "linear"
+                ],
+                "title": "RepeatOp",
+                "type": "object"
+              },
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "op": {
+                    "const": "repeat",
+                    "default": "repeat",
+                    "title": "Op",
+                    "type": "string"
+                  },
+                  "id": {
+                    "pattern": "^[a-z][a-z0-9_]*$",
+                    "title": "Id",
+                    "type": "string"
+                  },
+                  "output": {
+                    "pattern": "^[a-z][a-z0-9_]*$",
+                    "title": "Output",
+                    "type": "string"
+                  },
+                  "input": {
+                    "title": "Input",
+                    "type": "string"
+                  },
+                  "circular": {
+                    "$ref": "#/$defs/CircularRepeat"
+                  }
+                },
+                "required": [
+                  "id",
+                  "output",
+                  "input",
+                  "op",
+                  "circular"
+                ],
+                "title": "RepeatOp",
+                "type": "object"
+              }
+            ]
+          },
+          "RevolveOp": {
+            "additionalProperties": false,
+            "properties": {
+              "op": {
+                "const": "revolve",
+                "default": "revolve",
+                "title": "Op",
+                "type": "string"
+              },
+              "id": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Id",
+                "type": "string"
+              },
+              "output": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Output",
+                "type": "string"
+              },
+              "sketch": {
+                "title": "Sketch",
+                "type": "string"
+              },
+              "angle": {
+                "default": "360",
+                "title": "Angle",
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "output",
+              "sketch",
+              "op"
+            ],
+            "title": "RevolveOp",
+            "type": "object"
+          },
+          "Sketch": {
+            "additionalProperties": false,
+            "description": "One named closed profile in a plane's local x/y. Coordinates are expressions\nover the plan's parameters, evaluated in millimetres; `offset` moves the profile\nalong the plane normal before an operation uses it.",
+            "properties": {
+              "plane": {
+                "default": "XY",
+                "enum": [
+                  "XY",
+                  "XZ",
+                  "YZ"
+                ],
+                "title": "Plane",
+                "type": "string"
+              },
+              "offset": {
+                "default": "0",
+                "title": "Offset",
+                "type": "string"
+              },
+              "entities": {
+                "items": {
+                  "discriminator": {
+                    "mapping": {
+                      "arc": "#/$defs/ArcEntity",
+                      "circle": "#/$defs/CircleEntity",
+                      "line": "#/$defs/LineEntity"
+                    },
+                    "propertyName": "type"
+                  },
+                  "oneOf": [
+                    {
+                      "$ref": "#/$defs/LineEntity"
+                    },
+                    {
+                      "$ref": "#/$defs/ArcEntity"
+                    },
+                    {
+                      "$ref": "#/$defs/CircleEntity"
+                    }
+                  ]
+                },
+                "minItems": 1,
+                "title": "Entities",
+                "type": "array"
+              }
+            },
+            "required": [
+              "entities"
+            ],
+            "title": "Sketch",
+            "type": "object"
+          }
+        }
+      },
+      "profile": {
+        "title": "GeneralPlan reply v3 split: profile",
+        "type": "object",
+        "properties": {
+          "sketches": {
+            "additionalProperties": {
+              "$ref": "#/$defs/Sketch"
+            },
+            "minProperties": 1,
+            "title": "Sketches",
+            "type": "object"
+          },
+          "assumptions": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Assumptions",
+            "type": "array"
+          },
+          "questions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "sketches"
+        ],
+        "additionalProperties": false,
+        "$defs": {
+          "ArcEntity": {
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "const": "arc",
+                "default": "arc",
+                "title": "Type",
+                "type": "string"
+              },
+              "center": {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 2,
+                "minItems": 2,
+                "title": "Center",
+                "type": "array"
+              },
+              "radius": {
+                "title": "Radius",
+                "type": "string"
+              },
+              "start_degrees": {
+                "title": "Start Degrees",
+                "type": "number"
+              },
+              "end_degrees": {
+                "title": "End Degrees",
+                "type": "number"
+              }
+            },
+            "required": [
+              "center",
+              "radius",
+              "start_degrees",
+              "end_degrees",
+              "type"
+            ],
+            "title": "ArcEntity",
+            "type": "object"
+          },
+          "CircleEntity": {
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "const": "circle",
+                "default": "circle",
+                "title": "Type",
+                "type": "string"
+              },
+              "center": {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 2,
+                "minItems": 2,
+                "title": "Center",
+                "type": "array"
+              },
+              "radius": {
+                "title": "Radius",
+                "type": "string"
+              }
+            },
+            "required": [
+              "center",
+              "radius",
+              "type"
+            ],
+            "title": "CircleEntity",
+            "type": "object"
+          },
+          "CircularRepeat": {
+            "additionalProperties": false,
+            "properties": {
+              "axis": {
+                "default": "Z",
+                "enum": [
+                  "X",
+                  "Y",
+                  "Z"
+                ],
+                "title": "Axis",
+                "type": "string"
+              },
+              "count": {
+                "default": 2,
+                "title": "Count",
+                "type": "integer"
+              },
+              "span_degrees": {
+                "default": 360,
+                "title": "Span Degrees",
+                "type": "number"
+              }
+            },
+            "title": "CircularRepeat",
+            "type": "object"
+          },
+          "CutOp": {
+            "additionalProperties": false,
+            "properties": {
+              "op": {
+                "const": "cut",
+                "default": "cut",
+                "title": "Op",
+                "type": "string"
+              },
+              "id": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Id",
+                "type": "string"
+              },
+              "output": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Output",
+                "type": "string"
+              },
+              "target": {
+                "title": "Target",
+                "type": "string"
+              },
+              "tool": {
+                "title": "Tool",
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "output",
+              "target",
+              "tool",
+              "op"
+            ],
+            "title": "CutOp",
+            "type": "object"
+          },
+          "Expect": {
+            "additionalProperties": false,
+            "description": "What the plan says the built solid must measure: bounding box extents (x, y, z)\nand volume, both as millimetre expressions. Optional, checked only when present.",
+            "properties": {
+              "bbox": {
+                "anyOf": [
+                  {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Bbox"
+              },
+              "volume": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Volume"
+              }
+            },
+            "title": "Expect",
+            "type": "object"
+          },
+          "ExtrudeOp": {
+            "additionalProperties": false,
+            "properties": {
+              "op": {
+                "const": "extrude",
+                "default": "extrude",
+                "title": "Op",
+                "type": "string"
+              },
+              "id": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Id",
+                "type": "string"
+              },
+              "output": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Output",
+                "type": "string"
+              },
+              "sketch": {
+                "title": "Sketch",
+                "type": "string"
+              },
+              "distance": {
+                "title": "Distance",
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "output",
+              "sketch",
+              "distance",
+              "op"
+            ],
+            "title": "ExtrudeOp",
+            "type": "object"
+          },
+          "FuseOp": {
+            "additionalProperties": false,
+            "properties": {
+              "op": {
+                "const": "fuse",
+                "default": "fuse",
+                "title": "Op",
+                "type": "string"
+              },
+              "id": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Id",
+                "type": "string"
+              },
+              "output": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Output",
+                "type": "string"
+              },
+              "inputs": {
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 2,
+                "title": "Inputs",
+                "type": "array"
+              }
+            },
+            "required": [
+              "id",
+              "output",
+              "inputs",
+              "op"
+            ],
+            "title": "FuseOp",
+            "type": "object"
+          },
+          "LineEntity": {
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "const": "line",
+                "default": "line",
+                "title": "Type",
+                "type": "string"
+              },
+              "start": {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 2,
+                "minItems": 2,
+                "title": "Start",
+                "type": "array"
+              },
+              "end": {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 2,
+                "minItems": 2,
+                "title": "End",
+                "type": "array"
+              }
+            },
+            "required": [
+              "start",
+              "end",
+              "type"
+            ],
+            "title": "LineEntity",
+            "type": "object"
+          },
+          "LinearRepeat": {
+            "additionalProperties": false,
+            "properties": {
+              "x_pitch": {
+                "default": "0",
+                "title": "X Pitch",
+                "type": "string"
+              },
+              "x_count": {
+                "default": 1,
+                "title": "X Count",
+                "type": "integer"
+              },
+              "y_pitch": {
+                "default": "0",
+                "title": "Y Pitch",
+                "type": "string"
+              },
+              "y_count": {
+                "default": 1,
+                "title": "Y Count",
+                "type": "integer"
+              }
+            },
+            "title": "LinearRepeat",
+            "type": "object"
+          },
+          "Parameter": {
+            "oneOf": [
+              {
+                "additionalProperties": false,
+                "description": "One named quantity. `value` is the number as printed, in `unit`; `expr` is\narithmetic over other parameter names. Exactly one of the two is set.",
+                "properties": {
+                  "unit": {
+                    "default": "mm",
+                    "enum": [
+                      "mm",
+                      "in",
+                      "deg",
+                      "count"
+                    ],
+                    "title": "Unit",
+                    "type": "string"
+                  },
+                  "source": {
+                    "type": "string",
+                    "const": "printed"
+                  },
+                  "value": {
+                    "type": "number"
+                  },
+                  "span_ids": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "title": "Span Ids",
+                    "type": "array",
+                    "minItems": 1
+                  },
+                  "explanation": {
+                    "default": "",
+                    "title": "Explanation",
+                    "type": "string"
+                  }
+                },
+                "title": "Parameter",
+                "type": "object",
+                "required": [
+                  "unit",
+                  "source",
+                  "value",
+                  "span_ids"
+                ]
+              },
+              {
+                "additionalProperties": false,
+                "description": "One named quantity. `value` is the number as printed, in `unit`; `expr` is\narithmetic over other parameter names. Exactly one of the two is set.",
+                "properties": {
+                  "unit": {
+                    "type": "string",
+                    "enum": [
+                      "mm",
+                      "deg"
+                    ]
+                  },
+                  "source": {
+                    "type": "string",
+                    "const": "derived"
+                  },
+                  "expr": {
+                    "type": "string"
+                  },
+                  "span_ids": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "title": "Span Ids",
+                    "type": "array"
+                  },
+                  "explanation": {
+                    "default": "",
+                    "title": "Explanation",
+                    "type": "string"
+                  }
+                },
+                "title": "Parameter",
+                "type": "object",
+                "required": [
+                  "unit",
+                  "source",
+                  "expr"
+                ]
+              },
+              {
+                "additionalProperties": false,
+                "description": "One named quantity. `value` is the number as printed, in `unit`; `expr` is\narithmetic over other parameter names. Exactly one of the two is set.",
+                "properties": {
+                  "unit": {
+                    "default": "mm",
+                    "enum": [
+                      "mm",
+                      "in",
+                      "deg",
+                      "count"
+                    ],
+                    "title": "Unit",
+                    "type": "string"
+                  },
+                  "source": {
+                    "type": "string",
+                    "const": "assumed"
+                  },
+                  "value": {
+                    "type": "number"
+                  },
+                  "span_ids": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "title": "Span Ids",
+                    "type": "array"
+                  },
+                  "explanation": {
+                    "default": "",
+                    "title": "Explanation",
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "title": "Parameter",
+                "type": "object",
+                "required": [
+                  "unit",
+                  "source",
+                  "value",
+                  "explanation"
+                ]
+              },
+              {
+                "additionalProperties": false,
+                "description": "One named quantity. `value` is the number as printed, in `unit`; `expr` is\narithmetic over other parameter names. Exactly one of the two is set.",
+                "properties": {
+                  "unit": {
+                    "default": "mm",
+                    "enum": [
+                      "mm",
+                      "in",
+                      "deg",
+                      "count"
+                    ],
+                    "title": "Unit",
+                    "type": "string"
+                  },
+                  "source": {
+                    "type": "string",
+                    "const": "user"
+                  },
+                  "value": {
+                    "type": "number"
+                  },
+                  "span_ids": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "title": "Span Ids",
+                    "type": "array"
+                  },
+                  "explanation": {
+                    "default": "",
+                    "title": "Explanation",
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "title": "Parameter",
+                "type": "object",
+                "required": [
+                  "unit",
+                  "source",
+                  "value",
+                  "explanation"
+                ]
+              }
+            ]
+          },
+          "RepeatOp": {
+            "oneOf": [
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "op": {
+                    "const": "repeat",
+                    "default": "repeat",
+                    "title": "Op",
+                    "type": "string"
+                  },
+                  "id": {
+                    "pattern": "^[a-z][a-z0-9_]*$",
+                    "title": "Id",
+                    "type": "string"
+                  },
+                  "output": {
+                    "pattern": "^[a-z][a-z0-9_]*$",
+                    "title": "Output",
+                    "type": "string"
+                  },
+                  "input": {
+                    "title": "Input",
+                    "type": "string"
+                  },
+                  "linear": {
+                    "$ref": "#/$defs/LinearRepeat"
+                  }
+                },
+                "required": [
+                  "id",
+                  "output",
+                  "input",
+                  "op",
+                  "linear"
+                ],
+                "title": "RepeatOp",
+                "type": "object"
+              },
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "op": {
+                    "const": "repeat",
+                    "default": "repeat",
+                    "title": "Op",
+                    "type": "string"
+                  },
+                  "id": {
+                    "pattern": "^[a-z][a-z0-9_]*$",
+                    "title": "Id",
+                    "type": "string"
+                  },
+                  "output": {
+                    "pattern": "^[a-z][a-z0-9_]*$",
+                    "title": "Output",
+                    "type": "string"
+                  },
+                  "input": {
+                    "title": "Input",
+                    "type": "string"
+                  },
+                  "circular": {
+                    "$ref": "#/$defs/CircularRepeat"
+                  }
+                },
+                "required": [
+                  "id",
+                  "output",
+                  "input",
+                  "op",
+                  "circular"
+                ],
+                "title": "RepeatOp",
+                "type": "object"
+              }
+            ]
+          },
+          "RevolveOp": {
+            "additionalProperties": false,
+            "properties": {
+              "op": {
+                "const": "revolve",
+                "default": "revolve",
+                "title": "Op",
+                "type": "string"
+              },
+              "id": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Id",
+                "type": "string"
+              },
+              "output": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Output",
+                "type": "string"
+              },
+              "sketch": {
+                "title": "Sketch",
+                "type": "string"
+              },
+              "angle": {
+                "default": "360",
+                "title": "Angle",
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "output",
+              "sketch",
+              "op"
+            ],
+            "title": "RevolveOp",
+            "type": "object"
+          },
+          "Sketch": {
+            "additionalProperties": false,
+            "description": "One named closed profile in a plane's local x/y. Coordinates are expressions\nover the plan's parameters, evaluated in millimetres; `offset` moves the profile\nalong the plane normal before an operation uses it.",
+            "properties": {
+              "plane": {
+                "default": "XY",
+                "enum": [
+                  "XY",
+                  "XZ",
+                  "YZ"
+                ],
+                "title": "Plane",
+                "type": "string"
+              },
+              "offset": {
+                "default": "0",
+                "title": "Offset",
+                "type": "string"
+              },
+              "entities": {
+                "items": {
+                  "discriminator": {
+                    "mapping": {
+                      "arc": "#/$defs/ArcEntity",
+                      "circle": "#/$defs/CircleEntity",
+                      "line": "#/$defs/LineEntity"
+                    },
+                    "propertyName": "type"
+                  },
+                  "oneOf": [
+                    {
+                      "$ref": "#/$defs/LineEntity"
+                    },
+                    {
+                      "$ref": "#/$defs/ArcEntity"
+                    },
+                    {
+                      "$ref": "#/$defs/CircleEntity"
+                    }
+                  ]
+                },
+                "minItems": 1,
+                "title": "Entities",
+                "type": "array"
+              }
+            },
+            "required": [
+              "entities"
+            ],
+            "title": "Sketch",
+            "type": "object"
+          }
+        }
+      },
+      "operations": {
+        "title": "GeneralPlan reply v3 split: operations",
+        "type": "object",
+        "properties": {
+          "operations": {
+            "items": {
+              "discriminator": {
+                "mapping": {
+                  "cut": "#/$defs/CutOp",
+                  "extrude": "#/$defs/ExtrudeOp",
+                  "fuse": "#/$defs/FuseOp",
+                  "repeat": "#/$defs/RepeatOp",
+                  "revolve": "#/$defs/RevolveOp"
+                },
+                "propertyName": "op"
+              },
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/ExtrudeOp"
+                },
+                {
+                  "$ref": "#/$defs/RevolveOp"
+                },
+                {
+                  "$ref": "#/$defs/RepeatOp"
+                },
+                {
+                  "$ref": "#/$defs/CutOp"
+                },
+                {
+                  "$ref": "#/$defs/FuseOp"
+                }
+              ]
+            },
+            "minItems": 1,
+            "title": "Operations",
+            "type": "array"
+          },
+          "result": {
+            "pattern": "^[a-z][a-z0-9_]*$",
+            "title": "Result",
+            "type": "string"
+          },
+          "assumptions": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Assumptions",
+            "type": "array"
+          },
+          "questions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "operations",
+          "result"
+        ],
+        "additionalProperties": false,
+        "$defs": {
+          "ArcEntity": {
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "const": "arc",
+                "default": "arc",
+                "title": "Type",
+                "type": "string"
+              },
+              "center": {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 2,
+                "minItems": 2,
+                "title": "Center",
+                "type": "array"
+              },
+              "radius": {
+                "title": "Radius",
+                "type": "string"
+              },
+              "start_degrees": {
+                "title": "Start Degrees",
+                "type": "number"
+              },
+              "end_degrees": {
+                "title": "End Degrees",
+                "type": "number"
+              }
+            },
+            "required": [
+              "center",
+              "radius",
+              "start_degrees",
+              "end_degrees",
+              "type"
+            ],
+            "title": "ArcEntity",
+            "type": "object"
+          },
+          "CircleEntity": {
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "const": "circle",
+                "default": "circle",
+                "title": "Type",
+                "type": "string"
+              },
+              "center": {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 2,
+                "minItems": 2,
+                "title": "Center",
+                "type": "array"
+              },
+              "radius": {
+                "title": "Radius",
+                "type": "string"
+              }
+            },
+            "required": [
+              "center",
+              "radius",
+              "type"
+            ],
+            "title": "CircleEntity",
+            "type": "object"
+          },
+          "CircularRepeat": {
+            "additionalProperties": false,
+            "properties": {
+              "axis": {
+                "default": "Z",
+                "enum": [
+                  "X",
+                  "Y",
+                  "Z"
+                ],
+                "title": "Axis",
+                "type": "string"
+              },
+              "count": {
+                "default": 2,
+                "title": "Count",
+                "type": "integer"
+              },
+              "span_degrees": {
+                "default": 360,
+                "title": "Span Degrees",
+                "type": "number"
+              }
+            },
+            "title": "CircularRepeat",
+            "type": "object"
+          },
+          "CutOp": {
+            "additionalProperties": false,
+            "properties": {
+              "op": {
+                "const": "cut",
+                "default": "cut",
+                "title": "Op",
+                "type": "string"
+              },
+              "id": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Id",
+                "type": "string"
+              },
+              "output": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Output",
+                "type": "string"
+              },
+              "target": {
+                "title": "Target",
+                "type": "string"
+              },
+              "tool": {
+                "title": "Tool",
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "output",
+              "target",
+              "tool",
+              "op"
+            ],
+            "title": "CutOp",
+            "type": "object"
+          },
+          "Expect": {
+            "additionalProperties": false,
+            "description": "What the plan says the built solid must measure: bounding box extents (x, y, z)\nand volume, both as millimetre expressions. Optional, checked only when present.",
+            "properties": {
+              "bbox": {
+                "anyOf": [
+                  {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Bbox"
+              },
+              "volume": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Volume"
+              }
+            },
+            "title": "Expect",
+            "type": "object"
+          },
+          "ExtrudeOp": {
+            "additionalProperties": false,
+            "properties": {
+              "op": {
+                "const": "extrude",
+                "default": "extrude",
+                "title": "Op",
+                "type": "string"
+              },
+              "id": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Id",
+                "type": "string"
+              },
+              "output": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Output",
+                "type": "string"
+              },
+              "sketch": {
+                "title": "Sketch",
+                "type": "string"
+              },
+              "distance": {
+                "title": "Distance",
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "output",
+              "sketch",
+              "distance",
+              "op"
+            ],
+            "title": "ExtrudeOp",
+            "type": "object"
+          },
+          "FuseOp": {
+            "additionalProperties": false,
+            "properties": {
+              "op": {
+                "const": "fuse",
+                "default": "fuse",
+                "title": "Op",
+                "type": "string"
+              },
+              "id": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Id",
+                "type": "string"
+              },
+              "output": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Output",
+                "type": "string"
+              },
+              "inputs": {
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 2,
+                "title": "Inputs",
+                "type": "array"
+              }
+            },
+            "required": [
+              "id",
+              "output",
+              "inputs",
+              "op"
+            ],
+            "title": "FuseOp",
+            "type": "object"
+          },
+          "LineEntity": {
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "const": "line",
+                "default": "line",
+                "title": "Type",
+                "type": "string"
+              },
+              "start": {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 2,
+                "minItems": 2,
+                "title": "Start",
+                "type": "array"
+              },
+              "end": {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 2,
+                "minItems": 2,
+                "title": "End",
+                "type": "array"
+              }
+            },
+            "required": [
+              "start",
+              "end",
+              "type"
+            ],
+            "title": "LineEntity",
+            "type": "object"
+          },
+          "LinearRepeat": {
+            "additionalProperties": false,
+            "properties": {
+              "x_pitch": {
+                "default": "0",
+                "title": "X Pitch",
+                "type": "string"
+              },
+              "x_count": {
+                "default": 1,
+                "title": "X Count",
+                "type": "integer"
+              },
+              "y_pitch": {
+                "default": "0",
+                "title": "Y Pitch",
+                "type": "string"
+              },
+              "y_count": {
+                "default": 1,
+                "title": "Y Count",
+                "type": "integer"
+              }
+            },
+            "title": "LinearRepeat",
+            "type": "object"
+          },
+          "Parameter": {
+            "oneOf": [
+              {
+                "additionalProperties": false,
+                "description": "One named quantity. `value` is the number as printed, in `unit`; `expr` is\narithmetic over other parameter names. Exactly one of the two is set.",
+                "properties": {
+                  "unit": {
+                    "default": "mm",
+                    "enum": [
+                      "mm",
+                      "in",
+                      "deg",
+                      "count"
+                    ],
+                    "title": "Unit",
+                    "type": "string"
+                  },
+                  "source": {
+                    "type": "string",
+                    "const": "printed"
+                  },
+                  "value": {
+                    "type": "number"
+                  },
+                  "span_ids": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "title": "Span Ids",
+                    "type": "array",
+                    "minItems": 1
+                  },
+                  "explanation": {
+                    "default": "",
+                    "title": "Explanation",
+                    "type": "string"
+                  }
+                },
+                "title": "Parameter",
+                "type": "object",
+                "required": [
+                  "unit",
+                  "source",
+                  "value",
+                  "span_ids"
+                ]
+              },
+              {
+                "additionalProperties": false,
+                "description": "One named quantity. `value` is the number as printed, in `unit`; `expr` is\narithmetic over other parameter names. Exactly one of the two is set.",
+                "properties": {
+                  "unit": {
+                    "type": "string",
+                    "enum": [
+                      "mm",
+                      "deg"
+                    ]
+                  },
+                  "source": {
+                    "type": "string",
+                    "const": "derived"
+                  },
+                  "expr": {
+                    "type": "string"
+                  },
+                  "span_ids": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "title": "Span Ids",
+                    "type": "array"
+                  },
+                  "explanation": {
+                    "default": "",
+                    "title": "Explanation",
+                    "type": "string"
+                  }
+                },
+                "title": "Parameter",
+                "type": "object",
+                "required": [
+                  "unit",
+                  "source",
+                  "expr"
+                ]
+              },
+              {
+                "additionalProperties": false,
+                "description": "One named quantity. `value` is the number as printed, in `unit`; `expr` is\narithmetic over other parameter names. Exactly one of the two is set.",
+                "properties": {
+                  "unit": {
+                    "default": "mm",
+                    "enum": [
+                      "mm",
+                      "in",
+                      "deg",
+                      "count"
+                    ],
+                    "title": "Unit",
+                    "type": "string"
+                  },
+                  "source": {
+                    "type": "string",
+                    "const": "assumed"
+                  },
+                  "value": {
+                    "type": "number"
+                  },
+                  "span_ids": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "title": "Span Ids",
+                    "type": "array"
+                  },
+                  "explanation": {
+                    "default": "",
+                    "title": "Explanation",
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "title": "Parameter",
+                "type": "object",
+                "required": [
+                  "unit",
+                  "source",
+                  "value",
+                  "explanation"
+                ]
+              },
+              {
+                "additionalProperties": false,
+                "description": "One named quantity. `value` is the number as printed, in `unit`; `expr` is\narithmetic over other parameter names. Exactly one of the two is set.",
+                "properties": {
+                  "unit": {
+                    "default": "mm",
+                    "enum": [
+                      "mm",
+                      "in",
+                      "deg",
+                      "count"
+                    ],
+                    "title": "Unit",
+                    "type": "string"
+                  },
+                  "source": {
+                    "type": "string",
+                    "const": "user"
+                  },
+                  "value": {
+                    "type": "number"
+                  },
+                  "span_ids": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "title": "Span Ids",
+                    "type": "array"
+                  },
+                  "explanation": {
+                    "default": "",
+                    "title": "Explanation",
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "title": "Parameter",
+                "type": "object",
+                "required": [
+                  "unit",
+                  "source",
+                  "value",
+                  "explanation"
+                ]
+              }
+            ]
+          },
+          "RepeatOp": {
+            "oneOf": [
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "op": {
+                    "const": "repeat",
+                    "default": "repeat",
+                    "title": "Op",
+                    "type": "string"
+                  },
+                  "id": {
+                    "pattern": "^[a-z][a-z0-9_]*$",
+                    "title": "Id",
+                    "type": "string"
+                  },
+                  "output": {
+                    "pattern": "^[a-z][a-z0-9_]*$",
+                    "title": "Output",
+                    "type": "string"
+                  },
+                  "input": {
+                    "title": "Input",
+                    "type": "string"
+                  },
+                  "linear": {
+                    "$ref": "#/$defs/LinearRepeat"
+                  }
+                },
+                "required": [
+                  "id",
+                  "output",
+                  "input",
+                  "op",
+                  "linear"
+                ],
+                "title": "RepeatOp",
+                "type": "object"
+              },
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "op": {
+                    "const": "repeat",
+                    "default": "repeat",
+                    "title": "Op",
+                    "type": "string"
+                  },
+                  "id": {
+                    "pattern": "^[a-z][a-z0-9_]*$",
+                    "title": "Id",
+                    "type": "string"
+                  },
+                  "output": {
+                    "pattern": "^[a-z][a-z0-9_]*$",
+                    "title": "Output",
+                    "type": "string"
+                  },
+                  "input": {
+                    "title": "Input",
+                    "type": "string"
+                  },
+                  "circular": {
+                    "$ref": "#/$defs/CircularRepeat"
+                  }
+                },
+                "required": [
+                  "id",
+                  "output",
+                  "input",
+                  "op",
+                  "circular"
+                ],
+                "title": "RepeatOp",
+                "type": "object"
+              }
+            ]
+          },
+          "RevolveOp": {
+            "additionalProperties": false,
+            "properties": {
+              "op": {
+                "const": "revolve",
+                "default": "revolve",
+                "title": "Op",
+                "type": "string"
+              },
+              "id": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Id",
+                "type": "string"
+              },
+              "output": {
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "title": "Output",
+                "type": "string"
+              },
+              "sketch": {
+                "title": "Sketch",
+                "type": "string"
+              },
+              "angle": {
+                "default": "360",
+                "title": "Angle",
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "output",
+              "sketch",
+              "op"
+            ],
+            "title": "RevolveOp",
+            "type": "object"
+          },
+          "Sketch": {
+            "additionalProperties": false,
+            "description": "One named closed profile in a plane's local x/y. Coordinates are expressions\nover the plan's parameters, evaluated in millimetres; `offset` moves the profile\nalong the plane normal before an operation uses it.",
+            "properties": {
+              "plane": {
+                "default": "XY",
+                "enum": [
+                  "XY",
+                  "XZ",
+                  "YZ"
+                ],
+                "title": "Plane",
+                "type": "string"
+              },
+              "offset": {
+                "default": "0",
+                "title": "Offset",
+                "type": "string"
+              },
+              "entities": {
+                "items": {
+                  "discriminator": {
+                    "mapping": {
+                      "arc": "#/$defs/ArcEntity",
+                      "circle": "#/$defs/CircleEntity",
+                      "line": "#/$defs/LineEntity"
+                    },
+                    "propertyName": "type"
+                  },
+                  "oneOf": [
+                    {
+                      "$ref": "#/$defs/LineEntity"
+                    },
+                    {
+                      "$ref": "#/$defs/ArcEntity"
+                    },
+                    {
+                      "$ref": "#/$defs/CircleEntity"
+                    }
+                  ]
+                },
+                "minItems": 1,
+                "title": "Entities",
+                "type": "array"
+              }
+            },
+            "required": [
+              "entities"
+            ],
+            "title": "Sketch",
+            "type": "object"
+          }
+        }
+      }
+    }
+  },
+  "results": [
+    {
+      "step": "parameters",
+      "schema_version": "v2",
+      "prompt": "Return one parameter named hole_diameter for a printed 6.8 mm hole dimension, span d4. Use source printed, unit mm, value 6.8, and also include expr equal to '6.8'. Return just a JSON object with parameters.",
+      "prompt_sha256": "2ddf5096802c91cf0573d9f86f19385b9e3fd8890b777ac7a18c5bd70dfbbd6f",
+      "schema_sha256": "3b61f7b95cab04b2a583febd3bf286f008d6e6bd5847a89f8a20f003eea9c412",
+      "answer": "{\n    \"parameters\": {\n        \"hole_diameter\": {\n            \"source\": \"printed\",\n            \"value\": 6.8,\n            \"expr\": \"6.8\"\n        }\n    }\n}",
+      "stats": {
+        "done_reason": "stop",
+        "eval_count": 44,
+        "prompt_eval_count": 73,
+        "total_duration_ns": 8724624083,
+        "load_duration_ns": 6080338542
+      },
+      "seconds": 8.73,
+      "contract_valid": false,
+      "error": "[{'type': 'value_error', 'loc': ('hole_diameter',), 'msg': 'Value error, parametrede value veya expr alanlarından tam biri bulunmalı', 'ctx': {'error': ValueError('parametrede value veya expr alanlarından tam biri bulunmalı')}}]"
+    },
+    {
+      "step": "parameters",
+      "schema_version": "v3",
+      "prompt": "Return one parameter named hole_diameter for a printed 6.8 mm hole dimension, span d4. Use source printed, unit mm, value 6.8, and also include expr equal to '6.8'. Return just a JSON object with parameters.",
+      "prompt_sha256": "2ddf5096802c91cf0573d9f86f19385b9e3fd8890b777ac7a18c5bd70dfbbd6f",
+      "schema_sha256": "14d916683c5de477d3c5eb48e22b854b93456c713a45e2a721098e19a72944db",
+      "answer": "{\n    \"parameters\": {\n        \"hole_diameter\": {\n            \"unit\": \"mm\",\n            \"source\": \"printed\",\n            \"value\": 6.8,\n            \"span_ids\": [\"d4\"],\n            \"explanation\": \"The hole diameter is equal to '6.8'\"\n        }\n    }\n}",
+      "stats": {
+        "done_reason": "stop",
+        "eval_count": 70,
+        "prompt_eval_count": 73,
+        "total_duration_ns": 4025716375,
+        "load_duration_ns": 160546917
+      },
+      "seconds": 4.03,
+      "contract_valid": true,
+      "scope": "leaf contract only; no drawing/citation/geometry check"
+    },
+    {
+      "step": "profile",
+      "schema_version": "v2",
+      "prompt": "Return one sketch named disk, plane XY, offset '0', with one circular entity at ['0','0'] and radius '5'. Omit the entity's type field. Return only JSON with sketches.",
+      "prompt_sha256": "6f99d0699a191c1d2a950c78cb88e1f7e6ddb30d768535f141f6bea563a353e0",
+      "schema_sha256": "1e24a6076d9ea1e1381e8c056f02955e2932bf3bdd968051b7557152abf4b355",
+      "answer": "{\n  \"sketches\": {\n    \"disk\": {\n      \"entities\": [\n        {\n          \"center\": [ \"0\", \"0\" ],\n          \"radius\": \"5\"\n        }\n      ]\n    },\n    \"plane XY\": {\n      \"entities\": [\n        {\n          \"center\": [ \"0\", \"0\" ],\n          \"radius\": \"5\"\n        }\n      ]\n    }\n  }\n}",
+      "stats": {
+        "done_reason": "stop",
+        "eval_count": 87,
+        "prompt_eval_count": 61,
+        "total_duration_ns": 5052560750,
+        "load_duration_ns": 159794917
+      },
+      "seconds": 5.05,
+      "contract_valid": false,
+      "error": "[{'type': 'union_tag_not_found', 'loc': ('disk', 'entities', 0), 'msg': \"Unable to extract tag using discriminator 'type'\", 'ctx': {'discriminator': \"'type'\"}}, {'type': 'union_tag_not_found', 'loc': ('plane XY', 'entities', 0), 'msg': \"Unable to extract tag using discriminator 'type'\", 'ctx': {'discriminator': \"'type'\"}}]"
+    },
+    {
+      "step": "profile",
+      "schema_version": "v3",
+      "prompt": "Return one sketch named disk, plane XY, offset '0', with one circular entity at ['0','0'] and radius '5'. Omit the entity's type field. Return only JSON with sketches.",
+      "prompt_sha256": "6f99d0699a191c1d2a950c78cb88e1f7e6ddb30d768535f141f6bea563a353e0",
+      "schema_sha256": "8b83ba03feba1cfd67a0e7e976a461c8f29f6e178e01306e8b8e05324e5ff63e",
+      "answer": "{\n  \"sketches\": {\n    \"disk\": {\n      \"entities\": [\n        {\n          \"type\": \"circle\",\n          \"center\": [ \"0\", \"0\" ],\n          \"radius\": \"5\"\n        }\n      ]\n    },\n    \"plane XY\": {\n      \"entities\": [\n        {\n          \"type\": \"circle\",\n          \"center\": [ \"0\", \"0\" ],\n          \"radius\": \"5\"\n        }\n      ]\n    }\n  }\n}",
+      "stats": {
+        "done_reason": "stop",
+        "eval_count": 102,
+        "prompt_eval_count": 61,
+        "total_duration_ns": 5221194875,
+        "load_duration_ns": 149641125
+      },
+      "seconds": 5.22,
+      "contract_valid": true,
+      "scope": "leaf contract only; no drawing/citation/geometry check"
+    },
+    {
+      "step": "operations",
+      "schema_version": "v2",
+      "prompt": "Return one repeat operation id copies, output copies_body, input seed_body. Include both linear (x_pitch '10', x_count 2) and circular (axis Z, count 2). Omit the op field. Set result to copies_body. Return JSON with operations and result.",
+      "prompt_sha256": "594f2f2eaad802476b0f3c748f4ee812e08e1ce4558a8239688d5edf65091044",
+      "schema_sha256": "426d44f024db5abcfe49a958baae9140b3e77bd03b88e6e5d84c633861722051",
+      "answer": "{\n  \"operations\": [\n    {\n      \"id\": \"repeat\",\n      \"output\": \"copies_body\",\n      \"input\": \"seed_body\"\n    },\n    {\n      \"id\": \"repeat\",\n      \"output\": \"copies_body\",\n      \"input\": \"seed_body\"\n    }\n  ],\n  \"result\": \"copies_body\"\n}",
+      "stats": {
+        "done_reason": "stop",
+        "eval_count": 72,
+        "prompt_eval_count": 78,
+        "total_duration_ns": 4039622292,
+        "load_duration_ns": 148711667
+      },
+      "seconds": 4.04,
+      "contract_valid": false,
+      "error": "[{'type': 'union_tag_not_found', 'loc': (0,), 'msg': \"Unable to extract tag using discriminator 'op'\", 'ctx': {'discriminator': \"'op'\"}}, {'type': 'union_tag_not_found', 'loc': (1,), 'msg': \"Unable to extract tag using discriminator 'op'\", 'ctx': {'discriminator': \"'op'\"}}]"
+    },
+    {
+      "step": "operations",
+      "schema_version": "v3",
+      "prompt": "Return one repeat operation id copies, output copies_body, input seed_body. Include both linear (x_pitch '10', x_count 2) and circular (axis Z, count 2). Omit the op field. Set result to copies_body. Return JSON with operations and result.",
+      "prompt_sha256": "594f2f2eaad802476b0f3c748f4ee812e08e1ce4558a8239688d5edf65091044",
+      "schema_sha256": "7bec692f7e8f12b302a6f14742902c7e11c488d81ec38fbd3264c51d12354d23",
+      "answer": "{\n  \"operations\": [\n    {\n      \"op\": \"repeat\",\n      \"id\": \"x_pitch_10_x_count_2\",\n      \"output\": \"copies_body\",\n      \"input\": \"seed_body\",\n      \"linear\": {\n        \"x_pitch\": \"10\"\n      }\n    },\n    {\n      \"op\": \"repeat\",\n      \"id\": \"axis_z_count_2\",\n      \"output\": \"copies_body\",\n      \"input\": \"seed_body\",\n      \"circular\": {\n        \"axis\": \"Z\",\n        \"count\": 2\n      }\n    }\n  ],\n  \"result\": \"copies_body\"\n}",
+      "stats": {
+        "done_reason": "stop",
+        "eval_count": 136,
+        "prompt_eval_count": 78,
+        "total_duration_ns": 6956628291,
+        "load_duration_ns": 150093583
+      },
+      "seconds": 6.96,
+      "contract_valid": true,
+      "scope": "leaf contract only; no drawing/citation/geometry check"
+    }
+  ],
+  "status": "complete",
+  "active": null,
+  "resources": {
+    "measurement_version": 2,
+    "unit": "MiB",
+    "method": "vm.swapusage used field + vm_stat reported page size; ps Ollama RSS; MiB; 2 s samples",
+    "samples": 18,
+    "raw_samples": [
+      {
+        "seconds": 1790507254.86,
+        "swap_used_mb": 6140.5,
+        "pages_free_mb": 74.094,
+        "pages_compressed_mb": 6974.219,
+        "ollama_rss_mb": 23.1,
+        "raw_swapusage": "total = 7168.00M  used = 6140.50M  free = 1027.50M  (encrypted)",
+        "raw_vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     4742.\nPages active:                                 181321.\nPages inactive:                               175333.\nPages speculative:                              5436.\nPages throttled:                                   0.\nPages wired down:                             199524.\nPages purgeable:                                  58.\n\"Translation faults\":                     4284490252.\nPages copy-on-write:                       251653780.\nPages zero filled:                        1569646173.\nPages reactivated:                         767537389.\nPages purged:                               63259736.\nFile-backed pages:                            139682.\nAnonymous pages:                              222408.\nPages stored in compressor:                  1950873.\nPages occupied by compressor:                 446350.\nDecompressions:                            839278387.\nCompressions:                              923826965.\nPageins:                                   182700779.\nPageouts:                                    2194416.\nSwapins:                                    36832740.\nSwapouts:                                   44611513."
+      },
+      {
+        "seconds": 1790507256.96,
+        "swap_used_mb": 7333.69,
+        "pages_free_mb": 1466.594,
+        "pages_compressed_mb": 7144.016,
+        "ollama_rss_mb": 796.3,
+        "raw_swapusage": "total = 8192.00M  used = 7333.69M  free = 858.31M  (encrypted)",
+        "raw_vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                    93862.\nPages active:                                  73303.\nPages inactive:                                65957.\nPages speculative:                              6836.\nPages throttled:                                   0.\nPages wired down:                             315374.\nPages purgeable:                                   2.\n\"Translation faults\":                     4284609291.\nPages copy-on-write:                       251656217.\nPages zero filled:                        1569946351.\nPages reactivated:                         767612060.\nPages purged:                               63259840.\nFile-backed pages:                             75756.\nAnonymous pages:                               70342.\nPages stored in compressor:                  2129989.\nPages occupied by compressor:                 457217.\nDecompressions:                            839303291.\nCompressions:                              924033572.\nPageins:                                   182725202.\nPageouts:                                    2194469.\nSwapins:                                    36832756.\nSwapouts:                                   44689257."
+      },
+      {
+        "seconds": 1790507259.15,
+        "swap_used_mb": 8687.94,
+        "pages_free_mb": 188.453,
+        "pages_compressed_mb": 5964.312,
+        "ollama_rss_mb": 2837.4,
+        "raw_swapusage": "total = 9216.00M  used = 8687.94M  free = 528.06M  (encrypted)",
+        "raw_vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                    12061.\nPages active:                                  91810.\nPages inactive:                                92510.\nPages speculative:                              8705.\nPages throttled:                                   0.\nPages wired down:                             425814.\nPages purgeable:                                  12.\n\"Translation faults\":                     4284829009.\nPages copy-on-write:                       251658585.\nPages zero filled:                        1570060726.\nPages reactivated:                         767651476.\nPages purged:                               63259844.\nFile-backed pages:                            123755.\nAnonymous pages:                               69270.\nPages stored in compressor:                  2130881.\nPages occupied by compressor:                 381716.\nDecompressions:                            839334851.\nCompressions:                              924067035.\nPageins:                                   182867340.\nPageouts:                                    2194508.\nSwapins:                                    36832772.\nSwapouts:                                   44776325."
+      },
+      {
+        "seconds": 1790507261.23,
+        "swap_used_mb": 9726.31,
+        "pages_free_mb": 110.281,
+        "pages_compressed_mb": 4904.547,
+        "ollama_rss_mb": 3611.5,
+        "raw_swapusage": "total = 10240.00M  used = 9726.31M  free = 513.69M  (encrypted)",
+        "raw_vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     7058.\nPages active:                                 106063.\nPages inactive:                                91695.\nPages speculative:                             13261.\nPages throttled:                                   0.\nPages wired down:                             480654.\nPages purgeable:                                  65.\n\"Translation faults\":                     4284971176.\nPages copy-on-write:                       251661523.\nPages zero filled:                        1570130377.\nPages reactivated:                         767670935.\nPages purged:                               63260236.\nFile-backed pages:                            129147.\nAnonymous pages:                               81872.\nPages stored in compressor:                  2124779.\nPages occupied by compressor:                 313891.\nDecompressions:                            839375271.\nCompressions:                              924103743.\nPageins:                                   182930150.\nPageouts:                                    2194529.\nSwapins:                                    36833512.\nSwapouts:                                   44841517."
+      },
+      {
+        "seconds": 1790507263.29,
+        "swap_used_mb": 9726.31,
+        "pages_free_mb": 57.797,
+        "pages_compressed_mb": 4811.766,
+        "ollama_rss_mb": 3627.4,
+        "raw_swapusage": "total = 10240.00M  used = 9726.31M  free = 513.69M  (encrypted)",
+        "raw_vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     3699.\nPages active:                                 109297.\nPages inactive:                                99636.\nPages speculative:                              8922.\nPages throttled:                                   0.\nPages wired down:                             483175.\nPages purgeable:                                  26.\n\"Translation faults\":                     4285018572.\nPages copy-on-write:                       251662422.\nPages zero filled:                        1570141010.\nPages reactivated:                         767678453.\nPages purged:                               63261209.\nFile-backed pages:                            119932.\nAnonymous pages:                               97923.\nPages stored in compressor:                  2110938.\nPages occupied by compressor:                 307953.\nDecompressions:                            839395026.\nCompressions:                              924110275.\nPageins:                                   182934239.\nPageouts:                                    2194536.\nSwapins:                                    36833671.\nSwapouts:                                   44841517."
+      },
+      {
+        "seconds": 1790507265.34,
+        "swap_used_mb": 9726.31,
+        "pages_free_mb": 59.047,
+        "pages_compressed_mb": 4783.047,
+        "ollama_rss_mb": 3538.7,
+        "raw_swapusage": "total = 10240.00M  used = 9726.31M  free = 513.69M  (encrypted)",
+        "raw_vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     3779.\nPages active:                                 110398.\nPages inactive:                               102097.\nPages speculative:                              7799.\nPages throttled:                                   0.\nPages wired down:                             482523.\nPages purgeable:                                 316.\n\"Translation faults\":                     4285085896.\nPages copy-on-write:                       251666947.\nPages zero filled:                        1570148998.\nPages reactivated:                         767684872.\nPages purged:                               63261324.\nFile-backed pages:                            110717.\nAnonymous pages:                              109577.\nPages stored in compressor:                  2099832.\nPages occupied by compressor:                 306115.\nDecompressions:                            839418579.\nCompressions:                              924123170.\nPageins:                                   182937438.\nPageouts:                                    2194538.\nSwapins:                                    36834191.\nSwapouts:                                   44841517."
+      },
+      {
+        "seconds": 1790507267.4,
+        "swap_used_mb": 9718.31,
+        "pages_free_mb": 57.609,
+        "pages_compressed_mb": 4709.719,
+        "ollama_rss_mb": 3463.2,
+        "raw_swapusage": "total = 10240.00M  used = 9718.31M  free = 521.69M  (encrypted)",
+        "raw_vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     3687.\nPages active:                                 111613.\nPages inactive:                               104719.\nPages speculative:                              6064.\nPages throttled:                                   0.\nPages wired down:                             485188.\nPages purgeable:                                  58.\n\"Translation faults\":                     4285158945.\nPages copy-on-write:                       251668468.\nPages zero filled:                        1570159637.\nPages reactivated:                         767699581.\nPages purged:                               63262241.\nFile-backed pages:                             96704.\nAnonymous pages:                              125692.\nPages stored in compressor:                  2083695.\nPages occupied by compressor:                 301422.\nDecompressions:                            839452536.\nCompressions:                              924141711.\nPageins:                                   182942641.\nPageouts:                                    2194565.\nSwapins:                                    36834486.\nSwapouts:                                   44841517."
+      },
+      {
+        "seconds": 1790507269.45,
+        "swap_used_mb": 9718.31,
+        "pages_free_mb": 57.297,
+        "pages_compressed_mb": 4594.0,
+        "ollama_rss_mb": 3458.3,
+        "raw_swapusage": "total = 10240.00M  used = 9718.31M  free = 521.69M  (encrypted)",
+        "raw_vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     3667.\nPages active:                                 116137.\nPages inactive:                               109394.\nPages speculative:                              5999.\nPages throttled:                                   0.\nPages wired down:                             483499.\nPages purgeable:                                  18.\n\"Translation faults\":                     4285230570.\nPages copy-on-write:                       251671334.\nPages zero filled:                        1570168519.\nPages reactivated:                         767708367.\nPages purged:                               63263149.\nFile-backed pages:                             87489.\nAnonymous pages:                              144041.\nPages stored in compressor:                  2066751.\nPages occupied by compressor:                 294016.\nDecompressions:                            839478922.\nCompressions:                              924152161.\nPageins:                                   182943302.\nPageouts:                                    2194580.\nSwapins:                                    36834630.\nSwapouts:                                   44841517."
+      },
+      {
+        "seconds": 1790507271.5,
+        "swap_used_mb": 9718.31,
+        "pages_free_mb": 58.625,
+        "pages_compressed_mb": 4572.375,
+        "ollama_rss_mb": 3458.6,
+        "raw_swapusage": "total = 10240.00M  used = 9718.31M  free = 521.69M  (encrypted)",
+        "raw_vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     3752.\nPages active:                                 116905.\nPages inactive:                               112446.\nPages speculative:                              3696.\nPages throttled:                                   0.\nPages wired down:                             483265.\nPages purgeable:                                  18.\n\"Translation faults\":                     4285249716.\nPages copy-on-write:                       251672347.\nPages zero filled:                        1570173763.\nPages reactivated:                         767711058.\nPages purged:                               63264268.\nFile-backed pages:                             85434.\nAnonymous pages:                              147613.\nPages stored in compressor:                  2062242.\nPages occupied by compressor:                 292632.\nDecompressions:                            839484157.\nCompressions:                              924153819.\nPageins:                                   182943878.\nPageouts:                                    2194603.\nSwapins:                                    36834708.\nSwapouts:                                   44841517."
+      },
+      {
+        "seconds": 1790507273.55,
+        "swap_used_mb": 9718.31,
+        "pages_free_mb": 57.375,
+        "pages_compressed_mb": 4612.062,
+        "ollama_rss_mb": 3463.4,
+        "raw_swapusage": "total = 10240.00M  used = 9718.31M  free = 521.69M  (encrypted)",
+        "raw_vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     3672.\nPages active:                                 116120.\nPages inactive:                               108590.\nPages speculative:                              6857.\nPages throttled:                                   0.\nPages wired down:                             482170.\nPages purgeable:                                  10.\n\"Translation faults\":                     4285286564.\nPages copy-on-write:                       251674696.\nPages zero filled:                        1570181462.\nPages reactivated:                         767726347.\nPages purged:                               63265753.\nFile-backed pages:                             87383.\nAnonymous pages:                              144184.\nPages stored in compressor:                  2065741.\nPages occupied by compressor:                 295172.\nDecompressions:                            839492266.\nCompressions:                              924166164.\nPageins:                                   182951945.\nPageouts:                                    2194635.\nSwapins:                                    36834863.\nSwapouts:                                   44841517."
+      },
+      {
+        "seconds": 1790507275.61,
+        "swap_used_mb": 9718.31,
+        "pages_free_mb": 66.406,
+        "pages_compressed_mb": 4621.781,
+        "ollama_rss_mb": 3462.7,
+        "raw_swapusage": "total = 10240.00M  used = 9718.31M  free = 521.69M  (encrypted)",
+        "raw_vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     4250.\nPages active:                                 114740.\nPages inactive:                               108081.\nPages speculative:                              6370.\nPages throttled:                                   0.\nPages wired down:                             483449.\nPages purgeable:                                   2.\n\"Translation faults\":                     4285320691.\nPages copy-on-write:                       251678173.\nPages zero filled:                        1570187356.\nPages reactivated:                         767735910.\nPages purged:                               63266007.\nFile-backed pages:                             86602.\nAnonymous pages:                              142589.\nPages stored in compressor:                  2060172.\nPages occupied by compressor:                 295794.\nDecompressions:                            839498105.\nCompressions:                              924173173.\nPageins:                                   182953522.\nPageouts:                                    2194645.\nSwapins:                                    36834929.\nSwapouts:                                   44841517."
+      },
+      {
+        "seconds": 1790507277.65,
+        "swap_used_mb": 9718.31,
+        "pages_free_mb": 58.0,
+        "pages_compressed_mb": 4615.406,
+        "ollama_rss_mb": 3462.8,
+        "raw_swapusage": "total = 10240.00M  used = 9718.31M  free = 521.69M  (encrypted)",
+        "raw_vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     3712.\nPages active:                                 116040.\nPages inactive:                               108580.\nPages speculative:                              6736.\nPages throttled:                                   0.\nPages wired down:                             482145.\nPages purgeable:                                   2.\n\"Translation faults\":                     4285337309.\nPages copy-on-write:                       251680413.\nPages zero filled:                        1570191515.\nPages reactivated:                         767736311.\nPages purged:                               63266780.\nFile-backed pages:                             86977.\nAnonymous pages:                              144379.\nPages stored in compressor:                  2058314.\nPages occupied by compressor:                 295386.\nDecompressions:                            839499928.\nCompressions:                              924173661.\nPageins:                                   182954559.\nPageouts:                                    2194654.\nSwapins:                                    36834984.\nSwapouts:                                   44841517."
+      },
+      {
+        "seconds": 1790507279.7,
+        "swap_used_mb": 9718.31,
+        "pages_free_mb": 62.609,
+        "pages_compressed_mb": 4587.891,
+        "ollama_rss_mb": 3471.8,
+        "raw_swapusage": "total = 10240.00M  used = 9718.31M  free = 521.69M  (encrypted)",
+        "raw_vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     4007.\nPages active:                                 115876.\nPages inactive:                               112716.\nPages speculative:                              2603.\nPages throttled:                                   0.\nPages wired down:                             483884.\nPages purgeable:                                   2.\n\"Translation faults\":                     4285360509.\nPages copy-on-write:                       251682447.\nPages zero filled:                        1570196810.\nPages reactivated:                         767737235.\nPages purged:                               63266820.\nFile-backed pages:                             84055.\nAnonymous pages:                              147140.\nPages stored in compressor:                  2054002.\nPages occupied by compressor:                 293625.\nDecompressions:                            839504533.\nCompressions:                              924174309.\nPageins:                                   182956939.\nPageouts:                                    2194690.\nSwapins:                                    36835055.\nSwapouts:                                   44841517."
+      },
+      {
+        "seconds": 1790507281.75,
+        "swap_used_mb": 9718.31,
+        "pages_free_mb": 66.328,
+        "pages_compressed_mb": 4488.406,
+        "ollama_rss_mb": 3449.8,
+        "raw_swapusage": "total = 10240.00M  used = 9718.31M  free = 521.69M  (encrypted)",
+        "raw_vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     4245.\nPages active:                                 119322.\nPages inactive:                               116575.\nPages speculative:                              2089.\nPages throttled:                                   0.\nPages wired down:                             483077.\nPages purgeable:                                   2.\n\"Translation faults\":                     4285432754.\nPages copy-on-write:                       251684370.\nPages zero filled:                        1570208684.\nPages reactivated:                         767764954.\nPages purged:                               63267292.\nFile-backed pages:                             82515.\nAnonymous pages:                              155471.\nPages stored in compressor:                  2050864.\nPages occupied by compressor:                 287258.\nDecompressions:                            839544406.\nCompressions:                              924211459.\nPageins:                                   182958416.\nPageouts:                                    2194694.\nSwapins:                                    36835338.\nSwapouts:                                   44841517."
+      },
+      {
+        "seconds": 1790507283.81,
+        "swap_used_mb": 9718.31,
+        "pages_free_mb": 56.172,
+        "pages_compressed_mb": 4478.984,
+        "ollama_rss_mb": 3459.8,
+        "raw_swapusage": "total = 10240.00M  used = 9718.31M  free = 521.69M  (encrypted)",
+        "raw_vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     3595.\nPages active:                                 120473.\nPages inactive:                               118228.\nPages speculative:                              1513.\nPages throttled:                                   0.\nPages wired down:                             482086.\nPages purgeable:                                   0.\n\"Translation faults\":                     4285446045.\nPages copy-on-write:                       251685220.\nPages zero filled:                        1570212360.\nPages reactivated:                         767765932.\nPages purged:                               63267648.\nFile-backed pages:                             81777.\nAnonymous pages:                              158437.\nPages stored in compressor:                  2048580.\nPages occupied by compressor:                 286655.\nDecompressions:                            839548279.\nCompressions:                              924213970.\nPageins:                                   182958897.\nPageouts:                                    2194694.\nSwapins:                                    36835438.\nSwapouts:                                   44841517."
+      },
+      {
+        "seconds": 1790507285.86,
+        "swap_used_mb": 9718.31,
+        "pages_free_mb": 73.453,
+        "pages_compressed_mb": 4519.375,
+        "ollama_rss_mb": 3501.8,
+        "raw_swapusage": "total = 10240.00M  used = 9718.31M  free = 521.69M  (encrypted)",
+        "raw_vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     4701.\nPages active:                                 117986.\nPages inactive:                               116478.\nPages speculative:                              1098.\nPages throttled:                                   0.\nPages wired down:                             483199.\nPages purgeable:                                   3.\n\"Translation faults\":                     4285481157.\nPages copy-on-write:                       251689825.\nPages zero filled:                        1570220033.\nPages reactivated:                         767768054.\nPages purged:                               63267694.\nFile-backed pages:                             81424.\nAnonymous pages:                              154138.\nPages stored in compressor:                  2054882.\nPages occupied by compressor:                 289240.\nDecompressions:                            839551181.\nCompressions:                              924223434.\nPageins:                                   182959399.\nPageouts:                                    2194694.\nSwapins:                                    36835462.\nSwapouts:                                   44841517."
+      },
+      {
+        "seconds": 1790507287.91,
+        "swap_used_mb": 9702.31,
+        "pages_free_mb": 61.641,
+        "pages_compressed_mb": 4568.188,
+        "ollama_rss_mb": 3497.6,
+        "raw_swapusage": "total = 10240.00M  used = 9702.31M  free = 537.69M  (encrypted)",
+        "raw_vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     3945.\nPages active:                                 117719.\nPages inactive:                               113169.\nPages speculative:                              3536.\nPages throttled:                                   0.\nPages wired down:                             481930.\nPages purgeable:                                   2.\n\"Translation faults\":                     4285530075.\nPages copy-on-write:                       251692784.\nPages zero filled:                        1570229938.\nPages reactivated:                         767781976.\nPages purged:                               63268398.\nFile-backed pages:                             88246.\nAnonymous pages:                              146178.\nPages stored in compressor:                  2067088.\nPages occupied by compressor:                 292364.\nDecompressions:                            839557964.\nCompressions:                              924245026.\nPageins:                                   182967448.\nPageouts:                                    2194702.\nSwapins:                                    36835621.\nSwapouts:                                   44841517."
+      },
+      {
+        "seconds": 1790507289.02,
+        "swap_used_mb": 9702.31,
+        "pages_free_mb": 59.203,
+        "pages_compressed_mb": 4565.375,
+        "ollama_rss_mb": 3470.5,
+        "raw_swapusage": "total = 10240.00M  used = 9702.31M  free = 537.69M  (encrypted)",
+        "raw_vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     3789.\nPages active:                                 117545.\nPages inactive:                               112867.\nPages speculative:                              3805.\nPages throttled:                                   0.\nPages wired down:                             482438.\nPages purgeable:                                   2.\n\"Translation faults\":                     4285548164.\nPages copy-on-write:                       251693861.\nPages zero filled:                        1570233485.\nPages reactivated:                         767788584.\nPages purged:                               63268436.\nFile-backed pages:                             87932.\nAnonymous pages:                              146285.\nPages stored in compressor:                  2066201.\nPages occupied by compressor:                 292184.\nDecompressions:                            839562324.\nCompressions:                              924249583.\nPageins:                                   182970527.\nPageouts:                                    2194707.\nSwapins:                                    36835631.\nSwapouts:                                   44841517."
+      }
+    ],
+    "interval_s": 2.0,
+    "swap_used_mb_start": 6140.5,
+    "swap_used_mb_end": 9702.31,
+    "swap_used_mb_delta": 3561.8,
+    "swap_used_mb_peak": 9726.31,
+    "pages_free_mb_min": 56.172,
+    "pages_compressed_mb_peak": 7144.016,
+    "ollama_rss_mb_peak": 3627.4,
+    "note": "System swap/page counts include other apps. RSS is not total GPU/unified memory. Unavailable measurements are null; legacy *_mb keys use MiB in version 2."
+  }
+}

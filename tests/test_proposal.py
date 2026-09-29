@@ -15,11 +15,13 @@ import numpy as np
 import pytest
 
 from drawingto3d.general import build_general, evaluate_parameters
-from drawingto3d.observe import Unsupported
-from drawingto3d.proposal import Proposal, _frame_loops, _rounded_rectangle, propose_general
+from drawingto3d.observe import Observations, Unsupported
+from drawingto3d.proposal import (Proposal, _annotation_loops, _frame_loops, _loops,
+                                  _rounded_rectangle, part_class, propose_general, read_sheet)
 
 PLATE = Path("examples/pdf with steps/5/Plate With A Pocket Drawing.PDF")
 PLASTIC = Path("examples/pdf with steps/6/plastic enclosue.pdf")
+EXERCISE_12 = Path("examples/pdf with steps/10/Exercise 12.pdf")
 
 ANALYTIC_VOLUME = (120 * 80 - (4 - math.pi) * 10 ** 2) * 15 \
     - 4 * math.pi * 3.4 ** 2 * 15 - math.pi * 25.0 ** 2 * 8
@@ -45,6 +47,68 @@ def arc(gid, centre, radius, start_degrees, end_degrees):
     return (gid, np.array(centre, float), np.array(centre, float),
             {"kind": "arc", "centre": np.array(centre, float), "radius": radius,
              "start_degrees": start_degrees, "end_degrees": end_degrees})
+
+
+def sheet_with(primitives, width=2000, height=1400):
+    """A synthetic observation record: geometry only, which is all `part_class` reads."""
+    return Observations(source={"ref": "synthetic.pdf", "sha256": "0" * 64},
+                        frame={"width": width, "height": height}, text_placement="as-is",
+                        primitives=primitives)
+
+
+def test_annotation_loops_are_loops_that_carry_words():
+    """Which closed loop is the part: a loop full of printed phrases is a title block or a table."""
+    square = line_loop([("g0", (0, 0), (100, 0)), ("g1", (100, 0), (100, 50)),
+                        ("g2", (100, 50), (0, 50)), ("g3", (0, 50), (0, 0))])
+    table = [("TITLE:", None, 10.0, 10.0, 20.0, 5.0), ("SCALE:", None, 10.0, 20.0, 20.0, 5.0),
+             ("1: 5", 1.0, 10.0, 30.0, 10.0, 5.0)]
+    assert _annotation_loops([square], table) == {0}
+    # A view carrying its own dimensions is not a table: numbers with one note line stay a part loop.
+    view = [("100,00", 100.0, 10.0, 10.0, 20.0, 5.0), ("80,00", 80.0, 40.0, 10.0, 20.0, 5.0),
+            ("60,00", 60.0, 60.0, 10.0, 20.0, 5.0), ("THRU ALL", None, 10.0, 30.0, 30.0, 5.0)]
+    assert _annotation_loops([square], view) == set()
+    # A phrase outside the loop is outside the question.
+    outside = [("TITLE:", None, 200.0, 10.0, 20.0, 5.0), ("SCALE:", None, 200.0, 20.0, 20.0, 5.0),
+               ("NAME:", None, 200.0, 30.0, 20.0, 5.0)]
+    assert _annotation_loops([square], outside) == set()
+
+
+def test_part_class_reads_a_flange_stack_from_the_geometry():
+    """A rotational body seen face-on is a stack of circles about one centre; a flat part is its loop."""
+    stack = [{"id": f"g{i}", "path_id": f"p{i}", "kind": "circle", "centre": [600, 400], "radius": r}
+             for i, r in enumerate((200, 110, 72, 60, 24))]
+    assert part_class(sheet_with(stack))["class"] == "rotational-flanged"
+    rectangle = [{"id": "g0", "path_id": "p0", "kind": "line", "start": [100, 100], "end": [900, 100]},
+                 {"id": "g1", "path_id": "p1", "kind": "line", "start": [900, 100], "end": [900, 500]},
+                 {"id": "g2", "path_id": "p2", "kind": "line", "start": [900, 500], "end": [100, 500]},
+                 {"id": "g3", "path_id": "p3", "kind": "line", "start": [100, 500], "end": [100, 100]}]
+    assert part_class(sheet_with(rectangle))["class"] == "flat-part"
+    # The same kind of stack drawn small is a feature of a plate, not a flange face: the test is
+    # relative to the page, so a 16 px stack on a 2000 px sheet does not make a rotational body.
+    small = rectangle + [{"id": f"c{i}", "path_id": f"q{i}", "kind": "circle", "centre": [500, 300],
+                          "radius": r} for i, r in enumerate((4, 6, 8))]
+    assert part_class(sheet_with(small))["class"] == "flat-part"
+    assert part_class(sheet_with([]))["class"] == "unknown"
+
+
+def test_new_sheet_refuses_on_a_part_loop_not_the_title_block():
+    """`10/Exercise 12`: the biggest loop left after the frame is the title-block box.
+
+    Measured before this change: the proposal refused on a 4-primitive 457.17 x 139.78 mm rectangle —
+    the title block's own border, 708.6 x 216.7 px at the sheet's bottom-right corner. The part's own
+    outline is a 28-primitive section-view loop, and that is what the refusal has to name.
+    """
+    proposal = propose_general(EXERCISE_12)
+    assert proposal.status == "refused"
+    assert any("antet/tablo" in note for note in proposal.notes)
+    assert not any("457.17" in refusal for refusal in proposal.refusals)
+    assert any("28 ilkel" in refusal for refusal in proposal.refusals)
+
+
+def test_title_block_is_skipped_by_the_reading_too():
+    reading = read_sheet(EXERCISE_12)
+    assert reading.components["annotation_loops"] == 1
+    assert any("antet/tablo" in note for note in reading.notes)
 
 
 def test_plate_is_proposed(plate):
@@ -183,3 +247,37 @@ def test_rounded_rectangle_rejects_a_five_entity_loop():
              ("l3", np.array([40.0, 50.0]), np.array([0.0, 30.0]), {"kind": "line"}),
              ("l4", np.array([0.0, 30.0]), np.array([0.0, 0.0]), {"kind": "line"})]
     assert _rounded_rectangle(chain, scale=1.0) is None
+
+
+def test_loop_chaining_keeps_a_run_a_dead_end_would_have_eaten():
+    """A dead end claims nothing, or the first chain swallows the part's own outline.
+
+    Measured on `Drawing.pdf`: 239 lines came out as three loops and the part's outline was not one
+    of them, because the first chain walked off along the dimension lines touching a corner and took
+    the outline's segments with it. The square with a collinear dimension line leaving one corner is
+    the plainest version of that sheet.
+    """
+    lines = {
+        "dim": (np.array([100.0, 0.0]), np.array([220.0, 0.0])),
+        "s0": (np.array([0.0, 0.0]), np.array([100.0, 0.0])),
+        "s1": (np.array([100.0, 0.0]), np.array([100.0, 50.0])),
+        "s2": (np.array([100.0, 50.0]), np.array([0.0, 50.0])),
+        "s3": (np.array([0.0, 50.0]), np.array([0.0, 0.0])),
+    }
+    loops = _loops(lines, {})
+    assert loops, "bir kapalı döngü bulunmalı"
+    assert {entity[0] for entity in loops[0]["entities"]} == {"s0", "s1", "s2", "s3"}
+    assert "dim" not in {entity[0] for loop in loops for entity in loop["entities"]}
+
+
+def test_loop_chaining_takes_the_closing_segment_over_a_straighter_continuation():
+    """A segment that returns to the chain's start is the drawing's own run closing, not a detour."""
+    lines = {
+        "c": (np.array([100.0, 40.0]), np.array([100.0, 80.0])),
+        "a": (np.array([0.0, 0.0]), np.array([100.0, 0.0])),
+        "b": (np.array([100.0, 0.0]), np.array([100.0, 40.0])),
+        "zoom": (np.array([100.0, 40.0]), np.array([0.0, 0.0])),
+    }
+    loops = _loops(lines, {})
+    assert loops, "kapanan zincir döngü olmalı"
+    assert {entity[0] for entity in loops[0]["entities"]} == {"a", "b", "zoom"}

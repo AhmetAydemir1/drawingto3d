@@ -1,0 +1,638 @@
+{
+  "scope": "decoder constraints on a name, measured with and without each constraint; no drawing read, no CAD built",
+  "provider": "ollama",
+  "code": {
+    "git_head": "96e01189f5f39d6e24154580453092f585a268f5",
+    "git_branch": "main",
+    "dirty": true,
+    "dirty_files": [
+      "M .cursor/handoff.md",
+      " M CHANGES.md",
+      " M HANDOFF.md",
+      " M PLAN.md",
+      " M eval/README.md",
+      " M eval/baseline_report.py",
+      " M eval/model_baseline.py",
+      " M eval/reports/model-baseline.md",
+      " M src/drawingto3d/cli.py",
+      " M src/drawingto3d/planner.py",
+      " M src/drawingto3d/proposal.py",
+      " M tests/test_baseline_report.py",
+      " M tests/test_planner.py",
+      "?? eval/name_probe.py",
+      "?? eval/reports/audit-evidence.json",
+      "?? eval/reports/planner-v2-live-evidence.json",
+      "?? eval/reports/progress-audit.md",
+      "?? eval/reports/schema-audit.md",
+      "?? eval/reports/schema-v3-live-evidence.json",
+      "?? eval/reports/schema-v3-probe-evidence.json",
+      "?? eval/schema_probe.py",
+      "?? tests/test_baseline_resources.py",
+      "?? tests/test_chain_model.py",
+      "?? tests/test_name_probe.py",
+      "?? tests/test_plan_reply_schema.py",
+      "?? tests/test_planner_names.py"
+    ],
+    "diff_stat": ".cursor/handoff.md             | 150 ++++++++++\n CHANGES.md                     | 148 +++++++++\n HANDOFF.md                     | 173 +++++++++++\n PLAN.md                        | 189 ++++++++++--\n eval/README.md                 |  29 +-\n eval/baseline_report.py        |  36 ++-\n eval/model_baseline.py         | 354 ++++++++++++++++------\n eval/reports/model-baseline.md | 585 +++++++++++++++++++-----------------\n src/drawingto3d/cli.py         |  91 +++++-\n src/drawingto3d/planner.py     | 661 +++++++++++++++++++++++++++++++++++++++--\n src/drawingto3d/proposal.py    | 156 ++++++++--\n tests/test_baseline_report.py  |  32 ++\n tests/test_planner.py          | 238 ++++++++++++++-\n 13 files changed, 2397 insertions(+), 445 deletions(-)",
+    "file_sha256": {
+      "eval/baseline.py": "fd7bc9471a9a43cc10c4661f7724549dd07b563280a45a6e9a9635a6b90ff2b6",
+      "eval/baseline_report.py": "1250eecf85f95dcebd237594a4d62f27421cd6b5b670f8ed34a0eca434bb2a35",
+      "eval/candidates.py": "ba976857d1b42fbab5a0866924e74cc0a32ec512f3fe2b65744b29e81452f675",
+      "eval/check_tables.py": "65d093c86842da8daa71e0324ab415df52554729fa95533f2a8fbfde08f0ded9",
+      "eval/classifier.py": "7423ad129c65dc1c0143c17a3683c9bcaa08971a395c9ea0928f4ea893f75167",
+      "eval/frontend.py": "0d24aec76855c8008d43c6757647e1fb9b8a8574d9e621ccc214886d678b8776",
+      "eval/metrics.py": "0799715f83d09eb4b10d6d640fef1da6d2b2e5a6e367d074252ba991748f3348",
+      "eval/model_baseline.py": "b00828f1ba70c9433970f3df28430c49bf0cc88682ff47dae44019a8e60267ef",
+      "eval/name_probe.py": "84d39e2d5d4027b8f6e0d9975f8b52e4c8d570c8dad52ad4f3b8b9b58208231a",
+      "eval/offering.py": "9aeeab20b7c143e22bf0df15328c72aadac913166d12d6deb8c68eb3183037af",
+      "eval/plate_plan.py": "bc711e0db6ed5b45dd7aa844aed011938f61ff8b0e5a610d214eceb6e61ffa70",
+      "eval/report.py": "977337a0b2e6cc9deebe6ef1b66fe9947b2669a128eecd015d4c9358cdf6ef66",
+      "eval/schema_probe.py": "b10d4e82530d1fc12e19683e697f8f18cfb775efbf7cc9ad9ae9db39436daae2",
+      "pyproject.toml": "ad770798646517f2e0daa22bd4c49f0154b309b6d28240db750d0286a224ece4",
+      "src/drawingto3d/__init__.py": "8ed013af947f6451a2f658eaaa3a76cc9bfdec2c7c7572c303138db4b97a0f95",
+      "src/drawingto3d/__main__.py": "dbbdd03fa6bdf68ad8fe17fe9b224a8ce489be7d173bf0a1fd2f052ab3aa795f",
+      "src/drawingto3d/app.py": "29e9cb8a3f0d2dfe01c22f3520b455ec8d186fd13fbff0575379fa9c4282972a",
+      "src/drawingto3d/bind.py": "37c16af9facec99248091d394d5e2b701c14f1f1eb34ac7d550d5d11bb9c93f8",
+      "src/drawingto3d/cadrun.py": "0ad6bacc8a517a6bf696dc1708fe402d85ee88f0d538cfdd0dbde1ecb0ad7060",
+      "src/drawingto3d/cli.py": "248f80dded767f26b31a3ebd873a4209500a2b263d69fcad431fc5576a1f390b",
+      "src/drawingto3d/errors.py": "67cb564420b013bb30339efb653dc63e85afce600a6d731287f0e7ffcb5a6aa5",
+      "src/drawingto3d/general.py": "0b18651c3570e693178d36cc1ef052c94e4917722fb8669e57e698f3c4a01d8d",
+      "src/drawingto3d/geo.py": "329019d1c49e6df58c62d6c6eee1e4bf65d1555876be50d5bde37be969c0785a",
+      "src/drawingto3d/ingest.py": "0099c35cbcd4f1cb3d1c7668dd12b51db16cc5c7df17ec232c442e9ff80074cb",
+      "src/drawingto3d/legacy/__init__.py": "3373ac6db37e23fb04af06775279ebf14264db58d688bfda6e81560c32937b64",
+      "src/drawingto3d/legacy/bind.py": "0e08beb4d7be79a0e6a3608a4a9d654484aff43ba57da372010b9190158311be",
+      "src/drawingto3d/legacy/contours.py": "8e306d38756b85f7734ca6e0730baf37cc2876ee3f2e5a76e1f3520d7d11c504",
+      "src/drawingto3d/legacy/pipeline.py": "f2d42bbc191a9632c1abab1a374dfc027e9b3b14444c75b8834bc2b291dfa622",
+      "src/drawingto3d/legacy/solid.py": "0873652f782ffb8c7b324e061d15426d13b7d99f2d99b614f979a7f3227ae44f",
+      "src/drawingto3d/legacy/strategies.py": "c5e9e1ca81d88c4e557e7eb31d89de9ac3671cee8ecc3b56e6f6c6259cce7c10",
+      "src/drawingto3d/legacy/tests/test_binding.py": "1e911162e9bce9d005a3ddf0713925a8b8751d742687bfb6e12210ddfe874f3e",
+      "src/drawingto3d/legacy/tests/test_fixture.py": "09a9f138b52898c335cbd1b4a91353b649e5ab8e9926dc20ec5c07c6eea57dbe",
+      "src/drawingto3d/legacy/tests/test_lever_solid.py": "e50a7e298f22c27d2e6fafc68a730660a288a5968e62a9c07dc09ced639dad05",
+      "src/drawingto3d/legacy/tests/test_prismatic.py": "5bb2861b36066ddc22d6e01bb09d9742604ff7d07df52d7583b7ed7ccff3e228",
+      "src/drawingto3d/lines.py": "a7ea08ffb1b254ea072f9da5ac8884908f6f0c3426e16aa6028208ee9df798ff",
+      "src/drawingto3d/llama.py": "b87494f40a17a5d25e9373c9c65906d710e8475a1300f5d87306224f07bbd5a0",
+      "src/drawingto3d/meaning.py": "2fcb6a9a8c425c970814df1b71bb800d803ee30d46c06098df5f08785d2490d7",
+      "src/drawingto3d/observe.py": "0be0a2cdf4071beb125c535f13085fb2b676e7b2cc69723eaf3e5d6e56a8e3ff",
+      "src/drawingto3d/perceive.py": "3744312a7b4b7abc747a4efa5cf5d04d094e0b9d808b3456cb963ca604dcaece",
+      "src/drawingto3d/plan.py": "1e97ba6ec7bb0cc721f4e7e350304ea498aa0da39004bf13cb483a537e687067",
+      "src/drawingto3d/planner.py": "ad823e3d62a49427c634af5df98887a6611d6dd0ac1599c4bdf988ec5a0c009b",
+      "src/drawingto3d/plate.py": "dd4177902c531decccd01d3ea27c20f242b5bd571102d87a1debd15ad86a0bac",
+      "src/drawingto3d/proposal.py": "b8e847d339b5ab2572f02f9a55be5eba49408e2437face70426783c325270d9f",
+      "src/drawingto3d/raster.py": "fe054bd92a350fce033aacb9fc9ac06c0e78cbc4acf5639a2e355fba117d3647",
+      "src/drawingto3d/reader.py": "2639c86888fae4f05282b1786058a36878fda433ac6d8d191a019d2b0afaa2b0",
+      "src/drawingto3d/reason.py": "6c8fcaadb72fe29c810c62e53db4cf226c5c9fbe5462230dd7f6bf58f3f186a3",
+      "src/drawingto3d/roles.py": "81d18635e142132fa6674bf9a8ffc134c12d4720974a1a8f10c3d589fc85b8cf",
+      "src/drawingto3d/scale.py": "b2527cd48c5fff73742ac809574e6f0e3cc4555d2ee4b605d103329c5fab83c9",
+      "src/drawingto3d/schema.py": "d4d3fc9bdf93a9bf661a7864e6cc7e875f7cb16e41b7aac16feb9f49b2f6a8ef",
+      "src/drawingto3d/views.py": "a458112a107e3113ababb7009b6ee3faae6d8b44fc25a4d27131004977eadca1"
+    },
+    "python": "3.12.8",
+    "executable": "/Users/aydemir/Desktop/drawingto3d/.venv/bin/python",
+    "platform": "macOS-26.5.2-arm64-arm-64bit",
+    "machine": "Apple M1",
+    "memory_bytes": 17179869184,
+    "tesseract": "tesseract 5.5.1",
+    "cadquery": true
+  },
+  "model": {
+    "name": "qwen2.5vl:3b",
+    "digest": "fb90415cde1ef08aa669ae74b082d49b158729b6db1ab183c941417d507e71a1",
+    "size_bytes": 3200627168,
+    "size_gb": 3.201,
+    "parameter_size": "3.8B",
+    "quantization": "Q4_K_M",
+    "context_length": 128000,
+    "families": [
+      "qwen25vl"
+    ],
+    "capabilities": [
+      "vision",
+      "completion"
+    ]
+  },
+  "settings": {
+    "model": "qwen2.5vl:3b",
+    "num_ctx": 4096,
+    "temperature": 0,
+    "num_predict": 200,
+    "keep_alive": "5m",
+    "timeout_s": 180,
+    "image_max_side": null,
+    "images_per_call": 1,
+    "response_format": "text"
+  },
+  "name_pattern": "^[a-z][a-z0-9_]*$",
+  "requested_illegal_name": "Hole_Spacing-X",
+  "wire": {
+    "property_names": {
+      "parameters": {
+        "pattern": "^[a-z][a-z0-9_]*$"
+      },
+      "sketches": {
+        "pattern": "^[a-z][a-z0-9_]*$"
+      }
+    },
+    "reference_fields": {
+      "extrude": {
+        "sketch": [
+          {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$"
+          }
+        ]
+      },
+      "revolve": {
+        "sketch": [
+          {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$"
+          }
+        ]
+      },
+      "repeat": {
+        "input": [
+          {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$"
+          },
+          {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$"
+          }
+        ]
+      },
+      "cut": {
+        "target": [
+          {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$"
+          }
+        ],
+        "tool": [
+          {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$"
+          }
+        ]
+      },
+      "fuse": {
+        "inputs.items": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$"
+        }
+      }
+    },
+    "result": {
+      "pattern": "^[a-z][a-z0-9_]*$",
+      "title": "Result",
+      "type": "string"
+    }
+  },
+  "results": [
+    {
+      "probe": "string-field",
+      "variant": "control",
+      "constraint": "`pattern` on a string field (`result`)",
+      "prompt": "Return the finished body's name exactly as 'Hole_Spacing-X'. Answer JSON only.",
+      "prompt_sha256": "aabf72cf0d4934db6206a7126bab34d52f94d45941c3fea0b048f3e8a1c914a6",
+      "schema_sha256": "f7e7992ee6c2c610edfd0c5cf921dacff3e046b23523b714d6269093ed923a8e",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "additionalProperties": false
+      },
+      "answer": "{\n  \"result\": \"Hole_Spacing-1\"\n}",
+      "request_error": null,
+      "stats": {
+        "done_reason": "stop",
+        "eval_count": 16,
+        "prompt_eval_count": 39,
+        "total_duration_ns": 5921216292,
+        "load_duration_ns": 4915103417
+      },
+      "seconds": 5.93,
+      "names": [
+        "Hole_Spacing-1"
+      ],
+      "verdict": {
+        "names": [
+          "Hole_Spacing-1"
+        ],
+        "illegal_names": [
+          "Hole_Spacing-1"
+        ],
+        "legal": false
+      }
+    },
+    {
+      "probe": "string-field",
+      "variant": "constrained",
+      "constraint": "`pattern` on a string field (`result`)",
+      "prompt": "Return the finished body's name exactly as 'Hole_Spacing-X'. Answer JSON only.",
+      "prompt_sha256": "aabf72cf0d4934db6206a7126bab34d52f94d45941c3fea0b048f3e8a1c914a6",
+      "schema_sha256": "6f216c9b6abb0a092122f5b76e5caf0b08fe7b6e2f22ff5ba2568f7c19634aea",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "additionalProperties": false
+      },
+      "answer": "{\n  \"result\": \"hole_spacing_x\"\n}",
+      "request_error": null,
+      "stats": {
+        "done_reason": "stop",
+        "eval_count": 12,
+        "prompt_eval_count": 39,
+        "total_duration_ns": 746340292,
+        "load_duration_ns": 153796084
+      },
+      "seconds": 0.75,
+      "names": [
+        "hole_spacing_x"
+      ],
+      "verdict": {
+        "names": [
+          "hole_spacing_x"
+        ],
+        "illegal_names": [],
+        "legal": true
+      }
+    },
+    {
+      "probe": "property-names",
+      "variant": "control",
+      "constraint": "`propertyNames.pattern` on an object (`parameters`)",
+      "prompt": "Return one parameter, keyed exactly 'Hole_Spacing-X', with the string value '100'. Answer JSON only.",
+      "prompt_sha256": "b31de0f78dfc59b70ed38290fb7962342b2d7ca4c3ee9747431308bbdfb7f6b5",
+      "schema_sha256": "8825fc162ada749fba0f1d431da656ccd13ab32f1cfd63fa99847be3b61ac5e8",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "parameters": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "number"
+            }
+          }
+        },
+        "required": [
+          "parameters"
+        ],
+        "additionalProperties": false
+      },
+      "answer": "{\n  \"parameters\": {\n    \"Hole_Spacing-X\": 100\n  }\n}",
+      "request_error": null,
+      "stats": {
+        "done_reason": "stop",
+        "eval_count": 24,
+        "prompt_eval_count": 46,
+        "total_duration_ns": 1413657875,
+        "load_duration_ns": 148289167
+      },
+      "seconds": 1.41,
+      "names": [
+        "Hole_Spacing-X"
+      ],
+      "verdict": {
+        "names": [
+          "Hole_Spacing-X"
+        ],
+        "illegal_names": [
+          "Hole_Spacing-X"
+        ],
+        "legal": false
+      }
+    },
+    {
+      "probe": "property-names",
+      "variant": "constrained",
+      "constraint": "`propertyNames.pattern` on an object (`parameters`)",
+      "prompt": "Return one parameter, keyed exactly 'Hole_Spacing-X', with the string value '100'. Answer JSON only.",
+      "prompt_sha256": "b31de0f78dfc59b70ed38290fb7962342b2d7ca4c3ee9747431308bbdfb7f6b5",
+      "schema_sha256": "f333c3bd9efa13d96a6b050a155b0f43c699ccc6f5295dcdf88c0c032b7b9c31",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "parameters": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "number"
+            },
+            "propertyNames": {
+              "pattern": "^[a-z][a-z0-9_]*$"
+            }
+          }
+        },
+        "required": [
+          "parameters"
+        ],
+        "additionalProperties": false
+      },
+      "answer": "{\n  \"parameters\": {\n    \"Hole_Spacing-X\": 100\n  }\n}",
+      "request_error": null,
+      "stats": {
+        "done_reason": "stop",
+        "eval_count": 24,
+        "prompt_eval_count": 46,
+        "total_duration_ns": 1304343208,
+        "load_duration_ns": 153343417
+      },
+      "seconds": 1.31,
+      "names": [
+        "Hole_Spacing-X"
+      ],
+      "verdict": {
+        "names": [
+          "Hole_Spacing-X"
+        ],
+        "illegal_names": [
+          "Hole_Spacing-X"
+        ],
+        "legal": false
+      }
+    },
+    {
+      "probe": "property-names-enum",
+      "variant": "control",
+      "constraint": "a closed key vocabulary (`properties` + `additionalProperties: false`)",
+      "prompt": "Return one parameter, keyed exactly 'Hole_Spacing-X' with value '100'. Answer JSON only.",
+      "prompt_sha256": "b958abab967ce85bcbc1318fb5c810ad5ec3b6a83c29f0266ac2fc255477ceb4",
+      "schema_sha256": "2c04838be45cff6e923f6ce87c51f45fb1d1f9c086f10dbf2dfde03e10cac827",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "parameters": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "parameters"
+        ],
+        "additionalProperties": false
+      },
+      "answer": "{\n  \"parameters\": {\n    \"Hole_Spacing-X\": \"100\"\n  }\n}",
+      "request_error": null,
+      "stats": {
+        "done_reason": "stop",
+        "eval_count": 24,
+        "prompt_eval_count": 44,
+        "total_duration_ns": 1422399834,
+        "load_duration_ns": 154692500
+      },
+      "seconds": 1.42,
+      "names": [
+        "Hole_Spacing-X"
+      ],
+      "verdict": {
+        "names": [
+          "Hole_Spacing-X"
+        ],
+        "illegal_names": [
+          "Hole_Spacing-X"
+        ],
+        "legal": false
+      }
+    },
+    {
+      "probe": "property-names-enum",
+      "variant": "constrained",
+      "constraint": "a closed key vocabulary (`properties` + `additionalProperties: false`)",
+      "prompt": "Return one parameter, keyed exactly 'Hole_Spacing-X' with value '100'. Answer JSON only.",
+      "prompt_sha256": "b958abab967ce85bcbc1318fb5c810ad5ec3b6a83c29f0266ac2fc255477ceb4",
+      "schema_sha256": "d8d2cff115afd5da9cd5a0d3dee4c0a01d707216aa8d61e82604f532c06b4067",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "hole_spacing_x": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "required": [
+          "parameters"
+        ],
+        "additionalProperties": false
+      },
+      "answer": "{\n  \"parameters\": {\n    \"hole_spacing_x\": \"testing\"\n  }\n}",
+      "request_error": null,
+      "stats": {
+        "done_reason": "stop",
+        "eval_count": 19,
+        "prompt_eval_count": 44,
+        "total_duration_ns": 1066064083,
+        "load_duration_ns": 153325292
+      },
+      "seconds": 1.07,
+      "names": [
+        "hole_spacing_x"
+      ],
+      "verdict": {
+        "names": [
+          "hole_spacing_x"
+        ],
+        "illegal_names": [],
+        "legal": true
+      }
+    },
+    {
+      "probe": "pattern-properties",
+      "variant": "control",
+      "constraint": "`patternProperties` with `additionalProperties: false`",
+      "prompt": "Return one parameter, keyed exactly 'Hole_Spacing-X' with the value 100. Answer JSON only.",
+      "prompt_sha256": "1c10c92c5d03ddd168d7e6e049b1b56f4eefc94628741578e71910f83f69eccf",
+      "schema_sha256": "8825fc162ada749fba0f1d431da656ccd13ab32f1cfd63fa99847be3b61ac5e8",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "parameters": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "number"
+            }
+          }
+        },
+        "required": [
+          "parameters"
+        ],
+        "additionalProperties": false
+      },
+      "answer": "{\n    \"parameters\": {\n        \"Hole_Spacing-X\": 100\n    }\n}",
+      "request_error": null,
+      "stats": {
+        "done_reason": "stop",
+        "eval_count": 24,
+        "prompt_eval_count": 45,
+        "total_duration_ns": 1427233708,
+        "load_duration_ns": 156449333
+      },
+      "seconds": 1.43,
+      "names": [
+        "Hole_Spacing-X"
+      ],
+      "verdict": {
+        "names": [
+          "Hole_Spacing-X"
+        ],
+        "illegal_names": [
+          "Hole_Spacing-X"
+        ],
+        "legal": false
+      }
+    },
+    {
+      "probe": "pattern-properties",
+      "variant": "constrained",
+      "constraint": "`patternProperties` with `additionalProperties: false`",
+      "prompt": "Return one parameter, keyed exactly 'Hole_Spacing-X' with the value 100. Answer JSON only.",
+      "prompt_sha256": "1c10c92c5d03ddd168d7e6e049b1b56f4eefc94628741578e71910f83f69eccf",
+      "schema_sha256": "aab22ce7a4ba96aaa4c920f5f5a83d9d8c7b695dabb984e5a4bc8b44fb73b9c7",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "parameters": {
+            "type": "object",
+            "patternProperties": {
+              "^[a-z][a-z0-9_]*$": {
+                "type": "number"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "parameters"
+        ],
+        "additionalProperties": false
+      },
+      "answer": "{\n    \"parameters\": {\n        }\n}",
+      "request_error": null,
+      "stats": {
+        "done_reason": "stop",
+        "eval_count": 10,
+        "prompt_eval_count": 45,
+        "total_duration_ns": 647935125,
+        "load_duration_ns": 145777791
+      },
+      "seconds": 0.65,
+      "names": [],
+      "verdict": {
+        "names": [],
+        "illegal_names": [],
+        "legal": false
+      }
+    }
+  ],
+  "status": "complete",
+  "active": null,
+  "resources": {
+    "measurement_version": 2,
+    "unit": "MiB",
+    "method": "vm.swapusage used field + vm_stat reported page size; ps Ollama RSS; MiB; 2 s samples",
+    "samples": 8,
+    "raw_samples": [
+      {
+        "seconds": 1790512967.34,
+        "swap_used_mb": 9026.75,
+        "pages_free_mb": 60.922,
+        "pages_compressed_mb": 3044.375,
+        "ollama_rss_mb": 19.0,
+        "raw_swapusage": "total = 10240.00M  used = 9026.75M  free = 1213.25M  (encrypted)",
+        "raw_vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     3899.\nPages active:                                 308443.\nPages inactive:                               302074.\nPages speculative:                              5886.\nPages throttled:                                   0.\nPages wired down:                             197535.\nPages purgeable:                                4287.\n\"Translation faults\":                     4349258271.\nPages copy-on-write:                       256928626.\nPages zero filled:                        1590413830.\nPages reactivated:                         774973927.\nPages purged:                               63649983.\nFile-backed pages:                            156653.\nAnonymous pages:                              459750.\nPages stored in compressor:                  1755366.\nPages occupied by compressor:                 194840.\nDecompressions:                            848780862.\nCompressions:                              934146810.\nPageins:                                   184946031.\nPageouts:                                    2227292.\nSwapins:                                    37272866.\nSwapouts:                                   45239610."
+      },
+      {
+        "seconds": 1790512969.44,
+        "swap_used_mb": 9026.75,
+        "pages_free_mb": 1309.734,
+        "pages_compressed_mb": 5323.688,
+        "ollama_rss_mb": 562.9,
+        "raw_swapusage": "total = 10240.00M  used = 9026.75M  free = 1213.25M  (encrypted)",
+        "raw_vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                    83823.\nPages active:                                 142132.\nPages inactive:                               131155.\nPages speculative:                             10087.\nPages throttled:                                   0.\nPages wired down:                             304797.\nPages purgeable:                                 186.\n\"Translation faults\":                     4349357733.\nPages copy-on-write:                       256930681.\nPages zero filled:                        1590714035.\nPages reactivated:                         775078050.\nPages purged:                               63653306.\nFile-backed pages:                            127292.\nAnonymous pages:                              156082.\nPages stored in compressor:                  2079958.\nPages occupied by compressor:                 340716.\nDecompressions:                            848807741.\nCompressions:                              934500045.\nPageins:                                   184966910.\nPageouts:                                    2227299.\nSwapins:                                    37273101.\nSwapouts:                                   45239610."
+      },
+      {
+        "seconds": 1790512971.51,
+        "swap_used_mb": 9448.81,
+        "pages_free_mb": 56.016,
+        "pages_compressed_mb": 5712.031,
+        "ollama_rss_mb": 2990.4,
+        "raw_swapusage": "total = 10240.00M  used = 9448.81M  free = 791.19M  (encrypted)",
+        "raw_vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     3585.\nPages active:                                 120314.\nPages inactive:                               112623.\nPages speculative:                              8838.\nPages throttled:                                   0.\nPages wired down:                             401655.\nPages purgeable:                                   2.\n\"Translation faults\":                     4349592754.\nPages copy-on-write:                       256933089.\nPages zero filled:                        1590821779.\nPages reactivated:                         775111562.\nPages purged:                               63654289.\nFile-backed pages:                            170810.\nAnonymous pages:                               70965.\nPages stored in compressor:                  2162659.\nPages occupied by compressor:                 365570.\nDecompressions:                            848831983.\nCompressions:                              934612026.\nPageins:                                   185120598.\nPageouts:                                    2227321.\nSwapins:                                    37273336.\nSwapouts:                                   45267134."
+      },
+      {
+        "seconds": 1790512973.57,
+        "swap_used_mb": 9927.81,
+        "pages_free_mb": 63.391,
+        "pages_compressed_mb": 5116.078,
+        "ollama_rss_mb": 3440.8,
+        "raw_swapusage": "total = 10240.00M  used = 9927.81M  free = 312.19M  (encrypted)",
+        "raw_vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     4057.\nPages active:                                 112602.\nPages inactive:                               101674.\nPages speculative:                             10220.\nPages throttled:                                   0.\nPages wired down:                             456726.\nPages purgeable:                                  18.\n\"Translation faults\":                     4349689212.\nPages copy-on-write:                       256936555.\nPages zero filled:                        1590892732.\nPages reactivated:                         775136238.\nPages purged:                               63655578.\nFile-backed pages:                            139810.\nAnonymous pages:                               84686.\nPages stored in compressor:                  2129292.\nPages occupied by compressor:                 327429.\nDecompressions:                            848859635.\nCompressions:                              934629121.\nPageins:                                   185156323.\nPageouts:                                    2227351.\nSwapins:                                    37273697.\nSwapouts:                                   45298302."
+      },
+      {
+        "seconds": 1790512975.62,
+        "swap_used_mb": 9927.81,
+        "pages_free_mb": 59.406,
+        "pages_compressed_mb": 5061.359,
+        "ollama_rss_mb": 3455.7,
+        "raw_swapusage": "total = 10240.00M  used = 9927.81M  free = 312.19M  (encrypted)",
+        "raw_vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     3802.\nPages active:                                 114627.\nPages inactive:                               103330.\nPages speculative:                             10195.\nPages throttled:                                   0.\nPages wired down:                             456752.\nPages purgeable:                                  10.\n\"Translation faults\":                     4349747454.\nPages copy-on-write:                       256938966.\nPages zero filled:                        1590903692.\nPages reactivated:                         775148191.\nPages purged:                               63657696.\nFile-backed pages:                            130689.\nAnonymous pages:                               97463.\nPages stored in compressor:                  2118724.\nPages occupied by compressor:                 323927.\nDecompressions:                            848882134.\nCompressions:                              934641801.\nPageins:                                   185159626.\nPageouts:                                    2227369.\nSwapins:                                    37274058.\nSwapouts:                                   45298302."
+      },
+      {
+        "seconds": 1790512977.67,
+        "swap_used_mb": 9927.81,
+        "pages_free_mb": 59.25,
+        "pages_compressed_mb": 4984.312,
+        "ollama_rss_mb": 3403.7,
+        "raw_swapusage": "total = 10240.00M  used = 9927.81M  free = 312.19M  (encrypted)",
+        "raw_vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     3792.\nPages active:                                 117162.\nPages inactive:                               108566.\nPages speculative:                              7338.\nPages throttled:                                   0.\nPages wired down:                             456807.\nPages purgeable:                                  30.\n\"Translation faults\":                     4349797184.\nPages copy-on-write:                       256940650.\nPages zero filled:                        1590911580.\nPages reactivated:                         775150519.\nPages purged:                               63659080.\nFile-backed pages:                            123227.\nAnonymous pages:                              109839.\nPages stored in compressor:                  2104882.\nPages occupied by compressor:                 318996.\nDecompressions:                            848903031.\nCompressions:                              934649964.\nPageins:                                   185162450.\nPageouts:                                    2227375.\nSwapins:                                    37274189.\nSwapouts:                                   45298302."
+      },
+      {
+        "seconds": 1790512979.71,
+        "swap_used_mb": 9927.81,
+        "pages_free_mb": 60.094,
+        "pages_compressed_mb": 5002.797,
+        "ollama_rss_mb": 3339.6,
+        "raw_swapusage": "total = 10240.00M  used = 9927.81M  free = 312.19M  (encrypted)",
+        "raw_vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     3846.\nPages active:                                 116483.\nPages inactive:                               110052.\nPages speculative:                              5538.\nPages throttled:                                   0.\nPages wired down:                             456586.\nPages purgeable:                                  18.\n\"Translation faults\":                     4349850639.\nPages copy-on-write:                       256943160.\nPages zero filled:                        1590925669.\nPages reactivated:                         775153757.\nPages purged:                               63660773.\nFile-backed pages:                            115724.\nAnonymous pages:                              116349.\nPages stored in compressor:                  2105011.\nPages occupied by compressor:                 320179.\nDecompressions:                            848917692.\nCompressions:                              934665638.\nPageins:                                   185168331.\nPageouts:                                    2227380.\nSwapins:                                    37274321.\nSwapouts:                                   45298302."
+      },
+      {
+        "seconds": 1790512981.37,
+        "swap_used_mb": 9919.81,
+        "pages_free_mb": 63.5,
+        "pages_compressed_mb": 4902.625,
+        "ollama_rss_mb": 3319.4,
+        "raw_swapusage": "total = 10240.00M  used = 9919.81M  free = 320.19M  (encrypted)",
+        "raw_vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     4064.\nPages active:                                 123606.\nPages inactive:                               111764.\nPages speculative:                              5224.\nPages throttled:                                   0.\nPages wired down:                             454258.\nPages purgeable:                                  10.\n\"Translation faults\":                     4349890346.\nPages copy-on-write:                       256945410.\nPages zero filled:                        1590938410.\nPages reactivated:                         775163757.\nPages purged:                               63662174.\nFile-backed pages:                            107167.\nAnonymous pages:                              133427.\nPages stored in compressor:                  2090627.\nPages occupied by compressor:                 313768.\nDecompressions:                            848938761.\nCompressions:                              934676015.\nPageins:                                   185170878.\nPageouts:                                    2227391.\nSwapins:                                    37274356.\nSwapouts:                                   45298302."
+      }
+    ],
+    "interval_s": 2.0,
+    "swap_used_mb_start": 9026.75,
+    "swap_used_mb_end": 9919.81,
+    "swap_used_mb_delta": 893.1,
+    "swap_used_mb_peak": 9927.81,
+    "pages_free_mb_min": 56.016,
+    "pages_compressed_mb_peak": 5712.031,
+    "ollama_rss_mb_peak": 3455.7,
+    "note": "System swap/page counts include other apps. RSS is not total GPU/unified memory. Unavailable measurements are null; legacy *_mb keys use MiB in version 2."
+  }
+}

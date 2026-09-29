@@ -1,0 +1,736 @@
+{
+  "scope": "offline catalog only; OCR correctness and semantics unverified",
+  "cases": [
+    {
+      "run": "plastic-01",
+      "catalog_record": {
+        "version": 1,
+        "source_ref": "examples/pdf with steps/6/plastic enclosue.pdf",
+        "source_sha256": "7698e830ca02ad46aa89f910c67f2efb6b1c930ff63d30bb0b80a8585519da4d",
+        "status": "needs_review",
+        "catalog": {
+          "version": "printed-parameter-catalog-v1",
+          "entries": [
+            {
+              "name": "distance_x",
+              "span_id": "pdf-0",
+              "value": 25.0,
+              "unit": "mm",
+              "quantity": "dimension",
+              "text": "25.00",
+              "kind": "linear",
+              "measurement": {
+                "form": "distance",
+                "resolution": "confirmed",
+                "anchors": [
+                  {
+                    "geometry_id": "g7",
+                    "kind": "arc-centre",
+                    "point_mm": [
+                      -93.15,
+                      108.6
+                    ]
+                  },
+                  {
+                    "geometry_id": "g196",
+                    "kind": "line-end",
+                    "point_mm": [
+                      98.24,
+                      134.27
+                    ]
+                  }
+                ],
+                "matched_geometry": []
+              }
+            },
+            {
+              "name": "distance_1",
+              "span_id": "pdf-1",
+              "value": 10.0,
+              "unit": "mm",
+              "quantity": "dimension",
+              "text": "1 0.00",
+              "kind": "linear",
+              "measurement": {}
+            },
+            {
+              "name": "radius",
+              "span_id": "pdf-2",
+              "value": 8.0,
+              "unit": "mm",
+              "quantity": "dimension",
+              "text": "R8.00",
+              "kind": "radius",
+              "measurement": {
+                "form": "radius",
+                "resolution": "confirmed",
+                "anchors": [
+                  {
+                    "geometry_id": "g8",
+                    "kind": "arc-centre",
+                    "point_mm": [
+                      -52.65,
+                      112.56
+                    ]
+                  }
+                ],
+                "matched_geometry": [
+                  "g204",
+                  "g207",
+                  "g221",
+                  "g206",
+                  "g22",
+                  "g8",
+                  "g28",
+                  "g11",
+                  "g26",
+                  "g24",
+                  "g197",
+                  "g195"
+                ]
+              }
+            },
+            {
+              "name": "edge_spacing_x",
+              "span_id": "pdf-3",
+              "value": 46.0,
+              "unit": "mm",
+              "quantity": "dimension",
+              "text": "46.00",
+              "kind": "linear",
+              "measurement": {
+                "form": "distance",
+                "resolution": "confirmed",
+                "anchors": [
+                  {
+                    "geometry_id": "g46",
+                    "kind": "line-end",
+                    "point_mm": [
+                      14.89,
+                      28.24
+                    ]
+                  },
+                  {
+                    "geometry_id": "g254",
+                    "kind": "line-end",
+                    "point_mm": [
+                      60.25,
+                      -2.02
+                    ]
+                  }
+                ],
+                "matched_geometry": []
+              }
+            },
+            {
+              "name": "distance_2",
+              "span_id": "pdf-4",
+              "value": 120.0,
+              "unit": "mm",
+              "quantity": "dimension",
+              "text": "1 20.00",
+              "kind": "linear",
+              "measurement": {}
+            },
+            {
+              "name": "distance_3",
+              "span_id": "pdf-5",
+              "value": 60.0,
+              "unit": "mm",
+              "quantity": "dimension",
+              "text": "60.00",
+              "kind": "linear",
+              "measurement": {}
+            },
+            {
+              "name": "distance_4",
+              "span_id": "pdf-6",
+              "value": 10.0,
+              "unit": "mm",
+              "quantity": "dimension",
+              "text": "1 0.00",
+              "kind": "linear",
+              "measurement": {}
+            },
+            {
+              "name": "arc_spacing_y",
+              "span_id": "pdf-7",
+              "value": 18.0,
+              "unit": "mm",
+              "quantity": "dimension",
+              "text": "1 8.00",
+              "kind": "linear",
+              "measurement": {
+                "form": "distance",
+                "resolution": "confirmed",
+                "anchors": [
+                  {
+                    "geometry_id": "g95",
+                    "kind": "arc-centre",
+                    "point_mm": [
+                      -42.46,
+                      12.48
+                    ]
+                  },
+                  {
+                    "geometry_id": "g28",
+                    "kind": "arc-rim",
+                    "point_mm": [
+                      -55.27,
+                      30.13
+                    ]
+                  }
+                ],
+                "matched_geometry": []
+              }
+            },
+            {
+              "name": "distance_5",
+              "span_id": "pdf-8",
+              "value": 3.0,
+              "unit": "mm",
+              "quantity": "dimension",
+              "text": "3.00",
+              "kind": "linear",
+              "measurement": {}
+            },
+            {
+              "name": "distance_6",
+              "span_id": "pdf-9",
+              "value": 4.0,
+              "unit": "mm",
+              "quantity": "dimension",
+              "text": "4.00",
+              "kind": "linear",
+              "measurement": {}
+            },
+            {
+              "name": "distance_7",
+              "span_id": "pdf-10",
+              "value": 4.8,
+              "unit": "mm",
+              "quantity": "dimension",
+              "text": "4.80",
+              "kind": "linear",
+              "measurement": {}
+            },
+            {
+              "name": "distance_8",
+              "span_id": "pdf-11",
+              "value": 4.0,
+              "unit": "mm",
+              "quantity": "dimension",
+              "text": "4.00",
+              "kind": "linear",
+              "measurement": {}
+            },
+            {
+              "name": "distance_9",
+              "span_id": "pdf-12",
+              "value": 1.5,
+              "unit": "mm",
+              "quantity": "dimension",
+              "text": "1.50",
+              "kind": "linear",
+              "measurement": {}
+            },
+            {
+              "name": "distance_10",
+              "span_id": "pdf-13",
+              "value": 1.5,
+              "unit": "mm",
+              "quantity": "dimension",
+              "text": "1.50",
+              "kind": "linear",
+              "measurement": {}
+            }
+          ]
+        },
+        "geometry_refusals": [],
+        "errors": [],
+        "interpretation_verified": false,
+        "geometry_verified": false
+      },
+      "source_records": [
+        {
+          "span_id": "pdf-0",
+          "text": "25.00",
+          "value": 25.0,
+          "unit": "mm",
+          "kind": "linear",
+          "count": null
+        },
+        {
+          "span_id": "pdf-1",
+          "text": "1 0.00",
+          "value": 10.0,
+          "unit": "mm",
+          "kind": "linear",
+          "count": null
+        },
+        {
+          "span_id": "pdf-2",
+          "text": "R8.00",
+          "value": 8.0,
+          "unit": "mm",
+          "kind": "radius",
+          "count": null
+        },
+        {
+          "span_id": "pdf-3",
+          "text": "46.00",
+          "value": 46.0,
+          "unit": "mm",
+          "kind": "linear",
+          "count": null
+        },
+        {
+          "span_id": "pdf-4",
+          "text": "1 20.00",
+          "value": 120.0,
+          "unit": "mm",
+          "kind": "linear",
+          "count": null
+        },
+        {
+          "span_id": "pdf-5",
+          "text": "60.00",
+          "value": 60.0,
+          "unit": "mm",
+          "kind": "linear",
+          "count": null
+        },
+        {
+          "span_id": "pdf-6",
+          "text": "1 0.00",
+          "value": 10.0,
+          "unit": "mm",
+          "kind": "linear",
+          "count": null
+        },
+        {
+          "span_id": "pdf-7",
+          "text": "1 8.00",
+          "value": 18.0,
+          "unit": "mm",
+          "kind": "linear",
+          "count": null
+        },
+        {
+          "span_id": "pdf-8",
+          "text": "3.00",
+          "value": 3.0,
+          "unit": "mm",
+          "kind": "linear",
+          "count": null
+        },
+        {
+          "span_id": "pdf-9",
+          "text": "4.00",
+          "value": 4.0,
+          "unit": "mm",
+          "kind": "linear",
+          "count": null
+        },
+        {
+          "span_id": "pdf-10",
+          "text": "4.80",
+          "value": 4.8,
+          "unit": "mm",
+          "kind": "linear",
+          "count": null
+        },
+        {
+          "span_id": "pdf-11",
+          "text": "4.00",
+          "value": 4.0,
+          "unit": "mm",
+          "kind": "linear",
+          "count": null
+        },
+        {
+          "span_id": "pdf-12",
+          "text": "1.50",
+          "value": 1.5,
+          "unit": "mm",
+          "kind": "linear",
+          "count": null
+        },
+        {
+          "span_id": "pdf-13",
+          "text": "1.50",
+          "value": 1.5,
+          "unit": "mm",
+          "kind": "linear",
+          "count": null
+        }
+      ],
+      "sheet": {
+        "px_per_mm": 3.92,
+        "frame": {
+          "width_px": 1654,
+          "height_px": 2339,
+          "dpi": 200
+        },
+        "scale_known": true
+      },
+      "review": "# Basılı ölçü incelemesi\n\nDurum: İnceleme gerekli.\n\nBu tablo çizimden okunan sayıları ve kaynaklarını gösterir. Ölçülerin parçadaki anlamı\nve geometri henüz doğrulanmadı. CAD üretmeden önce kaynak metnini ve eşleşmeleri inceleyin.\n\n| Ad | Değer | Birim | Kaynak | Metin | Geometri bağı |\n|---|---:|---|---|---|---|\n| distance_x | 25 | mm | pdf-0 | 25.00 | otomatik eşleşme |\n| distance_1 | 10 | mm | pdf-1 | 1 0.00 | çözülemedi |\n| radius | 8 | mm | pdf-2 | R8.00 | otomatik eşleşme |\n| edge_spacing_x | 46 | mm | pdf-3 | 46.00 | otomatik eşleşme |\n| distance_2 | 120 | mm | pdf-4 | 1 20.00 | çözülemedi |\n| distance_3 | 60 | mm | pdf-5 | 60.00 | çözülemedi |\n| distance_4 | 10 | mm | pdf-6 | 1 0.00 | çözülemedi |\n| arc_spacing_y | 18 | mm | pdf-7 | 1 8.00 | otomatik eşleşme |\n| distance_5 | 3 | mm | pdf-8 | 3.00 | çözülemedi |\n| distance_6 | 4 | mm | pdf-9 | 4.00 | çözülemedi |\n| distance_7 | 4.8 | mm | pdf-10 | 4.80 | çözülemedi |\n| distance_8 | 4 | mm | pdf-11 | 4.00 | çözülemedi |\n| distance_9 | 1.5 | mm | pdf-12 | 1.50 | çözülemedi |\n| distance_10 | 1.5 | mm | pdf-13 | 1.50 | çözülemedi |\n"
+    },
+    {
+      "run": "raster-01",
+      "catalog_record": {
+        "version": 1,
+        "source_ref": "examples/504715c44a0f1b2bbb386bb7c387a8db.jpg",
+        "source_sha256": "60360096e88e25139422ed8c8e898f89d46b676ad1565e3946b6dee76d26f7dc",
+        "status": "needs_input",
+        "catalog": {
+          "version": "printed-parameter-catalog-v1",
+          "entries": [
+            {
+              "name": "distance_1",
+              "span_id": "ocr-0",
+              "value": 80.0,
+              "unit": "mm",
+              "quantity": "dimension",
+              "text": "80",
+              "kind": "linear",
+              "measurement": {}
+            },
+            {
+              "name": "distance_2",
+              "span_id": "ocr-1",
+              "value": 20.0,
+              "unit": "mm",
+              "quantity": "dimension",
+              "text": "20",
+              "kind": "linear",
+              "measurement": {}
+            },
+            {
+              "name": "distance_3",
+              "span_id": "ocr-2",
+              "value": 20.0,
+              "unit": "mm",
+              "quantity": "dimension",
+              "text": "20",
+              "kind": "linear",
+              "measurement": {}
+            },
+            {
+              "name": "radius_1",
+              "span_id": "ocr-3",
+              "value": 5.0,
+              "unit": "mm",
+              "quantity": "dimension",
+              "text": "R5",
+              "kind": "radius",
+              "measurement": {}
+            },
+            {
+              "name": "distance_4",
+              "span_id": "ocr-4",
+              "value": 430.0,
+              "unit": "mm",
+              "quantity": "dimension",
+              "text": "430",
+              "kind": "linear",
+              "measurement": {}
+            },
+            {
+              "name": "distance_5",
+              "span_id": "ocr-5",
+              "value": 450.0,
+              "unit": "mm",
+              "quantity": "dimension",
+              "text": "450",
+              "kind": "linear",
+              "measurement": {}
+            },
+            {
+              "name": "distance_6",
+              "span_id": "ocr-6",
+              "value": 2.0,
+              "unit": "mm",
+              "quantity": "dimension",
+              "text": "2",
+              "kind": "linear",
+              "measurement": {}
+            },
+            {
+              "name": "distance_7",
+              "span_id": "ocr-7",
+              "value": 60.0,
+              "unit": "mm",
+              "quantity": "dimension",
+              "text": "60",
+              "kind": "linear",
+              "measurement": {}
+            },
+            {
+              "name": "distance_8",
+              "span_id": "ocr-8",
+              "value": 4.0,
+              "unit": "mm",
+              "quantity": "dimension",
+              "text": "4",
+              "kind": "linear",
+              "measurement": {}
+            },
+            {
+              "name": "distance_9",
+              "span_id": "ocr-9",
+              "value": 190.0,
+              "unit": "mm",
+              "quantity": "dimension",
+              "text": "190",
+              "kind": "linear",
+              "measurement": {}
+            },
+            {
+              "name": "distance_10",
+              "span_id": "ocr-10",
+              "value": 90.0,
+              "unit": "mm",
+              "quantity": "dimension",
+              "text": "90",
+              "kind": "linear",
+              "measurement": {}
+            },
+            {
+              "name": "radius_2",
+              "span_id": "ocr-11",
+              "value": 60.0,
+              "unit": "mm",
+              "quantity": "dimension",
+              "text": "R60",
+              "kind": "radius",
+              "measurement": {}
+            },
+            {
+              "name": "distance_11",
+              "span_id": "ocr-12",
+              "value": 0.4,
+              "unit": "mm",
+              "quantity": "dimension",
+              "text": "0.4",
+              "kind": "linear",
+              "measurement": {}
+            },
+            {
+              "name": "distance_12",
+              "span_id": "ocr-13",
+              "value": 150.0,
+              "unit": "mm",
+              "quantity": "dimension",
+              "text": "150",
+              "kind": "linear",
+              "measurement": {}
+            },
+            {
+              "name": "distance_13",
+              "span_id": "ocr-14",
+              "value": 60.0,
+              "unit": "mm",
+              "quantity": "dimension",
+              "text": "60",
+              "kind": "linear",
+              "measurement": {}
+            },
+            {
+              "name": "distance_14",
+              "span_id": "ocr-15",
+              "value": 2.0,
+              "unit": "mm",
+              "quantity": "dimension",
+              "text": "2",
+              "kind": "linear",
+              "measurement": {}
+            },
+            {
+              "name": "distance_15",
+              "span_id": "ocr-16",
+              "value": 95.0,
+              "unit": "mm",
+              "quantity": "dimension",
+              "text": "95",
+              "kind": "linear",
+              "measurement": {}
+            },
+            {
+              "name": "distance_16",
+              "span_id": "ocr-17",
+              "value": 120.0,
+              "unit": "mm",
+              "quantity": "dimension",
+              "text": "120",
+              "kind": "linear",
+              "measurement": {}
+            }
+          ]
+        },
+        "geometry_refusals": [
+          "kapalı dış kontur bulunamadı (sayfa çerçevesi dışında döngü yok)"
+        ],
+        "errors": [],
+        "interpretation_verified": false,
+        "geometry_verified": false
+      },
+      "source_records": [
+        {
+          "span_id": "ocr-0",
+          "text": "80",
+          "value": 80.0,
+          "unit": "mm",
+          "kind": "linear",
+          "count": null
+        },
+        {
+          "span_id": "ocr-1",
+          "text": "20",
+          "value": 20.0,
+          "unit": "mm",
+          "kind": "linear",
+          "count": null
+        },
+        {
+          "span_id": "ocr-2",
+          "text": "20",
+          "value": 20.0,
+          "unit": "mm",
+          "kind": "linear",
+          "count": null
+        },
+        {
+          "span_id": "ocr-3",
+          "text": "R5",
+          "value": 5.0,
+          "unit": "mm",
+          "kind": "radius",
+          "count": null
+        },
+        {
+          "span_id": "ocr-4",
+          "text": "430",
+          "value": 430.0,
+          "unit": "mm",
+          "kind": "linear",
+          "count": null
+        },
+        {
+          "span_id": "ocr-5",
+          "text": "450",
+          "value": 450.0,
+          "unit": "mm",
+          "kind": "linear",
+          "count": null
+        },
+        {
+          "span_id": "ocr-6",
+          "text": "2",
+          "value": 2.0,
+          "unit": "mm",
+          "kind": "linear",
+          "count": null
+        },
+        {
+          "span_id": "ocr-7",
+          "text": "60",
+          "value": 60.0,
+          "unit": "mm",
+          "kind": "linear",
+          "count": null
+        },
+        {
+          "span_id": "ocr-8",
+          "text": "4",
+          "value": 4.0,
+          "unit": "mm",
+          "kind": "linear",
+          "count": null
+        },
+        {
+          "span_id": "ocr-9",
+          "text": "190",
+          "value": 190.0,
+          "unit": "mm",
+          "kind": "linear",
+          "count": null
+        },
+        {
+          "span_id": "ocr-10",
+          "text": "90",
+          "value": 90.0,
+          "unit": "mm",
+          "kind": "linear",
+          "count": null
+        },
+        {
+          "span_id": "ocr-11",
+          "text": "R60",
+          "value": 60.0,
+          "unit": "mm",
+          "kind": "radius",
+          "count": null
+        },
+        {
+          "span_id": "ocr-12",
+          "text": "0.4",
+          "value": 0.4,
+          "unit": "mm",
+          "kind": "linear",
+          "count": null
+        },
+        {
+          "span_id": "ocr-13",
+          "text": "150",
+          "value": 150.0,
+          "unit": "mm",
+          "kind": "linear",
+          "count": null
+        },
+        {
+          "span_id": "ocr-14",
+          "text": "60",
+          "value": 60.0,
+          "unit": "mm",
+          "kind": "linear",
+          "count": null
+        },
+        {
+          "span_id": "ocr-15",
+          "text": "2",
+          "value": 2.0,
+          "unit": "mm",
+          "kind": "linear",
+          "count": null
+        },
+        {
+          "span_id": "ocr-16",
+          "text": "95",
+          "value": 95.0,
+          "unit": "mm",
+          "kind": "linear",
+          "count": null
+        },
+        {
+          "span_id": "ocr-17",
+          "text": "120",
+          "value": 120.0,
+          "unit": "mm",
+          "kind": "linear",
+          "count": null
+        }
+      ],
+      "sheet": {
+        "px_per_mm": 3.28,
+        "frame": {
+          "width_px": 1200,
+          "height_px": 1698,
+          "dpi": null
+        },
+        "scale_known": true
+      },
+      "review": "# Basılı ölçü incelemesi\n\nDurum: Eksik bilgi var.\n\nBu tablo çizimden okunan sayıları ve kaynaklarını gösterir. Ölçülerin parçadaki anlamı\nve geometri henüz doğrulanmadı. CAD üretmeden önce kaynak metnini ve eşleşmeleri inceleyin.\n\n| Ad | Değer | Birim | Kaynak | Metin | Geometri bağı |\n|---|---:|---|---|---|---|\n| distance_1 | 80.0 | mm | ocr-0 | 80 | çözülemedi |\n| distance_2 | 20.0 | mm | ocr-1 | 20 | çözülemedi |\n| distance_3 | 20.0 | mm | ocr-2 | 20 | çözülemedi |\n| radius_1 | 5.0 | mm | ocr-3 | R5 | çözülemedi |\n| distance_4 | 430.0 | mm | ocr-4 | 430 | çözülemedi |\n| distance_5 | 450.0 | mm | ocr-5 | 450 | çözülemedi |\n| distance_6 | 2.0 | mm | ocr-6 | 2 | çözülemedi |\n| distance_7 | 60.0 | mm | ocr-7 | 60 | çözülemedi |\n| distance_8 | 4.0 | mm | ocr-8 | 4 | çözülemedi |\n| distance_9 | 190.0 | mm | ocr-9 | 190 | çözülemedi |\n| distance_10 | 90.0 | mm | ocr-10 | 90 | çözülemedi |\n| radius_2 | 60.0 | mm | ocr-11 | R60 | çözülemedi |\n| distance_11 | 0.4 | mm | ocr-12 | 0.4 | çözülemedi |\n| distance_12 | 150.0 | mm | ocr-13 | 150 | çözülemedi |\n| distance_13 | 60.0 | mm | ocr-14 | 60 | çözülemedi |\n| distance_14 | 2.0 | mm | ocr-15 | 2 | çözülemedi |\n| distance_15 | 95.0 | mm | ocr-16 | 95 | çözülemedi |\n| distance_16 | 120.0 | mm | ocr-17 | 120 | çözülemedi |\n\n## Eksikler\n\n- kapalı dış kontur bulunamadı (sayfa çerçevesi dışında döngü yok)\n"
+    }
+  ]
+}

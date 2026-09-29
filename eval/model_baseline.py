@@ -33,6 +33,7 @@ import argparse
 import json
 import os
 import platform
+import re
 import subprocess
 import sys
 import threading
@@ -50,21 +51,25 @@ from drawingto3d.ingest import load_page  # noqa: E402
 from drawingto3d.llama import ChatSettings, OllamaChat, installed_models  # noqa: E402
 from drawingto3d.planner import (  # noqa: E402
     EVIDENCE_VERSION,
+    NAME_ADAPTER,
     PROMPT_VERSION,
+    PROMPT_VERSION_SPLIT,
     PlanCandidate,
+    chain_evidence,
     measurements_evidence,
     propose_plan,
+    propose_plan_split,
 )
 from drawingto3d.reader import TesseractReader, VisionReader  # noqa: E402
 from drawingto3d.perceive import perceive  # noqa: E402
-from drawingto3d.proposal import propose_general  # noqa: E402
+from drawingto3d.proposal import propose_general, read_sheet  # noqa: E402
 from drawingto3d.bind import bind_page  # noqa: E402
 from drawingto3d.meaning import meaning_page  # noqa: E402
 
 CASES_FILE = ROOT / "eval" / "cases.json"
 RELATIONS_DIR = ROOT / "eval" / "relations"
 SCHEMA_VERSION = "GeneralPlan v1"
-ALL_CONDITIONS = ("reading", "chain", "relations", "verified_plan")
+ALL_CONDITIONS = ("reading", "chain", "chain_model", "relations", "verified_plan")
 
 
 # --- the environment a run has to be reproducible against ----------------------------
@@ -95,6 +100,10 @@ def code_record() -> dict:
         "dirty": bool(status),
         "dirty_files": status.splitlines(),
         "diff_stat": _git("diff", "--stat"),
+        "file_sha256": {str(path.relative_to(ROOT)): _sha256(path)
+                        for path in sorted(set(ROOT.glob("src/**/*.py"))
+                                           | set(ROOT.glob("eval/*.py"))
+                                           | {ROOT / "pyproject.toml"})},
         "python": platform.python_version(),
         "executable": sys.executable,
         "platform": platform.platform(),
@@ -113,6 +122,9 @@ def manifest_record(cases: list[dict]) -> dict:
         groups.setdefault(case["part_group"], []).append(case["id"])
     return {
         "file": str(CASES_FILE.relative_to(ROOT)),
+        "sha256": _sha256(CASES_FILE),
+        "drawing_sha256": {case["id"]: _sha256(ROOT / case["drawing"])
+                           for case in cases if (ROOT / case["drawing"]).is_file()},
         "cases": len(cases),
         "split_counts": splits,
         "part_groups": groups,
@@ -134,7 +146,8 @@ class ResourceSampler:
     Disk size of the weights is not RAM and is not counted here.
     """
 
-    METHOD = "sysctl vm.swapusage + vm_stat page counts + ps RSS of the ollama server, 2 s thread"
+    VERSION = 2
+    METHOD = "vm.swapusage used field + vm_stat reported page size; ps Ollama RSS; MiB; 2 s samples"
     INTERVAL = 2.0
 
     def __init__(self) -> None:
@@ -158,12 +171,16 @@ class ResourceSampler:
             self.samples.append(self._sample())
 
     def _sample(self) -> dict:
+        swap_text = _command("sysctl", "-n", "vm.swapusage")
+        vm_text = _command("vm_stat")
         return {
             "seconds": round(time.time(), 2),
-            "swap_used_mb": _swap_used_mb(),
-            "pages_free_mb": _vm_stat("Pages free"),
-            "pages_compressed_mb": _vm_stat("Pages occupied by compressor"),
+            "swap_used_mb": _swap_used_mb(swap_text),
+            "pages_free_mb": _vm_stat("Pages free", vm_text),
+            "pages_compressed_mb": _vm_stat("Pages occupied by compressor", vm_text),
             "ollama_rss_mb": _ollama_rss_mb(),
+            "raw_swapusage": swap_text,
+            "raw_vm_stat": vm_text,
         }
 
     def record(self) -> dict:
@@ -174,8 +191,11 @@ class ResourceSampler:
                       if sample["pages_compressed_mb"] is not None]
         first, last = (usable[0], usable[-1]) if usable else (None, None)
         return {
+            "measurement_version": self.VERSION,
+            "unit": "MiB",
             "method": self.METHOD,
             "samples": len(self.samples),
+            "raw_samples": list(self.samples),
             "interval_s": self.INTERVAL,
             "swap_used_mb_start": None if first is None else first["swap_used_mb"],
             "swap_used_mb_end": None if last is None else last["swap_used_mb"],
@@ -184,25 +204,28 @@ class ResourceSampler:
             "pages_free_mb_min": min(free) if free else None,
             "pages_compressed_mb_peak": max(compressed) if compressed else None,
             "ollama_rss_mb_peak": max(rss) if rss else None,
-            "note": "Disk size of the weights is not RAM usage and is not counted.",
+            "note": "System swap/page counts include other apps. RSS is not total GPU/unified memory. "
+                    "Unavailable measurements are null; legacy *_mb keys use MiB in version 2.",
         }
 
 
-def _swap_used_mb() -> float | None:
-    text = _command("sysctl", "-n", "vm.swapusage")
-    for part in text.split():
-        if part.endswith("M") and part[:-1].replace(".", "", 1).isdigit():
-            return float(part[:-1])
-    return None
+def _swap_used_mb(text: str | None = None) -> float | None:
+    text = _command("sysctl", "-n", "vm.swapusage") if text is None else text
+    match = re.search(r"\bused\s*=\s*([0-9]+(?:\.[0-9]+)?)\s*([KMGT])\b", text)
+    if not match:
+        return None
+    return round(float(match[1]) * {"K": 1 / 1024, "M": 1, "G": 1024, "T": 1024**2}[match[2]], 3)
 
 
-def _vm_stat(label: str) -> float | None:
-    text = _command("vm_stat")
+def _vm_stat(label: str, text: str | None = None) -> float | None:
+    text = _command("vm_stat") if text is None else text
+    page_size = re.search(r"page size of (\d+) bytes", text)
+    if not page_size:
+        return None
     for line in text.splitlines():
-        if line.startswith(label):
-            pages = "".join(character for character in line.split(":")[1] if character.isdigit())
-            if pages:
-                return round(int(pages) * 4096 / 1e6, 1)
+        match = re.fullmatch(re.escape(label) + r":\s*(\d+)\.?\s*", line)
+        if match:
+            return round(int(match[1]) * int(page_size[1]) / 1024**2, 3)
     return None
 
 
@@ -508,38 +531,61 @@ def condition_chain(case: dict, folder: Path, timeout: float) -> dict:
     return row
 
 
-def condition_relations(
+def condition_chain_model(
     case: dict, folder: Path, chat: OllamaChat | None, timeout: float, model_info: dict | None,
-    structured: bool = True,
+    structured: bool = True, normalize_names: bool = False, split: bool = False,
 ) -> dict:
-    """Perception held fixed: a hand-verified relation table goes to the same model."""
-    row: dict = {"case": case["id"], "condition": "relations", "stages": {}}
+    """The product path: a real drawing read by the chain, planned by the model, built by the compiler.
+
+    The evidence is neither hand-written (that is `relations`) nor produced by the rules-based
+    proposal (that is `chain`): it is what `read_sheet` measured off this sheet, in the same block the
+    planner is asked with, so `chain` and `chain_model` differ in the planner alone. The sheet's own
+    reference part is opened only after a solid exists, by the drawing check at the end.
+    """
+    sheet = ROOT / case["drawing"]
+    row: dict = {"case": case["id"], "condition": "chain_model", "stages": {}}
     started = time.time()
-    relations = RELATIONS_DIR / f"{case['id']}.json"
-    if not relations.is_file():
+    start = time.time()
+    try:
+        reading = read_sheet(sheet)
+    except ValueError as exc:
         row["seconds"] = round(time.time() - started, 2)
-        row.update({"status": "skipped", "error_class": "unsupported",
-                    "reason": f"elle doğrulanmış ilişki tablosu yok: {relations.relative_to(ROOT)}"})
+        row.update({"status": "failed", "error_class": "reading", "reason": f"okuma zinciri çalışmadı: {exc}"})
+        (folder / f"{case['id']}.json").write_text(json.dumps(row, indent=2, ensure_ascii=False), encoding="utf-8")
         return row
-    evidence = json.loads(relations.read_text(encoding="utf-8"))
-    row["stages"]["evidence"] = {"file": str(relations.relative_to(ROOT)), "version": EVIDENCE_VERSION,
-                                 "verified_by": evidence.get("verified_by"),
-                                 "printed": len(evidence.get("printed") or []),
-                                 "claims": len(evidence.get("claims") or [])}
+    evidence = chain_evidence(reading)
+    (folder / f"{case['id']}-chain_model-evidence.json").write_text(
+        json.dumps(evidence, indent=2, ensure_ascii=False), encoding="utf-8")
+    row["stages"]["evidence"] = {
+        "source": "okuma zinciri (read_sheet)",
+        "file": f"{case['id']}-chain_model-evidence.json",
+        "printed": len(evidence["printed"]),
+        "claims": len(evidence["claims"]),
+        "circles": len(evidence["geometry"]["circles"]),
+        "scale_known": bool(evidence["sheet"]["scale_known"]),
+        "outline_mm": evidence["geometry"]["outline_mm"],
+        "notes": list(reading.notes),
+        "refusals": list(reading.refusals),
+        "seconds": round(time.time() - start, 2),
+    }
+    if reading.refusals:
+        row["seconds"] = round(time.time() - started, 2)
+        row.update({"status": "refused", "error_class": "reading",
+                    "reason": "okuma milimetreye çevrilemedi: " + "; ".join(reading.refusals)})
+        (folder / f"{case['id']}.json").write_text(json.dumps(row, indent=2, ensure_ascii=False), encoding="utf-8")
+        return row
     if chat is None:
         row["seconds"] = round(time.time() - started, 2)
         row.update({"status": "skipped", "error_class": "unsupported", "reason": "model koşusu istenmedi (--no-model)"})
+        (folder / f"{case['id']}.json").write_text(json.dumps(row, indent=2, ensure_ascii=False), encoding="utf-8")
         return row
 
-    candidate = propose_plan(
-        chat,
-        evidence,
-        ref=case["id"],
-        sha256=_sha256(ROOT / case["drawing"]),
-        model_info=model_info,
-        structured=structured,
+    candidate = (propose_plan_split if split else propose_plan)(
+        chat, evidence, ref=case["id"], sha256=_sha256(sheet), model_info=model_info,
+        normalize_names=normalize_names, **({} if split else {"structured": structured}),
     )
-    (folder / f"{case['id']}-candidate.json").write_text(candidate.model_dump_json(indent=2), encoding="utf-8")
+    slug = f"{case['id']}-chain_model"
+    (folder / f"{slug}-candidate.json").write_text(candidate.model_dump_json(indent=2), encoding="utf-8")
     row["stages"]["plan"] = candidate.as_record()
     row["model_seconds"] = candidate.seconds
     if candidate.plan is None:
@@ -548,11 +594,25 @@ def condition_relations(
                     "reason": "model şemaya uyan plan vermedi: " + "; ".join(candidate.errors)[:400]})
         (folder / f"{case['id']}.json").write_text(json.dumps(row, indent=2, ensure_ascii=False), encoding="utf-8")
         return row
+    return _plan_then_cad(row, case, folder, candidate, sheet, started, slug=slug,
+                          ok_reason="çizimin kendi ölçümlerinden şemaya uyan model planı; katı kuruldu",
+                          error_class="planning")
 
+
+def _plan_then_cad(row: dict, case: dict, folder: Path, candidate, drawing, started: float, *, slug: str,
+                   ok_reason: str, error_class: str) -> dict:
+    """The tail both model-plan conditions share: build the plan, then check it against the sheet.
+
+    `slug` names the condition's own artifacts — two model conditions in one run must not overwrite
+    each other's raw answer or build folder, because the raw answer is the measurement. `drawing` is
+    the sheet the plan must belong to: `chain_model` passes the real one, so `build_general` re-checks
+    the source hash, while the hand-written-evidence condition has no drawing of its own to bind to
+    and passes `None`.
+    """
     start = time.time()
-    build_folder = folder / f"{case['id']}-model-build"
+    build_folder = folder / f"{slug}-build"
     try:
-        step, _stl = build_general(candidate.plan, None, build_folder)
+        step, _stl = build_general(candidate.plan, drawing, build_folder)
         facts = json.loads((build_folder / "geometry.json").read_text(encoding="utf-8"))
         audit = json.loads((build_folder / "plan-audit.json").read_text(encoding="utf-8"))
         row["stages"]["cad"] = {"ok": True, "step": str(step.relative_to(ROOT)),
@@ -575,15 +635,66 @@ def condition_relations(
     check = row["stages"]["drawing_check"]
     if check.get("checked_claims") and not check.get("ok"):
         failed = [item for item in check["checks"] if not item["ok"]]
-        row.update({"status": "built_unverified", "error_class": "planning",
+        row.update({"status": "built_unverified", "error_class": error_class,
                     "reason": "model planı kuruldu ama çizim kontrolü geçmedi: " + "; ".join(
                         f"{item['text']} -> {item.get('wanted_radius_mm', item.get('wanted_mm'))}"
                         for item in failed)})
     else:
-        row.update({"status": "draft", "error_class": "ok",
-                    "reason": "doğrulanmış ilişkilerden şemaya uyan plan; katı kuruldu"})
+        row.update({"status": "draft", "error_class": "ok", "reason": ok_reason})
     (folder / f"{case['id']}.json").write_text(json.dumps(row, indent=2, ensure_ascii=False), encoding="utf-8")
     return row
+
+
+def condition_relations(
+    case: dict, folder: Path, chat: OllamaChat | None, timeout: float, model_info: dict | None,
+    structured: bool = True, split: bool = False, normalize_names: bool = False,
+) -> dict:
+    """Perception held fixed: a hand-verified relation table goes to the same model.
+
+    `split` asks the plan in three narrower calls instead of one (PLAN section 19.4); everything else
+    about the condition — the evidence, the model, the context, the output limit — is unchanged.
+    """
+    row: dict = {"case": case["id"], "condition": "relations", "stages": {}}
+    started = time.time()
+    relations = RELATIONS_DIR / f"{case['id']}.json"
+    if not relations.is_file():
+        row["seconds"] = round(time.time() - started, 2)
+        row.update({"status": "skipped", "error_class": "unsupported",
+                    "reason": f"elle doğrulanmış ilişki tablosu yok: {relations.relative_to(ROOT)}"})
+        return row
+    evidence = json.loads(relations.read_text(encoding="utf-8"))
+    row["stages"]["evidence"] = {"file": str(relations.relative_to(ROOT)), "version": EVIDENCE_VERSION,
+                                 "verified_by": evidence.get("verified_by"),
+                                 "printed": len(evidence.get("printed") or []),
+                                 "claims": len(evidence.get("claims") or [])}
+    if chat is None:
+        row["seconds"] = round(time.time() - started, 2)
+        row.update({"status": "skipped", "error_class": "unsupported", "reason": "model koşusu istenmedi (--no-model)"})
+        return row
+
+    candidate = (propose_plan_split if split else propose_plan)(
+        chat,
+        evidence,
+        ref=case["id"],
+        sha256=_sha256(ROOT / case["drawing"]),
+        model_info=model_info,
+        normalize_names=normalize_names,
+        **({} if split else {"structured": structured}),
+    )
+    slug = f"{case['id']}-relations"
+    (folder / f"{slug}-candidate.json").write_text(candidate.model_dump_json(indent=2), encoding="utf-8")
+    row["stages"]["plan"] = candidate.as_record()
+    row["model_seconds"] = candidate.seconds
+    if candidate.plan is None:
+        row["seconds"] = round(time.time() - started, 2)
+        row.update({"status": "failed", "error_class": "planning",
+                    "reason": "model şemaya uyan plan vermedi: " + "; ".join(candidate.errors)[:400]})
+        (folder / f"{case['id']}.json").write_text(json.dumps(row, indent=2, ensure_ascii=False), encoding="utf-8")
+        return row
+
+    return _plan_then_cad(row, case, folder, candidate, None, started, slug=slug,
+                          ok_reason="doğrulanmış ilişkilerden şemaya uyan plan; katı kuruldu",
+                          error_class="planning")
 
 
 def condition_verified_plans(cases: list[dict], folder: Path) -> list[dict]:
@@ -669,6 +780,30 @@ def _sha256(path: Path) -> str:
 # --- driving one run -----------------------------------------------------------------
 
 
+def _atomic_json(path: Path, data: dict) -> None:
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    with temporary.open("w", encoding="utf-8") as handle:
+        json.dump(data, handle, ensure_ascii=False, indent=2)
+        handle.flush()
+        os.fsync(handle.fileno())
+    temporary.replace(path)
+
+
+def checkpoint(folder: Path, record: dict, rows: list[dict], sampler: ResourceSampler,
+               started: float, status: str = "running") -> None:
+    """Keep completed results on interruption; a killed process leaves an explicit running record."""
+    record["run"]["status"] = status
+    record["run"]["seconds"] = round(time.time() - started, 2)
+    if status != "running":
+        record["run"]["finished"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
+    record["resources"] = sampler.record()
+    record["results"] = rows
+    record["error_classes"] = _counts(rows, "error_class")
+    record["statuses"] = _counts(rows, "status")
+    record["summary"] = _summary(rows)
+    _atomic_json(folder / "run.json", record)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="PLAN section 7: the pre-training measurement")
     parser.add_argument("--model", default="qwen2.5vl:3b", help="installed Ollama tag to measure")
@@ -684,7 +819,17 @@ def main() -> None:
     parser.add_argument("--no-unload", action="store_true", help="leave the weights resident between calls")
     parser.add_argument("--unstructured", action="store_true",
                         help="do not send the plan schema as the decoder grammar (measures the loose interface)")
+    parser.add_argument("--split", action="store_true",
+                        help="ask the plan in narrower calls: the parameters, then one call per closed "
+                             "profile the readings measured, then the operations (PLAN sections 19.4, 20; "
+                             "the merged answer meets the same plan contract)")
+    parser.add_argument("--normalize-names", action="store_true",
+                        help="run the lossless identifier rewrite on the answer before judging it "
+                             "(PLAN section 20.2: the decoder enforces a string pattern but not an "
+                             "object's propertyNames; the rewrite is recorded either way)")
     arguments = parser.parse_args()
+    if arguments.split and arguments.unstructured:
+        parser.error("--split ölçümü adım başına şema grameri kullanır; --unstructured ile birlikte kullanılamaz")
 
     conditions = [item.strip() for item in arguments.conditions.split(",") if item.strip()]
     unknown = [item for item in conditions if item not in ALL_CONDITIONS]
@@ -700,7 +845,9 @@ def main() -> None:
 
     label = arguments.label or time.strftime("%Y%m%d-%H%M%S")
     folder = ROOT / arguments.out / label
-    folder.mkdir(parents=True, exist_ok=True)
+    if folder.exists():
+        parser.error(f"koşu klasörü zaten var; yeni --label seç: {folder}")
+    folder.mkdir(parents=True)
     (folder / "cases").mkdir(exist_ok=True)
 
     record: dict = {
@@ -711,11 +858,15 @@ def main() -> None:
             "conditions": conditions,
             "no_model": arguments.no_model,
             "structured_output": not arguments.unstructured,
+            "name_normalization": NAME_ADAPTER if arguments.normalize_names else "off",
+            "active": {"stage": "setup"},
         },
         "code": code_record(),
         "manifest": manifest_record(json.loads(CASES_FILE.read_text(encoding="utf-8"))["cases"]),
         "schema_version": SCHEMA_VERSION,
-        "prompt_version": PROMPT_VERSION,
+        "prompt_version": PROMPT_VERSION_SPLIT if arguments.split else PROMPT_VERSION,
+        "plan_interface": ("split-per-profile" if arguments.split
+                           else "free-text" if arguments.unstructured else "json-schema"),
         "evidence_version": EVIDENCE_VERSION,
         "model": {"requested": arguments.model, "installed": [], "resolved": None, "settings": None,
                   "cold_start_s": None, "warm_start_s": None, "dependency_missing": None},
@@ -723,84 +874,105 @@ def main() -> None:
         "notes": [],
     }
 
-    chat: OllamaChat | None = None
-    model_info: dict | None = None
-    needs_model = (not arguments.no_model) and any(name in conditions for name in ("reading", "relations"))
-    if needs_model:
-        try:
-            models = installed_models()
-            record["model"]["installed"] = [model.as_dict() for model in models]
-            from drawingto3d.llama import find_model
-
-            chosen = find_model(models, arguments.model)
-            model_info = chosen.as_dict()
-            settings = ChatSettings(
-                model=chosen.name, num_ctx=arguments.num_ctx, temperature=0.0,
-                num_predict=arguments.predict, keep_alive=arguments.keep_alive, timeout=arguments.timeout,
-            )
-            chat = OllamaChat(chosen.name, settings=settings)
-            record["model"]["resolved"] = model_info
-            record["model"]["settings"] = chat.settings_record()
-            chat.unload()
-            started = time.time()
-            chat.complete("ok", num_predict=1)
-            record["model"]["cold_start_s"] = round(time.time() - started, 2)
-            started = time.time()
-            chat.complete("ok", num_predict=1)
-            record["model"]["warm_start_s"] = round(time.time() - started, 2)
-        except UnavailableModel as exc:
-            record["model"]["dependency_missing"] = str(exc)
-            record["notes"].append(f"model koşusu yapılamadı: {exc}")
-            if any(name in conditions for name in ("relations",)):
-                conditions = [name for name in conditions if name != "relations"]
-                record["notes"].append("relations koşulu model olmadan ölçülemez; koşudan çıkarıldı")
-            chat = None
-
     sampler = ResourceSampler()
-    sampler.start()
     started_all = time.time()
     rows: list[dict] = []
+    checkpoint(folder, record, rows, sampler, started_all)
+    chat: OllamaChat | None = None
+    model_info: dict | None = None
+    needs_model = (not arguments.no_model) and any(name in conditions
+                                                 for name in ("reading", "chain_model", "relations"))
+    sampler.start()
+    run_status = "running"
     try:
+        if needs_model:
+            try:
+                models = installed_models()
+                record["model"]["installed"] = [model.as_dict() for model in models]
+                from drawingto3d.llama import find_model
+
+                chosen = find_model(models, arguments.model)
+                model_info = chosen.as_dict()
+                settings = ChatSettings(
+                    model=chosen.name, num_ctx=arguments.num_ctx, temperature=0.0,
+                    num_predict=arguments.predict, keep_alive=arguments.keep_alive, timeout=arguments.timeout,
+                )
+                chat = OllamaChat(chosen.name, settings=settings)
+                record["model"]["resolved"] = model_info
+                record["model"]["settings"] = chat.settings_record()
+                chat.unload()
+                started = time.time()
+                chat.complete("ok", num_predict=1)
+                record["model"]["cold_start_s"] = round(time.time() - started, 2)
+                started = time.time()
+                chat.complete("ok", num_predict=1)
+                record["model"]["warm_start_s"] = round(time.time() - started, 2)
+            except UnavailableModel as exc:
+                record["model"]["dependency_missing"] = str(exc)
+                record["notes"].append(f"model koşusu yapılamadı: {exc}")
+                unmeasurable = [name for name in conditions
+                                if name in ("reading", "chain_model", "relations")]
+                if unmeasurable:
+                    conditions = [name for name in conditions if name not in unmeasurable]
+                    record["notes"].append("model koşulları model olmadan ölçülemez; koşudan çıkarıldı: "
+                                           + ",".join(unmeasurable))
+                chat = None
+
         for case in cases:
             for name in conditions:
                 if name == "verified_plan":
                     continue
+                record["run"]["active"] = {"case": case["id"], "condition": name}
+                checkpoint(folder, record, rows, sampler, started_all)
                 start = time.time()
                 if name == "reading":
                     row = condition_reading(case, folder / "cases", chat, arguments.timeout)
                 elif name == "chain":
                     row = condition_chain(case, folder / "cases", arguments.timeout)
+                elif name == "chain_model":
+                    row = condition_chain_model(case, folder / "cases", chat, arguments.timeout, model_info,
+                                                structured=not arguments.unstructured, split=arguments.split,
+                                                normalize_names=arguments.normalize_names)
                 else:
                     row = condition_relations(case, folder / "cases", chat, arguments.timeout, model_info,
-                                              structured=not arguments.unstructured)
+                                              structured=not arguments.unstructured, split=arguments.split,
+                                              normalize_names=arguments.normalize_names)
                 row["wall_seconds"] = round(time.time() - start, 2)
                 row.setdefault("seconds", row["wall_seconds"])
                 row["split"] = case["split"]
                 row["part_group"] = case["part_group"]
                 rows.append(row)
+                _atomic_json(folder / "cases" / f"{case['id']}-{name}.json", row)
+                checkpoint(folder, record, rows, sampler, started_all)
                 print(_line(row), flush=True)
         if "verified_plan" in conditions:
+            record["run"]["active"] = {"condition": "verified_plan"}
+            checkpoint(folder, record, rows, sampler, started_all)
             for row in condition_verified_plans(cases, folder / "cases"):
                 row["wall_seconds"] = row.get("seconds")
                 rows.append(row)
+                checkpoint(folder, record, rows, sampler, started_all)
                 print(_line(row), flush=True)
+        run_status = "complete"
+        record["run"]["active"] = None
+    except KeyboardInterrupt:
+        run_status = "interrupted"
+        raise
+    except BaseException as exc:
+        run_status = "failed"
+        record["notes"].append(f"koşu kesildi: {type(exc).__name__}: {exc}")
+        raise
     finally:
         sampler.stop()
+        checkpoint(folder, record, rows, sampler, started_all, run_status)
         if chat is not None and not arguments.no_unload:
             chat.unload()
 
-    record["run"]["finished"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
-    record["run"]["seconds"] = round(time.time() - started_all, 2)
-    record["resources"] = sampler.record()
-    record["results"] = rows
-    record["error_classes"] = _counts(rows, "error_class")
-    record["statuses"] = _counts(rows, "status")
-    record["summary"] = _summary(rows)
-    (folder / "run.json").write_text(json.dumps(record, indent=2, ensure_ascii=False), encoding="utf-8")
-    (folder / "summary.json").write_text(json.dumps(record["summary"], indent=2, ensure_ascii=False), encoding="utf-8")
+    _atomic_json(folder / "summary.json", record["summary"])
     print(f"\nyazıldı: {folder / 'run.json'}")
     print(json.dumps({"error_classes": record["error_classes"], "statuses": record["statuses"],
-                      "resources": record["resources"]}, ensure_ascii=False, indent=2))
+                      "resources": {key: value for key, value in record["resources"].items()
+                                    if key != "raw_samples"}}, ensure_ascii=False, indent=2))
 
 
 def _counts(rows: list[dict], key: str) -> dict:

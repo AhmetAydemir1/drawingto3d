@@ -32,8 +32,8 @@ def runs() -> list[dict]:
     for path in sorted(RUNS.glob("*/run.json")):
         try:
             record = json.loads(path.read_text())
-        except json.JSONDecodeError:
-            continue
+        except json.JSONDecodeError as exc:
+            raise ValueError(f"bozuk koşu kaydı: {path}") from exc
         record["_path"] = path
         records.append(record)
     records.sort(key=lambda record: record.get("run", {}).get("started") or "")
@@ -42,6 +42,40 @@ def runs() -> list[dict]:
 
 def _seconds(value) -> str:
     return f"{value:.1f}" if isinstance(value, (int, float)) else "-"
+
+
+def _interface(record: dict, run: dict) -> str:
+    """Which interface asked the question, read from the record rather than guessed from one flag.
+
+    A run that asked one nested body, three narrower calls and a run that rewrote the answer's own
+    names are three different measurements of the same case; a table that prints one word for all of
+    them makes the numbers look comparable when they are not.
+    """
+    observed = set()
+    for row in record.get("results") or []:
+        settings = row.get("stages", {}).get("plan", {}).get("settings", {}) or {}
+        actual = settings.get("response_format", "")
+        if "split" in actual:
+            # Two split interfaces have been measured: three calls, and one call per measured closed
+            # profile. The record's own settings say which one asked, so the table cannot present the
+            # second as the first. A run that predates the per-profile step carries no marker.
+            observed.add("adım başına profil" if settings.get("profile_targets") else "üç adımlı")
+        elif actual.startswith("json-schema"):
+            observed.add("json-schema")
+        elif actual == "text":
+            observed.add("serbest metin")
+    if observed:
+        return ("karma: " if len(observed) > 1 else "") + " / ".join(sorted(observed))
+    interface = record.get("plan_interface")
+    if interface == "split-per-profile":
+        return "adım başına profil"
+    if interface == "split-3-call":
+        return "üç adımlı"
+    if interface == "free-text":
+        return "serbest metin"
+    if interface == "json-schema":
+        return "json-schema"
+    return "json-schema" if run.get("structured_output") else "serbest metin"
 
 
 def run_table(records: list[dict]) -> list[str]:
@@ -59,24 +93,31 @@ def run_table(records: list[dict]) -> list[str]:
                  or model_block.get("requested") or "-")
         if run.get("no_model"):
             model = "yok (model dışı)"
-        if run.get("conditions") == ["relations"]:
+        if "relations" in (run.get("conditions") or []):
             model = f"{model} *"
+        interface = _interface(record, run)
+        if run.get("name_normalization") and run["name_normalization"] != "off":
+            # The answer's own names were rewritten before judging: a different interface, so a
+            # different measurement, and the table has to say which one a number came from.
+            interface += " + ad yazımı"
         lines.append(
             "| {id} | {started} | {model} | {conditions} | {schema} | {cases} | {statuses} | {classes} | {secs} |".format(
                 id=run.get("id", "?"),
                 started=(run.get("started") or "")[:16].replace("T", " "),
                 model=model,
                 conditions=",".join(run.get("conditions") or []),
-                schema="json-schema" if run.get("structured_output") else "serbest metin",
+                schema=interface,
                 cases=len({row.get("case") for row in results}),
-                statuses=" ".join(f"{key}={value}" for key, value in sorted(statuses.items())) or "-",
+                statuses=(f"[{run.get('status', 'legacy')}] "
+                          + (" ".join(f"{key}={value}" for key, value in sorted(statuses.items())) or "-")),
                 classes=" ".join(f"{key}={value}" for key, value in sorted(classes.items())) or "-",
                 secs=_seconds(run.get("seconds")),
             )
         )
     lines.append("")
-    lines.append("`*` bağlam, elle doğrulanmış ilişki tablosundan gelir (`eval/relations/`): bu koşu otomatik "
-                 "PDF → STEP başarısı değil, planlama ve CAD katmanlarının ayrı ölçümüdür (PLAN Bölüm 18B).")
+    lines.append("`*` koşunun bağlamı kısmen elle doğrulanmış ilişki tablosundan gelir (`eval/relations/`): "
+                 "o koşu otomatik PDF → STEP başarısı değil, planlama ve CAD katmanlarının ayrı ölçümüdür "
+                 "(PLAN Bölüm 18B).")
     return lines
 
 
@@ -155,16 +196,24 @@ def reading_table() -> list[str]:
 
 def resources_table(records: list[dict]) -> list[str]:
     lines = [
-        "| koşu | takas başı MB | takas tepe MB | boş sayfa en az MB | ollama RSS tepe MB |",
+        "| koşu | kullanılan takas başı MiB | kullanılan takas tepe MiB | boş sayfa en az MiB | ollama RSS tepe MiB |",
         "| --- | --- | --- | --- | --- |",
     ]
     for record in records:
         resources = record.get("resources") or {}
         run_id = (record.get("run") or {}).get("id", "?")
+        if resources.get("measurement_version") != 2:
+            lines.append(f"| {run_id} | geçersiz eski ölçüm | geçersiz eski ölçüm | geçersiz eski ölçüm | "
+                         f"{resources.get('ollama_rss_mb_peak', '-')} |")
+            continue
         lines.append(
             f"| {run_id} | {resources.get('swap_used_mb_start', '-')} | {resources.get('swap_used_mb_peak', '-')} | "
             f"{resources.get('pages_free_mb_min', '-')} | {resources.get('ollama_rss_mb_peak', '-')} |"
         )
+    lines += ["", "Eski swap alanları `used` yerine `total` okuyordu; sayfa hesabı sabit 4096 bayt "
+              "varsayıyordu. Bu değerler kaynak kayıtlarda korunur, bellek kararı için kullanılmaz. "
+              "Ölçüm v2 işletim sisteminin sayfa boyutunu ve `used` alanını kullanır. Sistem sayıları "
+              "diğer uygulamaları da içerir; Ollama RSS toplam birleşik bellek tüketimi değildir."]
     return lines
 
 
@@ -176,9 +225,10 @@ def block() -> str:
     else:
         parts += ["### Koşular", ""] + run_table(records) + [""]
         parts += ["### Vaka vaka", ""] + case_table(records) + [""]
-        parts += ["### Koşu kaynakları (Apple M1, 16 GB, takas ölçülü)", ""] + resources_table(records) + [""]
+        parts += ["### Koşu kaynakları (ölçüm sürümü denetlenir)", ""] + resources_table(records) + [""]
     parts += ["### Okuma tabanı (kapı sonrası kapsam)", "",
-              "Katman `vektör` = PDF'in kendi metin katmanı, `raster` = aynı pafta görüntüden okunmuş.",
+              "Katman `vektör` = PDF'in kendi metin katmanı, `raster` = görüntüden okuma. Kapsam, "
+              "sayısal değer kümesinin kapsamıdır; her ölçü örneğinin, sembolün veya bağın doğruluğu değildir.",
               ""] + reading_table() + [""]
     parts += [CLOSE]
     return "\n".join(parts)

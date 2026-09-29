@@ -358,6 +358,57 @@
       "feature_ids": [],
       "part": "A3 raster, olcek 1:2, karbon celik: on gorunus + kesit A-A + izometrik, GD&T cerceveleri (tolerans degerleri olcu degil)",
       "expect_vector": "measure.txt"
+    },
+    {
+      "id": "exercise-12",
+      "class": "practice-sheet",
+      "part_group": "exercise-12",
+      "split": "unassigned",
+      "drawing": "examples/pdf with steps/10/Exercise 12.pdf",
+      "step": "examples/pdf with steps/10/Exercise 12.STEP",
+      "unit": "mm",
+      "printed": [
+        6,
+        10,
+        18,
+        19,
+        20,
+        54,
+        76,
+        86,
+        88,
+        92,
+        112,
+        116,
+        120,
+        132,
+        140,
+        158,
+        170,
+        180,
+        220,
+        270
+      ],
+      "radius_calls": [
+        25,
+        10,
+        8
+      ],
+      "diameter_calls": [
+        270,
+        220,
+        180,
+        158,
+        140,
+        120,
+        116,
+        92,
+        76,
+        18
+      ],
+      "callouts": [],
+      "feature_ids": [],
+      "part": "A3 vektor PDF, olcek 1:5, mm, sade karbon celik: iki flansli dirsek (90 derece); iki flans yuzu + on gorunus + SECTION A-A + iki golgeli izometrik. Referans STEP: 270x274x335 mm, 4791.7 cm3, 79 yuz (60 silindir). Kullanici 2026-09-28'de ekledi; ayrim karari kullanicida."
     }
   ],
   "_classes": {
@@ -378,17 +429,18 @@
     "unassigned": [
       "exercise-51",
       "exercise-17",
-      "exercise-13"
+      "exercise-13",
+      "exercise-12"
     ],
     "pilot": [],
     "hidden": [],
     "_note": "PLAN.md Bolum 5: pilot en az 10 yeni parca, sakli degerlendirme en az 20 parca (en az 10'u raster). `unassigned`, deposuna sonradan giren ve pilot/sakli ayrimi henuz kullanicinin karari olan parcalardir: olcumde AYRI sutunda raporlanir ve SAKLI TEST SAYILMAZ, cunku bu olcumden sonra yapilan kod duzeltmeleri onlari regresyona cevirir (PLAN Bolum 5.6). `exercise-1-vector`, `exercise-1` ile ayni parca grubundadir (7/ ve 2/ ayni parca) ve bagimsiz ornek sayilmaz.",
     "_counts": {
-      "part_groups": 8,
-      "independent_parts": 8,
+      "part_groups": 9,
+      "independent_parts": 9,
       "seen_regression_parts": 5,
-      "unassigned_parts": 3,
-      "note": "part_group ile sayilir: exercise-1 grubu iki dosyayla temsil edilir ama tek parcadir. 5 gorulmus + 3 atanmamis = 8 bagimsiz parca; pilot >= 10 ve sakli >= 20 hedefi hala aciktir."
+      "unassigned_parts": 4,
+      "note": "part_group ile sayilir: exercise-1 grubu iki dosyayla temsil edilir ama tek parcadir. 5 gorulmus + 4 atanmamis = 9 bagimsiz parca; pilot >= 10 ve sakli >= 20 hedefi hala aciktir."
     }
   },
   "_fields": {

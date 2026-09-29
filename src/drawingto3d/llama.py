@@ -30,12 +30,15 @@ PROMPT = (
     "Just the code, no other words."
 )
 
+# What this machine is likely to hold, best first. These are preferences, not a gate: a run names its
+# model explicitly (`find_model`) and the product takes whatever is installed that can do the job.
 # The instruct build of qwen3-vl is the one a number reader wants. Ollama's bare `qwen3-vl:8b` tag is
 # the *thinking* build (same model layer as `qwen3-vl:8b-thinking`), and a thinking build spends the
 # reader's 12-token budget on reasoning instead of the number, so the tag is named in full here.
-# qwen2.5vl stays behind it as the fallback for a box that has not pulled the newer weights.
 VISION_MODELS = ("qwen3-vl:8b-instruct", "qwen2.5vl:7b", "qwen2.5vl:3b")
 CODER_MODELS = ("qwen2.5-coder:7b", "qwen2.5-coder:14b", "qwen2.5-coder:3b")
+# Only for a server too old to report capabilities: a family name that reads images.
+VISION_NAME_HINTS = ("vl", "vision", "llava", "gemma3", "minicpm-v", "moondream")
 
 
 def retry_prompt(code: str, error: str) -> str:
@@ -54,7 +57,7 @@ class OllamaVision:
         raw = host or os.environ.get("DRAWINGTO3D_OLLAMA_URL", "http://127.0.0.1:11434")
         self.host = _local_origin(raw)
         self.timeout = timeout
-        self.model = _pick(_ollama_names(self.host), VISION_MODELS)
+        self.model = choose_vision_model(self.host)
 
     def ask(self, image_png: bytes, prompt: str, predict: int = 12) -> str:
         return _ollama_chat(self.host, self.model, prompt, image_png, self.timeout, predict, temperature=0.0)
@@ -71,7 +74,7 @@ class OllamaCoder:
         raw = host or os.environ.get("DRAWINGTO3D_OLLAMA_URL", "http://127.0.0.1:11434")
         self.host = _local_origin(raw)
         self.timeout = timeout
-        self.model = _pick(_ollama_names(self.host), CODER_MODELS)
+        self.model = choose_text_model(self.host)
 
     def complete(self, prompt: str) -> str:
         return _ollama_chat(self.host, self.model, prompt, None, self.timeout, 700)
@@ -80,21 +83,58 @@ class OllamaCoder:
         _ollama_unload(self.host, self.model)
 
 
-def _ollama_names(host: str) -> set[str]:
-    request = urllib.request.Request(host + "/api/tags")
-    try:
-        with urllib.request.urlopen(request, timeout=5) as response:
-            body = json.load(response)
-    except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as exc:
-        raise UnavailableModel("yerel model yanıt vermiyor; buluta düşülmez") from exc
-    return {str(item.get("name", "")) for item in body.get("models", [])}
+def _vision_capable(models: list[ModelInfo]) -> list[str]:
+    """Installed tags that can read an image, best known first.
+
+    The server's own `capabilities` decide it. A server too old to report them falls back to family
+    names — and a machine with no vision model anywhere gets an empty list, never a text model that
+    would answer an image with fluent nonsense.
+    """
+    reporting = [model for model in models if model.capabilities]
+    if reporting:
+        capable = [model.name for model in reporting if "vision" in model.capabilities]
+    else:
+        capable = [model.name for model in models
+                   if any(hint in model.name.lower() for hint in VISION_NAME_HINTS)]
+    for candidate in VISION_MODELS:
+        if candidate in capable:
+            return [candidate] + [name for name in capable if name != candidate]
+    return capable
 
 
-def _pick(names: set[str], candidates: tuple[str, ...]) -> str:
-    for candidate in candidates:
-        if candidate in names:
+def choose_vision_model(host: str | None = None, env_var: str = "DRAWINGTO3D_VISION_MODEL") -> str:
+    """The tag this machine will read images with: the caller's choice, else the best installed one.
+
+    An explicit choice (environment) is honoured exactly — an uninstalled tag is an error, not a
+    silent substitution — so a measurement that names a model gets that model or nothing.
+    """
+    models = installed_models(host)
+    wanted = os.environ.get(env_var)
+    if wanted:
+        return find_model(models, wanted).name
+    capable = _vision_capable(models)
+    if not capable:
+        available = ", ".join(sorted(model.name for model in models)) or "(hiç yok)"
+        raise UnavailableModel(f"kurulu modeller arasında görüntü okuyabilen yok ({available}); "
+                               "akış kurallı okumayla sürer")
+    return capable[0]
+
+
+def choose_text_model(host: str | None = None, env_var: str = "DRAWINGTO3D_CODER_MODEL") -> str:
+    """The tag this machine will write programs with: the caller's choice, else a coder if it has one,
+    else any installed model. Text is the one job every model can do."""
+    models = installed_models(host)
+    wanted = os.environ.get(env_var)
+    if wanted:
+        return find_model(models, wanted).name
+    if not models:
+        raise UnavailableModel("Ollama'da kurulu model yok")
+    capable = [model.name for model in models if not model.capabilities or "completion" in model.capabilities]
+    for candidate in CODER_MODELS:
+        if candidate in capable:
             return candidate
-    raise UnavailableModel("yerel model yanıt vermiyor; buluta düşülmez")
+    named = [name for name in capable if "coder" in name.lower()]
+    return (named or capable or [model.name for model in models])[0]
 
 
 def _ollama_unload(host: str, model: str) -> None:

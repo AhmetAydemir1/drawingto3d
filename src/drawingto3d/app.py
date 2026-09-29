@@ -16,6 +16,7 @@ from drawingto3d.cadrun import CadFailure
 from drawingto3d.ingest import load_page
 from drawingto3d.reason import reason_drawing
 from drawingto3d.plan import edit_plan
+from drawingto3d.guided import GuidedStore
 from drawingto3d.schema import ROLES, Audit, ConvertResult, DimensionRecord, Source, Span, View
 
 ROOT = Path(__file__).resolve().parent / "static"
@@ -23,10 +24,12 @@ SESSION_DIR = Path("out") / "sessions"
 SESSIONS: dict[str, dict] = {}
 JOBS: dict[str, dict] = {}
 LOCK = threading.Lock()
+GUIDED = GuidedStore(Path("out") / "guided")
 
 
 def main() -> None:
     _load_sessions()
+    GUIDED.recover_interrupted()
     server = ThreadingHTTPServer(("127.0.0.1", 8765), Handler)
     print("http://127.0.0.1:8765")
     server.serve_forever()
@@ -35,6 +38,23 @@ def main() -> None:
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:
         path = urlparse(self.path).path
+        if path in {"/guided", "/guided.js", "/preview.js"}:
+            name = "guided.html" if path == "/guided" else path[1:]
+            kind = "text/html; charset=utf-8" if path == "/guided" else "text/javascript; charset=utf-8"
+            self._send(200, kind, (ROOT / name).read_bytes())
+            return
+        if path.startswith("/api/guided/") or path.startswith("/guided-session/"):
+            try:
+                if path.startswith("/api/guided/"):
+                    self._send(200, "application/json", json.dumps(GUIDED.public(GUIDED.load(path.split("/")[-1]))).encode())
+                else:
+                    parts = path.strip("/").split("/")
+                    if len(parts) != 3: raise ValueError("dosya yolu geçersiz")
+                    file, kind = GUIDED.artifact(parts[1], parts[2])
+                    self._send(200, kind, file.read_bytes())
+            except (ValueError, OSError) as exc:
+                self._send(404, "application/json", json.dumps({"error": str(exc)}).encode())
+            return
         if path in {"/", "/index.html"}:
             self._send(200, "text/html; charset=utf-8", (ROOT / "index.html").read_bytes())
             return
@@ -50,6 +70,30 @@ class Handler(BaseHTTPRequestHandler):
         path = urlparse(self.path).path
         length = int(self.headers.get("Content-Length", "0"))
         body = self.rfile.read(length)
+        if path.startswith("/api/guided/"):
+            try:
+                if path == "/api/guided/open":
+                    payload = _file_bytes(body)
+                    if not payload: raise ValueError("PDF/PNG/JPG dosyası gerekli")
+                    result = GUIDED.create(payload)
+                else:
+                    data = json.loads(body)
+                    if not isinstance(data, dict): raise ValueError("karar kaydı nesne olmalı")
+                    if path == "/api/guided/save":
+                        result = GUIDED.save(data.get("token"), data.get("revision"), data.get("decisions"))
+                    elif path == "/api/guided/accept":
+                        fields = data.get("fields")
+                        if fields is not None and not isinstance(fields, list): raise ValueError("fields liste olmalı")
+                        result = GUIDED.accept(data.get("token"), data.get("revision"), fields)
+                    elif path == "/api/guided/undo":
+                        result = GUIDED.save(data.get("token"), data.get("revision"), undo=True)
+                    elif path == "/api/guided/build":
+                        result = GUIDED.build(data.get("token"), data.get("revision"))
+                    else: raise ValueError("işlem bulunamadı")
+                self._send(200, "application/json", json.dumps(result, ensure_ascii=False).encode())
+            except (ValueError, OSError) as exc:
+                self._send(400, "application/json", json.dumps({"error":str(exc)}, ensure_ascii=False).encode())
+            return
         if path == "/api/convert":
             self._convert(body)
             return

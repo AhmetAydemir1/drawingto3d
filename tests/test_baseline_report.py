@@ -13,6 +13,8 @@ import json
 import sys
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -90,3 +92,59 @@ def test_check_fails_when_a_run_is_newer_than_the_report(tmp_path, monkeypatch) 
     assert module.main() == 0
     monkeypatch.setattr(sys, "argv", ["baseline_report.py", "--check"])
     assert module.main() == 0
+
+
+def test_legacy_memory_is_not_presented_as_valid_measurement():
+    module = load_module()
+    old = sample_run("old", "plate", "failed", "planning")
+    new = sample_run("new", "plate", "draft", None)
+    new["resources"]["measurement_version"] = 2
+    table = "\n".join(module.resources_table([old, new]))
+    assert "| old | geçersiz eski ölçüm |" in table
+    assert "| new | 13312.0 |" in table
+
+
+def test_a_run_that_rewrote_names_is_not_read_as_the_plain_interface() -> None:
+    module = load_module()
+    plain = sample_run("plain", "plate", "draft", None)
+    rewritten = sample_run("rewritten", "plate", "draft", None)
+    rewritten["run"]["name_normalization"] = "lossless-identifier-rewrite"
+    table = "\n".join(module.run_table([plain, rewritten]))
+    assert "| plain | 2026-09-27 04:00 | - * | relations | json-schema |" in table
+    assert "| rewritten | 2026-09-27 04:00 | - * | relations | json-schema + ad yazımı |" in table
+
+
+def test_a_run_that_asked_three_calls_is_not_the_run_that_asked_one() -> None:
+    module = load_module()
+    one = sample_run("one", "plate", "draft", None)
+    one["plan_interface"] = "json-schema"
+    three = sample_run("three", "plate", "draft", None)
+    three["plan_interface"] = "split-3-call"
+    table = "\n".join(module.run_table([one, three]))
+    assert "| one | 2026-09-27 04:00 | - * | relations | json-schema |" in table
+    assert "| three | 2026-09-27 04:00 | - * | relations | üç adımlı |" in table
+
+
+def test_bad_run_json_fails_loudly(tmp_path, monkeypatch):
+    module = load_module()
+    path = tmp_path / "cut-short" / "run.json"
+    path.parent.mkdir()
+    path.write_text('{"run":')
+    monkeypatch.setattr(module, "RUNS", tmp_path)
+    with pytest.raises(ValueError, match="bozuk koşu kaydı"):
+        module.runs()
+
+
+def test_actual_condition_interfaces_override_a_misleading_run_flag():
+    module = load_module()
+    run = sample_run("mixed", "plate", "failed", "planning")
+    run["plan_interface"] = "split-3-call"
+    run["results"] = [
+        {"case": "plate", "condition": "relations", "stages": {"plan": {"settings": {
+            "response_format": "json-schema:GeneralPlan reply v4 split (3 calls)"}}}},
+        {"case": "plate", "condition": "chain_model", "stages": {"plan": {"settings": {
+            "response_format": "json-schema:GeneralPlan reply v4"}}}},
+    ]
+    assert module._interface(run, run["run"]) == "karma: json-schema / üç adımlı"
+    run["results"] = run["results"][1:]
+    assert module._interface(run, run["run"]) == "json-schema"

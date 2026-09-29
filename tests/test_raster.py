@@ -128,3 +128,51 @@ def test_missing_tesseract_is_a_note_not_a_crash(tmp_path, monkeypatch):
 def test_unsupported_suffix_is_named():
     with pytest.raises(Unsupported, match="desteklenmeyen"):
         observe(Path("examples/whatever.doc"))
+
+
+def _synthetic_arc_sheet(folder: Path) -> Path:
+    """A 480x320 sheet with one full circle, one 120° arc and one straight stroke."""
+    image = np.full((320, 480), 255, dtype=np.uint8)
+    cv2.circle(image, (120, 160), 45, 0, 3)
+    cv2.ellipse(image, (350, 160), (70, 70), 0, 40, 160, 0, 3)
+    cv2.line(image, (250, 40), (250, 290), 0, 2)
+    path = folder / "synthetic-arc.png"
+    cv2.imwrite(str(path), image)
+    return path
+
+
+def test_synthetic_arc_comes_back_with_its_span(tmp_path):
+    """The weak pass plus the angular-support gate is what lets a raster sheet reach a curved outline."""
+    observations = observe_raster(_synthetic_arc_sheet(tmp_path))
+    arcs = [primitive for primitive in observations.primitives if primitive.kind == "arc"]
+    assert arcs, "çizili yay hiç bulunamadı"
+    # The drawn arc must come back accurately; the weak pass also offers a few short slivers of real
+    # ink (the gates bound that flood — 23 candidates down to a handful — but do not promise purity,
+    # and a 60° stretch of drawn ink *is* an arc).
+    arc = min(arcs, key=lambda item: abs(np.hypot(item.centre[0] - 350, item.centre[1] - 160))
+              + abs((item.radius or 0.0) - 70))
+    assert arc.centre == pytest.approx([350, 160], abs=8)
+    assert arc.radius == pytest.approx(70, abs=6)
+    span = (arc.end_degrees or 0.0) - (arc.start_degrees or 0.0)
+    assert span == pytest.approx(120, abs=40)
+    assert len(arcs) <= 6
+    assert arc.coverage is not None and arc.coverage >= 0.75
+    assert arc.method == "hough-arc"
+    circles = [primitive for primitive in observations.primitives if primitive.kind == "circle"]
+    assert any(circle.centre is not None and abs(circle.centre[0] - 120) <= 6 for circle in circles)
+
+
+def test_a_full_circle_is_not_repeated_as_an_arc(tmp_path):
+    """The strict pass keeps the ring that closes; the arc pass must not re-offer it as a partial one."""
+    observations = observe_raster(_synthetic_arc_sheet(tmp_path))
+    for arc in (primitive for primitive in observations.primitives if primitive.kind == "arc"):
+        assert arc.centre is not None
+        assert np.hypot(arc.centre[0] - 120, arc.centre[1] - 160) > 20
+
+
+def test_longest_ring_run_wraps_around_the_zero_angle():
+    """An arc that crosses the ring's start index is still one run; a broken one is measured as broken."""
+    assert raster._longest_ring_run(np.array([False, True, True, True, False, False])) == (1, 3)
+    assert raster._longest_ring_run(np.array([True, True, False, False, True])) == (4, 3)
+    assert raster._longest_ring_run(np.array([True, True, True])) == (0, 3)
+    assert raster._longest_ring_run(np.zeros(8, dtype=bool))[1] == 0

@@ -1,5 +1,9 @@
 # eval
 
+## Current product checkpoint — 2026-09-28
+
+User-guided draft generation is now implemented. Read [guided-flow.md](reports/guided-flow.md) and [its evidence](reports/guided-flow-evidence.json). Full suite 488 passed; final focused suite 16 passed. One real PDF produced a valid draft STEP; exact dimension constraints and complete UI acceptance remain open. Older interpretation scores below are not independent geometric accuracy. PLAN Section 23/23.1 defines current next work.
+
 ## Direction update — 2026-09-27
 
 The six existing cases are seen development/regression data. The deterministic plate result below
@@ -28,8 +32,14 @@ circles match — or marks it unresolved; and `proposal.py` plus `drawingto3d pr
 those readings support — the part outline out of the sheet's closed loops with the sheet frame
 skipped, every parameter printed with its span id or derived by expression, every printed number
 checked against the same sheet's measured geometry — or refuses with the reasons (the plastic
-sheet: no diameter claims at all). What is still missing: raster anchors and scale (a raster sheet
-binds and then resolves `no-scale` on every claim — `propose` refuses with *pafta ölçeği okunamadı*)
+sheet: no diameter claims at all). `proposal.py` also exposes the reading chain's own measurements
+(`read_sheet`) and `planner.py` turns them into the block the model planner is asked with
+(`chain_evidence`), so `drawingto3d model-plan` can ask the local model the same question `propose`
+answers with rules: it writes the evidence, the model's raw answer and, when the answer meets the
+contract, the plan; otherwise it exits 2 with the reason and no plan. What is still missing: raster
+anchors and scale (a raster sheet
+binds and then resolves `no-scale` on every claim — `propose` refuses with *pafta ölçeği okunamadı*;
+`model-plan` never calls the model for such a sheet)
 and the wider
 archetypes (multi-view sheets, chain dimensions, asymmetric layouts); the refusal lists name them.
 
@@ -50,11 +60,26 @@ PYTHONPATH=src .venv/bin/python eval/baseline.py          # reading turn over ev
 PYTHONPATH=src .venv/bin/python eval/check_tables.py      # do the tables below still match out/frontend?
 PYTHONPATH=src .venv/bin/python eval/model_baseline.py --no-model --conditions reading,chain,verified_plan --label <label>
 PYTHONPATH=src .venv/bin/python eval/model_baseline.py --model qwen3-vl:8b-instruct --conditions relations --cases plate-pocket-1 --label <label>
+PYTHONPATH=src .venv/bin/python eval/model_baseline.py --model qwen2.5vl:3b --conditions chain,chain_model --cases plate-pocket-1,plastic-enclosure-1 --label <label>
 PYTHONPATH=src .venv/bin/python eval/baseline_report.py --write    # section 7 tables, built from the run records
+PYTHONPATH=src .venv/bin/python eval/guided_effort.py --drawing "examples/pdf with steps/5/Plate With A Pocket Drawing.PDF" --accept-and-build --reference "examples/pdf with steps/5/plate with a pocket.STEP" --label plate-flow
 ```
 
-`eval/model_baseline.py` measures section 18B's four conditions apart — `reading`, `chain`,
-`verified_plan` and `relations` — because an end-to-end score cannot say which layer failed. It writes one
+`eval/guided_effort.py` measures what the guided flow asks the user for, against what the drawing already
+answered. `--session` reads a saved session's own decisions back to the reading (which claims stand behind
+each value, and which printed number the flow never offered); `--drawing` opens a sheet through the product
+path and records the questions and candidate menus a user meets at open; `--accept-and-build` takes the
+reading's proposals in one step, builds, and records the interaction count, the decisions and the questions
+that are left. It writes `out/guided-effort/<label>/run.json`. The independent half — is the STEP the flow
+produced equal to the reference part? — is `eval/metrics.py`, which needs cadquery and therefore runs in the
+CAD environment: `.venv-cad/bin/python eval/metrics.py <produced.step> <reference.step>`.
+
+`eval/model_baseline.py` measures section 18B's conditions apart — `reading`, `chain`, `chain_model`,
+`verified_plan` and `relations` — because an end-to-end score cannot say which layer failed. `chain_model`
+is the product path: the sheet is read by the chain (`read_sheet` → `chain_evidence`, millimetres, every
+printed number with its span id and every claim with its anchor points) and the local model is asked the
+same question the rules-based `chain` answers from the same measurements, so the two planners are compared
+on the reading alone. It writes one
 machine-readable record per run under `out/model-baseline/<label>/` with the code HEAD and dirty-file list,
 the manifest summary, the model digest and quantisation, the prompt/schema/evidence versions, the sampling
 settings, cold and warm start, per-stage seconds, the output status, swap and free-page samples and the ollama
@@ -129,6 +154,7 @@ and building metrics are held to.
 | studycadcam-50 | raster | 2/3 | 7 | - | 0 |
 | exercise-1 | raster | 6/13 | 6 | 5.731 | 7 |
 | flange-1 | raster | 4/13 | 3 | - | 0 |
+| exercise-12 | vektör | 19/20 | 3 | 1.550 | 14 |
 
 The same sheets with the text layer taken away (`--as-raster`), which is the reader a scan gets:
 
@@ -508,3 +534,291 @@ remain visible assumptions. Outputs are drafts (`audit.accepted=False`) even whe
 The app tries this path first; unsupported drawings use the existing model path. CLI `plan/build-plan`
 select it explicitly. Raster recognition, other part families and arbitrary PDF path grouping remain open.
 See `../HANDOFF.md` for reproduction and next work.
+
+
+## Model reply grammar audit (2026-09-27)
+
+That work: `../PLAN.md` §20 and `reports/schema-audit.md`. Required tags and
+parameter/repeat alternatives were missing from the model-facing grammar. Reply v3 adds
+them while retaining `GeneralPlan v1`. Same-prompt leaf probes improved from 0/3 to 3/3;
+real plate model plans still fail (names, with further semantic faults visible in raw output).
+No model-generated STEP success is claimed. Reproduce the small diagnostic with
+`schema_probe.py`; both full evidence bundles are in `reports/schema-v3-*-evidence.json`.
+
+
+## CAD names in the model interface (2026-09-27)
+
+Current next work: `../PLAN.md` §20 and `reports/naming-interface.md`. The reply grammar now
+carries `propertyNames` and `pattern` for CAD identifiers (prompt `general-plan-v3`, schema
+`GeneralPlan reply v4`) while `GeneralPlan v1` and the CAD validator are unchanged. A recorded
+provider probe (`reports/name-probe-evidence.json`) shows this provider enforces a `pattern` on a
+*string* field but ignores `propertyNames` on an object; a closed key vocabulary holds the key and
+degrades the value (`100` → `"testing"`), and `patternProperties` returns an empty body. So an open
+set of keys cannot be constrained here, and the lossless identifier rewrite (`NAME_ADAPTER`,
+default off) is the recorded fallback. Four real plate runs, labels `names-3b-02`…`names-3b-05`
+(`reports/names-v4-evidence.json`): the name error is gone, the first error is now the unparsable
+expression `'/hole_spacing_x'`, and larger answers never close — `relations` ends at
+`done_reason=length`, 4096 tokens, 182.3 s, so the earlier 180 s "no answer" is that loop being cut
+by the client. The three-call path lands the `parameters` step in 14.8 s and loses the `profile`
+step to the same loop; that step is the single next change. No model-generated STEP is claimed.
+
+## The profile step asks one profile per call (2026-09-27)
+
+Current next work: `../PLAN.md` §20 and `reports/profile-step.md`. The profile step now asks for one
+call per closed profile the readings measured (`profile_targets`: one closed outer loop plus each
+closed circle), and each sub-answer is judged before the next call is spent — structure,
+expressions, closure, known references, measurement citations, "exactly one sketch", name
+collisions — with a profile call capped at `PROFILE_PREDICT_CAP = 1024` tokens. Prompt version
+`general-plan-v3-split-profile`; the reply schema, the naming rule, `GeneralPlan v1` and the CAD
+validator are unchanged. A run label of `profile-3b-01` measured it once, same plate, same
+`qwen2.5vl:3b`, same 16384/4096 settings (`reports/profile-step-evidence.json`).
+
+The loop is gone: the same step that used to end at `done_reason=length` with 4096 tokens and 7 743
+bytes of repetition (178.5 s) now stops at 129 tokens in 17.9 s. Both conditions still fail, so no
+CAD build, no drawing check and no second part group were measured. The first remaining errors are
+in two different places: `relations` stops at **parameters**, citing drawn-circle ids (`h1`, `h2`)
+where printed span ids (`d1`…`d7`) belong — that prompt is byte-identical to the one `names-3b-05`
+answered with the same answer, so what changed is the step judge, not the model or the interface;
+`chain_model` stops at **profile 1/6 (outline)**, with two edges that do not close and an arc radius
+`x(6.84/2)` whose numbers come from a hole rather than the 120.87 × 80.56 mm outline. Its
+`parameters` step passed the interface checks while being unusable as a part: `hole_spacing_y`
+derived as `(100 - 80) / 2 = 10` where the sheet prints 60,00, a third diameter derived from the
+section's 15 and 8, a pocket depth assumed from the sheet's px/mm scale, and no thickness at all.
+That is the separation this section insists on: valid JSON is not a plan, and an accepted step is
+not a measured part.
+
+## Loops, the second archetype's gate, raster scale and the evidence block's id spaces (2026-09-27)
+
+Round report: `reports/general-input-slices.md`; next work: `../PLAN.md` §20. Two model-free probes
+came out of it. `eval/loop_candidates.py [case-id …]` prints, per sheet, every non-frame loop with its
+size, primitive count, whether it is a rounded rectangle, and how many confirmed claims are anchored to
+it (plus the distances that touch neither the loop nor circle centres — the candidates a general
+flat-part archetype would read a thickness from). `eval/raster_scale.py [case-id …]` fits a raster
+sheet's own px/mm from the ratios between its numbers and the strokes they sit on, through
+`scale.consensus`, rejecting a hypothesis whose largest printed value would be longer than the page's
+diagonal and any fit supported by fewer than three distinct numbers; it also tries a row/gap pairing.
+
+**Loop chaining changed and moved the sheets it was aimed at.** `proposal._loops` now takes the segment
+that closes the chain first, otherwise the continuation that turns least, and a chain that dead-ends
+claims nothing (its segments return to the pool). `exercise-1-vector` (`Drawing.pdf`) went from 3 loops
+to 7 and its chosen loop is now the part's outline — 8 primitives, 53.62 × 82.29 mm, carrying `pdf-13`
+(R20) — where it used to be a 20.54 × 35.95 mm detail view; `propose`'s refusal names that outline now.
+The plate is unchanged (same loop and measurements, `propose` still `proposed`, `plate_plan.py`
+passes). The second archetype the plan asked for was **not written**: its honest gate is a contour whose
+own extents are confirmed by printed dimensions with exactly one section distance left over, and no
+measured vector sheet passes it (plate 1/2 extents bound and 2 candidates; `plastic-enclosure-1` 0/2
+and 4; `Drawing.pdf` 0/2 and 10), so the code would sit unexercised — the gate and its reason are
+recorded instead, with binding coverage as its prerequisite.
+
+**Raster scale is downstream of reading coverage, not a lock of its own.** The reading path already
+calibrates from the spans `bind` anchors: `exercise-1` 5.73, `exercise-13` 2.88, `studycadcam-60` 3.28
+px/mm, while on four sheets `bind` anchors nothing and the refusal stays `pafta ölçeği okunamadı`.
+The new probe independently fits **3.3158 px/mm** on `studycadcam-60` (four numbers agreeing to 0.17 %,
+within 1.1 % of the path's 3.28) and the same scale puts that sheet's two drawn circles at 51.06 and
+20.57 mm against printed `20` and a round Ø50. Where a scale exists the next gate is contour closure:
+343 strokes on `exercise-1` produce no closed part outline (`çizgiler/yaylar döngü kurmuyor`), and
+`studycadcam-60` has no loop outside its page frame. The row/gap pairing model adds nothing at this
+layer — the raster observer already merges collinear strokes (219 of 221 rows are single strokes).
+The previous round's table, which recorded `pafta ölçeği okunamadı` for all seven rasters, could not be
+reproduced this round; the raster reading path did not change between the two (`bind.py` 01:58,
+`meaning.py` 01:58, `raster.py` 02:46, all before that sweep), so today's run is the measurement.
+
+**The evidence block now names its two id spaces, and the run `ids-3b-01` shows the target failure
+closing.** `planner._readings_line` renders *Printed numbers* (`span_ids` may point at these ids and
+only these), *Measured regions* (geometry ids — not citations), the claims between them, the sheet and
+the notes; the profile call's region is a keyed block `Target profile (this call)`; `PROMPT_VERSION`
+moved to `general-plan-v4` and `PROMPT_VERSION_SPLIT` to `general-plan-v4-split-profile-ids`. One run
+(`qwen2.5vl:3b`, `--split`, same plate/evidence, 16384 ctx – 4096 predict, `relations,chain_model`,
+53.23 s, `complete`, both conditions `failed/planning`): `relations` cites real printed ids (`d1`, `d3`)
+where it used to cite drawn circles (`h1`, `h2`), and its first error moved one step deeper — an
+expression naming a span id (`(d2 - d4) / 2`), with an invented `sqrt` and a printed parameter whose
+value (`70.0`) is what neither cited span (100.00, 60.00) prints sitting behind that first error
+(offline labelled replay). `chain_model`'s first error moved to the naming rule (`pdf-0`); the same
+answer judged with the name adapter on gives **0 errors**, so on that condition the naming rule alone
+blocks the parameters step. No plan passed: no CAD build, no drawing check, no second part group, no
+STEP, and no training or capacity conclusion is drawn from this.
+
+**The parameters step's two refusals were restated as rules, and the measurement says the words did
+not close the class (2026-09-27).** Round report: `reports/parameter-rules.md`. The judge did not
+change; `_RULE_EXPRESSIONS_USE_PARAMETERS` (a derived expression is arithmetic over the parameter names
+the answer declares — a span id is a citation, not a name) and `_RULE_PRINTED_CARRIES_ITS_VALUE` (a
+`printed` parameter carries the number its cited span prints, or the count beside it) were added to the
+shared rule set and are quoted in both interfaces, because both are asked for parameters. Versions:
+`general-plan-v5-parameter-rules` and `general-plan-v5-split-parameter-rules`. One run with a new label
+(`params-3b-01`; same plate, model, 16384/4096, `--split`, conditions `relations,chain_model`, and the
+`chain_model` evidence block byte-identical to `ids-3b-01`'s — so the question is the only variable):
+53.69 s, `complete`, both conditions `failed/planning`. The first error did not move class: `relations`
+still put a span id inside an expression (`d7`, was `d2`) and `chain_model` still named a parameter
+`pdf-0` — the naming rule that was already in the v4 prompt and was ignored. Read that as measured, not
+as a wording failure to retry: this provider's grammar constrains a *string* with `pattern` but ignores
+`propertyNames` on an object, and the same `chain_model` answer cleared its parameters step with the
+lossless name adapter on. What the answer lacks is a legal identifier to copy. Still no plan: no CAD
+build, no drawing check, no second part group, no STEP.
+
+**Every printed number now carries a legal name beside its id, and the naming failure moved one step
+deeper (2026-09-27).** Round report: `reports/suggested-names.md`. `params-3b-01` measured that writing
+the two rules into the question was not enough — the readings block offered the answer only span ids, so
+it kept using them as names. `planner.suggested_names` (recorded as `settings.suggested_names =
+reading-derived-names-v1`) derives one name per printed record from the reading's own `kind`/`form`,
+its anchor kinds (`circle-centre` → `circle`, `arc-rim` → `arc`, ends → `edge`) and the anchors' own
+axis; two records measured the same way get indices (`diameter_1`, `diameter_2`). `_readings_line`
+renders that block right after *Printed numbers*, so both interfaces carry it; versions move to
+`general-plan-v6-suggested-names` / `general-plan-v6-split-suggested-names`. Not a part template: the
+only inputs are reading fields, and a test renames every span and geometry id and demands the same
+names. One run, new label (`suggest-3b-01`; same plate/model/settings/conditions, `chain_model` evidence
+byte-identical to `params-3b-01`'s — the question is the only variable): 46.12 s, `complete`, both
+conditions `failed/planning`, no STEP. The class moved: `chain_model` no longer names a parameter
+`pdf-0` — it used five of the seven suggested names — and both conditions now fail on the same narrower
+thing, an expression naming something the answer did not declare (`diameter_2`, `d1`); `relations`
+adopted the menu's style (`distance_1 … distance_7`) but not its names. Still no plan: no CAD build, no
+drawing check, no second part group, no STEP.
+
+
+## Split-step validation audit (2026-09-27)
+
+Current next work: `../PLAN.md` §21 and `reports/step-validation-audit.md`. Parameter
+citations and profile expressions/closure are now checked before the next model call.
+The real-drawing baseline now honors `--split`; the earlier `names-3b-05` was a mixed
+interface run. New `step-validation-3b-01` has no valid plan or STEP. Next measure evidence
+to parameter selection, including drawing meaning, rather than only JSON validity.
+
+## Parametre kataloğu ölçümü (2026-09-27)
+
+`PYTHONPATH=src .venv/bin/python eval/catalog_parameters.py --label YENI_ETIKET` yalnız
+basılı ölçü seçimi/anlam/türetme adımını iki farklı görülmüş parça grubunda ölçer. Yeni etiket
+zorunludur; `out/catalog-parameters/` altında istek öncesi ve cevap sonrası kalıcı kayıt tutulur.
+`catalog-3b-01` iki cevabı da reddetti; katalog değerleri 22/22 korundu. Anlam/CAD doğruluğu
+ayrı ve açık kalır. Rapor: `reports/catalog-parameters.md`; taşınabilir ham kanıt:
+`reports/catalog-parameter-evidence.json`. Bu komut STEP üretmez.
+
+### Ölçüleri model olmadan inceleme
+
+```sh
+PYTHONPATH=src .venv/bin/python -m drawingto3d catalog "cizim.pdf" out/olcu-inceleme
+```
+
+Yeni bir çıktı klasörü seçin. Komut `catalog.json`, `evidence.json` ve okunabilir `review.md`
+üretir. Ölçek ya da kontur eksikse ölçüler korunur, eksik bilgi ayrıca gösterilir. Bu komut
+STEP üretmez; `needs_review`/`needs_input` durumları anlam ve geometri onayı değildir.
+
+**Tek ölçü yorum arayüzü ölçüldü (2026-09-27).** `eval/meaning_interpretation.py` tek bir basılı ölçüyü
+(`qwen2.5vl:3b`, 16384/4096, sıcaklık 0) çizimin **kendi** kaynak ve geometri kimliklerine bağlatır;
+sayısal türetme istemez, çözülemeyen bağı `unresolved` + soru olarak bırakır. İstek her çağrıdan önce,
+cevap hemen sonra `out/meaning-interpretation/<etiket>/` altına yazılır; `--dry-run` model çağırmadan
+istekleri üretir, `--check <paket>` kayıtlı ham cevapları yeniden yargılar.
+
+- Arayüz `src/drawingto3d/interpret.py`; şemada sayısal alan yok ve geometri kimlikleri yalnız sunulan
+  gerçek kimliklerin `enum`'u. Referans etiket (`eval/relations/<parça>.json`) **yalnız** değerlendirmede
+  kullanılır: eşleşme basılı değer+birim ile, etiket kimliği okuma kimliğine en yakın konumla bağlanır;
+  eşlenmeyen uçta alan "ölçülemez" sayılır.
+- `meaning-3b-01` sonucu: sözleşme 22/22 cevapta tuttu, ama plakada 7/8 cevap sözleşmede düştü (5'i
+  gerekçede sayı yazdı), etiketin denetlediği 15 alandan yalnız 1'i puanlandı, tam doğru 0; plastikte
+  13/14 sözleşmeden geçti ama eksen 14/14 "horizontal" ve 7 ölçü aynı çifti gösterdi, bağımsız etiket
+  olmadığı için doğruluk ölçülmedi; `unresolved` 0/22. Ayrıntı `eval/reports/measurement-interpretation.md`.
+- Bu sayılar bir STEP, profil veya genel çizim başarısı değildir; sıradaki tek değişken gerekçedeki
+  sayı yasağının kapsamıdır (bağ yüzünden atılmasın), sonra aday kümesini daraltmak.
+
+**Sayı yasağının kapsamı ölçüldü (2026-09-27, `meaning-3b-02`).** Aynı istem ve aynı ham cevaplarla
+(22/22 birebir), yalnız yargı sözleşmesi `interpretation-contract-v1` → `v2`: kimlik dışı sayı artık
+cevabı düşürmüyor, `warnings` alanına yazılıyor. Plaka 1 doğru/7 geçersiz → **3 doğru/2 kısmi/3
+geçersiz**; puanlanan alan 1 → **9** (15 denetlenebilirden); tür 5/5, eksen 1/2, bağ 1/2. Kalan
+geçersiz sınıf çap/yarıçap şekli. Yeni bulgu: eksen kelimesi ile seçilen çift tutarsız. Plastik
+cevapları aynı kaldı (etiket yok, eksen 14/14 "horizontal", 7 ölçü aynı çift, `unresolved` 0/22).
+`--check` eski sözleşmeyle üretilmiş pakette durum karşılaştırmasını atlar, ham cevabı doğrular.
+
+**Eksen artık sorulmuyor (2026-09-27, `meaning-3b-03`).** `interpretation-contract-v3`: şemada `axis` yok,
+eksen seçilen iki uçtan türetiliyor; istem de bu yüzden değişti (istem ve ham cevaplar v2'ye göre 22/22
+farklı — v1→v2 saf yargıç değişikliğiydi, bu tur sorunun kendisini değiştirdi). Plaka 3 doğru/2 kısmi/3
+geçersiz → **4/1/3**, ama alan doğruluğu değişmedi (tür 5/5, eksen 1/2, bağ 1/2): kayıp çift seçiminde.
+Plastikte en sık çift 7× → 5×, okuma bağıyla uyuşan 3/14, `unresolved` 0/22. Bu turda denetimin kendi
+hatası da bulundu: bir çağrıdan iki ölçü (boyut + adet) üreten kayıtta eşleşme artık (kaynak kimliği, ad)
+çiftiyle yapılıyor.
+
+**Aday kümesi okumanın kendi ölçtüğü çiftler (2026-09-27, `meaning-3b-04`).** `interpretation-contract-v4`:
+`between` yalnız okumanın ölçtüğü çiftlerden seçilebilir (kendi ankraj çifti + claim `notes` içindeki
+alternatifler; iki ucu da ölçülmüş konum taşıyanlar). Plaka 4 doğru/1 kısmi/3 geçersiz → **5/0/3**;
+tür 5/5, eksen **2/2**, bağ **2/2**. Dört adaylı iki ölçüde model okumanın kendi çiftini seçti. Kalan üç
+geçersiz cevap çap şeklinde; plastikte okuma bağı 4 sayıda, 10 ölçüde hiç yok; `unresolved` 0/22.
+Daralmanın erişimi ölçüldü: notlardaki alternatiflerin çoğu konum taşımadığı için menüye giremiyor.
+
+**Şekli reddedilen cevap artık "ölçülemedi" değil (2026-09-27).** `compare`, sözleşme bir cevabı
+reddettiğinde bağı yine puanlar: işaret edilen küme (`between` ∪ `matched`) etiketle karşılaştırılır,
+cevabın sınıfı "geçersiz" kalır (`binding_beyond_contract`). Model sorusu değişmediği için yeni koşu
+yapılmadı; dört koşunun kayıtlı cevapları `--rescore <koşu klasörü>` ile yeniden puanlandı (koşu kaydı
+değişmez, `rescore.json` yanına yazılır). Sonuç: plakada ölçülemeyen alan kalmadı — kalan üç cevap
+ölçülü şekilde yanlış (`pdf-3` dört deliğin yarısı, `pdf-4` cebe fazladan delik); tek kural altında dört
+koşu 1 → 3 → 4 → 5 doğru, eksen 0/2 → 1/2 → 2/2, bağ 1/2 → 2/2.
+
+**İnceleme turu: okumanın önerisi + deterministik kusur (2026-09-27, `meaning-3b-05`).** `eval/meaning_interpretation.py --review`
+istemde okumanın kendi bağını inceleme isteği olarak gösterir; ölçülerin yarısına yalnız kaynak kimliğinden
+türeyen kusur enjekte edilir (`drawingto3d.interpret.reading_proposal` / `review_injects_a_defect` /
+`corrupt_proposal`, sürüm `reading-review-v1`). Doğruluk yapı gereği bilinir; etiket kullanılmaz, kopyalamak
+yanlış bağ sayılır. Özet alanları: `review` (`corrupted`, `defect_caught`, `clean`, `false_alarms`, `copied`,
+`binding_wrong_beyond_copy`, `no_reading_binding`, `unusable_answer`). Plaka 7 doğru/1 kısmi; 6/6 kusur
+düzeltildi, 0 yanlış alarm. Ayrıca `answers_agreed_with_reading` anahtar hatası düzeltildi (beş turdur 0
+görünüyordu).
+
+**Okuma kapsamı: satır ölçeğe uymuyorsa uçlar yeniden seçilir (2026-09-27, `bind.py`).** Satır paftanın
+ölçeğinden %25'ten fazla saparsa uçlar, çapanın zaten gördüğü noktalar arasından ölçeğin gerektirdiği
+uzunluğa en yakın çiftle yeniden seçilir (kabul %5; satır uyuyorsa dokunulmaz, yeni geometri yok,
+tolerans gevşetilmez). Plastikte bağlı sayı 4/14 → 8/14, 10/14 ölçü değişmedi, plaka istek özetleri
+8/8 aynı. Ayrıntı ve öncesi/sonrası yöntemi: `eval/reports/reading-coverage.md`.
+
+**Okuma kapsamı, ikinci dilim: çapanın kestiği çizgilerin uzak uçları (yalnız yedek geçiş).** Ölçüyü veren
+geometri, uzatma çizgilerinin uzak uçlarıydı ve yorum katmanı onları hiç sunmuyordu; `CANDIDATE_LIMIT`
+büyütmek hiçbir şey değiştirmiyor (ölçüldü). Kestiği çizgilerin uçları ilk geçişte sunulunca plaka bozuldu
+(8/8 istek özeti 0/8'e düştü) ve plastikte duran üç bağ yeniden yazıldı; bu yüzden yalnız **ilk geçiş hiçbir
+şey bulamadığında** çalışan bir yedek geçiş olarak eklendi. Plastikte bağlı sayı 8/14 → **11/14**, tam olarak
+çözülemeyen üçü değişti, 11/14 dokunulmadı; plaka 7/7 ve 8/8 aynı. `row`/`stub` (ölçü çizgisinin kendi
+mürekkebi) asla sunulmaz. Ayrıntı: `eval/reports/reading-coverage.md`.
+
+**Okuma kapsamı, üçüncü dilim: kendi segmentiyle ölçülen basamak (2026-09-27, `bind.py`).** Satır ölçekten
+%25'ten fazla sapıyorsa ve çapalar arası çift yoksa, **tek çapaya bağlı** bir çizgi ölçü kabul edilir: eksen
+boyunca çizilmiş (izdüşüm ≥ uzunluğun %99'u) ve basılı uzunlukta (%5). `row` çizgileri hariç; kural yalnız
+lineer + `dimension` çağrılarında. Plastik 11/14 → **12/14** (yalnız `pdf-10`; satır 69,0 → 19,21 px),
+13/14 dokunulmadı, plaka 7/7 ve 8/8 istek özeti aynı. Yakın ıska (`pdf-11`, %5,9) ıska kalır ve not yazılmaz.
+Ayrıntı: `eval/reports/reading-coverage.md`.
+
+**Okuma kapsamı, dördüncü dilim: ölçü ekseni üzerindeki segment (2026-09-27, `bind.py`).** Satır testi ve iki
+yeniden seçim başarısızsa, okumanın kendi ilkellerinden bir çizgi, **iki ucu da ölçü ekseni çizgisi üzerinde**
+(mevcut 4 px ölçü sınırı içinde) ve uzunluğu basılı değerin %5'i içinde ise ölçü kabul edilir; çapaya en yakın
+olan kazanır. Plastik **14/14** (iki ölçü değişti, 12/14 dokunulmadı), plakanın `bindings.json` kaydı kural
+açık/kapalıyken **bayt bayt aynı**, kural plakada hiç çalışmıyor. Ayrı ölçüm: plastikte 13 mesafe bağının
+8'inde iki nokta arasındaki dik açıklık 20 px'ten büyük — kapsam var, bağ her zaman ölçülen yüzü adlandırmıyor.
+Ayrıntı: `eval/reports/reading-coverage.md`.
+
+**Bağ keskinliği (2026-09-27, `meaning.py`):** satır ölçeğe göre yeniden seçildiyse (`SpanBinding.row_repaired`,
+`Bindings.version` 3) geçerli çiftler **önce eksene dik açıklığa** göre sıralanır; eksen bileşeni zaten basılı
+değeri tuttuğu için küçük dik açıklık, uzayda basılı uzunluk kadar ayrılmış **yerel** bir çift demektir. Plastikte
+dik açıklık toplamı 2450,2 → **1262,6 px**, medyan 118,6 → **0,1 px**, 20 px üstü 8/13 → **5/13**; plakada
+onarılmış satır yok, değişiklik orada etkisiz (8/8 istek özeti aynı). Kalan 5: çizildiği gibi okunan üç satır
+(dokunulmadı) + seçeneği olmayan iki onarılmış satır. Kimlik düzeyinde referans etiket yok: "keskin" = "noktalar
+ölçünün eksenine daha yakın", "doğru geometri" kanıtı değil. Ayrıntı: `eval/reports/reading-coverage.md`.
+
+**Arayüz turu yeni okumayla (`meaning-3b-06`, 2026-09-27):** aynı model, aynı paftalar; okuma artık plastikte
+14/14 bağlı ve bağlar ölçünün yanında. Plaka 7 doğru/1 kısmi/0 geçersiz + inceleme 6/6 (değişmedi); plastikte cevap
+okumanın bağını 13/14 tutuyor (05: 3/14 — bu bir **kopyalama** payıdır) ve inceleme turu 10/10 kusuru yakalıyor,
+yanlış alarm 0 (05: 4/4 + 9 yanlış alarm). 05→06 tek değişkenli değil: arada yedinci dilimin yargı düzeltmesi ve
+dört okuma değişikliği var. Ham koşu `out/meaning-interpretation/meaning-3b-06/`, paket
+`eval/reports/meaning-interpretation-evidence-06.json` (`--check`: 0 sorun).
+
+**Kör tur ve alan düzeltmesi (2026-09-27, `interpret.py`):** `--review` olmadan koşan turda model okumanın
+önerisini hiç görmez (05/06'da her iki çağrı da görüyordu). Kör plaka: 5 doğru/0 kısmi/**3 geçersiz**, sözleşme
+dışı bağ 3. Üç kayıp da tek sınıftı ve üç kör koşuda birebir aynıydı: tek geometri boyutlandıran çağrı (Ø/ R)
+`between`'e çift olarak yazılıyordu. İstek + şema artık bu ölçünün formuna göre listeyi söylüyor
+(`distance`/`angle` → `between`, `diameter`/`radius`/`count` → `matched`; karşı alan `maxItems: 0`) —
+`single-measurement-interpretation-v2-form-field`. Yeni kör tur `meaning-3b-08-blind-v2`: plaka **7/1/0**,
+sözleşme dışı bağ **0**, plastik 13/14; `pdf-3`'ün adedi tek kayıp olarak kaldı. Paketler
+`eval/reports/meaning-interpretation-evidence-0{7,8}.json` (`--check`: 0 sorun).
+
+**Adet ölçüsü (2026-09-27, `interpret.py`):** "4 × Ø6,80" bir kez basılıp iki kez soruluyor (çap + adet) ve metin
+ile aday menüsü aynı; hangi ölçünün sorulduğunu yalnız katalog bilir. İstek artık ölçünün miktarını taşıyor ve
+`count` ise bunu söylüyor (`single-measurement-interpretation-v3-count-quantity`). Kör turlar: plaka `-07` v1
+**5/0/3 geçersiz** → `-08` v2 **7/1/0** → `-09` v3 **8/0/0**; plastik 13/14 (tek ayrışma `pdf-2 radius`,
+üç kör koşuda geçersiz, etiketsiz). Paket `eval/reports/meaning-interpretation-evidence-09.json`.
+
+**Üçüncü pafta etiketi (`eval/relations/exercise-1-vector.json`, 2026-09-28):** `2/Drawing.pdf` + `Part-2.STEP`
+için elle doğrulanmış ilişki etiketi (STEP: kutu 134×80×50, beş çap r=10/12,5/15/20/25, z=±13/±3/±10/±20/±5
+kalınlıkları). Ölçülen engel: paftanın metin katmanında **Ø glifi yok**, okuma beş çap çağrısını `linear` sayıp
+iki çizgi ucu arasında mesafe gibi bağlıyor (`pdf-19`/`20`/`22` bağlı, `pdf-21` çözülemiyor); etiketle kuru koşuda
+11/17 satır eşleşiyor (çift değerliler hariç) ve üç çap satırında okuma `distance`, etiket `diameter` diyor.

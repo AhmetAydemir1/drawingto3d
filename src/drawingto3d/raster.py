@@ -27,7 +27,7 @@ import numpy as np
 from PIL import Image
 
 from drawingto3d.ingest import parse_dimension_unit, split_count
-from drawingto3d.observe import (Frame, Observations, Primitive, SourceRef, TextObservation,
+from drawingto3d.observe import (sheet_frame, Frame, Observations, Primitive, SourceRef, TextObservation,
                                  Unsupported)
 from drawingto3d.plan import source_hash
 from drawingto3d.schema import BBox
@@ -45,6 +45,18 @@ CIRCLE_COVERAGE_MIN = 0.85
 CIRCLE_INTERIOR_MAX = 0.25
 CIRCLE_SAMPLES = 72
 CIRCLE_RADIUS_REFINE_PX = 6.0
+
+# Arcs: a partial circle never fills the strict pass's accumulator, so a second, weaker pass proposes
+# candidates and the *support* decides — how long a stretch of the ring is ink, and how solid it is
+# within that stretch. A run long enough to be the whole circle is the strict pass's business, not ours.
+ARC_PARAM2 = 30
+ARC_SAMPLES = 144
+ARC_MIN_SPAN_DEGREES = 45.0
+ARC_SPAN_COVERAGE_MIN = 0.75
+ARC_CIRCLE_FRACTION = 0.85
+ARC_MIN_SAGITTA_PX = 4.0         # ink that bulges less than this over its own chord is a straight edge
+ARC_MIN_RADIUS_PX = 12.0         # the weak pass rings glyphs and ink blobs; a drawn arc is bigger
+ARC_RADIUS_TO_MEDIAN_LINE = 0.12  # and not vanishing next to the strokes it joins
 CIRCLE_FRAGMENT_TOLERANCE_PX = 7.0
 CIRCLE_FRAGMENT_MAX_LENGTH_PX = 80.0
 GLYPH_BOX_MAX_FRACTION = 0.03
@@ -207,6 +219,209 @@ def _verified_circles(ink: np.ndarray, candidates: list[tuple[float, float, floa
     return deduped
 
 
+def _point_at_segment(point: np.ndarray, start: np.ndarray, end: np.ndarray) -> float:
+    """Perpendicular distance from a point to a drawn segment, endpoints included."""
+    run = end - start
+    length_squared = float(run @ run) or 1.0
+    t = float(np.clip((point - start) @ run / length_squared, 0.0, 1.0))
+    return float(np.linalg.norm(point - (start + t * run)))
+
+
+def _trim_to_own_ink(points: np.ndarray,
+                     lines: list[tuple[np.ndarray, np.ndarray, float]] | None = None) -> np.ndarray:
+    """Cut the arc's run back to ink no straight stroke covers.
+
+    A tangent line's ink lies within a pixel of the ring for some twenty pixels past the tangent
+    point, so the run keeps going along it and the arc's end lands *on the line* instead of at the
+    joined corner: the loop then cannot close, which is exactly why a curved raster outline stayed
+    open. A point a straight stroke also covers is the stroke's ink, not the arc's.
+    """
+    if not lines or len(points) <= 6:
+        return points
+    covered = lambda point: any(_point_at_segment(point, start, end) <= 2.5 for start, end, _residual in lines)
+    low, high = 0, len(points)
+    while low < high - 5 and covered(points[low]):
+        low += 1
+    while high - 1 > low + 5 and covered(points[high - 1]):
+        high -= 1
+    return points[low:high]
+
+
+def _arc_candidates(image: np.ndarray) -> list[tuple[float, float, float]]:
+    """The weaker Hough pass: partial circles show up here that the full-circle gate throws away."""
+    found = cv2.HoughCircles(image, cv2.HOUGH_GRADIENT, dp=1.5, minDist=max(CIRCLE_MIN_DIST_PX // 2, 1),
+                             param1=120, param2=ARC_PARAM2, minRadius=CIRCLE_MIN_RADIUS_PX,
+                             maxRadius=int(CIRCLE_MAX_RADIUS_FRACTION * min(image.shape)))
+    if found is None:
+        return []
+    return [(float(cx), float(cy), float(radius)) for cx, cy, radius in found[0]]
+
+
+def _angular_support(ink: np.ndarray, cx: float, cy: float, radius: float,
+                     samples: int = ARC_SAMPLES) -> np.ndarray:
+    """Which sampled angles land on ink (±1 px): the ring's own evidence, one boolean per angle."""
+    height, width = ink.shape
+    hits = np.zeros(samples, dtype=bool)
+    for index, angle in enumerate(np.linspace(0.0, 2.0 * np.pi, samples, endpoint=False)):
+        x = int(round(cx + radius * np.cos(angle)))
+        y = int(round(cy + radius * np.sin(angle)))
+        hits[index] = (0 <= x < width and 0 <= y < height
+                       and bool(ink[max(0, y - 1):y + 2, max(0, x - 1):x + 2].any()))
+    return hits
+
+
+def _ink_point(ink: np.ndarray, cx: float, cy: float, angle: float, expected: float,
+               window: float = 8.0) -> np.ndarray | None:
+    """The first ink pixel along one ray, searched around `expected`: the arc's own evidence."""
+    for distance in np.arange(max(1.0, expected - window), expected + window + 0.5, 1.0):
+        x = int(round(cx + distance * np.cos(angle)))
+        y = int(round(cy + distance * np.sin(angle)))
+        if 0 <= x < ink.shape[1] and 0 <= y < ink.shape[0] and ink[y, x]:
+            return np.array([float(x), float(y)])
+    return None
+
+
+def _fit_circle(points: np.ndarray) -> tuple[float, float, float]:
+    """Kasa's algebraic circle fit: the ring the run's own ink sits on, not Hough's guess at it."""
+    x, y = points[:, 0], points[:, 1]
+    design = np.column_stack([2.0 * x, 2.0 * y, np.ones(len(x))])
+    solution, *_rest = np.linalg.lstsq(design, x ** 2 + y ** 2, rcond=None)
+    cx, cy, constant = (float(value) for value in solution)
+    return cx, cy, float(np.sqrt(max(constant + cx ** 2 + cy ** 2, 0.0)))
+
+
+def _ink_radius(ink: np.ndarray, cx: float, cy: float, angle: float, expected: float,
+                window: float = 8.0) -> float | None:
+    """Where the ink actually sits along one ray, searched around `expected`, or None if there is none."""
+    point = _ink_point(ink, cx, cy, angle, expected, window)
+    return None if point is None else float(np.hypot(point[0] - cx, point[1] - cy))
+
+
+def _longest_ring_run(hits: np.ndarray) -> tuple[int, int]:
+    """The longest unbroken run of ink around the ring, as (first angle index, length)."""
+    if hits.all():
+        return 0, len(hits)
+    doubled = np.concatenate([hits, hits])
+    best_start, best_length, start, length = 0, 0, 0, 0
+    for index, hit in enumerate(doubled):
+        if hit:
+            length += 1
+            if length > best_length:
+                best_length, best_start = length, index - length + 1
+        else:
+            length = 0
+    return best_start % len(hits), min(best_length, len(hits))
+
+
+def _median_line_length(lines: list[tuple[np.ndarray, np.ndarray, float]] | None) -> float:
+    """The sheet's typical stroke length: what "vanishingly small" means for a ring on that sheet."""
+    if not lines:
+        return 0.0
+    return float(np.median([float(np.linalg.norm(end - start)) for start, end, _residual in lines]))
+
+
+def _verified_arcs(ink: np.ndarray, candidates: list[tuple[float, float, float]], boxes: list[BBox],
+                   circles: list[tuple[float, float, float, float]],
+                   lines: list[tuple[np.ndarray, np.ndarray, float]] | None = None) -> list[dict]:
+    """Partial circles whose own angular run is solid enough to be a drawn arc.
+
+    The strict pass keeps only rings that are ink all the way round; a fillet, a boss circle broken by
+    two arms or a bore crossing another edge fails that and used to vanish, which is why a lever's
+    outline could not be chained. Here the ring's longest run is measured instead: it must be at least
+    `ARC_MIN_SPAN_DEGREES` long and `ARC_SPAN_COVERAGE_MIN` solid inside itself, it must not be a
+    circle the strict pass already kept, and it must not sit inside a word box (a glyph's curve).
+    """
+    kept: list[dict] = []
+
+    def same_ring(cx: float, cy: float, radius: float) -> bool:
+        """One drawn ring, whatever radius Hough guessed: centres and radii within 15% and the
+        absolute floors. The radius term also scales with the *kept* ring (a quarter of it), because a
+        fragment fitted to a circle's ink can come back well inside it — measured: the synthetic sheet's
+        r=45 ring was re-offered as an r=37.4 arc whose centre sat 5.9 px from the circle's, 9.3 px off
+        in radius, past the 6 px floor. Without this the weak pass offers the same fillet twenty times
+        over and a kept full circle comes back as a handful of arcs sitting on its own ink."""
+        for ox, oy, oradius in rings:
+            if (np.hypot(cx - ox, cy - oy) <= max(8.0, 0.15 * radius)
+                    and abs(radius - oradius) <= max(6.0, 0.15 * radius, 0.25 * oradius)):
+                return True
+        return False
+
+    rings = [(ox, oy, oradius) for ox, oy, oradius, _coverage in circles]
+    for cx, cy, radius in candidates:
+        measured = _refined_radius(ink, cx, cy, radius)
+        if measured < max(ARC_MIN_RADIUS_PX,
+                          ARC_RADIUS_TO_MEDIAN_LINE * _median_line_length(lines)):
+            continue
+        if same_ring(cx, cy, measured):
+            continue
+        hits = _angular_support(ink, cx, cy, measured)
+        start_index, length = _longest_ring_run(hits)
+        span = 360.0 * length / len(hits)
+        if span >= 360.0 * ARC_CIRCLE_FRACTION or span < ARC_MIN_SPAN_DEGREES:
+            continue
+        run = np.roll(hits, -start_index)[:length]
+        if float(run.mean()) < ARC_SPAN_COVERAGE_MIN:
+            continue
+        # A ring that is merely *off centre* grazes a thick drawn circle's ink over a long stretch and
+        # would be kept as an arc. Where the ink actually sits along those angles is the discriminator:
+        # on a real arc it is one radius, on a graze it scatters.
+        # The ring's own ink decides where the arc really is: a Hough centre is off by ten pixels on a
+        # big arc, and an arc whose ends miss the outline's lines by that much can never close a loop.
+        # So the run's ink points get a circle fitted to them (Kasa), and the arc's ends are the ink's
+        # ends, not angles sampled from the guess. Ink that barely bulges over its own chord is a
+        # straight edge read as a huge-radius arc, and is refused.
+        angles = np.linspace(0.0, 2.0 * np.pi, len(hits), endpoint=False)
+        points = [_ink_point(ink, cx, cy, float(angles[index]), measured)
+                  for index in ((start_index + step) % len(hits) for step in range(length))]
+        raw = np.array([point for point in points if point is not None])
+        if len(raw) < 0.9 * length:
+            continue
+        # The ring is fitted to the whole run; the trim only decides where the arc's ends are. A circle
+        # fitted to trimmed ink comes out short — measured: r = 98 px where the drawing has 100 — and
+        # that costs real millimetres on the part. The sagitta gate asks about the ink, so it too reads
+        # the whole run.
+        fitted_x, fitted_y, fitted_radius = _fit_circle(raw)
+        if abs(fitted_radius - measured) > 0.35 * measured:
+            continue
+        chord = raw[-1] - raw[0]
+        chord_length = float(np.linalg.norm(chord)) or 1.0
+        unit = chord / chord_length
+        relative = raw - raw[0]
+        bulge = float(np.abs(relative[:, 0] * unit[1] - relative[:, 1] * unit[0]).max())
+        if bulge < ARC_MIN_SAGITTA_PX:
+            continue
+        found = _trim_to_own_ink(raw, lines)
+        if len(found) < max(4.0, 0.3 * length):
+            continue
+        end_angles = np.degrees(np.arctan2(found[:, 1] - fitted_y, found[:, 0] - fitted_x)) % 360.0
+        steps = np.abs(np.degrees(np.diff(np.unwrap(np.radians(end_angles)))))
+        trimmed_span = float(steps.sum())
+        if trimmed_span < ARC_MIN_SPAN_DEGREES:
+            continue
+        first_degrees = float(end_angles[0])
+        last_degrees = first_degrees + trimmed_span
+        if any(box.x - 2 <= fitted_x <= box.x + box.w + 2 and box.y - 2 <= fitted_y <= box.y + box.h + 2
+               for box in boxes):
+            continue
+        kept.append({"centre": [fitted_x, fitted_y], "radius": fitted_radius,
+                     "start_degrees": first_degrees, "end_degrees": last_degrees,
+                     "span_degrees": span, "coverage": float(run.mean())})
+    # Longest run first: the widest evidence for a ring picks which of its near-duplicates survives.
+    kept.sort(key=lambda row: (-row["span_degrees"], -row["coverage"]))
+    deduped: list[dict] = []
+    rings = [(ox, oy, oradius) for ox, oy, oradius, _coverage in circles]
+    for row in kept:
+        cx, cy, radius = row["centre"][0], row["centre"][1], row["radius"]
+        # The same test as the loop above, through the same closure: this pass used to keep its own copy
+        # of the tolerance and quietly re-admitted the very fragments the widened one had just dropped.
+        if same_ring(cx, cy, radius):
+            continue
+        deduped.append(row)
+        rings.append((cx, cy, radius))
+    deduped.sort(key=lambda row: (-row["span_degrees"], row["centre"][1], row["centre"][0]))
+    return deduped
+
+
 def _drop_circle_fragments(lines: list[tuple[np.ndarray, np.ndarray, float]],
                            circles: list[tuple[float, float, float, float]]
                            ) -> list[tuple[np.ndarray, np.ndarray, float]]:
@@ -316,13 +531,21 @@ def observe_raster(path: str | Path) -> Observations:
              for word in words
              if word["width"] * word["height"] <= GLYPH_BOX_MAX_FRACTION * image_area]
     circle_list = _verified_circles(ink, candidates, boxes)
+    arc_candidates = _arc_candidates(image)
     raw_lines = _merged_lines(ink)
-    merged_lines = _drop_circle_fragments(raw_lines, circle_list)
+    arc_list = _verified_arcs(ink, arc_candidates, boxes, circle_list, raw_lines)
+    ring_ink = circle_list + [(row["centre"][0], row["centre"][1], row["radius"], row["coverage"])
+                             for row in arc_list]
+    merged_lines = _drop_circle_fragments(raw_lines, ring_ink)
+    raster_frame = Frame(width=width, height=height, dpi=_dpi(drawing),
+                         detail="raster görüntünün kendi pikselleri; PDF nokta çerçevesi yok")
     observations = Observations(
         source=SourceRef(ref=str(drawing), sha256=source_hash(drawing), page=0, page_size_pt=None),
-        frame=Frame(width=width, height=height, dpi=_dpi(drawing),
-                    detail="raster görüntünün kendi pikselleri; PDF nokta çerçevesi yok"),
+        frame=raster_frame,
         text_placement="as-is",
+        # PLAN 8.6: no vector border exists on a raster sheet, and the product says exactly that instead
+        # of pretending the image edges are the sheet's frame.
+        sheet_frame=sheet_frame([], raster_frame, 0),
     )
     for start, end, residual in merged_lines:
         observations.primitives.append(Primitive(
@@ -335,6 +558,12 @@ def observe_raster(path: str | Path) -> Observations:
             id=f"g{len(observations.primitives)}", path_id="raster", kind="circle",
             centre=[_rounded(cx), _rounded(cy)], radius=_rounded(radius),
             coverage=_rounded(coverage), method="hough-verified"))
+    for row in arc_list:
+        observations.primitives.append(Primitive(
+            id=f"g{len(observations.primitives)}", path_id="raster", kind="arc",
+            centre=[_rounded(row["centre"][0]), _rounded(row["centre"][1])], radius=_rounded(row["radius"]),
+            start_degrees=_rounded(row["start_degrees"]), end_degrees=_rounded(row["end_degrees"]),
+            coverage=_rounded(row["coverage"]), method="hough-arc"))
     for index, phrase in enumerate(phrases):
         kind, value, unit = parse_dimension_unit(phrase["text"])
         observations.texts.append(TextObservation(
@@ -344,16 +573,18 @@ def observe_raster(path: str | Path) -> Observations:
     lines = sum(1 for primitive in observations.primitives if primitive.kind == "line")
     numeric = sum(1 for text in observations.texts if text.value is not None)
     observations.notes = [
-        f"Raster gözlem: vektör alt yolu yok (paths boş); {lines} çizgi + {len(circle_list)} daire "
-        "piksellerden ölçüldü.",
+        f"Raster gözlem: vektör alt yolu yok (paths boş); {lines} çizgi + {len(circle_list)} daire + "
+        f"{len(arc_list)} yay piksellerden ölçüldü.",
         f"Daire tespiti Hough + doğrulama: kapsama ≥ {CIRCLE_COVERAGE_MIN}, iç mürekkep ≤ "
         f"{CIRCLE_INTERIOR_MAX}, aday {len(candidates)} → doğrulanan {len(circle_list)}; daire "
         f"mürekkebi sayılan {len(raw_lines) - len(merged_lines)} parça çizgi listesinden çıkarıldı. "
         "Gözle görülen bazı daireler (küçük cıvata delikleri, kesikli ve yoğun kümedekiler) bu "
         "eşiklerle kayda girmiyor: yüksek hassasiyet, düşük geri çağırma; yükseltmek gerçek "
         "referans listesiyle ölçülmesi gereken ayrı bir dilim.",
-        "Yaylar rasterda henüz uydurulmuyor; ölçü ankrajları da yok — bağlama kendi raster "
-        "dilimini bekliyor.",
+        f"Yay uydurma: zayıf Hough geçişi ({len(arc_candidates)} aday, param2 {ARC_PARAM2}) → "
+        f"{len(arc_list)} yay; bir yay kendi açı aralığında ≥ {ARC_SPAN_COVERAGE_MIN} dolu ve "
+        f"≥ {ARC_MIN_SPAN_DEGREES:.0f}° olmalı, tam daireyi geçen halka burada tekrarlanmaz. Ölçü "
+        "ankrajları rasterda hâlâ yok — bağlama kendi raster dilimini bekliyor.",
         f"Glif filtresi yalnız kelime boyutlu OCR kutularını kullanır; görüntünün %"
         f"{int(GLYPH_BOX_MAX_FRACTION * 100)}'ünden büyük kutular okuma gürültüsü sayılır ve glif "
         "bölgesi tutulmaz.",
@@ -361,6 +592,7 @@ def observe_raster(path: str | Path) -> Observations:
     ]
     if ocr_note:
         observations.notes.append(ocr_note)
+    observations.notes.append(f"Görüş çerçevesi (PLAN 8.6): {observations.sheet_frame.provenance}.")
     return observations
 
 

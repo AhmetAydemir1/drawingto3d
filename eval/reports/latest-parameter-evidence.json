@@ -1,0 +1,1479 @@
+{
+  "run": {
+    "id": "suggest-3b-01",
+    "started": "2026-09-27T19:30:21+0300",
+    "argv": [
+      "--label",
+      "suggest-3b-01",
+      "--cases",
+      "plate-pocket-1",
+      "--conditions",
+      "relations,chain_model",
+      "--split",
+      "--num-ctx",
+      "16384",
+      "--predict",
+      "4096"
+    ],
+    "conditions": [
+      "relations",
+      "chain_model"
+    ],
+    "no_model": false,
+    "structured_output": true,
+    "name_normalization": "off",
+    "active": null,
+    "status": "complete",
+    "seconds": 46.12,
+    "finished": "2026-09-27T19:31:08+0300"
+  },
+  "code": {
+    "git_head": "96e01189f5f39d6e24154580453092f585a268f5",
+    "git_branch": "main",
+    "dirty": true,
+    "dirty_files": [
+      "M .cursor/handoff.md",
+      " M CHANGES.md",
+      " M HANDOFF.md",
+      " M PLAN.md",
+      " M eval/README.md",
+      " M eval/baseline_report.py",
+      " M eval/model_baseline.py",
+      " M eval/reports/model-baseline.md",
+      " M src/drawingto3d/cli.py",
+      " M src/drawingto3d/planner.py",
+      " M src/drawingto3d/proposal.py",
+      " M tests/test_baseline_report.py",
+      " M tests/test_planner.py",
+      " M tests/test_proposal.py",
+      "?? eval/loop_candidates.py",
+      "?? eval/name_probe.py",
+      "?? eval/profile_step_evidence.py",
+      "?? eval/raster_scale.py",
+      "?? eval/reports/audit-evidence.json",
+      "?? eval/reports/general-input-slices.md",
+      "?? eval/reports/general-input-status.md",
+      "?? eval/reports/name-probe-evidence.json",
+      "?? eval/reports/names-v4-evidence.json",
+      "?? eval/reports/naming-interface.md",
+      "?? eval/reports/parameter-rules.md",
+      "?? eval/reports/planner-v2-live-evidence.json",
+      "?? eval/reports/profile-step-evidence.json",
+      "?? eval/reports/profile-step.md",
+      "?? eval/reports/progress-audit.md",
+      "?? eval/reports/schema-audit.md",
+      "?? eval/reports/schema-v3-live-evidence.json",
+      "?? eval/reports/schema-v3-probe-evidence.json",
+      "?? eval/reports/step-validation-replay.json",
+      "?? eval/schema_probe.py",
+      "?? tests/test_baseline_resources.py",
+      "?? tests/test_chain_model.py",
+      "?? tests/test_name_probe.py",
+      "?? tests/test_plan_reply_schema.py",
+      "?? tests/test_planner_names.py",
+      "?? tests/test_profile_step_evidence.py"
+    ],
+    "diff_stat": ".cursor/handoff.md             |  184 +++++++\n CHANGES.md                     |  330 +++++++++++++\n HANDOFF.md                     |  207 ++++++++\n PLAN.md                        |  316 +++++++++++-\n eval/README.md                 |  139 +++++-\n eval/baseline_report.py        |   70 ++-\n eval/model_baseline.py         |  356 +++++++++----\n eval/reports/model-baseline.md |  623 +++++++++++++----------\n src/drawingto3d/cli.py         |   91 +++-\n src/drawingto3d/planner.py     | 1071 +++++++++++++++++++++++++++++++++++++++-\n src/drawingto3d/proposal.py    |  215 ++++++--\n tests/test_baseline_report.py  |   58 +++\n tests/test_planner.py          |  523 +++++++++++++++++++-\n tests/test_proposal.py         |   36 +-\n 14 files changed, 3753 insertions(+), 466 deletions(-)",
+    "file_sha256": {
+      "eval/baseline.py": "fd7bc9471a9a43cc10c4661f7724549dd07b563280a45a6e9a9635a6b90ff2b6",
+      "eval/baseline_report.py": "acc54acf5c55fa35341ddebdcf8e1c894e4e535c92397931ef53f96bc9bb627f",
+      "eval/candidates.py": "ba976857d1b42fbab5a0866924e74cc0a32ec512f3fe2b65744b29e81452f675",
+      "eval/check_tables.py": "65d093c86842da8daa71e0324ab415df52554729fa95533f2a8fbfde08f0ded9",
+      "eval/classifier.py": "7423ad129c65dc1c0143c17a3683c9bcaa08971a395c9ea0928f4ea893f75167",
+      "eval/frontend.py": "0d24aec76855c8008d43c6757647e1fb9b8a8574d9e621ccc214886d678b8776",
+      "eval/loop_candidates.py": "12bb6dee25ca676dd76babc0a3cb1dbbc2704b83e0c92c0c912c187d4b19a3b8",
+      "eval/metrics.py": "0799715f83d09eb4b10d6d640fef1da6d2b2e5a6e367d074252ba991748f3348",
+      "eval/model_baseline.py": "396886e880789c6f1437944267a6b3a4aa61af7faf25762e22970ab5067eb78e",
+      "eval/name_probe.py": "84d39e2d5d4027b8f6e0d9975f8b52e4c8d570c8dad52ad4f3b8b9b58208231a",
+      "eval/offering.py": "9aeeab20b7c143e22bf0df15328c72aadac913166d12d6deb8c68eb3183037af",
+      "eval/plate_plan.py": "bc711e0db6ed5b45dd7aa844aed011938f61ff8b0e5a610d214eceb6e61ffa70",
+      "eval/profile_step_evidence.py": "d3a641972782a60ca7526088f435885d8e12a524459370ae38857eabbf8c02f3",
+      "eval/raster_scale.py": "52aa20e551445b55cfb95d37b36feec0ce21c2f1514cf24c3c6b11eac975b270",
+      "eval/report.py": "977337a0b2e6cc9deebe6ef1b66fe9947b2669a128eecd015d4c9358cdf6ef66",
+      "eval/schema_probe.py": "b10d4e82530d1fc12e19683e697f8f18cfb775efbf7cc9ad9ae9db39436daae2",
+      "pyproject.toml": "ad770798646517f2e0daa22bd4c49f0154b309b6d28240db750d0286a224ece4",
+      "src/drawingto3d/__init__.py": "8ed013af947f6451a2f658eaaa3a76cc9bfdec2c7c7572c303138db4b97a0f95",
+      "src/drawingto3d/__main__.py": "dbbdd03fa6bdf68ad8fe17fe9b224a8ce489be7d173bf0a1fd2f052ab3aa795f",
+      "src/drawingto3d/app.py": "29e9cb8a3f0d2dfe01c22f3520b455ec8d186fd13fbff0575379fa9c4282972a",
+      "src/drawingto3d/bind.py": "37c16af9facec99248091d394d5e2b701c14f1f1eb34ac7d550d5d11bb9c93f8",
+      "src/drawingto3d/cadrun.py": "0ad6bacc8a517a6bf696dc1708fe402d85ee88f0d538cfdd0dbde1ecb0ad7060",
+      "src/drawingto3d/cli.py": "248f80dded767f26b31a3ebd873a4209500a2b263d69fcad431fc5576a1f390b",
+      "src/drawingto3d/errors.py": "67cb564420b013bb30339efb653dc63e85afce600a6d731287f0e7ffcb5a6aa5",
+      "src/drawingto3d/general.py": "0b18651c3570e693178d36cc1ef052c94e4917722fb8669e57e698f3c4a01d8d",
+      "src/drawingto3d/geo.py": "329019d1c49e6df58c62d6c6eee1e4bf65d1555876be50d5bde37be969c0785a",
+      "src/drawingto3d/ingest.py": "0099c35cbcd4f1cb3d1c7668dd12b51db16cc5c7df17ec232c442e9ff80074cb",
+      "src/drawingto3d/legacy/__init__.py": "3373ac6db37e23fb04af06775279ebf14264db58d688bfda6e81560c32937b64",
+      "src/drawingto3d/legacy/bind.py": "0e08beb4d7be79a0e6a3608a4a9d654484aff43ba57da372010b9190158311be",
+      "src/drawingto3d/legacy/contours.py": "8e306d38756b85f7734ca6e0730baf37cc2876ee3f2e5a76e1f3520d7d11c504",
+      "src/drawingto3d/legacy/pipeline.py": "f2d42bbc191a9632c1abab1a374dfc027e9b3b14444c75b8834bc2b291dfa622",
+      "src/drawingto3d/legacy/solid.py": "0873652f782ffb8c7b324e061d15426d13b7d99f2d99b614f979a7f3227ae44f",
+      "src/drawingto3d/legacy/strategies.py": "c5e9e1ca81d88c4e557e7eb31d89de9ac3671cee8ecc3b56e6f6c6259cce7c10",
+      "src/drawingto3d/legacy/tests/test_binding.py": "1e911162e9bce9d005a3ddf0713925a8b8751d742687bfb6e12210ddfe874f3e",
+      "src/drawingto3d/legacy/tests/test_fixture.py": "09a9f138b52898c335cbd1b4a91353b649e5ab8e9926dc20ec5c07c6eea57dbe",
+      "src/drawingto3d/legacy/tests/test_lever_solid.py": "e50a7e298f22c27d2e6fafc68a730660a288a5968e62a9c07dc09ced639dad05",
+      "src/drawingto3d/legacy/tests/test_prismatic.py": "5bb2861b36066ddc22d6e01bb09d9742604ff7d07df52d7583b7ed7ccff3e228",
+      "src/drawingto3d/lines.py": "a7ea08ffb1b254ea072f9da5ac8884908f6f0c3426e16aa6028208ee9df798ff",
+      "src/drawingto3d/llama.py": "b87494f40a17a5d25e9373c9c65906d710e8475a1300f5d87306224f07bbd5a0",
+      "src/drawingto3d/meaning.py": "2fcb6a9a8c425c970814df1b71bb800d803ee30d46c06098df5f08785d2490d7",
+      "src/drawingto3d/observe.py": "0be0a2cdf4071beb125c535f13085fb2b676e7b2cc69723eaf3e5d6e56a8e3ff",
+      "src/drawingto3d/perceive.py": "3744312a7b4b7abc747a4efa5cf5d04d094e0b9d808b3456cb963ca604dcaece",
+      "src/drawingto3d/plan.py": "1e97ba6ec7bb0cc721f4e7e350304ea498aa0da39004bf13cb483a537e687067",
+      "src/drawingto3d/planner.py": "e7c91a0761c945a780c4371c2214229760adf212789d1e353699a54fb7143c3b",
+      "src/drawingto3d/plate.py": "dd4177902c531decccd01d3ea27c20f242b5bd571102d87a1debd15ad86a0bac",
+      "src/drawingto3d/proposal.py": "300e90b3a4d9672ca4be70126375c901a0d203bd6f6d182357e6dee77c439142",
+      "src/drawingto3d/raster.py": "fe054bd92a350fce033aacb9fc9ac06c0e78cbc4acf5639a2e355fba117d3647",
+      "src/drawingto3d/reader.py": "2639c86888fae4f05282b1786058a36878fda433ac6d8d191a019d2b0afaa2b0",
+      "src/drawingto3d/reason.py": "6c8fcaadb72fe29c810c62e53db4cf226c5c9fbe5462230dd7f6bf58f3f186a3",
+      "src/drawingto3d/roles.py": "81d18635e142132fa6674bf9a8ffc134c12d4720974a1a8f10c3d589fc85b8cf",
+      "src/drawingto3d/scale.py": "b2527cd48c5fff73742ac809574e6f0e3cc4555d2ee4b605d103329c5fab83c9",
+      "src/drawingto3d/schema.py": "d4d3fc9bdf93a9bf661a7864e6cc7e875f7cb16e41b7aac16feb9f49b2f6a8ef",
+      "src/drawingto3d/views.py": "a458112a107e3113ababb7009b6ee3faae6d8b44fc25a4d27131004977eadca1"
+    },
+    "python": "3.12.8",
+    "executable": "/Users/aydemir/Desktop/drawingto3d/.venv/bin/python",
+    "platform": "macOS-26.5.2-arm64-arm-64bit",
+    "machine": "Apple M1",
+    "memory_bytes": 17179869184,
+    "tesseract": "tesseract 5.5.1",
+    "cadquery": true
+  },
+  "manifest": {
+    "file": "eval/cases.json",
+    "sha256": "79666125a9ace6dae699538115a1c2b6e907ade03e490b7a9ebca80bf18fc0ad",
+    "drawing_sha256": {
+      "exercise-1": "54adde53e376b5df4a330eaff4cc26ca37f2698160d5656d12745af4f144b7d8",
+      "exercise-1-vector": "cdf6285583f54f9a2350c45cf8061a0d74d5ec2077b30af33adef1bda9ed2114",
+      "exercise-51": "b19423550cd579ec24a2ef0630babd8af7bbe50a0ce7b2b9532f9bcec476abe8",
+      "exercise-17": "5c926b6dc7e881204fbb60945eb435a0184250a907a32910166ea41cd4e0b2f5",
+      "exercise-13": "fbc8e970056d4d4cd8c620a170076b1e44b1e46d83b0f653819b5f7f8d6a4895",
+      "plate-pocket-1": "9e34e6713de6ef8d95bad464e0c87330b515976abc7e5e2e0f9bb0fe701d96ef",
+      "studycadcam-60": "60360096e88e25139422ed8c8e898f89d46b676ad1565e3946b6dee76d26f7dc",
+      "studycadcam-50": "48422670180f32afa49c1fe540ce3f560eac0eab062bbf08415d14be16c76e74",
+      "plastic-enclosure-1": "7698e830ca02ad46aa89f910c67f2efb6b1c930ff63d30bb0b80a8585519da4d",
+      "flange-1": "9c0a91e21bf7265d13074adad10ba36171e802cc0e70895cfd4c24656933282a"
+    },
+    "cases": 10,
+    "split_counts": {
+      "seen-regression": 7,
+      "unassigned": 3
+    },
+    "part_groups": {
+      "exercise-1": [
+        "exercise-1",
+        "exercise-1-vector"
+      ],
+      "exercise-51": [
+        "exercise-51"
+      ],
+      "exercise-17": [
+        "exercise-17"
+      ],
+      "exercise-13": [
+        "exercise-13"
+      ],
+      "plate-pocket": [
+        "plate-pocket-1"
+      ],
+      "studycadcam-60": [
+        "studycadcam-60"
+      ],
+      "studycadcam-50": [
+        "studycadcam-50"
+      ],
+      "plastic-enclosure": [
+        "plastic-enclosure-1"
+      ],
+      "flange": [
+        "flange-1"
+      ]
+    },
+    "note": "A part group is one part: several source files of the same part are one sample. pilot >= 10 and hidden >= 20 real parts stay the user's call and are empty here."
+  },
+  "schema_version": "GeneralPlan v1",
+  "prompt_version": "general-plan-v6-split-suggested-names",
+  "plan_interface": "split-per-profile",
+  "evidence_version": 1,
+  "model": {
+    "requested": "qwen2.5vl:3b",
+    "installed": [
+      {
+        "name": "qwen3-vl:8b-instruct",
+        "digest": "0533d74300e4f9bc367d675d4e64ffd073d50ff16a2b4096cc2e8a1cf8c96319",
+        "size_bytes": 6140415975,
+        "size_gb": 6.14,
+        "parameter_size": "8.8B",
+        "quantization": "Q4_K_M",
+        "context_length": 262144,
+        "families": [
+          "qwen3vl"
+        ],
+        "capabilities": [
+          "vision",
+          "completion",
+          "tools"
+        ]
+      },
+      {
+        "name": "qwen2.5vl:7b",
+        "digest": "5ced39dfa4bac325dc183dd1e4febaa1c46b3ea28bce48896c8e69c1e79611cc",
+        "size_bytes": 5969245856,
+        "size_gb": 5.969,
+        "parameter_size": "8.3B",
+        "quantization": "Q4_K_M",
+        "context_length": 128000,
+        "families": [
+          "qwen25vl"
+        ],
+        "capabilities": [
+          "vision",
+          "completion"
+        ]
+      },
+      {
+        "name": "qwen2.5vl:3b",
+        "digest": "fb90415cde1ef08aa669ae74b082d49b158729b6db1ab183c941417d507e71a1",
+        "size_bytes": 3200627168,
+        "size_gb": 3.201,
+        "parameter_size": "3.8B",
+        "quantization": "Q4_K_M",
+        "context_length": 128000,
+        "families": [
+          "qwen25vl"
+        ],
+        "capabilities": [
+          "vision",
+          "completion"
+        ]
+      },
+      {
+        "name": "qwen2.5-coder:7b",
+        "digest": "dae161e27b0e90dd1856c8bb3209201fd6736d8eb66298e75ed87571486f4364",
+        "size_bytes": 4683087561,
+        "size_gb": 4.683,
+        "parameter_size": "7.6B",
+        "quantization": "Q4_K_M",
+        "context_length": 32768,
+        "families": [
+          "qwen2"
+        ],
+        "capabilities": [
+          "completion",
+          "tools",
+          "insert"
+        ]
+      },
+      {
+        "name": "llama3.2:3b",
+        "digest": "a80c4f17acd55265feec403c7aef86be0c25983ab279d83f3bcd3abbcb5b8b72",
+        "size_bytes": 2019393189,
+        "size_gb": 2.019,
+        "parameter_size": "3.2B",
+        "quantization": "Q4_K_M",
+        "context_length": 131072,
+        "families": [
+          "llama"
+        ],
+        "capabilities": [
+          "completion",
+          "tools"
+        ]
+      }
+    ],
+    "resolved": {
+      "name": "qwen2.5vl:3b",
+      "digest": "fb90415cde1ef08aa669ae74b082d49b158729b6db1ab183c941417d507e71a1",
+      "size_bytes": 3200627168,
+      "size_gb": 3.201,
+      "parameter_size": "3.8B",
+      "quantization": "Q4_K_M",
+      "context_length": 128000,
+      "families": [
+        "qwen25vl"
+      ],
+      "capabilities": [
+        "vision",
+        "completion"
+      ]
+    },
+    "settings": {
+      "model": "qwen2.5vl:3b",
+      "num_ctx": 16384,
+      "temperature": 0.0,
+      "num_predict": 4096,
+      "keep_alive": "5m",
+      "timeout_s": 600.0,
+      "image_max_side": null,
+      "images_per_call": 1,
+      "response_format": "text"
+    },
+    "cold_start_s": 5.01,
+    "warm_start_s": 0.24,
+    "dependency_missing": null
+  },
+  "results": [
+    {
+      "case": "plate-pocket-1",
+      "condition": "relations",
+      "stages": {
+        "evidence": {
+          "file": "eval/relations/plate-pocket-1.json",
+          "version": 1,
+          "verified_by": "hand: bu tablo elle doğrulandı — her basılı sayı, ölçtüğü özelliğe referans STEP'e karşı bağlandı. Bu, teşhis koşulunun girdisidir; otomatik PDF → STEP başarısına sayılmaz (PLAN.md Bölüm 18B).",
+          "printed": 7,
+          "claims": 7
+        },
+        "plan": {
+          "version": 1,
+          "prompt_version": "general-plan-v6-split-suggested-names",
+          "evidence_version": 1,
+          "evidence_kind": "verified",
+          "settings": {
+            "model": "qwen2.5vl:3b",
+            "num_ctx": 16384,
+            "temperature": 0.0,
+            "num_predict": 4096,
+            "keep_alive": "5m",
+            "timeout_s": 600.0,
+            "image_max_side": null,
+            "images_per_call": 1,
+            "response_format": "json-schema:GeneralPlan reply v4 split (parameters + 6 profil + operations = 8 çağrı)",
+            "profile_targets": "measured-closed-profiles-v1",
+            "suggested_names": "reading-derived-names-v1",
+            "name_normalization": "off",
+            "step_validation": "general-plan-step-validation-v1"
+          },
+          "model_info": {
+            "name": "qwen2.5vl:3b",
+            "digest": "fb90415cde1ef08aa669ae74b082d49b158729b6db1ab183c941417d507e71a1",
+            "size_bytes": 3200627168,
+            "size_gb": 3.201,
+            "parameter_size": "3.8B",
+            "quantization": "Q4_K_M",
+            "context_length": 128000,
+            "families": [
+              "qwen25vl"
+            ],
+            "capabilities": [
+              "vision",
+              "completion"
+            ]
+          },
+          "source_ref": "plate-pocket-1",
+          "status": "invalid",
+          "plan": null,
+          "answer": "",
+          "answer_truncated": null,
+          "steps": [
+            {
+              "step": "parameters",
+              "label": "parameters",
+              "response_format": "GeneralPlan reply v4 split: parameters",
+              "prompt_version": "general-plan-v6-split-suggested-names",
+              "validation_version": "general-plan-step-validation-v1",
+              "accepted": false,
+              "schema_sha256": "7f340aa40b7844f576f707b9dd23fa182e1f1ff915ccc142b1b951f8c88fe069",
+              "prompt_sha256": "f76b7707b97fc3f9045990d23ec29f8a03ffe009a2e962499300c81f0a380c82",
+              "num_predict": null,
+              "seconds": 21.72,
+              "answer": "{\n  \"parameters\": {\n    \"distance_1\": {\"unit\": \"mm\", \"source\": \"printed\", \"value\": 100.71, \"span_ids\": [\"d1\"]},\n    \"distance_2\": {\"unit\": \"mm\", \"source\": \"printed\", \"value\": 80.46, \"span_ids\": [\"d2\"]},\n    \"distance_3\": {\"unit\": \"mm\", \"source\": \"printed\", \"value\": 60.43, \"span_ids\": [\"d3\"]},\n    \"distance_4\": {\"unit\": \"mm\", \"source\": \"derived\", \"expr\": \"(d1 - d2) / 2\"},\n    \"distance_5\": {\"unit\": \"mm\", \"source\": \"assumed\", \"value\": 8.0, \"explanation\": \"The pocket depth is assumed to be a constant value of 8 mm.\"},\n    \"distance_6\": {\"unit\": \"mm\", \"source\": \"derived\", \"expr\": \"(d2 - d3) / 2\"},\n    \"distance_7\": {\"unit\": \"mm\", \"source\": \"assumed\", \"value\": 15.0, \"explanation\": \"The plate thickness is assumed to be a constant value of 15 mm.\"},\n    \"hole_spacing_x\": {\"unit\": \"mm\", \"source\": \"derived\", \"expr\": \"(d1 - d2) / 2\"},\n    \"hole_spacing_y\": {\"unit\": \"mm\", \"source\": \"derived\", \"expr\": \"(d3 - d4) / 2\"}\n  }\n}",
+              "stats": {
+                "done_reason": "stop",
+                "eval_count": 346,
+                "prompt_eval_count": 2079,
+                "total_duration_ns": 21720251333,
+                "load_duration_ns": 146977417
+              },
+              "answer_truncated": false,
+              "keys": [
+                "parameters"
+              ],
+              "errors": [
+                "şema hatası: ifadede tanımsız parametre: 'd1'"
+              ]
+            }
+          ],
+          "questions": [],
+          "assumptions": [],
+          "errors": [
+            "adım parameters: şema hatası: ifadede tanımsız parametre: 'd1'"
+          ],
+          "overrides": [],
+          "renames": [],
+          "citations": {},
+          "resolved_parameters": {},
+          "stats": {
+            "steps": 1,
+            "eval_count": 346,
+            "prompt_eval_count": 2079,
+            "total_duration_ns": 21720251333
+          },
+          "seconds": 21.74
+        }
+      },
+      "model_seconds": 21.74,
+      "seconds": 21.76,
+      "status": "failed",
+      "error_class": "planning",
+      "reason": "model şemaya uyan plan vermedi: adım parameters: şema hatası: ifadede tanımsız parametre: 'd1'",
+      "wall_seconds": 21.76,
+      "split": "seen-regression",
+      "part_group": "plate-pocket"
+    },
+    {
+      "case": "plate-pocket-1",
+      "condition": "chain_model",
+      "stages": {
+        "evidence": {
+          "source": "okuma zinciri (read_sheet)",
+          "file": "plate-pocket-1-chain_model-evidence.json",
+          "printed": 7,
+          "claims": 7,
+          "circles": 5,
+          "scale_known": true,
+          "outline_mm": {
+            "width_mm": 120.87,
+            "height_mm": 80.56,
+            "rounded_rectangle": true,
+            "primitives": 8,
+            "corner_radius_mm": 10.05
+          },
+          "notes": [
+            "sayfa çerçevesi atlandı (1 döngü)",
+            "7 sayısal ölçü; 7 tanesi geometriye bağlandı (12 çapa noktası)",
+            "konumlar konturun merkezine göre, paftanın kendi piksel çerçevesinde ölçüldü (7.82 px/mm)"
+          ],
+          "refusals": [],
+          "seconds": 1.69
+        },
+        "plan": {
+          "version": 1,
+          "prompt_version": "general-plan-v6-split-suggested-names",
+          "evidence_version": 1,
+          "evidence_kind": "readings",
+          "settings": {
+            "model": "qwen2.5vl:3b",
+            "num_ctx": 16384,
+            "temperature": 0.0,
+            "num_predict": 4096,
+            "keep_alive": "5m",
+            "timeout_s": 600.0,
+            "image_max_side": null,
+            "images_per_call": 1,
+            "response_format": "json-schema:GeneralPlan reply v4 split (parameters + 6 profil + operations = 8 çağrı)",
+            "profile_targets": "measured-closed-profiles-v1",
+            "suggested_names": "reading-derived-names-v1",
+            "name_normalization": "off",
+            "step_validation": "general-plan-step-validation-v1"
+          },
+          "model_info": {
+            "name": "qwen2.5vl:3b",
+            "digest": "fb90415cde1ef08aa669ae74b082d49b158729b6db1ab183c941417d507e71a1",
+            "size_bytes": 3200627168,
+            "size_gb": 3.201,
+            "parameter_size": "3.8B",
+            "quantization": "Q4_K_M",
+            "context_length": 128000,
+            "families": [
+              "qwen25vl"
+            ],
+            "capabilities": [
+              "vision",
+              "completion"
+            ]
+          },
+          "source_ref": "plate-pocket-1",
+          "status": "invalid",
+          "plan": null,
+          "answer": "",
+          "answer_truncated": null,
+          "steps": [
+            {
+              "step": "parameters",
+              "label": "parameters",
+              "response_format": "GeneralPlan reply v4 split: parameters",
+              "prompt_version": "general-plan-v6-split-suggested-names",
+              "validation_version": "general-plan-step-validation-v1",
+              "accepted": false,
+              "schema_sha256": "7f340aa40b7844f576f707b9dd23fa182e1f1ff915ccc142b1b951f8c88fe069",
+              "prompt_sha256": "0368f339b04e2beae168dfa49018db539a3c5ebba2be34f2f91fba16f54f4348",
+              "num_predict": null,
+              "seconds": 17.25,
+              "answer": "{\n  \"parameters\": {\n    \"circle_spacing_x\": {\"unit\": \"mm\", \"source\": \"printed\", \"value\": 100.71, \"span_ids\": [\"pdf-0\"]},\n    \"arc_spacing_y\": {\"unit\": \"mm\", \"source\": \"derived\", \"expr\": \"(diameter_2 - diameter_1) / 2\"},\n    \"circle_spacing_y\": {\"unit\": \"mm\", \"source\": \"derived\", \"expr\": \"(diameter_1 + diameter_2) / 2\"},\n    \"edge_spacing_x\": {\"unit\": \"mm\", \"source\": \"assumed\", \"value\": 7.82, \"explanation\": \"The edge spacing is assumed to be the pixel resolution of the sheet.\"},\n    \"edge_spacing_y\": {\"unit\": \"mm\", \"source\": \"assumed\", \"value\": 7.82, \"explanation\": \"The edge spacing is assumed to be the pixel resolution of the sheet.\"}\n  }\n}",
+              "stats": {
+                "done_reason": "stop",
+                "eval_count": 215,
+                "prompt_eval_count": 2587,
+                "total_duration_ns": 17248175792,
+                "load_duration_ns": 383511625
+              },
+              "answer_truncated": false,
+              "keys": [
+                "parameters"
+              ],
+              "errors": [
+                "şema hatası: ifadede tanımsız parametre: 'diameter_2'"
+              ]
+            }
+          ],
+          "questions": [],
+          "assumptions": [],
+          "errors": [
+            "adım parameters: şema hatası: ifadede tanımsız parametre: 'diameter_2'"
+          ],
+          "overrides": [],
+          "renames": [],
+          "citations": {},
+          "resolved_parameters": {},
+          "stats": {
+            "steps": 1,
+            "eval_count": 215,
+            "prompt_eval_count": 2587,
+            "total_duration_ns": 17248175792
+          },
+          "seconds": 17.26
+        }
+      },
+      "model_seconds": 17.26,
+      "seconds": 18.94,
+      "status": "failed",
+      "error_class": "planning",
+      "reason": "model şemaya uyan plan vermedi: adım parameters: şema hatası: ifadede tanımsız parametre: 'diameter_2'",
+      "wall_seconds": 18.94,
+      "split": "seen-regression",
+      "part_group": "plate-pocket"
+    }
+  ],
+  "notes": [],
+  "resources": {
+    "measurement_version": 2,
+    "unit": "MiB",
+    "method": "vm.swapusage used field + vm_stat reported page size; ps Ollama RSS; MiB; 2 s samples",
+    "samples": 24,
+    "raw_samples": [
+      {
+        "seconds": 1790526621.99,
+        "swap_used_mb": 9325.56,
+        "pages_free_mb": 56.141,
+        "pages_compressed_mb": 2487.094,
+        "ollama_rss_mb": 20.5,
+        "raw_swapusage": "total = 10240.00M  used = 9325.56M  free = 914.44M  (encrypted)",
+        "raw_vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     3593.\nPages active:                                 334940.\nPages inactive:                               327519.\nPages speculative:                              7027.\nPages throttled:                                   0.\nPages wired down:                             180485.\nPages purgeable:                                2490.\n\"Translation faults\":                     4563629308.\nPages copy-on-write:                       273137469.\nPages zero filled:                        1671333237.\nPages reactivated:                         794182200.\nPages purged:                               66255979.\nFile-backed pages:                            164328.\nAnonymous pages:                              505158.\nPages stored in compressor:                  1763624.\nPages occupied by compressor:                 159174.\nDecompressions:                            873194089.\nCompressions:                              961407274.\nPageins:                                   190870603.\nPageouts:                                    2320099.\nSwapins:                                    38234887.\nSwapouts:                                   46285943."
+      },
+      {
+        "seconds": 1790526624.12,
+        "swap_used_mb": 9325.56,
+        "pages_free_mb": 1116.828,
+        "pages_compressed_mb": 4618.594,
+        "ollama_rss_mb": 822.4,
+        "raw_swapusage": "total = 10240.00M  used = 9325.56M  free = 914.44M  (encrypted)",
+        "raw_vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                    71477.\nPages active:                                 175011.\nPages inactive:                               166702.\nPages speculative:                              8002.\nPages throttled:                                   0.\nPages wired down:                             295609.\nPages purgeable:                                   2.\n\"Translation faults\":                     4563790070.\nPages copy-on-write:                       273141217.\nPages zero filled:                        1671632549.\nPages reactivated:                         794270575.\nPages purged:                               66257219.\nFile-backed pages:                            132405.\nAnonymous pages:                              217310.\nPages stored in compressor:                  2062436.\nPages occupied by compressor:                 295590.\nDecompressions:                            873246069.\nCompressions:                              961760690.\nPageins:                                   190891681.\nPageouts:                                    2320123.\nSwapins:                                    38234911.\nSwapouts:                                   46285943."
+      },
+      {
+        "seconds": 1790526626.21,
+        "swap_used_mb": 9619.5,
+        "pages_free_mb": 61.5,
+        "pages_compressed_mb": 5428.969,
+        "ollama_rss_mb": 3307.0,
+        "raw_swapusage": "total = 10240.00M  used = 9619.50M  free = 620.50M  (encrypted)",
+        "raw_vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     3936.\nPages active:                                 121050.\nPages inactive:                               110322.\nPages speculative:                              9761.\nPages throttled:                                   0.\nPages wired down:                             420060.\nPages purgeable:                                   0.\n\"Translation faults\":                     4564101652.\nPages copy-on-write:                       273143891.\nPages zero filled:                        1671774185.\nPages reactivated:                         794344434.\nPages purged:                               66257263.\nFile-backed pages:                            156011.\nAnonymous pages:                               85122.\nPages stored in compressor:                  2183538.\nPages occupied by compressor:                 347454.\nDecompressions:                            873302546.\nCompressions:                              961953232.\nPageins:                                   191037851.\nPageouts:                                    2320134.\nSwapins:                                    38234939.\nSwapouts:                                   46304755."
+      },
+      {
+        "seconds": 1790526628.27,
+        "swap_used_mb": 10067.62,
+        "pages_free_mb": 61.438,
+        "pages_compressed_mb": 4952.547,
+        "ollama_rss_mb": 3871.2,
+        "raw_swapusage": "total = 11264.00M  used = 10067.62M  free = 1196.38M  (encrypted)",
+        "raw_vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     3932.\nPages active:                                 107762.\nPages inactive:                                97438.\nPages speculative:                              9952.\nPages throttled:                                   0.\nPages wired down:                             476656.\nPages purgeable:                                   2.\n\"Translation faults\":                     4564203430.\nPages copy-on-write:                       273147376.\nPages zero filled:                        1671840820.\nPages reactivated:                         794354382.\nPages purged:                               66257520.\nFile-backed pages:                            117821.\nAnonymous pages:                               97331.\nPages stored in compressor:                  2176160.\nPages occupied by compressor:                 316963.\nDecompressions:                            873335624.\nCompressions:                              961980687.\nPageins:                                   191082468.\nPageouts:                                    2320183.\nSwapins:                                    38234971.\nSwapouts:                                   46333947."
+      },
+      {
+        "seconds": 1790526630.32,
+        "swap_used_mb": 10067.62,
+        "pages_free_mb": 58.781,
+        "pages_compressed_mb": 4904.641,
+        "ollama_rss_mb": 3830.4,
+        "raw_swapusage": "total = 11264.00M  used = 10067.62M  free = 1196.38M  (encrypted)",
+        "raw_vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     3762.\nPages active:                                 109649.\nPages inactive:                                99913.\nPages speculative:                              8846.\nPages throttled:                                   0.\nPages wired down:                             476622.\nPages purgeable:                                   2.\n\"Translation faults\":                     4564238469.\nPages copy-on-write:                       273148914.\nPages zero filled:                        1671845013.\nPages reactivated:                         794358619.\nPages purged:                               66257578.\nFile-backed pages:                            110745.\nAnonymous pages:                              107663.\nPages stored in compressor:                  2164123.\nPages occupied by compressor:                 313897.\nDecompressions:                            873352112.\nCompressions:                              961986612.\nPageins:                                   191084794.\nPageouts:                                    2320188.\nSwapins:                                    38234979.\nSwapouts:                                   46333947."
+      },
+      {
+        "seconds": 1790526632.37,
+        "swap_used_mb": 10067.62,
+        "pages_free_mb": 61.047,
+        "pages_compressed_mb": 4854.234,
+        "ollama_rss_mb": 3828.2,
+        "raw_swapusage": "total = 11264.00M  used = 10067.62M  free = 1196.38M  (encrypted)",
+        "raw_vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     3907.\nPages active:                                 110982.\nPages inactive:                               100979.\nPages speculative:                              9332.\nPages throttled:                                   0.\nPages wired down:                             476698.\nPages purgeable:                                   2.\n\"Translation faults\":                     4564266930.\nPages copy-on-write:                       273150962.\nPages zero filled:                        1671849873.\nPages reactivated:                         794368154.\nPages purged:                               66257598.\nFile-backed pages:                            105313.\nAnonymous pages:                              115980.\nPages stored in compressor:                  2156730.\nPages occupied by compressor:                 310671.\nDecompressions:                            873363108.\nCompressions:                              961990508.\nPageins:                                   191086018.\nPageouts:                                    2320188.\nSwapins:                                    38234987.\nSwapouts:                                   46333947."
+      },
+      {
+        "seconds": 1790526634.42,
+        "swap_used_mb": 10067.62,
+        "pages_free_mb": 64.406,
+        "pages_compressed_mb": 4821.938,
+        "ollama_rss_mb": 3828.8,
+        "raw_swapusage": "total = 11264.00M  used = 10067.62M  free = 1196.38M  (encrypted)",
+        "raw_vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     4122.\nPages active:                                 112124.\nPages inactive:                               107725.\nPages speculative:                              3641.\nPages throttled:                                   0.\nPages wired down:                             476442.\nPages purgeable:                                   2.\n\"Translation faults\":                     4564297361.\nPages copy-on-write:                       273153769.\nPages zero filled:                        1671854442.\nPages reactivated:                         794368154.\nPages purged:                               66257641.\nFile-backed pages:                            102028.\nAnonymous pages:                              121462.\nPages stored in compressor:                  2149716.\nPages occupied by compressor:                 308604.\nDecompressions:                            873368482.\nCompressions:                              961990508.\nPageins:                                   191088301.\nPageouts:                                    2320188.\nSwapins:                                    38234999.\nSwapouts:                                   46333947."
+      },
+      {
+        "seconds": 1790526636.5,
+        "swap_used_mb": 10067.62,
+        "pages_free_mb": 57.281,
+        "pages_compressed_mb": 4661.844,
+        "ollama_rss_mb": 3857.5,
+        "raw_swapusage": "total = 11264.00M  used = 10067.62M  free = 1196.38M  (encrypted)",
+        "raw_vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     3666.\nPages active:                                 117847.\nPages inactive:                               114739.\nPages speculative:                              2415.\nPages throttled:                                   0.\nPages wired down:                             475631.\nPages purgeable:                                   2.\n\"Translation faults\":                     4564366678.\nPages copy-on-write:                       273156493.\nPages zero filled:                        1671860228.\nPages reactivated:                         794391291.\nPages purged:                               66257692.\nFile-backed pages:                             89007.\nAnonymous pages:                              145994.\nPages stored in compressor:                  2124529.\nPages occupied by compressor:                 298358.\nDecompressions:                            873396316.\nCompressions:                              961995381.\nPageins:                                   191090109.\nPageouts:                                    2320191.\nSwapins:                                    38235035.\nSwapouts:                                   46333947."
+      },
+      {
+        "seconds": 1790526638.59,
+        "swap_used_mb": 10067.62,
+        "pages_free_mb": 58.156,
+        "pages_compressed_mb": 4628.734,
+        "ollama_rss_mb": 3853.8,
+        "raw_swapusage": "total = 11264.00M  used = 10067.62M  free = 1196.38M  (encrypted)",
+        "raw_vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     3722.\nPages active:                                 118930.\nPages inactive:                               115519.\nPages speculative:                              2588.\nPages throttled:                                   0.\nPages wired down:                             475630.\nPages purgeable:                                   2.\n\"Translation faults\":                     4564406680.\nPages copy-on-write:                       273159094.\nPages zero filled:                        1671864983.\nPages reactivated:                         794397836.\nPages purged:                               66258351.\nFile-backed pages:                             84874.\nAnonymous pages:                              152163.\nPages stored in compressor:                  2117465.\nPages occupied by compressor:                 296239.\nDecompressions:                            873406432.\nCompressions:                              961998865.\nPageins:                                   191091475.\nPageouts:                                    2320195.\nSwapins:                                    38235051.\nSwapouts:                                   46333947."
+      },
+      {
+        "seconds": 1790526640.64,
+        "swap_used_mb": 10059.62,
+        "pages_free_mb": 67.484,
+        "pages_compressed_mb": 4599.891,
+        "ollama_rss_mb": 3853.9,
+        "raw_swapusage": "total = 11264.00M  used = 10059.62M  free = 1204.38M  (encrypted)",
+        "raw_vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     4319.\nPages active:                                 118833.\nPages inactive:                               115014.\nPages speculative:                              3044.\nPages throttled:                                   0.\nPages wired down:                             477043.\nPages purgeable:                                   2.\n\"Translation faults\":                     4564419983.\nPages copy-on-write:                       273160940.\nPages zero filled:                        1671870626.\nPages reactivated:                         794397839.\nPages purged:                               66258357.\nFile-backed pages:                             81631.\nAnonymous pages:                              155260.\nPages stored in compressor:                  2112786.\nPages occupied by compressor:                 294393.\nDecompressions:                            873408399.\nCompressions:                              961998865.\nPageins:                                   191092156.\nPageouts:                                    2320195.\nSwapins:                                    38235063.\nSwapouts:                                   46333947."
+      },
+      {
+        "seconds": 1790526642.69,
+        "swap_used_mb": 10059.62,
+        "pages_free_mb": 60.75,
+        "pages_compressed_mb": 4583.656,
+        "ollama_rss_mb": 3854.3,
+        "raw_swapusage": "total = 11264.00M  used = 10059.62M  free = 1204.38M  (encrypted)",
+        "raw_vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     3888.\nPages active:                                 119503.\nPages inactive:                               116452.\nPages speculative:                              2466.\nPages throttled:                                   0.\nPages wired down:                             477030.\nPages purgeable:                                   3.\n\"Translation faults\":                     4564439203.\nPages copy-on-write:                       273162920.\nPages zero filled:                        1671875016.\nPages reactivated:                         794397839.\nPages purged:                               66258387.\nFile-backed pages:                             80188.\nAnonymous pages:                              158233.\nPages stored in compressor:                  2109963.\nPages occupied by compressor:                 293354.\nDecompressions:                            873410819.\nCompressions:                              961998865.\nPageins:                                   191093387.\nPageouts:                                    2320202.\nSwapins:                                    38235091.\nSwapouts:                                   46333947."
+      },
+      {
+        "seconds": 1790526644.74,
+        "swap_used_mb": 10059.62,
+        "pages_free_mb": 62.422,
+        "pages_compressed_mb": 4555.891,
+        "ollama_rss_mb": 3854.4,
+        "raw_swapusage": "total = 11264.00M  used = 10059.62M  free = 1204.38M  (encrypted)",
+        "raw_vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     3995.\nPages active:                                 120574.\nPages inactive:                               116744.\nPages speculative:                              2880.\nPages throttled:                                   0.\nPages wired down:                             476899.\nPages purgeable:                                   2.\n\"Translation faults\":                     4564468597.\nPages copy-on-write:                       273166124.\nPages zero filled:                        1671882552.\nPages reactivated:                         794397839.\nPages purged:                               66258398.\nFile-backed pages:                             73129.\nAnonymous pages:                              167069.\nPages stored in compressor:                  2105071.\nPages occupied by compressor:                 291577.\nDecompressions:                            873415369.\nCompressions:                              961998865.\nPageins:                                   191095647.\nPageouts:                                    2320203.\nSwapins:                                    38235231.\nSwapouts:                                   46333947."
+      },
+      {
+        "seconds": 1790526646.79,
+        "swap_used_mb": 10051.62,
+        "pages_free_mb": 62.719,
+        "pages_compressed_mb": 4832.281,
+        "ollama_rss_mb": 3704.2,
+        "raw_swapusage": "total = 11264.00M  used = 10051.62M  free = 1212.38M  (encrypted)",
+        "raw_vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     4014.\nPages active:                                 111556.\nPages inactive:                               101901.\nPages speculative:                              8627.\nPages throttled:                                   0.\nPages wired down:                             477284.\nPages purgeable:                                   2.\n\"Translation faults\":                     4564537320.\nPages copy-on-write:                       273169099.\nPages zero filled:                        1671894688.\nPages reactivated:                         794440836.\nPages purged:                               66258974.\nFile-backed pages:                             83214.\nAnonymous pages:                              138870.\nPages stored in compressor:                  2133609.\nPages occupied by compressor:                 309266.\nDecompressions:                            873435336.\nCompressions:                              962048428.\nPageins:                                   191105890.\nPageouts:                                    2320210.\nSwapins:                                    38235908.\nSwapouts:                                   46333947."
+      },
+      {
+        "seconds": 1790526648.85,
+        "swap_used_mb": 10051.62,
+        "pages_free_mb": 57.203,
+        "pages_compressed_mb": 4904.062,
+        "ollama_rss_mb": 3699.9,
+        "raw_swapusage": "total = 11264.00M  used = 10051.62M  free = 1212.38M  (encrypted)",
+        "raw_vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     3661.\nPages active:                                 109390.\nPages inactive:                                98796.\nPages speculative:                              9796.\nPages throttled:                                   0.\nPages wired down:                             477141.\nPages purgeable:                                 194.\n\"Translation faults\":                     4564575616.\nPages copy-on-write:                       273171649.\nPages zero filled:                        1671901225.\nPages reactivated:                         794459930.\nPages purged:                               66260514.\nFile-backed pages:                             87162.\nAnonymous pages:                              130820.\nPages stored in compressor:                  2140552.\nPages occupied by compressor:                 313860.\nDecompressions:                            873446992.\nCompressions:                              962067831.\nPageins:                                   191109697.\nPageouts:                                    2320230.\nSwapins:                                    38235960.\nSwapouts:                                   46333947."
+      },
+      {
+        "seconds": 1790526651.07,
+        "swap_used_mb": 10078.12,
+        "pages_free_mb": 76.266,
+        "pages_compressed_mb": 4844.266,
+        "ollama_rss_mb": 3707.8,
+        "raw_swapusage": "total = 11264.00M  used = 10078.12M  free = 1185.88M  (encrypted)",
+        "raw_vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     4881.\nPages active:                                 114171.\nPages inactive:                               104098.\nPages speculative:                              9127.\nPages throttled:                                   0.\nPages wired down:                             470325.\nPages purgeable:                                   4.\n\"Translation faults\":                     4564687577.\nPages copy-on-write:                       273173394.\nPages zero filled:                        1671934204.\nPages reactivated:                         794470000.\nPages purged:                               66266968.\nFile-backed pages:                             80508.\nAnonymous pages:                              146888.\nPages stored in compressor:                  2147643.\nPages occupied by compressor:                 310033.\nDecompressions:                            873491116.\nCompressions:                              962121267.\nPageins:                                   191111807.\nPageouts:                                    2320241.\nSwapins:                                    38236032.\nSwapouts:                                   46335643."
+      },
+      {
+        "seconds": 1790526653.18,
+        "swap_used_mb": 10070.12,
+        "pages_free_mb": 60.688,
+        "pages_compressed_mb": 4777.25,
+        "ollama_rss_mb": 3820.2,
+        "raw_swapusage": "total = 11264.00M  used = 10070.12M  free = 1193.88M  (encrypted)",
+        "raw_vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     3884.\nPages active:                                 113605.\nPages inactive:                               104664.\nPages speculative:                              8569.\nPages throttled:                                   0.\nPages wired down:                             476156.\nPages purgeable:                                 114.\n\"Translation faults\":                     4564750973.\nPages copy-on-write:                       273176158.\nPages zero filled:                        1671950667.\nPages reactivated:                         794475623.\nPages purged:                               66271092.\nFile-backed pages:                             80548.\nAnonymous pages:                              146290.\nPages stored in compressor:                  2144392.\nPages occupied by compressor:                 305744.\nDecompressions:                            873507945.\nCompressions:                              962137055.\nPageins:                                   191112773.\nPageouts:                                    2320243.\nSwapins:                                    38236048.\nSwapouts:                                   46335643."
+      },
+      {
+        "seconds": 1790526655.23,
+        "swap_used_mb": 10070.12,
+        "pages_free_mb": 61.172,
+        "pages_compressed_mb": 4778.422,
+        "ollama_rss_mb": 3819.4,
+        "raw_swapusage": "total = 11264.00M  used = 10070.12M  free = 1193.88M  (encrypted)",
+        "raw_vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     3915.\nPages active:                                 113720.\nPages inactive:                               106541.\nPages speculative:                              6551.\nPages throttled:                                   0.\nPages wired down:                             476087.\nPages purgeable:                                  50.\n\"Translation faults\":                     4564778544.\nPages copy-on-write:                       273178152.\nPages zero filled:                        1671959796.\nPages reactivated:                         794481539.\nPages purged:                               66274961.\nFile-backed pages:                             79025.\nAnonymous pages:                              147787.\nPages stored in compressor:                  2136870.\nPages occupied by compressor:                 305819.\nDecompressions:                            873513273.\nCompressions:                              962141682.\nPageins:                                   191113505.\nPageouts:                                    2320340.\nSwapins:                                    38236184.\nSwapouts:                                   46335643."
+      },
+      {
+        "seconds": 1790526657.28,
+        "swap_used_mb": 10070.12,
+        "pages_free_mb": 67.594,
+        "pages_compressed_mb": 4774.891,
+        "ollama_rss_mb": 3806.8,
+        "raw_swapusage": "total = 11264.00M  used = 10070.12M  free = 1193.88M  (encrypted)",
+        "raw_vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     4326.\nPages active:                                 113769.\nPages inactive:                               106059.\nPages speculative:                              7112.\nPages throttled:                                   0.\nPages wired down:                             475838.\nPages purgeable:                                 242.\n\"Translation faults\":                     4564831484.\nPages copy-on-write:                       273181505.\nPages zero filled:                        1671975069.\nPages reactivated:                         794511655.\nPages purged:                               66279769.\nFile-backed pages:                             80977.\nAnonymous pages:                              145963.\nPages stored in compressor:                  2135531.\nPages occupied by compressor:                 305593.\nDecompressions:                            873527438.\nCompressions:                              962156813.\nPageins:                                   191115333.\nPageouts:                                    2320346.\nSwapins:                                    38236285.\nSwapouts:                                   46335643."
+      },
+      {
+        "seconds": 1790526659.33,
+        "swap_used_mb": 10070.12,
+        "pages_free_mb": 59.312,
+        "pages_compressed_mb": 4773.75,
+        "ollama_rss_mb": 3829.0,
+        "raw_swapusage": "total = 11264.00M  used = 10070.12M  free = 1193.88M  (encrypted)",
+        "raw_vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     3796.\nPages active:                                 114432.\nPages inactive:                               106362.\nPages speculative:                              7627.\nPages throttled:                                   0.\nPages wired down:                             474911.\nPages purgeable:                                   2.\n\"Translation faults\":                     4564870575.\nPages copy-on-write:                       273183429.\nPages zero filled:                        1671983537.\nPages reactivated:                         794523038.\nPages purged:                               66285049.\nFile-backed pages:                             81868.\nAnonymous pages:                              146553.\nPages stored in compressor:                  2134360.\nPages occupied by compressor:                 305520.\nDecompressions:                            873545680.\nCompressions:                              962174767.\nPageins:                                   191115952.\nPageouts:                                    2320360.\nSwapins:                                    38236293.\nSwapouts:                                   46335643."
+      },
+      {
+        "seconds": 1790526661.39,
+        "swap_used_mb": 10113.06,
+        "pages_free_mb": 67.297,
+        "pages_compressed_mb": 4835.5,
+        "ollama_rss_mb": 3778.1,
+        "raw_swapusage": "total = 11264.00M  used = 10113.06M  free = 1150.94M  (encrypted)",
+        "raw_vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     4307.\nPages active:                                 112194.\nPages inactive:                               102964.\nPages speculative:                              8035.\nPages throttled:                                   0.\nPages wired down:                             475716.\nPages purgeable:                                   2.\n\"Translation faults\":                     4564968736.\nPages copy-on-write:                       273185661.\nPages zero filled:                        1672004562.\nPages reactivated:                         794533188.\nPages purged:                               66288725.\nFile-backed pages:                             76370.\nAnonymous pages:                              146823.\nPages stored in compressor:                  2141560.\nPages occupied by compressor:                 309472.\nDecompressions:                            873604702.\nCompressions:                              962243865.\nPageins:                                   191120756.\nPageouts:                                    2320440.\nSwapins:                                    38239050.\nSwapouts:                                   46340439."
+      },
+      {
+        "seconds": 1790526663.44,
+        "swap_used_mb": 10105.06,
+        "pages_free_mb": 61.562,
+        "pages_compressed_mb": 4955.203,
+        "ollama_rss_mb": 3700.9,
+        "raw_swapusage": "total = 11264.00M  used = 10105.06M  free = 1158.94M  (encrypted)",
+        "raw_vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     3940.\nPages active:                                 108804.\nPages inactive:                                98462.\nPages speculative:                              9383.\nPages throttled:                                   0.\nPages wired down:                             474816.\nPages purgeable:                                   2.\n\"Translation faults\":                     4565021325.\nPages copy-on-write:                       273187726.\nPages zero filled:                        1672015140.\nPages reactivated:                         794554522.\nPages purged:                               66294141.\nFile-backed pages:                             80675.\nAnonymous pages:                              135974.\nPages stored in compressor:                  2151273.\nPages occupied by compressor:                 317133.\nDecompressions:                            873623766.\nCompressions:                              962274841.\nPageins:                                   191124942.\nPageouts:                                    2320440.\nSwapins:                                    38239632.\nSwapouts:                                   46340439."
+      },
+      {
+        "seconds": 1790526665.49,
+        "swap_used_mb": 10097.06,
+        "pages_free_mb": 61.234,
+        "pages_compressed_mb": 4983.438,
+        "ollama_rss_mb": 3670.8,
+        "raw_swapusage": "total = 11264.00M  used = 10097.06M  free = 1166.94M  (encrypted)",
+        "raw_vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     3919.\nPages active:                                 107875.\nPages inactive:                                98555.\nPages speculative:                              8657.\nPages throttled:                                   0.\nPages wired down:                             474718.\nPages purgeable:                                  18.\n\"Translation faults\":                     4565081922.\nPages copy-on-write:                       273191055.\nPages zero filled:                        1672025394.\nPages reactivated:                         794562486.\nPages purged:                               66298497.\nFile-backed pages:                             79318.\nAnonymous pages:                              135769.\nPages stored in compressor:                  2151552.\nPages occupied by compressor:                 318940.\nDecompressions:                            873644974.\nCompressions:                              962297335.\nPageins:                                   191128391.\nPageouts:                                    2320534.\nSwapins:                                    38239967.\nSwapouts:                                   46340439."
+      },
+      {
+        "seconds": 1790526667.79,
+        "swap_used_mb": 10097.06,
+        "pages_free_mb": 61.438,
+        "pages_compressed_mb": 4864.547,
+        "ollama_rss_mb": 3670.8,
+        "raw_swapusage": "total = 11264.00M  used = 10097.06M  free = 1166.94M  (encrypted)",
+        "raw_vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     3932.\nPages active:                                 111770.\nPages inactive:                               102522.\nPages speculative:                              8329.\nPages throttled:                                   0.\nPages wired down:                             474749.\nPages purgeable:                                  34.\n\"Translation faults\":                     4565188122.\nPages copy-on-write:                       273193418.\nPages zero filled:                        1672034585.\nPages reactivated:                         794568962.\nPages purged:                               66302802.\nFile-backed pages:                             80652.\nAnonymous pages:                              141969.\nPages stored in compressor:                  2143711.\nPages occupied by compressor:                 311331.\nDecompressions:                            873690902.\nCompressions:                              962336276.\nPageins:                                   191130379.\nPageouts:                                    2320534.\nSwapins:                                    38240050.\nSwapouts:                                   46340439."
+      },
+      {
+        "seconds": 1790526668.06,
+        "swap_used_mb": 10097.06,
+        "pages_free_mb": 59.859,
+        "pages_compressed_mb": 4889.688,
+        "ollama_rss_mb": 3675.7,
+        "raw_swapusage": "total = 11264.00M  used = 10097.06M  free = 1166.94M  (encrypted)",
+        "raw_vm_stat": "Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                     3831.\nPages active:                                 110943.\nPages inactive:                               101237.\nPages speculative:                              9018.\nPages throttled:                                   0.\nPages wired down:                             474729.\nPages purgeable:                                  10.\n\"Translation faults\":                     4565197326.\nPages copy-on-write:                       273194404.\nPages zero filled:                        1672036760.\nPages reactivated:                         794569530.\nPages purged:                               66303647.\nFile-backed pages:                             81338.\nAnonymous pages:                              139860.\nPages stored in compressor:                  2145292.\nPages occupied by compressor:                 312940.\nDecompressions:                            873692796.\nCompressions:                              962339846.\nPageins:                                   191130430.\nPageouts:                                    2320534.\nSwapins:                                    38240050.\nSwapouts:                                   46340439."
+      }
+    ],
+    "interval_s": 2.0,
+    "swap_used_mb_start": 9325.56,
+    "swap_used_mb_end": 10097.06,
+    "swap_used_mb_delta": 771.5,
+    "swap_used_mb_peak": 10113.06,
+    "pages_free_mb_min": 56.141,
+    "pages_compressed_mb_peak": 5428.969,
+    "ollama_rss_mb_peak": 3871.2,
+    "note": "System swap/page counts include other apps. RSS is not total GPU/unified memory. Unavailable measurements are null; legacy *_mb keys use MiB in version 2."
+  },
+  "error_classes": {
+    "planning": 2
+  },
+  "statuses": {
+    "failed": 2
+  },
+  "summary": {
+    "relations": {
+      "cases": 1,
+      "status": {
+        "failed": 1
+      },
+      "error_class": {
+        "planning": 1
+      },
+      "refusals": [
+        {
+          "case": "plate-pocket-1",
+          "reason": "model şemaya uyan plan vermedi: adım parameters: şema hatası: ifadede tanımsız parametre: 'd1'"
+        }
+      ],
+      "median_seconds": 21.76,
+      "total_seconds": 21.76
+    },
+    "chain_model": {
+      "cases": 1,
+      "status": {
+        "failed": 1
+      },
+      "error_class": {
+        "planning": 1
+      },
+      "refusals": [
+        {
+          "case": "plate-pocket-1",
+          "reason": "model şemaya uyan plan vermedi: adım parameters: şema hatası: ifadede tanımsız parametre: 'diameter_2'"
+        }
+      ],
+      "median_seconds": 18.94,
+      "total_seconds": 18.94
+    }
+  },
+  "evidence_by_condition": {
+    "relations": {
+      "version": 1,
+      "verified_by": "hand: bu tablo elle doğrulandı — her basılı sayı, ölçtüğü özelliğe referans STEP'e karşı bağlandı. Bu, teşhis koşulunun girdisidir; otomatik PDF → STEP başarısına sayılmaz (PLAN.md Bölüm 18B).",
+      "verified_against": "examples/pdf with steps/5/plate with a pocket.STEP + paftanın kendi basılı sayıları",
+      "sheet": {
+        "px_per_mm": 7.82,
+        "scale": "1:1",
+        "sheet": "A4 yatay",
+        "scale_known": true,
+        "frame": {
+          "width_px": 1654,
+          "height_px": 1169,
+          "dpi": 200
+        }
+      },
+      "printed": [
+        {
+          "span_id": "d1",
+          "text": "100,00",
+          "value": 100.0,
+          "unit": "mm",
+          "kind": "linear",
+          "count": 1
+        },
+        {
+          "span_id": "d2",
+          "text": "80,00",
+          "value": 80.0,
+          "unit": "mm",
+          "kind": "linear",
+          "count": 1
+        },
+        {
+          "span_id": "d3",
+          "text": "60,00",
+          "value": 60.0,
+          "unit": "mm",
+          "kind": "linear",
+          "count": 1
+        },
+        {
+          "span_id": "d4",
+          "text": "4 x Ø6,80 THRU ALL",
+          "value": 6.8,
+          "unit": "mm",
+          "kind": "diameter",
+          "count": 4
+        },
+        {
+          "span_id": "d5",
+          "text": "50,00",
+          "value": 50.0,
+          "unit": "mm",
+          "kind": "diameter",
+          "count": 1
+        },
+        {
+          "span_id": "d6",
+          "text": "15,00",
+          "value": 15.0,
+          "unit": "mm",
+          "kind": "linear",
+          "count": 1
+        },
+        {
+          "span_id": "d7",
+          "text": "8,00",
+          "value": 8.0,
+          "unit": "mm",
+          "kind": "linear",
+          "count": 1
+        }
+      ],
+      "claims": [
+        {
+          "span_id": "d1",
+          "form": "distance",
+          "resolution": "confirmed",
+          "measures": "two hole centres, along the sheet's horizontal axis (hole spacing X)",
+          "between": [
+            "h1",
+            "h2"
+          ],
+          "measured_mm": 100.71,
+          "verified_mm": 100.0
+        },
+        {
+          "span_id": "d2",
+          "form": "distance",
+          "resolution": "confirmed",
+          "measures": "the same two corner arcs the outline is rounded with, on one side; it is the part's overall height",
+          "between": [
+            "arc_top_left",
+            "arc_bottom_left"
+          ],
+          "measured_mm": 80.46,
+          "verified_mm": 80.0
+        },
+        {
+          "span_id": "d3",
+          "form": "distance",
+          "resolution": "confirmed",
+          "measures": "two hole centres, along the sheet's vertical axis (hole spacing Y)",
+          "between": [
+            "h1",
+            "h3"
+          ],
+          "measured_mm": 60.43,
+          "verified_mm": 60.0
+        },
+        {
+          "span_id": "d4",
+          "form": "diameter",
+          "resolution": "confirmed",
+          "measures": "the four corner holes; 'THRU ALL' means the hole runs through the whole thickness",
+          "matched_geometry": [
+            "h1",
+            "h2",
+            "h3",
+            "h4"
+          ],
+          "measured_mm": 6.85,
+          "verified_mm": 6.8,
+          "through": true
+        },
+        {
+          "span_id": "d5",
+          "form": "diameter",
+          "resolution": "confirmed",
+          "measures": "the single circle at the centre of the plate: a pocket (a flat-bottomed recess), not a through hole",
+          "matched_geometry": [
+            "pocket"
+          ],
+          "measured_mm": 50.36,
+          "verified_mm": 50.0
+        },
+        {
+          "span_id": "d6",
+          "form": "distance",
+          "resolution": "confirmed",
+          "measures": "the plate thickness, across the section view",
+          "between": [
+            "top_face",
+            "bottom_face"
+          ],
+          "measured_mm": 15.1,
+          "verified_mm": 15.0
+        },
+        {
+          "span_id": "d7",
+          "form": "distance",
+          "resolution": "confirmed",
+          "measures": "how deep the central pocket is cut from the top face",
+          "between": [
+            "top_face",
+            "pocket_floor"
+          ],
+          "measured_mm": 8.03,
+          "verified_mm": 8.0
+        }
+      ],
+      "geometry": {
+        "units": "mm, measured on the sheet at 7.82 px/mm; positions relative to the centre of the pocket circle",
+        "circles": [
+          {
+            "id": "h1",
+            "diameter_mm": 6.8,
+            "centre_mm": [
+              -50.0,
+              -30.0
+            ],
+            "kind": "hole"
+          },
+          {
+            "id": "h2",
+            "diameter_mm": 6.8,
+            "centre_mm": [
+              50.0,
+              -30.0
+            ],
+            "kind": "hole"
+          },
+          {
+            "id": "h3",
+            "diameter_mm": 6.8,
+            "centre_mm": [
+              -50.0,
+              30.0
+            ],
+            "kind": "hole"
+          },
+          {
+            "id": "h4",
+            "diameter_mm": 6.8,
+            "centre_mm": [
+              50.0,
+              30.0
+            ],
+            "kind": "hole"
+          },
+          {
+            "id": "pocket",
+            "diameter_mm": 50.0,
+            "centre_mm": [
+              0.0,
+              0.0
+            ],
+            "kind": "circle"
+          }
+        ],
+        "outline_mm": [
+          120.0,
+          80.0
+        ],
+        "outline_note": "the outline is a rectangle rounded at all four corners; its width 120 is NOT printed — it is derived from the 100 hole spacing plus twice the corner radius, and the corner radius is derived from the 80 height less the 60 hole spacing, halved",
+        "through_features": [
+          "h1",
+          "h2",
+          "h3",
+          "h4"
+        ],
+        "blind_features": [
+          "pocket"
+        ]
+      },
+      "notes": [
+        "The sheet is a flat plate seen from above with a section; every number on it is a length in mm.",
+        "There is no printed width: the outline width follows from the hole spacing and the round corners.",
+        "The pocket is drawn as a circle in the top view and as a broken line in the section, so it is a recess with a depth, not a hole."
+      ]
+    },
+    "chain_model": {
+      "version": 1,
+      "sheet": {
+        "px_per_mm": 7.82,
+        "frame": {
+          "width_px": 2339,
+          "height_px": 1654,
+          "dpi": 200
+        },
+        "scale_known": true
+      },
+      "printed": [
+        {
+          "span_id": "pdf-0",
+          "text": "1 00,00",
+          "value": 100.0,
+          "unit": "mm",
+          "kind": "linear",
+          "count": null
+        },
+        {
+          "span_id": "pdf-1",
+          "text": "80,00",
+          "value": 80.0,
+          "unit": "mm",
+          "kind": "linear",
+          "count": null
+        },
+        {
+          "span_id": "pdf-2",
+          "text": "60,00",
+          "value": 60.0,
+          "unit": "mm",
+          "kind": "linear",
+          "count": null
+        },
+        {
+          "span_id": "pdf-3",
+          "text": "6,80 THRU ALL",
+          "value": 6.8,
+          "unit": "mm",
+          "kind": "linear",
+          "count": 4
+        },
+        {
+          "span_id": "pdf-4",
+          "text": "50,00",
+          "value": 50.0,
+          "unit": "mm",
+          "kind": "linear",
+          "count": null
+        },
+        {
+          "span_id": "pdf-5",
+          "text": "1 5,00",
+          "value": 15.0,
+          "unit": "mm",
+          "kind": "linear",
+          "count": null
+        },
+        {
+          "span_id": "pdf-6",
+          "text": "8,00",
+          "value": 8.0,
+          "unit": "mm",
+          "kind": "linear",
+          "count": null
+        }
+      ],
+      "claims": [
+        {
+          "span_id": "pdf-0",
+          "form": "distance",
+          "resolution": "confirmed",
+          "anchor_mode": "dimension",
+          "printed_mm": 100.0,
+          "drawn_mm": 100.71,
+          "deviation_mm": 0.71,
+          "anchors": [
+            {
+              "geometry_id": "g9",
+              "kind": "circle-centre",
+              "point_mm": [
+                -50.35,
+                -30.21
+              ]
+            },
+            {
+              "geometry_id": "g11",
+              "kind": "circle-centre",
+              "point_mm": [
+                50.36,
+                -30.21
+              ]
+            }
+          ],
+          "matched_geometry": [],
+          "notes": [
+            "Aynı ölçüyü veren başka aday çiftleri de var: g9/g10, g12/g11, g12/g10."
+          ]
+        },
+        {
+          "span_id": "pdf-1",
+          "form": "distance",
+          "resolution": "confirmed",
+          "anchor_mode": "dimension",
+          "printed_mm": 80.0,
+          "drawn_mm": 80.46,
+          "deviation_mm": 0.46,
+          "anchors": [
+            {
+              "geometry_id": "g4",
+              "kind": "arc-rim",
+              "point_mm": [
+                -51.37,
+                -40.23
+              ]
+            },
+            {
+              "geometry_id": "g2",
+              "kind": "arc-rim",
+              "point_mm": [
+                -51.37,
+                40.23
+              ]
+            }
+          ],
+          "matched_geometry": [],
+          "notes": [
+            "Aynı ölçüyü veren başka aday çiftleri de var: g4/g1, g5/g2, g5/g1."
+          ]
+        },
+        {
+          "span_id": "pdf-2",
+          "form": "distance",
+          "resolution": "confirmed",
+          "anchor_mode": "dimension",
+          "printed_mm": 60.0,
+          "drawn_mm": 60.43,
+          "deviation_mm": 0.43,
+          "anchors": [
+            {
+              "geometry_id": "g9",
+              "kind": "circle-centre",
+              "point_mm": [
+                -50.35,
+                -30.21
+              ]
+            },
+            {
+              "geometry_id": "g12",
+              "kind": "circle-centre",
+              "point_mm": [
+                -50.35,
+                30.21
+              ]
+            }
+          ],
+          "matched_geometry": [],
+          "notes": [
+            "Aynı ölçüyü veren başka aday çiftleri de var: g9/g10, g11/g12, g11/g10."
+          ]
+        },
+        {
+          "span_id": "pdf-3",
+          "form": "diameter",
+          "resolution": "confirmed",
+          "anchor_mode": "leader",
+          "printed_mm": 6.8,
+          "drawn_mm": 6.85,
+          "deviation_mm": 0.05,
+          "anchors": [
+            {
+              "geometry_id": "g12",
+              "kind": "circle-centre",
+              "point_mm": [
+                -50.35,
+                30.21
+              ]
+            }
+          ],
+          "matched_geometry": [
+            "g9",
+            "g12",
+            "g10",
+            "g11"
+          ],
+          "count": 4,
+          "covered": 4,
+          "notes": [
+            "'4 x' sayısı 4 eşleşen geometriyle karşılaştırıldı."
+          ]
+        },
+        {
+          "span_id": "pdf-4",
+          "form": "diameter",
+          "resolution": "confirmed",
+          "anchor_mode": "leader",
+          "printed_mm": 50.0,
+          "drawn_mm": 50.36,
+          "deviation_mm": 0.36,
+          "anchors": [
+            {
+              "geometry_id": "g8",
+              "kind": "circle-centre",
+              "point_mm": [
+                0.0,
+                0.0
+              ]
+            }
+          ],
+          "matched_geometry": [
+            "g8"
+          ]
+        },
+        {
+          "span_id": "pdf-5",
+          "form": "distance",
+          "resolution": "confirmed",
+          "anchor_mode": "dimension",
+          "printed_mm": 15.0,
+          "drawn_mm": 15.1,
+          "deviation_mm": 0.1,
+          "anchors": [
+            {
+              "geometry_id": "g52",
+              "kind": "line-end",
+              "point_mm": [
+                -60.43,
+                -84.51
+              ]
+            },
+            {
+              "geometry_id": "g57",
+              "kind": "line-end",
+              "point_mm": [
+                -60.43,
+                -69.41
+              ]
+            }
+          ],
+          "matched_geometry": [],
+          "notes": [
+            "Aynı ölçüyü veren başka aday çiftleri de var: g52/g31, g30/g57, g52/g42."
+          ]
+        },
+        {
+          "span_id": "pdf-6",
+          "form": "distance",
+          "resolution": "confirmed",
+          "anchor_mode": "dimension",
+          "printed_mm": 8.0,
+          "drawn_mm": 8.03,
+          "deviation_mm": 0.03,
+          "anchors": [
+            {
+              "geometry_id": "g56",
+              "kind": "line-end",
+              "point_mm": [
+                60.43,
+                -84.51
+              ]
+            },
+            {
+              "geometry_id": "g48",
+              "kind": "line-end",
+              "point_mm": [
+                25.19,
+                -76.48
+              ]
+            }
+          ],
+          "matched_geometry": [],
+          "notes": [
+            "Aynı ölçüyü veren başka aday çiftleri de var: g56/g36, g39/g48, g39/g36."
+          ]
+        }
+      ],
+      "geometry": {
+        "units": "mm; circle centres relative to the outline centre, in the sheet's own measured frame",
+        "outline_mm": {
+          "width_mm": 120.87,
+          "height_mm": 80.56,
+          "rounded_rectangle": true,
+          "primitives": 8,
+          "corner_radius_mm": 10.05
+        },
+        "circles": [
+          {
+            "id": "g10",
+            "diameter_mm": 6.84,
+            "centre_mm": [
+              50.36,
+              30.21
+            ]
+          },
+          {
+            "id": "g11",
+            "diameter_mm": 6.84,
+            "centre_mm": [
+              50.36,
+              -30.21
+            ]
+          },
+          {
+            "id": "g12",
+            "diameter_mm": 6.85,
+            "centre_mm": [
+              -50.35,
+              30.21
+            ]
+          },
+          {
+            "id": "g8",
+            "diameter_mm": 50.36,
+            "centre_mm": [
+              0.0,
+              0.0
+            ]
+          },
+          {
+            "id": "g9",
+            "diameter_mm": 6.85,
+            "centre_mm": [
+              -50.35,
+              -30.21
+            ]
+          }
+        ],
+        "components": {
+          "lines": 148,
+          "arcs": 14,
+          "circles": 7,
+          "loops": 5,
+          "frame_loops": 1
+        }
+      },
+      "notes": [
+        "sayfa çerçevesi atlandı (1 döngü)",
+        "7 sayısal ölçü; 7 tanesi geometriye bağlandı (12 çapa noktası)",
+        "konumlar konturun merkezine göre, paftanın kendi piksel çerçevesinde ölçüldü (7.82 px/mm)",
+        "kaynak: okuma zinciri (observe → bind → meaning)"
+      ]
+    }
+  },
+  "independent_parameter_checks": {
+    "relations": {
+      "scope": "independent checks on unchanged raw parameters; no repaired plan and no CAD output",
+      "undefined_parameter_references": {
+        "distance_4": [
+          "d1",
+          "d2"
+        ],
+        "distance_6": [
+          "d2",
+          "d3"
+        ],
+        "hole_spacing_x": [
+          "d1",
+          "d2"
+        ],
+        "hole_spacing_y": [
+          "d3",
+          "d4"
+        ]
+      },
+      "printed_citation_errors": [
+        "parametre 'distance_1'=100.71: atıf yapılan ölçüler bu değeri yazmıyor (span, değer, adet): [('d1', 100.0, 1)]",
+        "parametre 'distance_2'=80.46: atıf yapılan ölçüler bu değeri yazmıyor (span, değer, adet): [('d2', 80.0, 1)]",
+        "parametre 'distance_3'=60.43: atıf yapılan ölçüler bu değeri yazmıyor (span, değer, adet): [('d3', 60.0, 1)]"
+      ],
+      "assumptions_to_review": {
+        "distance_5": {
+          "unit": "mm",
+          "source": "assumed",
+          "value": 8.0,
+          "expr": null,
+          "span_ids": [],
+          "explanation": "The pocket depth is assumed to be a constant value of 8 mm."
+        },
+        "distance_7": {
+          "unit": "mm",
+          "source": "assumed",
+          "value": 15.0,
+          "expr": null,
+          "span_ids": [],
+          "explanation": "The plate thickness is assumed to be a constant value of 15 mm."
+        }
+      }
+    },
+    "chain_model": {
+      "scope": "independent checks on unchanged raw parameters; no repaired plan and no CAD output",
+      "undefined_parameter_references": {
+        "arc_spacing_y": [
+          "diameter_1",
+          "diameter_2"
+        ],
+        "circle_spacing_y": [
+          "diameter_1",
+          "diameter_2"
+        ]
+      },
+      "printed_citation_errors": [
+        "parametre 'circle_spacing_x'=100.71: atıf yapılan ölçüler bu değeri yazmıyor (span, değer, adet): [('pdf-0', 100.0, None)]"
+      ],
+      "assumptions_to_review": {
+        "edge_spacing_x": {
+          "unit": "mm",
+          "source": "assumed",
+          "value": 7.82,
+          "expr": null,
+          "span_ids": [],
+          "explanation": "The edge spacing is assumed to be the pixel resolution of the sheet."
+        },
+        "edge_spacing_y": {
+          "unit": "mm",
+          "source": "assumed",
+          "value": 7.82,
+          "expr": null,
+          "span_ids": [],
+          "explanation": "The edge spacing is assumed to be the pixel resolution of the sheet."
+        }
+      }
+    }
+  }
+}

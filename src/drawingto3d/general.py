@@ -453,8 +453,8 @@ def _closed_profile(entities: list[dict], name: str) -> None:
         center_x, center_y = entity["center"]
         radius = entity["radius"]
         span = entity["end_degrees"] - entity["start_degrees"]
-        if not 0 < span < 360:
-            raise ValueError(f"{name}: yay açıklığı 0 ile 360 derece arasında olmalı, {span:g} bulundu")
+        if span == 0 or abs(span) >= 360:
+            raise ValueError(f"{name}: yay açıklığı −360 ile 360 derece arasında ve sıfırdan farklı olmalı, {span:g} bulundu")
         for degrees, bucket in ((entity["start_degrees"], starts), (entity["end_degrees"], ends)):
             radians = math.radians(degrees)
             bucket.append([center_x + radius * math.cos(radians), center_y + radius * math.sin(radians)])

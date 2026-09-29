@@ -36,6 +36,9 @@ from drawingto3d.schema import MM_PER_INCH
 RELATIVE_TOLERANCE = 0.03
 ABSOLUTE_TOLERANCE_MM = 0.15
 CANDIDATE_LIMIT = 6
+# The fallback pass keeps the reached candidates and adds room for the ends of the crossed lines, so the
+# limit that bounds the first pass cannot hide the very candidate the second pass exists for.
+CROSSED_LIMIT = 4
 ALTERNATIVE_LIMIT = 3
 COUNT_RADIUS_PX = 260.0
 COUNT_PATTERN = re.compile(r"^\s*(\d+)\s*[x×]\s*$")
@@ -66,6 +69,7 @@ class SpanMeaning(BaseModel):
     span_id: str
     text: str
     printed_mm: float | None
+    printed_value: float | None = None
     unit: str
     kind: str
     anchor_mode: str
@@ -75,6 +79,9 @@ class SpanMeaning(BaseModel):
     alternatives: list[Claim] = Field(default_factory=list)
     count: int | None = None
     covered: int | None = None
+    # The binding's row was re-picked against the sheet's scale, so the extent is known and the claim
+    # was ordered across-axis first (a local pair at the extent).
+    row_repaired: bool = False
     notes: list[str] = Field(default_factory=list)
 
 
@@ -117,23 +124,25 @@ def _candidates(binding: AnchorBinding) -> list[ClaimPoint]:
     return points[:CANDIDATE_LIMIT]
 
 
+def _crossed_ends(binding: AnchorBinding) -> list[ClaimPoint]:
+    """The far ends of the lines this anchor crosses: a face's own extension line, measured geometry.
+
+    The row and the stubs are the dimension line's own ink and are never offered here — a claim built
+    from them would point at the line that printed the number and confirm itself.
+    """
+    return [ClaimPoint(geometry_id=stroke.geometry_id, kind="line-end", point=list(stroke.far),
+                       cost_px=stroke.far_distance_px)
+            for stroke in binding.strokes if stroke.role == "crossing"]
+
+
 def _tolerance(value_mm: float) -> float:
     return max(RELATIVE_TOLERANCE * value_mm, ABSOLUTE_TOLERANCE_MM)
 
 
-def _distance_claims(binding: SpanBinding, value_mm: float,
-                     sheet_px_per_mm: float) -> list[Claim]:
-    """A dimension measures along its own row: the projection of the candidate gap onto the axis."""
-    if len(binding.anchors) != 2:
-        return []
-    left, right = _candidates(binding.anchors[0]), _candidates(binding.anchors[1])
-    first_anchor = np.array(binding.anchors[0].point, dtype=float)
-    axis = np.array(binding.anchors[1].point, dtype=float) - first_anchor
-    norm = float(np.linalg.norm(axis))
-    if norm == 0.0:
-        return []
-    axis = axis / norm
-    tolerance = _tolerance(value_mm)
+def _pairs_measuring(left: list[ClaimPoint], right: list[ClaimPoint], axis: np.ndarray,
+                     value_mm: float, tolerance: float,
+                     sheet_px_per_mm: float, across_first: bool = False) -> list[Claim]:
+    """Every pair of candidates one from each anchor whose gap measures the printed value along the axis."""
     claims: list[Claim] = []
     for first in left:
         for second in right:
@@ -148,7 +157,62 @@ def _distance_claims(binding: SpanBinding, value_mm: float,
                                 printed_mm=value_mm, deviation_mm=_round(deviation),
                                 rank=RANK[first.kind] + RANK[second.kind],
                                 cost_px=_round(first.cost_px + second.cost_px)))
-    claims.sort(key=lambda claim: (claim.rank, claim.cost_px, claim.deviation_mm))
+    if across_first:
+        # The pair's two points sit as nearly on the measuring axis as the drawing allows: a local pair
+        # at the extent, rather than two distant features sharing only the projection along the axis.
+        normal = np.array([-axis[1], axis[0]])
+
+        def key(claim: Claim) -> tuple:
+            first, second = (np.array(point.point, dtype=float) for point in claim.points)
+            return (round(abs(float(np.dot(second - first, normal))), 3), claim.rank, claim.cost_px,
+                    claim.deviation_mm)
+    else:
+        def key(claim: Claim) -> tuple:
+            return (claim.rank, claim.cost_px, claim.deviation_mm)
+    claims.sort(key=key)
+    return claims
+
+
+def _distance_claims(binding: SpanBinding, value_mm: float, sheet_px_per_mm: float,
+                     notes: list[str] | None = None) -> list[Claim]:
+    """A dimension measures along its own row: the projection of the candidate gap onto the axis.
+
+    The first pass offers only what the anchors reached or align with. If nothing there measures the
+    printed value, one fallback pass offers the ends of the lines the anchors cross — the faces' own
+    extension lines — which is a second chance for a number that would otherwise stay unresolved and
+    never a change to a binding that already stands: a sheet whose numbers measure their value reads
+    exactly as it did before.
+
+    When the row itself was re-picked against the scale (`SpanBinding.row_repaired`), the extent is known
+    rather than perceived, so the claims are ordered by how close their two points lie to the dimension's
+    own axis before anything else: the reading then names the pair at the extent (two features the
+    printed length apart) instead of two distant features that merely share its projection along the axis.
+    A row that was read as drawn keeps the original order untouched.
+    """
+    if len(binding.anchors) != 2:
+        return []
+    left, right = _candidates(binding.anchors[0]), _candidates(binding.anchors[1])
+    first_anchor = np.array(binding.anchors[0].point, dtype=float)
+    axis = np.array(binding.anchors[1].point, dtype=float) - first_anchor
+    norm = float(np.linalg.norm(axis))
+    if norm == 0.0:
+        return []
+    axis = axis / norm
+    tolerance = _tolerance(value_mm)
+    # A repaired row's extent is known, so its claims are ordered across-axis first (see the docstring).
+    across_first = bool(getattr(binding, "row_repaired", False))
+    claims = _pairs_measuring(left, right, axis, value_mm, tolerance, sheet_px_per_mm,
+                              across_first=across_first)
+    if claims:
+        return claims
+    widened_left = _dedupe(left + _crossed_ends(binding.anchors[0]))[:CANDIDATE_LIMIT + CROSSED_LIMIT]
+    widened_right = _dedupe(right + _crossed_ends(binding.anchors[1]))[:CANDIDATE_LIMIT + CROSSED_LIMIT]
+    claims = _pairs_measuring(widened_left, widened_right, axis, value_mm, tolerance, sheet_px_per_mm,
+                              across_first=across_first)
+    if claims and notes is not None:
+        pairs = ", ".join("/".join(point.geometry_id for point in claim.points) for claim in claims[:2])
+        notes.append("Alışılmış adaylarla ölçülemedi; çapanın kestiği çizgilerin uzak uçları da hesaba "
+                     f"katılınca bağlandı: {pairs}.")
     return claims
 
 
@@ -225,7 +289,10 @@ def _count_near(binding: SpanBinding, observations: Observations) -> tuple[int |
 
 
 def _meaning_for(binding, observations: Observations, sized, sheet_px_per_mm) -> SpanMeaning:
-    record = SpanMeaning(span_id=binding.span_id, text=binding.text, printed_mm=binding.value,
+    value_mm = (float(binding.value) * (MM_PER_INCH if binding.unit == "in" else 1.0)
+                if binding.value is not None else None)
+    record = SpanMeaning(span_id=binding.span_id, text=binding.text, printed_mm=value_mm,
+                         printed_value=binding.value,
                          unit=binding.unit, kind=binding.kind, anchor_mode=binding.anchor_mode)
     if binding.value is None:
         record.resolution = "no-value"
@@ -233,14 +300,21 @@ def _meaning_for(binding, observations: Observations, sized, sheet_px_per_mm) ->
     if sheet_px_per_mm is None:
         record.resolution = "no-scale"
         return record
-    value_mm = float(binding.value) * (MM_PER_INCH if binding.unit == "in" else 1.0)
     record.printed_mm = _round(value_mm)
+    # The binding's own notes (a row re-picked against the sheet's scale) travel with the meaning, so
+    # the evidence and the interpretation interface see why an anchor moved; the flag itself travels in
+    # the claim ordering, which is where the extent being known changes the reading.
+    record.row_repaired = bool(getattr(binding, "row_repaired", False))
+    record.notes.extend(binding.notes or [])
     if binding.kind == "radius" or binding.text.strip().upper().startswith(("R ", "R2", "R")):
         claim = _size_claim(binding, value_mm, sheet_px_per_mm, sized, "radius")
         if claim:
             record.form, record.claim, record.resolution = "radius", claim, "confirmed"
             return record
-    if binding.anchor_mode == "leader":
+    # A phrase typed `diameter` sizes a circle wherever it is printed: a leader is one way to say it, and
+    # on the third sheet the five Ø callouts are not leaders — with the branch gated on the leader alone
+    # their diameter reached the reading as a plain length and was bound as a distance between two ends.
+    if binding.kind == "diameter" or binding.anchor_mode == "leader":
         claim = _size_claim(binding, value_mm, sheet_px_per_mm, sized, "diameter")
         if claim:
             record.form, record.claim, record.resolution = "diameter", claim, "confirmed"
@@ -251,7 +325,7 @@ def _meaning_for(binding, observations: Observations, sized, sheet_px_per_mm) ->
                 record.notes.append(
                     f"'{text}' sayısı {record.covered} eşleşen geometriyle karşılaştırıldı.")
             return record
-    claims = _distance_claims(binding, value_mm, sheet_px_per_mm)
+    claims = _distance_claims(binding, value_mm, sheet_px_per_mm, record.notes)
     if claims:
         record.form, record.claim = "distance", claims[0]
         seen_pairs = {tuple(sorted(point.geometry_id for point in claims[0].points))}

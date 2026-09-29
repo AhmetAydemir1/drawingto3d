@@ -20,8 +20,8 @@ import pytest
 from drawingto3d import perceive as perceive_module
 from drawingto3d import scale
 from drawingto3d.cadrun import CadFailure
-from drawingto3d.reason import _verbatim_readings, reason_drawing
-from drawingto3d.schema import BBox, DimensionRecord, Span
+from drawingto3d.reason import _unreviewed, reason_drawing
+from drawingto3d.schema import BBox, DimensionRecord, Source, Span
 
 DRAWING = Path("examples/flange-elbow-90.png")
 
@@ -128,15 +128,24 @@ def test_a_forced_pass_settles_a_number_the_honest_pass_saw(monkeypatch):
     assert span is not None and span.value == 10.0
 
 
-def test_the_table_is_verbatim_only_while_no_value_was_changed():
-    """Kurulum kapısı incelenmemiş tabloyu sorar, kullanıcının düzelttiği tabloyu bağlamaz."""
+def test_the_guard_asks_who_verified_the_reading_not_what_the_value_is():
+    """Review5 V02: 4→4.1 gibi programatik bir değişiklik ya da satır silmek inceleme sayılmaz."""
     spans = [_span("ocr-0", 4.0, 54.0), _span("ocr-1", 9.0, 467.5), _span("ocr-2", 60.0, 506.0)]
-    verbatim = [DimensionRecord(span_id=span.id, text=span.text, value=float(span.value),
-                                role="edge", count=1) for span in spans]
+    from_sheet = [DimensionRecord(span_id=span.id, text=span.text, value=float(span.value),
+                                  role="edge", count=1) for span in spans]
 
-    assert _verbatim_readings(verbatim, spans) is True
-    corrected = [verbatim[0].model_copy(update={"value": 55.0}), *verbatim[1:]]
-    assert _verbatim_readings(corrected, spans) is False
+    assert [row["span_id"] for row in _unreviewed(from_sheet, spans)] == ["ocr-0", "ocr-1", "ocr-2"]
+
+    programmatic = [from_sheet[0].model_copy(update={"value": 4.1}), *from_sheet[1:]]
+    assert "ocr-0" in [row["span_id"] for row in _unreviewed(programmatic, spans)], \
+        "değeri oynatmak doğrulama değildir"
+
+    deleted = from_sheet[1:]
+    missing = [row for row in _unreviewed(deleted, spans) if row["reason"] == "tabloda yok"]
+    assert [row["span_id"] for row in missing] == ["ocr-0"], "silinen okuma hâlâ doğrulanmamıştır"
+
+    reviewed = [record.model_copy(update={"source": Source.user}) for record in from_sheet]
+    assert _unreviewed(reviewed, spans) == []
 
 
 class _Coder:
@@ -166,7 +175,8 @@ def test_a_build_from_an_unreviewed_contradicting_table_is_refused(tmp_path, mon
 
 def test_a_reviewed_table_reaches_the_coder(tmp_path, monkeypatch):
     """Kullanıcı bir sayıyı değiştirdiyse tablo artık paftanın okuması değildir; kapı açılır."""
-    records = [DimensionRecord(span_id=f"ocr-{index}", text=text, value=value, role="edge", count=1)
+    records = [DimensionRecord(span_id=f"ocr-{index}", text=text, value=value, role="edge", count=1,
+                               source=Source.user)
                for index, (text, value) in enumerate((("40", 40.0), ("55", 55.0), ("60", 60.0)))]
 
     with pytest.raises(AssertionError):

@@ -110,16 +110,26 @@ def sheet_scale(page: Page) -> dict:
     return scale.verdict(spans)
 
 
-def _verbatim_readings(records: Sequence[DimensionRecord], spans) -> bool:
-    """Tablo hâlâ tam olarak paftanın okuduğu sayılar mı — hiçbir değer incelenmemiş mi?
+def _unreviewed(records: Sequence[DimensionRecord], spans) -> list[dict]:
+    """This sheet's readings that no user has verified, each with the reason.
 
-    Kapı bunu sorar, "hangi sayı doğrulanmadı"yı değil: çelişen bir paftada hiçbir sayı
-    doğrulanamaz, o yüzden tek tek ayıklamak yanlış olurdu. Kullanıcı bir sayıyı değiştirdiği anda
-    tablo paftanın okuması olmaktan çıkar ve kurulum kullanıcının beyanıyla ilerler.
+    A reading counts as verified only when the table says a user put it there (`Source.user`). Comparing the
+    values instead let *any* change unlock the sheet: a `4` turned into `4.1`, or a row deleted, and the
+    guard stepped aside without anyone having looked at the contradiction (review5 V02). A reading that is
+    missing from the table is unverified for the same reason — the sheet read it and the table no longer
+    carries it — and a programmatic edit is not a review.
     """
-    readings = sorted(float(span.value) for span in scale.measure_spans(spans))
-    values = sorted(float(record.value) for record in records)
-    return bool(readings) and values == readings
+    by_span = {record.span_id: record for record in records}
+    rows: list[dict] = []
+    for span in scale.measure_spans(spans):
+        record = by_span.get(span.id)
+        if record is None:
+            rows.append({"span_id": span.id, "value": float(span.value), "reason": "tabloda yok"})
+            continue
+        source = str(getattr(record.source, "value", record.source))
+        if source != "user":
+            rows.append({"span_id": span.id, "value": float(record.value), "reason": f"kaynak: {source}"})
+    return rows
 
 
 
@@ -178,12 +188,14 @@ def reason_drawing(
     # no longer speaks for the table, and the numbers being built are the user's assertion. So the guard
     # holds only on the unreviewed case — the table that is still exactly what the sheet read.
     sheet = sheet_scale(page)
-    if sheet["state"] == "contradictory" and _verbatim_readings(records, page.spans):
-        raise CadFailure(
-            "paftanın sayıları kendi ölçeğiyle çelişiyor (" + sheet["note"] + "): ölçü tablosu paftanın "
-            "okuduğu hâliyle duruyor, hiçbiri doğrulanmadı. Tabloyu inceleyip düzeltin; ölçülmüş "
-            "okumalar: " + ", ".join(f"{span.id}={float(span.value):g}"
-                                     for span in page.spans if span.value is not None) + ".", "")
+    if sheet["state"] == "contradictory":
+        unreviewed = _unreviewed(records, page.spans)
+        if unreviewed:
+            raise CadFailure(
+                "paftanın sayıları kendi ölçeğiyle çelişiyor (" + sheet["note"] + "): tabloda kullanıcı "
+                "doğrulaması olmayan okumalar var — " + ", ".join(
+                    f"{row['span_id']}={row['value']:g} ({row['reason']})" for row in unreviewed) +
+                ". Her okuma kullanıcı tarafından doğrulanmadan kurulum yapılmaz.", "")
 
     model = coder or _default_coder()
     folder = Path(out_dir)

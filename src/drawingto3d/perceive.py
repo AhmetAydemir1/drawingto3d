@@ -22,11 +22,29 @@ from drawingto3d.schema import AnchorMode, BBox, Page, Primitive, PrimitiveKind,
 
 
 def perceive(page: Page, reader=None) -> tuple[list[Primitive], list[Span]]:
+    """Read the sheet: the primitives that were found and the spans that carry a value."""
+    primitives, spans, _report = _perceive(page, reader)
+    return primitives, spans
+
+
+def perceive_with_report(page: Page, reader=None) -> tuple[list[Primitive], list[Span], dict]:
+    """The same reading, plus what it could *not* place — the numbers the drawing still carries.
+
+    A number the gate cannot anchor is today dropped without trace: the sheet says `40` and the table has
+    no row for it, which reads as "the drawing does not say 40". This returns the candidates instead, each
+    with the stroke it would have been paired with and how far away that stroke is, so the caller can ask.
+    The value-derived candidate is *not* attached: it is chosen by the sheet's own scale, so counting it as
+    an independent confirmation of that scale is circular (review5 V01).
+    """
+    return _perceive(page, reader, {})
+
+
+def _perceive(page: Page, reader=None, report: dict | None = None) -> tuple[list[Primitive], list[Span], dict]:
     image = cv2.imdecode(np.frombuffer(page.image_png, dtype=np.uint8), cv2.IMREAD_COLOR)
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     primitives = _primitives(gray)
     if page.vector_text:
-        spans = _gated_text_layer(page, gray)
+        spans = _gated_text_layer(page, gray, report)
     else:
         spans = list(page.spans)
         spans.extend(_oriented_spans(gray, reader))
@@ -35,10 +53,10 @@ def perceive(page: Page, reader=None) -> tuple[list[Primitive], list[Span]]:
     _assign_views(spans, page.views)
     spans = _dedupe_spans(spans)
     page.spans = spans
-    return primitives, spans
+    return primitives, spans, (report if report is not None else {})
 
 
-def _gated_text_layer(page: Page, gray: np.ndarray) -> list[Span]:
+def _gated_text_layer(page: Page, gray: np.ndarray, report: dict | None = None) -> list[Span]:
     """The sheet's own text layer, kept only where the drawing carries the number.
 
     A PDF text layer is exact about what is printed and where, which is why it is read instead of OCR;
@@ -72,17 +90,18 @@ def _gated_text_layer(page: Page, gray: np.ndarray) -> list[Span]:
         span.anchors = anchors or []
         span.anchor_mode = mode
         kept.append(span)
-    # The second route, for the numbers the gate could not place by *proximity*: a dimension line is drawn
-    # to the number printed on it, so the number names a length of its own line, and the sheet states its
-    # own scale in the readings that *were* placed. Measured on `pilot-step-01`: the three anchored numbers
-    # agree on 7.875 px/mm (spread 0.1%) while the gate drops five of eight numbers — 28 and 40 own exactly
-    # one stroke of their own length that they sit beside, the two 6 mm callouts own none (their only
-    # length-matches are 150 px away), and a 3 mm line does not survive thinning at all. So this attaches
-    # only what the drawing leaves one answer for, and leaves the rest exactly as the gate left them.
-    for span, anchors in _pair_by_value(unpaired, kept, segments, float(np.median(heights)) if heights else None):
-        span.anchors = anchors
-        span.anchor_mode = "dimension"
-        kept.append(span)
+    # What the drawing still carries and this pass could not place: *reported*, never promoted. A number the
+    # gate cannot anchor is today dropped without trace, so the sheet says `40` and the table has no row for
+    # it — which reads as "the drawing does not say 40". The candidate strokes are collected instead. They
+    # are chosen with the sheet's own scale, so they are not an independent confirmation of it: promoting
+    # them would let the pairing confirm the very scale it was selected by (review5 V01).
+    candidates = _value_candidates(unpaired, kept, segments, float(np.median(heights)) if heights else None)
+    if report is not None:
+        numbers = [span for span in page.spans if span.value is not None and span.kind != SpanKind.text]
+        report["sheet_numbers"] = len(numbers)
+        report["kept"] = [span.id for span in kept]
+        report["anchored_by"] = {"proximity": len(kept)}
+        report["unpaired"] = candidates
     return kept or [span for span in page.spans if span.value is not None]
 
 
@@ -120,19 +139,29 @@ def _beside_distance(span: Span, segment: "lines.Segment", text_height: float) -
     return across
 
 
-def _pair_by_value(
+def _value_candidates(
     unpaired: list[Span],
     kept: list[Span],
     segments: list,
     text_height: float | None,
     tolerance: float = scale.RELATIVE_TOLERANCE,
-) -> list[tuple[Span, list[list[float]]]]:
-    """Numbers the gate could not place, paired with the stroke as long as the number says it is.
+) -> list[dict]:
+    """The strokes each unplaced number could belong to, as *candidates* for a caller to ask about.
 
-    The pairing is only made where the drawing leaves one answer: a stroke whose length is the number's own
-    value at the sheet's own scale, which the number sits beside, and no second stroke nearly as close.
-    Everything else is left unpaired — a wrong pairing here would put a correct number on the wrong feature,
-    which is the same failure as reading the wrong number, and harder to see.
+    A dimension line is drawn to the number printed on it, and the numbers the gate *did* place state the
+    sheet's own scale, so a number that could not be placed by proximity names the length its own line must
+    have. What comes back is therefore a proposal, not a reading:
+
+    * the scale it was measured against comes from the readings already anchored, so the candidate cannot be
+      used to confirm that scale without arguing in a circle;
+    * a stroke can be an outline edge, a title-block rule, another view's line, or a same-length body edge —
+      none of which this can tell apart from a dimension line, because it looks at length and position only;
+    * two parallel lines can both be "beside" the number, and then the drawing has not said which one.
+
+    Measured on `pilot-step-01`: of five unplaced numbers, `28` and `40` come back with one plausible stroke
+    each, the two `6 mm` callouts match only strokes 150 px away, and `3 mm` matches nothing (no stroke that
+    short survives thinning). Each candidate carries the distance that decided it, so a caller can ask
+    rather than assume.
     """
     if text_height is None or text_height <= 0:
         return []
@@ -140,7 +169,7 @@ def _pair_by_value(
     calibration, _inliers = scale.consensus(pairs, minimum=2)
     if calibration is None:
         return []
-    attached: list[tuple[Span, list[list[float]]]] = []
+    report: list[dict] = []
     for span in unpaired:
         if span.value is None:
             continue
@@ -156,13 +185,24 @@ def _pair_by_value(
                 continue
             found.append((distance, segment))
         found.sort(key=lambda row: row[0])
-        if not found:
-            continue
-        if len(found) > 1 and found[0][0] > BESIDE_MARGIN * found[1][0]:
-            continue
-        segment = found[0][1]
-        attached.append((span, [[segment.x0, segment.y0], [segment.x1, segment.y1]]))
-    return attached
+        resolved = 0 if (len(found) == 1 or (found and found[0][0] <= BESIDE_MARGIN * found[1][0])) else None
+        report.append({
+            "id": span.id,
+            "text": span.text,
+            "value": span.value,
+            "box": [span.bbox.x, span.bbox.y, span.bbox.x + span.bbox.w, span.bbox.y + span.bbox.h],
+            "expected_px": round(expected, 1),
+            "resolved": resolved is not None,
+            "candidates": [
+                {"px": round(segment.length, 1),
+                 "orientation": "horizontal" if segment.horizontal else "vertical",
+                 "endpoints": [[segment.x0, segment.y0], [segment.x1, segment.y1]],
+                 "across_px": round(distance, 1),
+                 "resolved": index == resolved}
+                for index, (distance, segment) in enumerate(found)
+            ],
+        })
+    return report
 
 
 MARGIN_FRACTION = 0.04

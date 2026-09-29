@@ -47,13 +47,35 @@ def _perceive(page: Page, reader=None, report: dict | None = None) -> tuple[list
         spans = _gated_text_layer(page, gray, report)
     else:
         spans = list(page.spans)
-        spans.extend(_oriented_spans(gray, reader))
+        spans.extend(_oriented_spans(gray, reader, report))
+        if report is not None:
+            report["path"] = "raster"
     apply_sheet_unit(spans)
     spans = [span for span in spans if _inside_drawing_area(span, page)]
     _assign_views(spans, page.views)
     spans = _dedupe_spans(spans)
     page.spans = spans
+    if report is not None:
+        report["kept"] = [span.id for span in spans]
+        report.setdefault("unpaired", [])
+        if report.get("path") == "raster":
+            # The two clustering passes see the same number twice, so a raw count would report one refused
+            # number as two: measured on the plastic sheet, 13 rows for 8 distinct readings. Identity here is
+            # the printed text plus its box; `passes` keeps how many passes saw it.
+            report["unpaired"] = _unique_report_rows(report["unpaired"])
+            report["sheet_numbers"] = len(spans) + len(report["unpaired"])
     return primitives, spans, (report if report is not None else {})
+
+
+def _unique_report_rows(rows: list[dict]) -> list[dict]:
+    """One row per distinct reading: same text in the same box is one number, however many passes see it."""
+    unique: dict[tuple, dict] = {}
+    for row in rows:
+        key = (row["text"], *[round(float(value)) for value in row["box"]])
+        if key not in unique:
+            unique[key] = {**row, "passes": 0}
+        unique[key]["passes"] += 1
+    return list(unique.values())
 
 
 def _gated_text_layer(page: Page, gray: np.ndarray, report: dict | None = None) -> list[Span]:
@@ -263,7 +285,7 @@ def _dashed_like(gray: np.ndarray, x0: float, y0: float, x1: float, y1: float) -
     return 2 <= dark <= 7
 
 
-def _oriented_spans(gray: np.ndarray, reader=None) -> list[Span]:
+def _oriented_spans(gray: np.ndarray, reader=None, report: dict | None = None) -> list[Span]:
     """Read dimension text that is horizontal, vertical, or diagonal."""
     if shutil.which("tesseract") is None and reader is None:
         return []
@@ -282,8 +304,8 @@ def _oriented_spans(gray: np.ndarray, reader=None) -> list[Span]:
         text_height=float(np.median(sizes)) if sizes else None,
     )
     clusters: dict[int, list[int]] = {}
-    spans = _collect_spans(gray, glyphs, "center", gate, reader, clusters, text_mask) + _collect_spans(
-        gray, glyphs, "gap", gate, reader, clusters, text_mask
+    spans = _collect_spans(gray, glyphs, "center", gate, reader, clusters, text_mask, report) + _collect_spans(
+        gray, glyphs, "gap", gate, reader, clusters, text_mask, report
     )
     spans = _one_number_per_line(spans)
     for index, span in enumerate(spans):
@@ -619,6 +641,7 @@ def _collect_spans(
     reader=None,
     clusters: dict[int, list[int]] | None = None,
     text_mask: np.ndarray | None = None,
+    report: dict | None = None,
 ) -> list[Span]:
     spans: list[Span] = []
     for cluster in _cluster_glyphs(glyphs, mode):
@@ -632,6 +655,26 @@ def _collect_spans(
         if gate is not None:
             accepted, anchors, mode = gate.accepts(box, _printed_block(glyphs, cluster))
             if not accepted:
+                # Read first, pair second (review5): the gate picks a line *before* any read, so a number it
+                # cannot place is dropped without anyone knowing whether it was even readable — on the plastic
+                # sheet that is the difference between "the gate dropped a number" and "nothing was read here".
+                # When the caller asked for a report the cluster is read anyway, and the reading is handed back
+                # as an unpaired number: reported, never promoted, because a reading the sheet's own scale
+                # selected cannot then be evidence for that scale (V01).
+                if report is not None:
+                    dropped = _read_cluster(gray, glyphs, cluster, len(spans), reader, anchors, mode)
+                    if dropped is not None:
+                        report.setdefault("unpaired", []).append({
+                            "id": None,
+                            "text": dropped.text,
+                            "value": dropped.value,
+                            "box": [dropped.bbox.x, dropped.bbox.y,
+                                    dropped.bbox.x + dropped.bbox.w, dropped.bbox.y + dropped.bbox.h],
+                            "reason": "gate_refused_but_readable",
+                            "expected_px": None,
+                            "resolved": False,
+                            "candidates": [],
+                        })
                 continue
             # The line's own ink is not a printed number: an arrowhead lies on the axis of the line it
             # terminates and at one of that line's ends, and the reader answers a digit when it is handed

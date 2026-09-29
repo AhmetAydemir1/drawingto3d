@@ -21,8 +21,26 @@ from pathlib import Path
 ROOT = Path("/Users/aydemir/Desktop/drawingto3d")
 sys.path.insert(0, str(ROOT / "src"))
 
+from drawingto3d import lines  # noqa: E402
 from drawingto3d.ingest import load_page  # noqa: E402
 from drawingto3d.perceive import perceive_with_report  # noqa: E402
+
+import os  # noqa: E402
+
+# Olcum sapesi: `STROKE_CEILING` verilirse, okuma yolunun "paftadan turetilen tavan" cagrisi bu sabit
+# degerle degistirilir. Amac, kalinlik tavanini paftadan turetmeye baslamadan ONCEKI durumu ayni araçla
+# olcmek - yoksa "kazanc var mi" sorusu yalniz tek paftada (block-01) yanitlanmis olur.
+_ceiling = os.environ.get("STROKE_CEILING")
+if _ceiling:
+    _original_thin_segments = lines.thin_segments
+
+    def _thin_segments_with_ceiling(binary, min_length=36, max_thickness=None, max_length=1400.0):
+        if max_thickness is None:
+            max_thickness = int(_ceiling)
+        return _original_thin_segments(binary, min_length=min_length, max_thickness=max_thickness,
+                                       max_length=max_length)
+
+    lines.thin_segments = _thin_segments_with_ceiling
 
 DATA = ROOT / "out/lab/data/v2"
 OUT = ROOT / "out/lab/product-goal/iterations/raster-label-match"
@@ -56,7 +74,8 @@ for part in sorted(path for path in DATA.iterdir() if (path / "drawing.png").exi
             "kept_values": [value for _text, value, _mode in kept],
             "label_matching": len(matched),
             "answered_by_nothing": [value for value in kept if value is None],
-            "unplaced": dict(Counter(row["reason"] for row in report.get("unpaired", []))),
+            "unplaced": dict(Counter(row.get("reason", "gate_could_not_place_it")
+                                     for row in report.get("unpaired", []))),
             "sheet_numbers": report.get("sheet_numbers"),
         }
     summary[part.name] = {"labels": len(expected), "paths": per_path}

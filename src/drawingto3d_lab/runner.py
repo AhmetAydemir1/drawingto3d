@@ -201,6 +201,7 @@ class LabRunner:
         if not acquired["acquired"]:
             return {"dry_run": False, "executed": [],
                     "blocked": {"reason": "başka bir ağır iş açık", "held_by": acquired["held_by"]}}
+        token = (acquired.get("held_by") or {}).get("token")
         deadline = self.clock() + limits["run_timeout_seconds"]
         executed = []
         try:
@@ -212,7 +213,7 @@ class LabRunner:
                     continue
                 executed.append(self._run_one(job, run_id, limits))
         finally:
-            self.lab.release_heavy()
+            self.lab.release_heavy(token)
         return {"dry_run": False, "executed": executed, "run_id": run_id}
 
     def resume(self, jobs: list[Job]) -> dict:

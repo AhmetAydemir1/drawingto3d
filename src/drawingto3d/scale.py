@@ -123,6 +123,36 @@ def consensus(pairs: list[tuple[float, float]], tolerance: float = RELATIVE_TOLE
     return Calibration(px_per_mm=px_per_mm, samples=len(best_inliers), spread=spread), sorted(best_inliers)
 
 
+def view_scales(spans, tolerance: float = RELATIVE_TOLERANCE, minimum: int = 2) -> dict:
+    """The sheet's scale, and each view's own — because a sheet is not obliged to hold one scale.
+
+    A detail view is commonly drawn larger than the view it details, and then its numbers fit a second
+    scale. Pooling every reading into one fit makes the minority view's numbers look like misreadings of
+    the majority's scale, which is the wrong conclusion about a sheet that is telling the truth twice.
+    Grouped by the view each number sits in (`span.view_id`), the same fit is run per view, so a view whose
+    scale is not the sheet's is *named* instead of averaged away.
+    """
+    grouped: dict[str, list[tuple[float, float]]] = {}
+    for span in measure_spans(spans):
+        name = getattr(span, "view_id", None) or "unnamed"
+        grouped.setdefault(name, []).append((float(span.value), line_length(span)))
+    every = [pair for rows in grouped.values() for pair in rows]
+    sheet, _inliers = consensus(every, tolerance, minimum=3)
+    views: dict[str, dict] = {}
+    for name, rows in sorted(grouped.items()):
+        calibration, inliers = consensus(rows, tolerance, minimum=minimum)
+        views[name] = {
+            "px_per_mm": round(calibration.px_per_mm, 4) if calibration else None,
+            "readings": len(rows),
+            "inliers": inliers,
+            "own_scale": bool(calibration and sheet
+                              and abs(calibration.px_per_mm / sheet.px_per_mm - 1.0) > tolerance),
+        }
+    return {"sheet_px_per_mm": round(sheet.px_per_mm, 4) if sheet else None,
+            "views": views,
+            "mixed_scale_views": sorted(name for name, row in views.items() if row["own_scale"])}
+
+
 def calibrate(pairs: list[tuple[float, float]], tolerance: float = RELATIVE_TOLERANCE) -> Calibration | None:
     """Fit pixels per millimetre to (value, measured length) pairs, ignoring the ones far off the pack.
 

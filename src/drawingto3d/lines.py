@@ -437,7 +437,18 @@ def dimension_for(
 def _axis_dimension(binary: np.ndarray, segments: list[Segment], box: tuple[float, float, float, float]) -> Dimension | None:
     """The axis-aligned row. Kept as its own pass so a diagonal cannot steal a line the axis already owns."""
     reading_across, size, text_span, text_offset, reach, near = _row_near(box, segments)
-    if not near:
+    # The row a number stands on is found beside the digits; `near` is every collinear stroke on the sheet,
+    # and it is used below only to *follow* the row that was found, never to choose it. A callout's box can
+    # be square to a pixel, and which axis it is read along then hangs on that pixel: on the plastic sheet
+    # the `R8.00` box is 82.39 × 82.36, and choosing the row from the whole sheet moved it onto the
+    # dimension line of `46.00` 390 px to its right, reading a radius as a length.
+    window = [
+        segment
+        for segment in near
+        if not (_row_end(segment, reading_across) < text_span[0] - reach
+                or _row_start(segment, reading_across) > text_span[1] + reach)
+    ]
+    if not window:
         return None
     # A dimension whose line carries an arrow at both ends and passes *under* its number states its own
     # span: the two arrow tips are the extension lines. A number printed beside such a line instead is a
@@ -445,7 +456,7 @@ def _axis_dimension(binary: np.ndarray, segments: list[Segment], box: tuple[floa
     # lines, so this only applies when the number really sits on the line.
     arrowed = [
         segment
-        for segment in near
+        for segment in window
         if arrow_steps(binary, segment, 0) >= 8
         and arrow_steps(binary, segment, 1) >= 8
         and _row_start(segment, reading_across) - 0.2 * size <= text_span[0]
@@ -462,13 +473,25 @@ def _axis_dimension(binary: np.ndarray, segments: list[Segment], box: tuple[floa
             else ((_row_offset(chosen, reading_across), start), (_row_offset(chosen, reading_across), end)),
         )
 
+    # Which line the number stands on is decided beside the digits, as it always was: the row is taken
+    # from the strokes at the number, and only then followed along its own ink (`_row_run`). Reading the
+    # offset off every piece of the row instead moves the number onto whatever other line happens to lie
+    # nearer its centre — measured on the plastic sheet, `3.00` and `4.00` were moved 11 px off their line
+    # and the row repair that used to name them stopped firing.
+    beside_the_number = [
+        segment
+        for segment in near
+        if not (_row_end(segment, reading_across) < text_span[0] - 0.5 * size
+                or _row_start(segment, reading_across) > text_span[1] + 0.5 * size)
+    ] or near
     offset = min(
-        (_row_offset(segment, reading_across) for segment in near),
+        (_row_offset(segment, reading_across) for segment in beside_the_number),
         key=lambda value: abs(value - text_offset),
     )
     row = [segment for segment in near if abs(_row_offset(segment, reading_across) - offset) <= 0.5 * size]
     if not any(max(arrow_steps(binary, segment, 0), arrow_steps(binary, segment, 1)) >= 8 for segment in row):
         return None
+    row = _row_run(binary, reading_across, offset, size, text_span, row)
 
     row_span = (
         min(_row_start(segment, reading_across) for segment in row),
@@ -633,6 +656,11 @@ def _row_near(box: tuple[float, float, float, float], segments: list[Segment]) -
     character's reach of it. Everything the row is measured in comes back with it — which axis it runs
     along, the number's own extent along that axis and across it, and how far a stroke may stand off and
     still be on this row.
+
+    The row is gathered from the whole sheet, not from a window drawn around the number: a piece of the
+    number's own line may sit well to one side of it, and a window silently truncates the span to whatever
+    happens to lie beside the digits. Which of these strokes are the number's own line is decided later,
+    by following the line through its crossings (`_row_run`).
     """
     reading_across = (box[2] - box[0]) >= (box[3] - box[1])
     size = max((box[3] - box[1]) if reading_across else (box[2] - box[0]), 1.0)
@@ -644,13 +672,110 @@ def _row_near(box: tuple[float, float, float, float], segments: list[Segment]) -
         for segment in segments
         if segment.horizontal == reading_across
         and abs(_row_offset(segment, reading_across) - text_offset) <= 1.2 * size
-        and not (_row_end(segment, reading_across) < text_span[0] - reach or _row_start(segment, reading_across) > text_span[1] + reach)
     ]
     return reading_across, size, text_span, text_offset, reach, near
 
 
 def _row_offset(segment: Segment, reading_across: bool) -> float:
     return (segment.y0 + segment.y1) / 2 if reading_across else (segment.x0 + segment.x1) / 2
+
+
+def _row_run(
+    binary: np.ndarray,
+    reading_across: bool,
+    offset: float,
+    size: float,
+    text_span: tuple[float, float],
+    row: list[Segment],
+) -> list[Segment]:
+    """The pieces of the number's own dimension line: the ones joined to the number's line across a crossing.
+
+    A dimension line is cut where another dimension's extension line crosses it. The crossing puts ink
+    across the line, thinning drops the widened run, and the line comes back as two pieces a few pixels
+    apart. Reading the row off the pieces beside the number therefore ends the span at that crossing: on
+    the pilot sheets a `45` drawn from the edge to a hole came back as the 30 between a neighbouring
+    extension line and the hole, and the sheet then refused to calibrate against its own other numbers.
+
+    Joining is only done across a crossing. Two pieces that meet end to end at arrowheads are two
+    dimensions drawn on one line (`15 | 45`), and joining them would measure the pair as a single span.
+    """
+    if not row:
+        return []
+    weight = max(1.0, float(np.median([segment.thickness for segment in row])))
+    ordered = sorted(row, key=lambda segment: _row_start(segment, reading_across))
+    seed = min(
+        ordered,
+        key=lambda segment: _distance_to_span((text_span[0] + text_span[1]) / 2,
+                                              (_row_start(segment, reading_across), _row_end(segment, reading_across))),
+    )
+    kept = [seed]
+    growing = True
+    while growing:
+        growing = False
+        for segment in ordered:
+            if segment in kept:
+                continue
+            for held in kept:
+                standing = _standing_gap(held, segment, reading_across, size)
+                if standing is None:
+                    continue
+                if _is_a_crossing(binary, reading_across, offset, standing, weight):
+                    kept.append(segment)
+                    growing = True
+                break
+    return sorted(kept, key=lambda segment: _row_start(segment, reading_across))
+
+
+def _standing_gap(first: Segment, second: Segment, reading_across: bool, size: float) -> float | None:
+    """Where two pieces of one row stand apart — `None` when they are not close enough to be one line cut.
+
+    A crossing cuts a line by a pixel or two; a number printed on the line cuts it by its own width, which
+    is why the tolerance here is a fraction of the number's box and not a whole one.
+    """
+    left, right = sorted((first, second), key=lambda segment: _row_start(segment, reading_across))
+    left_end = _row_end(left, reading_across)
+    right_start = _row_start(right, reading_across)
+    if right_start <= left_end:
+        return (left_end + right_start) / 2
+    if right_start - left_end > 0.5 * size:
+        return None
+    return (left_end + right_start) / 2
+
+
+def _across_extent(binary: np.ndarray, reading_across: bool, offset: float, position: float, limit: int) -> int:
+    """How far the ink runs away from the row at one point along it, both ways."""
+    height, width = binary.shape[:2]
+    total = 0
+    for sign in (-1, 1):
+        step = 1
+        while step <= limit:
+            if reading_across:
+                x, y = int(round(position)), int(round(offset) + sign * step)
+            else:
+                x, y = int(round(offset) + sign * step), int(round(position))
+            if not (0 <= x < width and 0 <= y < height) or binary[y, x] == 0:
+                break
+            total += 1
+            step += 1
+    return total
+
+
+def _is_a_crossing(binary: np.ndarray, reading_across: bool, offset: float, position: float, weight: float) -> bool:
+    """Whether the ink standing across the row here is a line crossing it, or a dimension's arrowhead.
+
+    Both put ink across the row at the junction, so the junction alone says nothing. What separates them is
+    what stands *beside* it: a crossing is a perpendicular line two or three pixels wide, and the row's own
+    ink either side of it is back to the line's weight, while an arrowhead is a wedge whose tip meets the
+    junction and whose base stands ten-odd pixels inside the piece. Measured: on the pilot sheet at the
+    `45`'s crossing the ink is 31 px tall at the junction and 1 px — the line itself — 3 to 12 px away; on
+    a pair of met arrowheads it is 36 px tall there and 4 to 8 px away.
+    """
+    limit = max(4, int(round(4.0 * weight)))
+    if _across_extent(binary, reading_across, offset, position, limit) < 3.0 * weight:
+        return False
+    beside = max(_across_extent(binary, reading_across, offset, position + sign * step, limit)
+                 for sign in (-1, 1) for step in range(3, 13))
+    return beside <= max(2.0 * weight, weight + 2.0)
 
 
 def _row_start(segment: Segment, reading_across: bool) -> float:
@@ -717,7 +842,20 @@ def crossing_pairs(
     symbol read as a `2` was offered and took an 8 px gap 25 px past the end of the line it stood on, which
     fitted its value and made the sheet stop naming a record that is not a printed number at all.
     """
-    reading_across, size, _text_span, text_offset, reach, near = _row_near(box, segments)
+    reading_across, size, text_span, text_offset, reach, near = _row_near(box, segments)
+    if not near:
+        return []
+    # Which spans are offered here is a question about the line beside the digits, so the local window is
+    # put back: `_row_near` deliberately no longer truncates the row (the gate has to see a span that runs
+    # well past its number), and reading that wider row would offer this number the pairs of a line further
+    # along — measured, that took the repair away from three readings on the plastic sheet that it had been
+    # putting right (pdf-6, pdf-8, pdf-9), leaving two of them on a line their own values do not fit.
+    near = [
+        segment
+        for segment in near
+        if not (_row_end(segment, reading_across) < text_span[0] - reach
+                or _row_start(segment, reading_across) > text_span[1] + reach)
+    ]
     if not near:
         return []
     offset = min((_row_offset(segment, reading_across) for segment in near), key=lambda value: abs(value - text_offset))
@@ -776,9 +914,22 @@ def _span_ends(
     row_span: tuple[float, float],
     size: float,
 ) -> tuple[tuple[float, float], tuple[float, float]] | None:
-    """The span the number measures: the pair of crossings it sits in, or the pair nearest it."""
+    """The span the number measures: the crossings at the ends of the line it was given, else the pair it sits in."""
     start, end = row_span
+    decided = False
+    # The number sits on its own dimension line, and that line ends at its two extension lines. A crossing
+    # between those two ends is another dimension's extension line passing over this one, not a boundary:
+    # on the pilot sheets the `45` from the edge to a hole sits to the right of the neighbouring `15`'s
+    # extension line, so taking the nearest bracketing pair measured the 30 from that crossing to the hole,
+    # and the sheet then disagreed with its own other numbers and refused to calibrate.
     if len(crossings) >= 2:
+        slack = 0.5 * size
+        holds_the_number = start - slack <= text_span[0] and text_span[1] <= end + slack
+        on_the_line = [value for value in crossings if start - slack <= value <= end + slack]
+        if holds_the_number and len(on_the_line) >= 2 and on_the_line[-1] - on_the_line[0] > 0.1 * size:
+            start, end = on_the_line[0], on_the_line[-1]
+            decided = True
+    if not decided and len(crossings) >= 2:
         pairs = list(zip(crossings, crossings[1:]))
         containing = [pair for pair in pairs if pair[0] - 0.4 * size <= text_span[0] and text_span[1] <= pair[1] + 0.4 * size]
         if containing:

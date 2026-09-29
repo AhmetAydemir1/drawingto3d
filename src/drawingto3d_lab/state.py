@@ -7,11 +7,14 @@ SQLite is not needed at this size and would hide the file from a person reading 
 
 from __future__ import annotations
 
+import fcntl
 import hashlib
 import json
 import os
+import secrets
 import subprocess
 import time
+from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -34,6 +37,20 @@ def read_json(path: Path, default=None):
         return default
     except json.JSONDecodeError as exc:
         raise ValueError(f"bozuk JSON: {path}") from exc
+
+
+def read_lock_claim(path: Path):
+    """Read a heavy-slot claim.
+
+    A lock file that cannot be parsed is a claim that has not been published yet (someone created
+    the file and has not written it), not a corrupt record: the two must not be answered the same
+    way, because the honest answer here is "held, identity unknown", never "free".
+    """
+    try:
+        payload = json.loads(path.read_text())
+    except (FileNotFoundError, json.JSONDecodeError):
+        return None
+    return payload if isinstance(payload, dict) else None
 
 
 def write_json(path: Path, payload) -> Path:
@@ -169,38 +186,106 @@ class Lab:
     def acquire_heavy(self, run_id: str, *, pid: int | None = None) -> dict:
         """Take the one heavy-job slot, atomically.
 
-        The slot is claimed with `O_CREAT | O_EXCL`, so two processes racing for it cannot both win
-        (a read-then-write would let both read "free" and both proceed). A lock whose process is gone
-        is a leftover, not a claim: it is removed and the claim retried once.
+        Every contender takes the slot's guard (`flock` on `heavy.guard`, a file that is never deleted
+        and so has no window of its own) before it looks at the claim, and the claim is published with
+        `os.link`, which is atomic *and* carries its content: a reader either finds no lock file at all
+        or finds a complete claim. Creating the file first and writing the JSON afterwards left a window
+        in which a reader found an empty file; that window is a claim being published, never a free slot.
+
+        The guard is what makes reclaiming single-winner. Without it, a reclaimer's check ("the owner is
+        dead") and its move (the stale file aside) are two steps, and a contender that publishes between
+        them has its *live* claim moved aside — measured on this repository: three processes racing for a
+        dead owner's lock produced **two** winners, one of them holding a claim the other had already
+        discarded.
         """
         pid = os.getpid() if pid is None else pid
-        payload = json.dumps({"run_id": run_id, "pid": pid, "started_at": _now(),
-                              "host": os.uname().nodename}, indent=2) + "\n"
-        self.lock_path.parent.mkdir(parents=True, exist_ok=True)
-        for attempt in (1, 2):
-            try:
-                handle = os.open(self.lock_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o644)
-            except FileExistsError:
-                existing = read_json(self.lock_path)
-                if existing and not _process_alive(existing.get("pid")):
-                    # The process that took the slot is gone; the lock is a leftover, not a claim.
-                    try:
-                        self.lock_path.unlink()
-                    except FileNotFoundError:  # pragma: no cover - another process got there first
-                        pass
-                    continue
-                return {"acquired": False, "held_by": existing, "reclaimed": False}
-            with os.fdopen(handle, "w") as stream:
-                stream.write(payload)
-            return {"acquired": True, "held_by": {"run_id": run_id, "pid": pid},
-                    "reclaimed": attempt > 1}
-        return {"acquired": False, "held_by": read_json(self.lock_path), "reclaimed": True}
+        token = secrets.token_hex(8)
+        payload = json.dumps({"run_id": run_id, "pid": pid, "token": token,
+                              "started_at": _now(), "host": os.uname().nodename}, indent=2) + "\n"
+        with self._slot():
+            existing = read_lock_claim(self.lock_path)
+            if existing is None and self.lock_path.exists():
+                # An unpublished claim: someone created the file and has not written it yet. Wait for it
+                # to become readable, then report the holder; never treat it as a free slot, and never
+                # delete it — it may be a claim being written right now.
+                existing = self._wait_for_claim()
+                if existing is None:
+                    return {"acquired": False, "held_by": None, "published": False, "reclaimed": False}
+            reclaimed = False
+            if existing is not None and self.lock_path.exists():
+                if _process_alive(existing.get("pid")):
+                    return {"acquired": False, "held_by": existing, "reclaimed": False}
+                self.lock_path.unlink(missing_ok=True)
+                reclaimed = True
+            if not self._publish_claim(payload):
+                return {"acquired": False, "held_by": read_lock_claim(self.lock_path), "reclaimed": False}
+            return {"acquired": True, "reclaimed": reclaimed,
+                    "held_by": {"run_id": run_id, "pid": pid, "token": token}}
 
-    def release_heavy(self) -> None:
+    @property
+    def guard_path(self) -> Path:
+        """The file every contender takes before touching the slot; never deleted, so it has no window."""
+        return self.root / "heavy.guard"
+
+    @contextmanager
+    def _slot(self):
+        """Hold the slot's guard for the whole of a check-and-change."""
+        self.root.mkdir(parents=True, exist_ok=True)
+        handle = open(self.guard_path, "a+")
         try:
-            self.lock_path.unlink()
-        except FileNotFoundError:
-            return
+            fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
+            yield
+        finally:
+            try:
+                fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+            finally:
+                handle.close()
+
+    def _publish_claim(self, payload: str) -> bool:
+        """Publish a complete claim in one step; False means the slot is taken."""
+        scratch = self.lock_path.with_name(f".claim-{os.getpid()}-{secrets.token_hex(4)}")
+        scratch.write_text(payload, encoding="utf-8")
+        try:
+            os.link(scratch, self.lock_path)
+        except FileExistsError:
+            return False
+        finally:
+            scratch.unlink(missing_ok=True)
+        return True
+
+    def _wait_for_claim(self, *, timeout_seconds: float = 0.5, step_seconds: float = 0.005):
+        """Wait for an in-flight publication; returns the claim, or None if it never appears."""
+        deadline = time.monotonic() + timeout_seconds
+        while True:
+            claim = read_lock_claim(self.lock_path)
+            if claim is not None or not self.lock_path.exists():
+                return claim
+            if time.monotonic() >= deadline:
+                return None
+            time.sleep(step_seconds)
+
+    def release_heavy(self, token: str | None = None) -> bool:
+        """Give the slot up. Only the caller's own claim is removed.
+
+        Taken under the same guard as `acquire_heavy`: without it, a contender that publishes between
+        this read and this unlink would have its live claim deleted.
+        """
+        with self._slot():
+            current = read_lock_claim(self.lock_path)
+            if current is None:
+                if self.lock_path.exists():
+                    return False  # an unpublished claim is not ours to delete
+                return True
+            # A token is evidence of ownership; without one, only this process's own claim is released.
+            mine = ((current.get("token") == token) if token is not None
+                    else (current.get("pid") == os.getpid()))
+            if not mine:
+                return False
+            try:
+                self.lock_path.unlink()
+            except FileNotFoundError:  # pragma: no cover - already released
+                return True
+            return True
 
 
 def _process_alive(pid) -> bool:

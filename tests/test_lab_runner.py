@@ -12,6 +12,7 @@ from __future__ import annotations
 import json
 import os
 import sys
+import time
 from pathlib import Path
 
 import pytest
@@ -466,25 +467,138 @@ def test_the_code_fingerprint_follows_contents_not_the_status_text(tmp_path) -> 
     assert after == code_fingerprint(repo), "aynı içerik aynı fingerprint"
 
 
-def test_the_lock_is_atomic_across_two_processes(tmp_path) -> None:
-    """Two processes race for the one heavy slot; exactly one may win."""
+RACE_SCRIPT = """\
+import json, os, sys, time
+source, root, tag, barrier = sys.argv[1:5]
+sys.path.insert(0, source)
+from drawingto3d_lab.state import Lab
+
+def touch(name):
+    open(os.path.join(root, name), "w").write("1")
+
+while not os.path.exists(barrier):          # a barrier: both children start together
+    time.sleep(0.002)
+result = Lab(root).acquire_heavy("run-" + tag)
+result["tag"] = tag
+# Every child makes exactly one attempt while the winner still holds the slot: the marker is written
+# first, and nobody exits before the harness has measured the lock and released the round. Without this
+# the laggard could reach `acquire_heavy` after the winner had already released and win a *free* slot,
+# which is not the race being tested (measured: two `acquired` results in 2 of 745 tests).
+touch(("won-" if result["acquired"] else "lost-") + tag)
+while not os.path.exists(os.path.join(root, "release")):
+    time.sleep(0.005)
+if result["acquired"]:
+    Lab(root).release_heavy(result["held_by"]["token"])
+print(json.dumps(result), flush=True)
+"""
+
+
+def _race(tmp_path, root, script=RACE_SCRIPT, children=2, timeout=40):
+    """Start N children on one barrier, let exactly one hold the slot, then release them."""
     import subprocess
 
-    root = tmp_path / "lab"
-    script = ("import json,sys;sys.path.insert(0, sys.argv[1]);"
-              "from drawingto3d_lab.state import Lab;"
-              "print(json.dumps(Lab(sys.argv[2]).acquire_heavy('run-' + sys.argv[3])))")
+    barrier = root / "barrier"
+    root.mkdir(parents=True, exist_ok=True)
     environment = {"PYTHONPATH": str(ROOT / "src"), "PATH": "/usr/bin:/bin"}
-    processes = [subprocess.Popen([sys.executable, "-c", script, str(ROOT / "src"), str(root), tag],
-                                  stdout=subprocess.PIPE, text=True, env=environment)
-                 for tag in ("a", "b")]
-    results = [json.loads(process.communicate()[0].strip().splitlines()[-1]) for process in processes]
+    processes = [subprocess.Popen([sys.executable, "-c", script, str(ROOT / "src"), str(root), tag,
+                                   str(barrier)],
+                                  stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
+                                  env=environment)
+                 for tag in "abcdefgh"[:children]]
+    barrier.write_text("go")                 # both children race from here
+    winners = []
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        winners = sorted(path.name for path in root.glob("won-*"))
+        attempted = len(winners) + len(list(root.glob("lost-*")))
+        # Wait until every child has made its one attempt *and* someone holds the slot; releasing any
+        # earlier lets a laggard win a free slot and turns the measurement into a false alarm.
+        if winners and attempted >= children:
+            break
+        if all(process.poll() is not None for process in processes):
+            break
+        time.sleep(0.01)
 
-    assert sum(1 for result in results if result["acquired"]) == 1, \
-        f"kilit yarışında tam olarak bir süreç kazanmalı: {results}"
-    assert sum(1 for result in results if not result["acquired"]) == 1
-    Lab(root).release_heavy()
-    assert Lab(root).acquire_heavy("after")["acquired"] is True
+    held = read_json(root / "heavy.lock")
+    results, stderrs = [], []
+    if winners:
+        (root / "release").write_text("go")  # the winner releases only after we measured the lock
+    for process in processes:
+        out, err = process.communicate(timeout=timeout)
+        results.append(json.loads(out.strip().splitlines()[-1]) if out.strip() else None)
+        stderrs.append(err)
+    return {"winners": winners, "held_while_racing": held, "results": results, "stderr": stderrs}
+
+
+def test_the_lock_is_atomic_across_two_processes(lab) -> None:
+    """Two processes race for the one heavy slot on a barrier; exactly one may win.
+
+    The winner keeps the slot while the loser is measured, so the loser has to see a *published*
+    claim: an empty file left by the winner's own creation is not a free slot and must not raise.
+    """
+    root = lab.root
+    race = _race(None, root)
+
+    assert len(race["winners"]) == 1, f"tam olarak bir süreç kilidi almalı: {race}"
+    acquired = [result for result in race["results"] if result and result["acquired"]]
+    blocked = [result for result in race["results"] if result and not result["acquired"]]
+    assert len(acquired) == 1 and len(blocked) == 1, f"sonuçlar: {race['results']}"
+    winner = acquired[0]["tag"]
+    assert race["held_while_racing"]["run_id"] == f"run-{winner}"
+    assert blocked[0]["held_by"] and blocked[0]["held_by"]["run_id"] == f"run-{winner}", \
+        "kilidi tutanın kimliği kaybedene okunabilir görünmeli"
+    assert not any("Traceback" in err for err in race["stderr"]), \
+        f"kaybeden kontrollü dönmeli, çökmemeli: {race['stderr']}"
+
+
+def test_the_same_race_ends_with_one_winner_every_round(lab) -> None:
+    """One lucky green run is not evidence: the race is repeated a bounded number of times."""
+    for round_index in range(4):
+        root = lab.root / f"round-{round_index}"
+        root.mkdir(parents=True, exist_ok=True)
+        race = _race(None, root)
+        assert len(race["winners"]) == 1, f"{round_index}. turda tek kazanan olmalı: {race}"
+        assert sum(1 for r in race["results"] if r and r["acquired"]) == 1
+        assert not any("Traceback" in err for err in race["stderr"]), race["stderr"]
+
+
+def test_an_unpublished_lock_file_is_not_a_free_slot(lab) -> None:
+    """A lock file exists but its claim was never written: not a free slot, and never a crash."""
+    for content in ("", '{"run_id": "half'):
+        lab.lock_path.parent.mkdir(parents=True, exist_ok=True)
+        lab.lock_path.write_text(content, encoding="utf-8")
+        verdict = lab.acquire_heavy("contender")
+        assert verdict["acquired"] is False, f"yarım içerik boş slot sayılmamalı: {content!r}"
+        assert verdict.get("published") is False
+        assert verdict["held_by"] is None
+        assert lab.lock_path.exists(), "yarım içerikli dosya sahiplenilmemeli, silinmemeli"
+
+    lab.lock_path.unlink()
+    assert lab.acquire_heavy("contender")["acquired"] is True
+
+
+def test_two_reclaimers_cannot_both_take_over_a_dead_lock(lab) -> None:
+    """A dead owner's lock is taken over by exactly one contender."""
+    lab.acquire_heavy("ölü-koşu", pid=999_999)
+    race = _race(None, lab.root, children=3)
+    assert len(race["winners"]) == 1, f"ölü kilidi bir tek süreç devralmalı: {race}"
+    acquired = [r for r in race["results"] if r and r["acquired"]]
+    assert len(acquired) == 1 and acquired[0]["reclaimed"] is True
+
+
+def test_release_only_removes_the_callers_own_claim(lab) -> None:
+    """A contender cannot delete a lock it did not take."""
+    claim = lab.acquire_heavy("benim-koşum")
+    token = claim["held_by"]["token"]
+
+    assert lab.release_heavy("başka-token") is False
+    assert lab.lock_path.exists(), "yabancı token sahibin kilidini silmemeli"
+    assert lab.release_heavy(token) is True
+    assert not lab.lock_path.exists()
+
+    lab.acquire_heavy("başka-koşu", pid=999_999)
+    assert lab.release_heavy("yine-yabancı") is False
+    assert lab.lock_path.exists()
 
 
 def test_a_timeout_kills_the_whole_process_group(lab, tmp_path) -> None:

@@ -164,7 +164,7 @@ def test_bindings_are_deterministic(plate):
 
 def test_json_round_trip(plate):
     payload = json.loads(plate.model_dump_json())
-    assert payload["version"] == 3
+    assert payload["version"] == 4
     assert payload["source_sha256"] and payload["notes"]
     assert payload["spans"][0]["anchors"][0]["strokes"]
 

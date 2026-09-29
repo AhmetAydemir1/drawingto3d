@@ -34,7 +34,7 @@ from drawingto3d.ingest import load_page
 from drawingto3d.observe import Observations, Unsupported, observe
 from drawingto3d.perceive import perceive
 from drawingto3d.plan import source_hash
-from drawingto3d.scale import audit
+from drawingto3d.scale import audit, view_scales
 from drawingto3d.schema import MM_PER_INCH, Span, SpanKind
 
 ANCHOR_TOLERANCE_PX = 3.5
@@ -118,10 +118,13 @@ class SpanBinding(BaseModel):
 
 
 class Bindings(BaseModel):
-    version: int = 3
+    version: int = 4
     source_ref: str
     source_sha256: str
     sheet_px_per_mm: float | None = None
+    # A sheet is not obliged to hold one scale: a detail view's numbers fit a scale of their own, and the
+    # record names those views instead of letting one pooled fit call them misreadings (scale.view_scales).
+    view_scales: dict = Field(default_factory=dict)
     spans: list[SpanBinding] = Field(default_factory=list)
     notes: list[str] = Field(default_factory=list)
 
@@ -548,6 +551,7 @@ def bind_page(path: str | Path) -> Bindings:
     glyph_diameters = _diameter_glyph_upgrade(spans, observations)
     record = Bindings(source_ref=str(drawing), source_sha256=source_hash(drawing),
                       sheet_px_per_mm=_round(float(calibration.px_per_mm)) if calibration else None)
+    record.view_scales = view_scales(spans)
     strokes = _open_strokes(observations)
     points = _feature_points(observations)
     for span in spans:
@@ -559,6 +563,9 @@ def bind_page(path: str | Path) -> Bindings:
         "aligned sırası: daire merkezi > yay merkezi > uçlar/köşeler; 2 px ızgarada eşleşen adaylar tekilleştirilir.",
         "Sınırlar: ankraj 3,5 px, özellik 4,0 px, eksen 3,0 px — ölçümden seçildi, kayıtta anılır.",
         "implied_px_per_mm = satırın çizili uzunluğu / basılı değer; sheet_px_per_mm ile oranı 1'den sapıyorsa detay farklı ölçekte.",
+        "view_scales: ölçüler görünüşe göre gruplanıp ayrı ayrı fit edilir; kendi ölçeğinde olan görünüşler "
+        "'mixed_scale_views' alanında adıyla listelenir — tek ölçek varsayımı paftanın ikinci ölçeğini yanlış "
+        "okuma saymasın.",
         f"Satır paftanın ölçeğinden %{int(ROW_RESIDUAL_LIMIT * 100)}'den fazla saparsa uçlar, çapanın gördüğü "
         f"noktalar arasından ölçeğin gerektirdiği uzunlukla yeniden seçilir (kabul: %{int(ROW_FIT * 100)}); "
         "seçim kendi notunu taşır. Bu bir seçimdir, yeni geometri bulunmaz ve tolerans gevşetilmez.",

@@ -335,6 +335,14 @@ def main() -> None:
     parser.add_argument("--no-model", action="store_true",
                         help="yerel model adımını atla (ürün yolu ve evaluator yine koşar)")
     args = parser.parse_args()
+    # Every path this driver writes is also read back by its own subprocesses with a working directory of
+    # their own, so a relative --out is re-prefixed onto the run's workdir and the product is handed a
+    # drawing that is not there. Measured: `--out out/lab/...` produced
+    # `FileNotFoundError: <run>/<part>/out/lab/.../input/drawing.pdf` for all four parts, and the run read
+    # as four CAD failures that never reached the CAD at all. Resolved here, once, at the boundary.
+    args.corpus = args.corpus.resolve()
+    args.out = args.out.resolve()
+    args.results = args.results.resolve()
 
     metrics = _load_metrics()
     if args.reuse:

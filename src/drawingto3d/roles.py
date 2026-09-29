@@ -14,7 +14,7 @@ import cv2
 import numpy as np
 
 from drawingto3d.ingest import split_count
-from drawingto3d.perceive import perceive
+from drawingto3d.perceive import perceive, perceive_with_report
 from drawingto3d.schema import MM_PER_INCH, ROLES, DimensionRecord, Page, Span, SpanKind
 
 DIAMETER_ROLES = ("outer_diameter", "inner_diameter", "hole_diameter")
@@ -148,8 +148,11 @@ def ask_role(reader: RoleReader, image_png: bytes, text: str, kind: SpanKind | N
 
 def read_records(page: Page, reader: RoleReader, progress=None) -> list[DimensionRecord]:
     """OCR spans become records; each gets a role from one closed question. Spans are kept on the page."""
-    _primitives, spans = perceive(page)
+    _primitives, spans, report = perceive_with_report(page)
     page.spans = spans
+    # Ölçeği kuran tanıklar okumanın yanında kalır (H-R17): `read` komutu kayıtları buradan alıp
+    # `sheet_scale`i çağırıyor ve o çağrı paftayı yeniden okumuyor — kanıt buraya yazılmazsa kayboluyordu.
+    page.scale_witnesses = [list(row) for row in report.get("scale_witnesses", [])]
     usable = [span for span in spans if span.value is not None]
     records: list[DimensionRecord] = []
     asked: dict[tuple[float, str, str], str] = {}

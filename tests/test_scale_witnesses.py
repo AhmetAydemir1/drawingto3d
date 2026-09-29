@@ -32,6 +32,33 @@ def test_witnesses_name_the_scale_when_the_placed_readings_fall_short():
     assert report["witness_readings"] == 4
 
 
+def test_a_witness_scale_needs_a_reading_the_gate_placed_to_confirm_it():
+    """Tanık ölçeği, kapının kendi yerleştirdiği bir okumayla doğrulanmazsa paftanın ölçeği sayılmaz."""
+    spans = [_reading("nine", 9.0, 467.5)]
+    witnesses = [("a", 55.0, 467.5), ("b", 60.0, 506.0), ("c", 8.0, 67.5)]
+
+    report = scale.verdict(spans, witnesses=witnesses)
+
+    assert report["state"] == "uncalibrated", report
+    assert report["suspect"] == []
+    assert report["px_per_mm"] is None
+
+
+def test_a_witness_scale_contradicted_by_most_placed_readings_is_not_adopted():
+    """Örnek paftadaki durum: 12 yerleşmiş okumanın 2'si bir oranda buluşuyor — çoğunluk karşı çıkıyorsa ölçek değil."""
+    spans = [_reading("good", 60.0, 506.0), _reading("two", 2.0, 132.0),
+             _reading("long", 620.0, 147.0), _reading("panel", 260.0, 93.7)]
+    witnesses = [("a", 55.0, 467.5), ("b", 60.0, 506.0), ("c", 8.0, 67.5)]
+
+    report = scale.verdict(spans, witnesses=witnesses)
+
+    # Ölçek kabul edilmedi: yerleşmiş okumaların çoğu tanık oranına karşı çıkıyor ve kendi aralarında da
+    # anlaşan ikili yok (durum bu yüzden `contradictory`).
+    assert report["px_per_mm"] is None, report
+    assert report["suspect"] == [], report
+    assert report["state"] in ("contradictory", "uncalibrated"), report
+
+
 def test_one_reading_crossed_with_three_strokes_is_one_voice():
     """Tek okumanın yanındaki üç çizgi üç okuma değildir: ölçek kurulmaz (review6 W01)."""
     report = scale.verdict([], witnesses=[("one", 40.0, 400.0), ("one", 40.0, 401.0), ("one", 40.0, 399.0)])

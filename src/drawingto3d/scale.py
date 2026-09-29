@@ -192,11 +192,25 @@ def verdict(spans, minimum: int = 3, witnesses: Sequence = ()) -> dict:
     pairs = measure(spans)
     calibration, inliers = consensus(pairs, minimum=minimum)
     witness_groups = _witness_groups(witnesses)
+    usable = [(value, measured) for value, measured in pairs if value > 0 and measured > 0]
+    from_witnesses = False
     if calibration is None and witness_groups:
         # Yerleşmiş okumalar `minimum`'a ulaşmadığında ölçek aday çiftlerden kurulur: bir okuma, kapı onu
         # kayda çevirmedi diye kanıt olmaktan çıkmaz (H-R17). Okuma başına tek oy (review6 W01).
         calibration = _calibration_from_witnesses(witness_groups, minimum=minimum)
-    usable = [(value, measured) for value, measured in pairs if value > 0 and measured > 0]
+        from_witnesses = calibration is not None
+    if from_witnesses and calibration is not None:
+        # Tanık ölçeği, kapının kendi yerleştirdiği okumaların **çoğunluğu** tarafından desteklenmedikçe
+        # paftanın ölçeği sayılmaz. Yoksa benzer iki yanlış eşleşmeden doğan bir oran, doğru okumaları
+        # şüpheli gösteren bir çoğunluk yaratıyor. Ölçüldü (examples/flange-elbow-90.png): 12 yerleşmiş
+        # okumanın 2'si 0.5077 px/mm'de buluşuyor ve o ölçek 10 okumayı şüpheli ilan ediyordu; 0.5077 px/mm
+        # ile 2500 px'lik pafta 5 metrelik bir parça olurdu. block-01'de durum tersi: 2 yerleşmiş okumanın
+        # 1'i (60/506 px = 8.433) tanık ölçeğini tutuyor ve öteki okuma paftanın `55` yazdığı yeri `9`
+        # okuyor — orada şüpheli ilan edilen okuma gerçekten yanlış.
+        agreeing = sum(1 for value, length in usable if not calibration.disagrees(value, length))
+        if agreeing * 2 < len(usable):
+            calibration = None
+            from_witnesses = False
     report = {
         "schema": "drawingto3d.sheet-scale/1",
         "readings": len(pairs),

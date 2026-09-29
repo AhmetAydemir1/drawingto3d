@@ -1,14 +1,14 @@
 {
   "schema_version": 1,
   "document_kind": "review_snapshot_not_an_executable_scheduler",
-  "updated_at": "2026-09-29T19:04:22.000000+00:00",
+  "updated_at": "2026-09-29T22:45:00Z",
   "execution_started": true,
   "plan": "docs/HERMES_IMPLEMENTATION_PLAN.md",
   "goal_prompt": "HERMES_PROMPT.md",
   "current_task": "H04",
   "first_code_task": "H04",
-  "goal_state": "out/lab/product-goal/state.json",
-  "goal_acceptance": "out/lab/product-goal/acceptance.json",
+  "goal_state": "out/lab/product-goal/state.json (H-R9; HEAD b462181 + 2d2247f)",
+  "goal_acceptance": "out/lab/product-goal/acceptance.json (complete: false)",
   "budget": {
     "currency": "USD",
     "runpod_service_total": 20,
@@ -41,7 +41,7 @@
     "shutdown_mechanism_verified",
     "cost_reserve_available"
   ],
-  "evidence_note": "U01/U02 closed: row classification (row-classification/1) is separate from the training decision (training-decision/1); only a real `pass` is positive and only a stage that actually ran can be the terminal failure — the review4 counter-examples are held as regression tests. First raster error measured with a read trace: printed `55` read `09`, a printed view label read as `2`, and a lone glyph on no printed number read `4`; the sheet's own readings imply three scales (13.5/51.94/8.43 px/mm), so an unreviewed table is now refused at build while a reviewed one proceeds. Training decision: fix_rules_first, 0 labelable parts, no paid resources. Recall (5 of 8 printed dims have no candidate) and view/datum separation remain open.",
+  "evidence_note": "Tam takim 799 passed / 0 failed (HEAD b462181, 1151.79 s; out/lab/product-goal/tests.json). V01: degerle secilen eslesme terfi etmiyor (kayitlar 2/3/3/3). V02: kapi kaynak=user dogrulamasi ariyor; 4->4.1 ve satir silme reddediliyor. V03: eval/reading_coverage.py kimlik tabanli kapsam (kept/unpaired/hesaba girmemis), sinif ayrimi (cap/cagri != lineer), etiket-pafta karsilastirmasi; plate-02 pdf-3=10 kaybi ve uc etiket uyusmazligi bulundu. Raster sira cevirme ve STEP kabulu acik.",
   "tasks": [
     {
       "id": "H00",
@@ -139,20 +139,18 @@
       "acceptance": "Hata katmanları ölçülmüş, eğitim kararı somut örneklerle gerekçelendirilmiş.",
       "requires_training_justification": false,
       "requires_first_checkpoint_review": false,
-      "review_status": "U01_U02_closed_first_reading_error_measured",
+      "review_status": "changes_requested_review5",
       "review_findings": [
-        "reading_and_semantic_geometry_errors",
-        "raster_sheet_numbers_contradict_their_own_scale",
-        "raster_recall_low_five_of_eight_printed_dims_have_no_candidate"
+        "V01",
+        "V02",
+        "V03",
+        "raster_and_semantic_geometry_errors"
       ],
       "evidence": [
-        "out/lab/model-baseline-checkpoint/report.md",
-        "eval/audits/20260929-hermes-review4/observations.json",
-        "out/lab/training-decision.json",
-        "out/lab/product-goal/iterations/raster-trace-block01/record.json",
-        "out/lab/product-goal/iterations/u01-u02-repair/record.json"
+        "eval/audits/20260929-hermes-review5/observations.json",
+        "out/lab/product-goal/iterations/value-pairing-landed/record.json"
       ],
-      "review_note": "U01/U02 closed with the review4 counter-examples held as regression tests; the row classification and the training decision are now separate documents. First raster error measured: the sheet's own readings imply three scales (13.5/51.94/8.43 px/mm), the unreviewed table is refused at build, and a reviewed table is not. Recall and view/datum separation are the next open items."
+      "review_note": "U01/U02 closed. Candidate recall increased but independent calibration and explicit review provenance remain unsafe; repair before trusting new baseline."
     },
     {
       "id": "H05",
@@ -262,10 +260,11 @@
       ]
     }
   ],
-  "review": "docs/HERMES_PROGRESS_REVIEW_4_20260929.md",
+  "review": "docs/HERMES_PROGRESS_REVIEW_5_20260929.md",
   "next_checkpoint": "out/lab/product-goal/final/report.md",
   "active_goal_scope": [
-    "H04_reading_semantics_and_U01_U02",
+    "H04_V01_V02_V03",
+    "raster_callouts_and_small_dimensions",
     "four_fixed_v2_cases",
     "PLAN_P01_P08_product_acceptance",
     "new_final_set_min20_min10_raster",
@@ -278,5 +277,6 @@
     "further_paid_training_requires_user_checkpoint_review": true
   },
   "persistent_goal": true,
-  "completion_policy": "All scoped product acceptance gates; intermediate reports are not completion."
+  "completion_policy": "All scoped product acceptance gates; intermediate reports are not completion.",
+  "review_status": "V01_V02_V03_closed_identity_coverage_measured"
 }

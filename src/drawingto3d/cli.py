@@ -42,10 +42,16 @@ def _add_log_flag(command) -> None:
 
 
 def _recorder(args) -> "Recorder | None":
+    """Komut başına **tek** kayıt nesnesi: aynı komut içinde yeniden kurulursa ilk kayıtları ezerdi."""
     path = getattr(args, "inference_log", None)
     if not path:
         return None
-    return Recorder(Path(path), label=f"{args.command}: {Path(args.drawing).name}")
+    existing = getattr(args, "_inference_recorder", None)
+    if existing is not None:
+        return existing
+    recorder = Recorder(Path(path), label=f"{args.command}: {Path(args.drawing).name}")
+    args._inference_recorder = recorder
+    return recorder
 
 
 def main() -> None:

@@ -24,6 +24,7 @@ import os
 import shutil
 import subprocess
 import sys
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -32,7 +33,7 @@ sys.path.insert(0, str(ROOT / "src"))
 
 from drawingto3d_lab import LAB_VERSION  # noqa: E402
 from drawingto3d_lab.runner import subprocess_runner  # noqa: E402
-from drawingto3d_lab.state import sha256_file, write_json  # noqa: E402
+from drawingto3d_lab.state import Lab, sha256_file, write_json  # noqa: E402
 
 BASELINE_SCHEMA = "drawingto3d.lab.baseline/1"
 
@@ -57,10 +58,37 @@ def _load_metrics():
     return module
 
 
-CLI_TIMEOUT = 900
+CASE_BUDGET_SECONDS = 600     # bir vakanın *bütün* adımları bu bütçeyi paylaşır (anlaşma)
+RUN_BUDGET_SECONDS = 7200     # koşunun tamamı
 
 
-def _cli(arguments: list[str], workdir: Path, *, log: Path | None = None) -> dict:
+class Budget:
+    """Kalan süre: adımlar aynı bütçeyi paylaşır, yeni adım yalnız kalan süreyle başlar.
+
+    Tavan sessizce yükseltilmez. Süre bitmişse adım hiç başlamaz ve bu, satırda sonuç olarak yazılır;
+    süre azsa adım kalan süreyle başlar ve zaman aşımı gerçek bir sonuç olarak raporlanır.
+    """
+
+    def __init__(self, seconds: float, *, label: str = "case") -> None:
+        self.total = float(seconds)
+        self.label = label
+        self.started = time.monotonic()
+        self.steps: list[dict] = []
+
+    def remaining(self) -> float:
+        return max(0.0, self.total - (time.monotonic() - self.started))
+
+    def note(self, step: str, seconds: float) -> None:
+        self.steps.append({"step": step, "seconds": round(float(seconds), 3),
+                           "remaining_seconds": round(self.remaining(), 3)})
+
+    def as_record(self) -> dict:
+        return {"label": self.label, "budget_seconds": self.total,
+                "remaining_seconds": round(self.remaining(), 3), "steps": self.steps}
+
+
+def _cli(arguments: list[str], workdir: Path, *, log: Path | None = None,
+         budget: "Budget | None" = None) -> dict:
     """Run one product command under the lab runner's proven timeout/process-tree protection.
 
     `subprocess.run(timeout=...)` kills the direct child only: a product command that starts children of
@@ -68,13 +96,23 @@ def _cli(arguments: list[str], workdir: Path, *, log: Path | None = None) -> dic
     a local experiment slips into the background. `subprocess_runner` signals the whole process group.
 
     `log` is where the product writes its model-call evidence (adapter boundary); the file is the record,
-    not a sentence about one.
+    not a sentence about one. `budget` is the case's remaining time: a step never gets more than the case
+    has left, and a step with no time left is not started at all.
     """
     command = [sys.executable, "-m", "drawingto3d.cli", *arguments]
+    shown = ["python", "-m", "drawingto3d.cli", *arguments]
     if log is not None:
         command += ["--inference-log", str(log)]
+    if budget is not None and budget.remaining() <= 1.0:
+        return {"command": shown, "started": False, "exit_code": None, "seconds": 0.0,
+                "timed_out": False, "descendants_alive": False, "result": None,
+                "not_started_reason": f"kalan süre yok ({budget.remaining():.1f} s): adım başlatılmadı",
+                "stdout_tail": "", "stderr_tail": ""}
     environment = dict(os.environ, PYTHONPATH=str(ROOT / "src"))
-    completed = subprocess_runner(command, timeout=CLI_TIMEOUT, env=environment)
+    timeout = int(budget.remaining()) if budget is not None else CASE_BUDGET_SECONDS
+    completed = subprocess_runner(command, timeout=timeout, env=environment)
+    if budget is not None:
+        budget.note(arguments[0], completed.get("seconds") or 0.0)
     # A refusal is printed by `parser.exit(2, json)`, which writes to *stderr*; a success goes to
     # stdout. Both are the CLI's own JSON, so both are read as the result.
     payload = None
@@ -88,7 +126,7 @@ def _cli(arguments: list[str], workdir: Path, *, log: Path | None = None) -> dic
             payload = None
         if payload is not None:
             break
-    return {"command": ["python", "-m", "drawingto3d.cli", *arguments], "exit_code": completed["exit_code"],
+    return {"command": shown, "started": True, "exit_code": completed["exit_code"],
             "seconds": completed.get("seconds"), "timed_out": bool(completed.get("timed_out")),
             "descendants_alive": completed.get("descendants_alive"),
             "result": payload, "stdout_tail": (completed.get("stdout") or "")[-1200:],
@@ -105,6 +143,37 @@ def _call_evidence(workdir: Path, name: str) -> dict | None:
     except json.JSONDecodeError:
         return None
     return payload if isinstance(payload, dict) else None
+
+
+def _step_logs(workdir: Path, folder: str = "product") -> list[dict]:
+    """Every step's own call record, in step order.
+
+    Each command writes its own file (`inference-log-<step>.json`): sharing one path meant the second
+    command's Recorder rewrote the file and the first command's calls disappeared from the evidence.
+    """
+    home = workdir / folder
+    records = []
+    for path in sorted(home.glob("inference-log*.json")):
+        record = _call_evidence(home, path.name)
+        if record is not None:
+            record["step"] = path.name.removeprefix("inference-log").removesuffix(".json").lstrip("-")
+            records.append(record)
+    return records
+
+
+def _merged(records: list[dict]) -> dict | None:
+    """Union of the step records: None when the arm left no record at all (unmeasured, not zero)."""
+    if not records:
+        return None
+    from drawingto3d.inference_log import merge_records
+
+    merged = merge_records(records)
+    merged["per_step"] = [{"step": record.get("step"), "attempts": record.get("attempts"),
+                           "completed": record.get("completed"), "failed": record.get("failed"),
+                           "unfinished": record.get("unfinished"),
+                           "image_attached": record.get("image_attached"),
+                           "kinds": record.get("kinds")} for record in records]
+    return merged
 
 
 def _classify(steps: list[dict], verdict: dict | None) -> tuple[str, str]:
@@ -164,69 +233,123 @@ def _failure_lines(steps: list[dict]) -> list[str]:
     return out
 
 
-def _model_step(drawing: Path, workdir: Path) -> dict:
-    """Run the local model path on the same drawing and keep its own record.
+def _model_step(drawing: Path, workdir: Path, *, case: "Budget | None" = None) -> dict:
+    """Run the local model arm on the same drawing and keep its own record.
 
-    The model path is a second arm, not a footnote: if it produces a plan, that plan is built and
+    The model arm is a second arm, not a footnote: if it produces a plan, that plan is built and
     evaluated under the same acceptance contract as the rule path, so the model's geometry has a
     measured result. If it produces none, the reason is recorded instead.
+
+    The build gets the source drawing (`--drawing`, T03): a plan whose `source.kind` is a drawing cannot
+    be compiled without it, and building without it made every model plan fail for a reason that had
+    nothing to do with the model. The plan carries the drawing's hash, so the product — not this driver
+    — is the one that decides whether the pair is legitimate.
     """
-    log = workdir / "model" / "inference-log.json"
-    log.parent.mkdir(parents=True, exist_ok=True)
-    step = _cli(["model-plan", str(drawing), str(workdir / "model")], workdir, log=log)
+    home = workdir / "model"
+    home.mkdir(parents=True, exist_ok=True)
+    step = _cli(["model-plan", str(drawing), str(home)], workdir,
+                log=home / "inference-log-plan.json", budget=case)
     step["timeout"] = bool(step.get("timed_out"))
-    evidence = _call_evidence(log.parent, log.name)
-    step["inference_log"] = str(log) if evidence is not None else None
+    step["not_started"] = step.get("not_started_reason")
+    evidence = _merged(_step_logs(workdir, "model"))
+    step["inference_records"] = [str(path) for path in sorted(home.glob("inference-log*.json"))]
     step["inference"] = evidence
     plan = Path((step.get("result") or {}).get("plan") or "")
     step["plan_produced"] = bool(plan.name) and plan.exists()
     step["built"] = None
     step["evaluated"] = None
     if step["plan_produced"]:
-        built = _cli(["build-general", str(plan), str(workdir / "model")], workdir)
+        built = _cli(["build-general", str(plan), str(home), "--drawing", str(drawing)], workdir,
+                     budget=case)
         step["built"] = {"command": built["command"], "exit_code": built["exit_code"],
+                         "started": built.get("started", True),
                          "failure": _failure_lines([built]) or (built.get("result") or {}).get("refusals")}
-        produced = sorted((workdir / "model").glob("*.step"))
+        produced = sorted(home.glob("*.step"))
         step["built"]["step"] = str(produced[0]) if produced else None
         step["evaluated"] = bool(produced)
     return step
 
 
+def _trace(stages: list[tuple[str, bool, str]]) -> dict:
+    """Bir kolun izi: ilk ayrıldığı adım ve en son düşen adım ayrı ayrı adlandırılır.
+
+    "Nerede ayrıldı" ile "nasıl bitti" aynı şey değildir: kural yolu planı üretip kurulumda düşebilir,
+    model kolu hiç çağrı almadan bitebilir. İkisi ayrı yazılmazsa rapor ikisini karıştırır.
+    """
+    first = next((name for name, ok, _ in stages if not ok), None)
+    last = next((name for name, ok, _ in reversed(stages) if not ok), None)
+    return {"stages": [{"stage": name, "ok": ok, "detail": detail} for name, ok, detail in stages],
+            "first_divergence": first, "terminal_failure": last}
+
+
+def _call_fields(log: dict | None) -> dict:
+    """Kolun çağrı kanıtı: kayıt yoksa `null` (ölçülmedi), kayıt varsa ölçülmüş alanlar."""
+    if log is None:
+        return {"inference_called": None, "image_attached": None, "server_ok": None,
+                "unfinished": None, "attempts": None, "kinds": None, "models": None,
+                "per_step": None, "records": 0}
+    return {"inference_called": bool(log.get("inference_called")),
+            "image_attached": bool(log.get("image_attached")),
+            "server_ok": bool(log.get("server_ok")),
+            "unfinished": int(log.get("unfinished", 0) or 0),
+            "attempts": int(log.get("attempts", 0) or 0),
+            "kinds": list(log.get("kinds") or []),
+            "models": log.get("models"),
+            "per_step": log.get("per_step"),
+            "records": int(log.get("records", 0) or 0)}
+
+
 def _arms(product_log: dict | None, model_log: dict | None, model_step: dict | None,
-          model_built: dict, model_verdict: dict | None, raster: bool) -> dict:
+          model_built: dict, model_verdict: dict | None, raster: bool,
+          product_trace: dict | None = None) -> dict:
     """Kol başına gerçek boru hattı, model kimliği ve ayarı.
 
     The raster arm is named for what it is — a free-code program written by models over OCR records —
-    and not as a structured product path; the vector rule path prints no model call at all.
+    and not as a structured product path; the vector rule path prints no model call at all. Each arm's
+    call evidence comes from its own per-step records and is reported per arm: an arm with no record is
+    `null` (unmeasured), which is not the same as an arm measured to have made zero calls.
     """
+    plan_produced = bool((model_step or {}).get("plan_produced")) or bool(
+        ((model_step or {}).get("result") or {}).get("plan"))
+    model_trace = _trace([
+        ("command_started", bool(model_step), "model-plan"),
+        ("plan_produced", plan_produced, "plan.json" if plan_produced else "yok"),
+        ("step_built", bool(model_built.get("step")), model_built.get("step") or
+         (model_built.get("failure") or "yok")),
+        ("evaluated", model_verdict is not None,
+         "" if model_verdict is None else str(model_verdict.get("verdict"))),
+        ("verdict_pass", bool(model_verdict and model_verdict.get("verdict") == "pass"),
+         "" if model_verdict is None else str(model_verdict.get("verdict"))),
+    ])
     return {
         "product": {
+            "arm": "rule" if not raster else "raster-free-code",
             "pipeline": ("raster: OCR'den ölçü kayıtları, görüntü okuyan model + kod modeli geo.* "
                          "programı yazar, sonra katı kurulur (serbest kod kolu)"
                          if raster else
-                         "vektör: kural okuyucusu paftayı okur, katı kurulur (model çağrısı yok)"),
-            "inference_called": None if product_log is None else bool(product_log.get("inference_called")),
-            "image_sent": None if product_log is None else bool(product_log.get("image_sent")),
-            "models": (product_log or {}).get("models"),
+                         "vektör: kural okuyucusu paftayı okur, katı kurulur (kural kolu)"),
+            **_call_fields(product_log),
+            "trace": product_trace,
         },
         "model": {
             "pipeline": "model-plan: yerel sohbet modeli okuma zincirinin kanıtından plan çıkarır, "
                         "plan aynı kabul sözleşmesiyle derlenip değerlendirilir",
             "ran": model_step is not None and not model_step["timeout"],
+            "timed_out": bool(model_step and model_step["timeout"]),
             "command_started": bool(model_step),
-            "inference_called": None if model_log is None else bool(model_log.get("inference_called")),
-            "image_sent": None if model_log is None else bool(model_log.get("image_sent")),
-            "plan_produced": bool((model_step or {}).get("plan_produced")),
+            "plan_produced": plan_produced,
             "step_built": bool(model_built.get("step")),
             "evaluated": model_verdict is not None,
-            "models": (model_log or {}).get("models"),
+            **_call_fields(model_log),
             "build_failure": model_built.get("failure"),
             "verdict": None if model_verdict is None else model_verdict.get("verdict"),
+            "trace": model_trace,
         },
     }
 
 
-def run_part(row: dict, corpus: Path, out_root: Path, metrics, *, with_model: bool = True) -> dict:
+def run_part(row: dict, corpus: Path, out_root: Path, metrics, *, with_model: bool = True,
+             run_budget: "Budget | None" = None) -> dict:
     part_id = row["part_id"]
     workdir = out_root / part_id
     (workdir / "input").mkdir(parents=True, exist_ok=True)
@@ -236,28 +359,35 @@ def run_part(row: dict, corpus: Path, out_root: Path, metrics, *, with_model: bo
         raise SystemExit(f"{drawing} zaten var ve kaynaktan farklı: girdi değişmez")
     shutil.copyfile(source, drawing)
 
+    product = workdir / "product"
+    # Bir vakanın bütün adımları 600 saniyeyi paylaşır (T04); koşu bütçesi daha azsa vaka onunla başlar.
+    case_seconds = CASE_BUDGET_SECONDS if run_budget is None else min(CASE_BUDGET_SECONDS,
+                                                                     run_budget.remaining())
+    case = Budget(case_seconds, label=part_id)
     steps: list[dict] = []
-    product_log = workdir / "product" / "inference-log.json"
     if row["kind"] == "raster":
-        steps.append(_cli(["read", str(drawing), str(workdir / "product")], workdir, log=product_log))
-        records = workdir / "product" / "records.json"
+        steps.append(_cli(["read", str(drawing), str(product)], workdir,
+                          log=product / "inference-log-read.json", budget=case))
+        records = product / "records.json"
         if records.exists():
-            steps.append(_cli(["build", str(drawing), str(records), str(workdir / "product")], workdir,
-                              log=product_log))
+            steps.append(_cli(["build", str(drawing), str(records), str(product)], workdir,
+                              log=product / "inference-log-build.json", budget=case))
     else:
-        steps.append(_cli(["propose", str(drawing), str(workdir / "product")], workdir, log=product_log))
-        plan = workdir / "product" / "plan.json"
+        steps.append(_cli(["propose", str(drawing), str(product)], workdir,
+                          log=product / "inference-log-propose.json", budget=case))
+        plan = product / "plan.json"
         if plan.exists():
-            steps.append(_cli(["build-general", str(plan), str(workdir / "product"),
-                               "--drawing", str(drawing)], workdir))
+            steps.append(_cli(["build-general", str(plan), str(product), "--drawing", str(drawing)],
+                              workdir, budget=case))
 
     steps_path = workdir / "product-steps.json"
-    write_json(steps_path, {"schema": BASELINE_SCHEMA, "part_id": part_id, "steps": steps})
+    write_json(steps_path, {"schema": BASELINE_SCHEMA, "part_id": part_id, "steps": steps,
+                            "case_budget": case.as_record()})
 
-    # The same input to the local *model* path, kept apart from the model-less result above. The
-    # command picks a vision model when this box has one (the request carries the drawing image), so
-    # what it makes of the picture is recorded instead of assumed.
-    model_step = _model_step(drawing, workdir) if with_model else None
+    # The same input to the local *model* arm, kept apart from the rule result above. The command plans
+    # from the reading chain's evidence; whether a model was called at all, and whether an image went
+    # with the request, is the adapter record's answer, not a note here.
+    model_step = _model_step(drawing, workdir, case=case) if with_model else None
     write_json(workdir / "model-step.json", {"schema": BASELINE_SCHEMA, "part_id": part_id,
                                              "model_step": model_step})
 
@@ -285,9 +415,23 @@ def run_part(row: dict, corpus: Path, out_root: Path, metrics, *, with_model: bo
         write_json(workdir / "model-verdict.json", model_verdict)
 
     error_class, detail = _classify(steps, verdict)
-    product_log = _call_evidence(workdir / "product", "inference-log.json")
-    model_log = (model_step or {}).get("inference")
+    product_logs = _step_logs(workdir, "product")
+    product_log = _merged(product_logs)
+    model_logs = _step_logs(workdir, "model")
+    model_log = _merged(model_logs)
     raster = row["kind"] == "raster"
+    produced_records = (product / "records.json").exists()
+    produced_program = bool(sorted(product.glob("*.py")))
+    produced_plan = (product / "plan.json").exists()
+    product_trace = _trace([
+        ("command_started", bool(steps), f"{len(steps)} adım"),
+        ("plan_produced", produced_plan or produced_records,
+         "plan.json" if produced_plan else ("records.json" if produced_records else "yok")),
+        ("step_built", bool(produced), produced[0].name if produced else "yok"),
+        ("evaluated", verdict is not None, "" if verdict else "değerlendirilecek STEP yok"),
+        ("verdict_pass", bool(verdict and verdict.get("verdict") == "pass"),
+         "" if verdict is None else str(verdict.get("verdict"))),
+    ])
     return {
         "part_id": part_id, "input_kind": row["kind"], "input_file": row["file"],
         "input_sha256": sha256_file(drawing),
@@ -295,27 +439,36 @@ def run_part(row: dict, corpus: Path, out_root: Path, metrics, *, with_model: bo
         "commands": [step["command"] for step in steps],
         "exit_codes": [step["exit_code"] for step in steps],
         "timed_out": [bool(step.get("timed_out")) for step in steps],
+        "not_started": [step.get("not_started_reason") for step in steps
+                        if step.get("not_started_reason")],
+        "case_budget": case.as_record(),
         "product_stage_reached": [step["command"][3] for step in steps],
         "product_refusals": [refusal for step in steps
                              for refusal in ((step.get("result") or {}).get("refusals") or [])],
         "product_step": str(produced[0]) if produced else None,
         "produced_part": produced_summary,
         "product_failure": _failure_lines(steps),
-        # -- S03: each step asked separately, each answer an artifact rather than a sentence ----------
-        # `command_started` is the arm's own command list; `inference_called` and `image_sent` come from
-        # the adapter-boundary log the product wrote (`product/inference-log.json`), and stay null when
-        # the product wrote none — "no evidence" is not "no calls". `plan_produced` is the plan artifact
-        # (rule path: plan.json, raster arm: records.json), `step_built` the STEP file, `evaluated` the
-        # evaluator's verdict on it.
+        # -- S03/T01: each step asked separately, each answer an artifact rather than a sentence ------
+        # `command_started` is the arm's own command list. `inference_called`, `image_attached` and
+        # `unfinished` come from the adapter-boundary records the product wrote, one file *per step*
+        # (`product/inference-log-<step>.json`): a shared path meant the second command's Recorder
+        # rewrote the file and the first command's calls vanished from the evidence. `image_attached`
+        # says the request carried the image; it does not say the server used it. `plan_produced`,
+        # `records_produced` and `program_produced` are three different artefacts and are not merged
+        # into one "produced" flag.
         "command_started": bool(steps),
         "inference_called": None if product_log is None else bool(product_log.get("inference_called")),
-        "image_sent": None if product_log is None else bool(product_log.get("image_sent")),
-        "plan_produced": (workdir / "product" / "plan.json").exists()
-                         or (workdir / "product" / "records.json").exists(),
+        "image_attached": None if product_log is None else bool(product_log.get("image_attached")),
+        "unfinished": None if product_log is None else int(product_log.get("unfinished", 0)),
+        "plan_produced": produced_plan,
+        "records_produced": produced_records,
+        "program_produced": produced_program,
         "step_built": bool(produced),
         "evaluated": verdict is not None,
-        "inference_log": str(workdir / "product" / "inference-log.json") if product_log else None,
-        "arms": _arms(product_log, model_log, model_step, model_built, model_verdict, raster),
+        "inference_logs": [str(path) for path in sorted(product.glob("inference-log*.json"))],
+        "product_trace": product_trace,
+        "arms": _arms(product_log, model_log, model_step, model_built, model_verdict, raster,
+                      product_trace),
         "evaluator": None if verdict is None else {
             "verdict": verdict.get("verdict"), "failed_checks": verdict.get("failed_checks"),
             "issues": verdict.get("issues"), "alignment": verdict.get("alignment"),
@@ -333,14 +486,14 @@ def run_part(row: dict, corpus: Path, out_root: Path, metrics, *, with_model: bo
             "plan_produced": bool((model_step or {}).get("result", {}).get("plan")) if (model_step or {}).get("result") else False,
             "evidence": (model_step or {}).get("result"),
             "note": "model-plan komutu okuma zincirinin kanıtını gönderir; çağrının kendisi ve görüntü "
-                    "durumu `model/inference-log.json` içinde, adapter sınırında kayıtlıdır",
+                    "durumu `model/inference-log*.json` içinde, adapter sınırında kayıtlıdır",
         },
         "product_input_leakage": "none: the run received the drawing file only "
                                  "(no STEP, labels, parameters, part id or verified plan)",
         "user_interventions": 0,
         "evidence": {"product_steps": str(steps_path),
                      "verdict": str(workdir / "evaluator-verdict.json") if verdict else None,
-                     "inference_log": str(workdir / "product" / "inference-log.json") if product_log else None,
+                     "inference_logs": [str(path) for path in sorted(product.glob("inference-log*.json"))],
                      "model_verdict": str(workdir / "model-verdict.json") if model_verdict else None},
     }
 
@@ -354,6 +507,7 @@ def _summary(rows: list[dict]) -> dict:
     evidence: those are unmeasured, not model-free.
     """
     model_arms = [(row.get("arms") or {}).get("model") or {} for row in rows]
+    product_arms = [(row.get("arms") or {}).get("product") or {} for row in rows]
     return {
         "parts": len(rows),
         "attempt_count": len(rows),
@@ -370,48 +524,73 @@ def _summary(rows: list[dict]) -> dict:
                 "ran": sum(1 for row in rows if row.get("command_started")),
                 "inference_called": sum(1 for row in rows if row.get("inference_called") is True),
                 "inference_log_missing": sum(1 for row in rows if row.get("inference_called") is None),
-                "image_sent": sum(1 for row in rows if row.get("image_sent") is True),
+                "image_attached": sum(1 for row in rows if row.get("image_attached") is True),
+                "unfinished_calls": sum(int(arm.get("unfinished") or 0) for arm in product_arms),
                 "plan_produced": sum(1 for row in rows if row.get("plan_produced")),
+                "records_produced": sum(1 for row in rows if row.get("records_produced")),
+                "program_produced": sum(1 for row in rows if row.get("program_produced")),
                 "step_built": sum(1 for row in rows if row.get("step_built")),
                 "evaluated": sum(1 for row in rows if row.get("evaluated")),
             },
             "model": {
                 "ran": sum(1 for arm in model_arms if arm.get("ran")),
                 "inference_called": sum(1 for arm in model_arms if arm.get("inference_called") is True),
-                "image_sent": sum(1 for arm in model_arms if arm.get("image_sent") is True),
+                "image_attached": sum(1 for arm in model_arms if arm.get("image_attached") is True),
+                "unfinished_calls": sum(int(arm.get("unfinished") or 0) for arm in model_arms),
                 "plan_produced": sum(1 for arm in model_arms if arm.get("plan_produced")),
                 "step_built": sum(1 for arm in model_arms if arm.get("step_built")),
                 "evaluated": sum(1 for arm in model_arms if arm.get("evaluated")),
+                "timed_out": sum(1 for arm in model_arms if arm.get("timed_out")),
             },
         },
     }
 
 
+def _started_but_never_finished(steps: list[dict]) -> list[str]:
+    """Adımların hangisi hiç başlamadı: bütçe bitince adım başlatılmaz ve bu yazılır."""
+    return [str(step["not_started_reason"]) for step in steps if step.get("not_started_reason")]
+
+
 def _fields_from_disk(workdir: Path, row: dict, steps: list[dict], produced: list, model_step,
                       verdict: dict | None, metrics, corpus: Path) -> dict:
-    """S03'ün altı alanı, yeniden kullanılan bir koşunun kendi dosyalarından kurulur.
+    """The row's own six fields, rebuilt from the run's own files.
 
-    The run already wrote its call logs, plan and STEP; rebuilding the fields from those files keeps
-    `--reuse` honest instead of filling the fields with a default that looks like a measurement.
+    The run already wrote its per-step call records, plan, records and STEP; rebuilding the fields from
+    those files keeps `--reuse` honest instead of filling the fields with a default that looks like a
+    measurement.
     """
-    product_log = _call_evidence(workdir / "product", "inference-log.json")
-    model_log = (model_step or {}).get("inference") or _call_evidence(workdir / "model", "inference-log.json")
+    product_log = _merged(_step_logs(workdir, "product"))
+    model_log = (model_step or {}).get("inference") or _merged(_step_logs(workdir, "model"))
     model_built = (model_step or {}).get("built") or {}
     model_verdict = None
     if model_built.get("step"):
         truth = metrics.extract(str(corpus / row["part_id"] / "part.step"))
         model_verdict = metrics.compare(metrics.extract(model_built["step"]), truth)
+    product = workdir / "product"
+    product_trace = _trace([
+        ("command_started", bool(steps), f"{len(steps)} adım"),
+        ("plan_produced", (product / "plan.json").exists() or (product / "records.json").exists(),
+         "plan.json" if (product / "plan.json").exists() else "records.json"),
+        ("step_built", bool(produced), produced[0].name if produced else "yok"),
+        ("evaluated", verdict is not None, "" if verdict else "değerlendirilecek STEP yok"),
+        ("verdict_pass", bool(verdict and verdict.get("verdict") == "pass"),
+         "" if verdict is None else str(verdict.get("verdict"))),
+    ])
     return {
         "command_started": bool(steps),
         "inference_called": None if product_log is None else bool(product_log.get("inference_called")),
-        "image_sent": None if product_log is None else bool(product_log.get("image_sent")),
-        "plan_produced": (workdir / "product" / "plan.json").exists()
-                         or (workdir / "product" / "records.json").exists(),
+        "image_attached": None if product_log is None else bool(product_log.get("image_attached")),
+        "unfinished": None if product_log is None else int(product_log.get("unfinished", 0)),
+        "plan_produced": (product / "plan.json").exists(),
+        "records_produced": (product / "records.json").exists(),
+        "program_produced": bool(sorted(product.glob("*.py"))),
         "step_built": bool(produced),
         "evaluated": verdict is not None,
-        "inference_log": str(workdir / "product" / "inference-log.json") if product_log else None,
+        "not_started": _started_but_never_finished(steps),
+        "inference_logs": [str(path) for path in sorted(product.glob("inference-log*.json"))],
+        "product_trace": product_trace,
         "arms": _arms(product_log, model_log, model_step, model_built, model_verdict,
-                      row["kind"] == "raster"),
+                      row["kind"] == "raster", product_trace),
         "model_evaluator": None if model_verdict is None else {
             "verdict": model_verdict.get("verdict"), "failed_checks": model_verdict.get("failed_checks"),
             "issues": model_verdict.get("issues"),
@@ -484,6 +663,54 @@ def summarise_from_disk(row: dict, workdir: Path, corpus: Path, metrics) -> dict
     }
 
 
+def _training_decision(rows: list[dict], run_id: str) -> dict:
+    """Hangi kolun kaydı eğitim karışımına girebilir, hangisi giremez ve neden.
+
+    Bir kayıt karışıma ancak *kanonik çıktısı* ve *bağımsız kararı* varsa girebilir: doğru parça
+    `positive`, yanlış parça `negative`. Çıktı yoksa ya da karar verilemediyse kayıt `excluded` — çünkü
+    neyi öğreteceği bilinmiyor. Model kolunun çıktısı ayrıca **çağrı kanıtı** ister: model derlenmiş bir
+    plan üretmiş ama adapter kaydı çağrı göstermiyorsa çıktı modele atfedilemez.
+    """
+    entries = []
+    for row in rows:
+        product = (row.get("arms") or {}).get("product") or {}
+        model = (row.get("arms") or {}).get("model") or {}
+        verdict = (row.get("evaluator") or {}).get("verdict")
+        if row["step_built"] and verdict in {"pass", "fail"}:
+            product_use = "negative" if verdict == "fail" else "positive"
+            product_reason = f"kanonik çıktı + değerlendirici kararı ({verdict}); girdi yalnız çizim dosyası"
+        elif row["product_refusals"]:
+            product_use, product_reason = "excluded", "ürün katı kurmadan reddetti: öğrenilecek çıktı yok"
+        else:
+            product_use, product_reason = "excluded", "ürün katı kurmadı: karşılaştırılacak çıktı yok"
+        if model.get("step_built") and model.get("evaluated") and model.get("inference_called"):
+            model_use = "negative" if model.get("verdict") == "fail" else "positive"
+            model_reason = "model planı kuruldu ve aynı kabul sözleşmesiyle değerlendirildi"
+        else:
+            model_use = "excluded"
+            model_reason = (f"model kolundan öğrenilecek çıktı yok (çağrı: {model.get('inference_called')}, "
+                            f"plan: {model.get('plan_produced')}, kurulan: {bool(model.get('step_built'))})")
+        entries.append({"part_id": row["part_id"], "arm": product.get("arm") or "product",
+                        "usable_as": product_use, "reason": product_reason,
+                        "input_file": row["input_file"], "input_sha256": row["input_sha256"],
+                        "produced_step": row["product_step"], "reference_sha256": row["reference_sha256"],
+                        "input_leakage": row["product_input_leakage"],
+                        "not_started": row.get("not_started") or []})
+        entries.append({"part_id": row["part_id"], "arm": "model", "usable_as": model_use,
+                        "reason": model_reason, "input_file": row["input_file"],
+                        "input_sha256": row["input_sha256"],
+                        "produced_step": None,  # model kolunun çıktısı: model-verdict.json + SATIR'daki model_path
+                        "reference_sha256": row["reference_sha256"],
+                        "input_leakage": row["product_input_leakage"],
+                        "not_started": row.get("not_started") or []})
+    counts = {name: sum(1 for entry in entries if entry["usable_as"] == name)
+              for name in ("positive", "negative", "excluded")}
+    return {"schema": "drawingto3d.lab.training-decision/1", "run_id": run_id, "counts": counts,
+            "rule": "Kanonik çıktı + bağımsız karar şart; `positive` doğru, `negative` yanlış parça, "
+                    "`excluded` öğrenilecek çıktı yok. Model çıktısı ayrıca çağrı kanıtı ister.",
+            "entries": entries}
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--corpus", type=Path, default=ROOT / "out/lab/data/v2")
@@ -545,17 +772,31 @@ def main() -> None:
 
     run_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     metrics = _load_metrics()
+    run_budget = Budget(RUN_BUDGET_SECONDS, label=f"run {run_id}")
+    # One heavy job at a time: the lab's own slot (`state.acquire_heavy`, H02) is taken for the whole
+    # run, so a baseline started by hand and one started by the lab queue cannot run two model arms at
+    # once on the same box. The token is released in `finally`, even when a part raises.
+    lab = Lab(ROOT / "out/lab")
+    claim = lab.acquire_heavy(f"baseline {run_id}")
+    token = claim.get("token") if isinstance(claim, dict) else None
+    if isinstance(claim, dict) and claim.get("acquired") is False:
+        print(json.dumps({"heavy_slot": "busy", "claim": claim}, ensure_ascii=False, indent=2))
+        return
     rows = []
-    for row in PARTS:
-        if args.part and row["part_id"] not in args.part:
-            continue
-        print(f"--- {row['part_id']} ({row['kind']})")
-        record = run_part(row, args.corpus, args.out / run_id, metrics,
-                          with_model=not args.no_model)
-        rows.append(record)
-        print(f"    error_class={record['error_class']} "
-              f"evaluator={(record['evaluator'] or {}).get('verdict')} "
-              f"refusals={record['product_refusals']}")
+    try:
+        for row in PARTS:
+            if args.part and row["part_id"] not in args.part:
+                continue
+            print(f"--- {row['part_id']} ({row['kind']})")
+            record = run_part(row, args.corpus, args.out / run_id, metrics,
+                              with_model=not args.no_model, run_budget=run_budget)
+            rows.append(record)
+            print(f"    error_class={record['error_class']} "
+                  f"evaluator={(record['evaluator'] or {}).get('verdict')} "
+                  f"refusals={record['product_refusals']} "
+                  f"kalan={run_budget.remaining():.0f}s")
+    finally:
+        lab.release_heavy(token)
 
     payload = {
         "schema": BASELINE_SCHEMA, "lab_version": LAB_VERSION, "run_id": run_id,
@@ -563,8 +804,12 @@ def main() -> None:
         "corpus": str(args.corpus), "corpus_manifest_sha256": sha256_file(args.corpus / "manifest.json"),
         "entry_boundary": "product ← drawing only; evaluator ← produced STEP vs corpus reference",
         "error_classes": list(ERROR_CLASSES),
+        "budget": {"run": run_budget.as_record(), "case_seconds": CASE_BUDGET_SECONDS,
+                   "note": "Vaka bütçesi (600 s) adımlar arasında paylaşılır; süresi biten adım "
+                           "başlatılmaz ve satırda `not_started` olarak yazılır. Koşu bütçesi 7200 s."},
         "parts": rows,
         "summary": _summary(rows),
+        "training_decision": _training_decision(rows, run_id),
         "splits": {
             "measured": [row["part_id"] for row in rows],
             "development_exposed": [row["part_id"] for row in rows],
@@ -586,7 +831,7 @@ def main() -> None:
             "comparison": "product: `propose` (vektör kural yolu) ya da `read`+`build` (raster serbest kod "
                           "kolu; kural değil model kullanır); model: aynı dosyaya `model-plan`. Model-plan "
                           "okuma zincirinin kanıtını gönderir; görüntünün gidip gitmediği iddia değil, "
-                          "`model/inference-log.json` kaydıdır. Zincir reddederse model hiç çağrılmaz.",
+                          "`model/inference-log*.json` kaydıdır. Zincir reddederse model hiç çağrılmaz.",
         },
     }
     write_json(args.results, payload)

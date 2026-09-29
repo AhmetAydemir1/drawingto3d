@@ -66,12 +66,17 @@ def measure(spans) -> list[tuple[float, float]]:
     return pairs
 
 
-def audit(spans) -> tuple[Calibration | None, list[str]]:
+def audit(spans, witnesses: Sequence = ()) -> tuple[Calibration | None, list[str]]:
     """The sheet's scale, and which of its readings do not fit it.
 
     Every dimension line is drawn to the number printed on it, so once the sheet has a scale, a value
     that was misread — or a number matched up with a line that was never its line — shows up as a pair
     whose length does not agree. No ground truth is needed to notice that something is wrong.
+
+    `witnesses` are used the same way `verdict` uses them: when the placed readings cannot name a scale,
+    the candidate pairs may, provided the placed readings' majority confirms it (H-R19). The re-read path
+    asks this function for the scale, so without that fallback a misread the sheet's own numbers already
+    contradict was never offered a second look.
 
     The fit is made from the ratios (`consensus`, where a majority is the sheet's scale and a single wrong
     ratio is outvoted), but each reading is then *judged* with `Calibration.disagrees`, which has the
@@ -80,6 +85,8 @@ def audit(spans) -> tuple[Calibration | None, list[str]]:
     """
     pairs = measure(spans)
     calibration, _agreement = consensus(pairs)
+    if calibration is None:
+        calibration = _confirmed_witness_calibration(pairs, witnesses)
     if calibration is None:
         return None, []
     suspect = [
@@ -193,24 +200,11 @@ def verdict(spans, minimum: int = 3, witnesses: Sequence = ()) -> dict:
     calibration, inliers = consensus(pairs, minimum=minimum)
     witness_groups = _witness_groups(witnesses)
     usable = [(value, measured) for value, measured in pairs if value > 0 and measured > 0]
-    from_witnesses = False
     if calibration is None and witness_groups:
-        # Yerleşmiş okumalar `minimum`'a ulaşmadığında ölçek aday çiftlerden kurulur: bir okuma, kapı onu
-        # kayda çevirmedi diye kanıt olmaktan çıkmaz (H-R17). Okuma başına tek oy (review6 W01).
-        calibration = _calibration_from_witnesses(witness_groups, minimum=minimum)
-        from_witnesses = calibration is not None
-    if from_witnesses and calibration is not None:
-        # Tanık ölçeği, kapının kendi yerleştirdiği okumaların **çoğunluğu** tarafından desteklenmedikçe
-        # paftanın ölçeği sayılmaz. Yoksa benzer iki yanlış eşleşmeden doğan bir oran, doğru okumaları
-        # şüpheli gösteren bir çoğunluk yaratıyor. Ölçüldü (examples/flange-elbow-90.png): 12 yerleşmiş
-        # okumanın 2'si 0.5077 px/mm'de buluşuyor ve o ölçek 10 okumayı şüpheli ilan ediyordu; 0.5077 px/mm
-        # ile 2500 px'lik pafta 5 metrelik bir parça olurdu. block-01'de durum tersi: 2 yerleşmiş okumanın
-        # 1'i (60/506 px = 8.433) tanık ölçeğini tutuyor ve öteki okuma paftanın `55` yazdığı yeri `9`
-        # okuyor — orada şüpheli ilan edilen okuma gerçekten yanlış.
-        agreeing = sum(1 for value, length in usable if not calibration.disagrees(value, length))
-        if agreeing * 2 < len(usable):
-            calibration = None
-            from_witnesses = False
+        # Yerleşmiş okumalar `minimum`'a ulaşmadığında ölçek aday çiftlerden kurulur (H-R17): bir okuma, kapı
+        # onu kayda çevirmedi diye kanıt olmaktan çıkmaz. Ama tanık ölçeği yerleşmiş okumaların çoğunluğunun
+        # doğrulamasından geçmeli (H-R18) — ayrıntı ve ölçüm `_confirmed_witness_calibration`da.
+        calibration = _confirmed_witness_calibration(pairs, witnesses, minimum=minimum)
     report = {
         "schema": "drawingto3d.sheet-scale/1",
         "readings": len(pairs),
@@ -266,7 +260,33 @@ def calibrate(pairs: list[tuple[float, float]], tolerance: float = RELATIVE_TOLE
     return Calibration(px_per_mm=px_per_mm, samples=len(kept), spread=spread)
 
 
-def _witness_groups(witnesses: Sequence[tuple[str, float, float]]) -> dict[str, list[float]]:
+def _confirmed_witness_calibration(pairs: list[tuple[float, float]], witnesses: Sequence,
+                                   minimum: int = 3,
+                                   tolerance: float = RELATIVE_TOLERANCE) -> Calibration | None:
+    """Ölçek aday çiftlerden — ama yerleşmiş okumaların çoğunluğu doğruladıysa.
+
+    Bir okuma, kapı onu kayda çevirmedi diye kanıt olmaktan çıkmaz (H-R17): ölçeği `minimum` tekil okuma
+    aday çiftlerinden kurabilir. Ama bu ölçek, kapının **kendi yerleştirdiği** okumaların çoğunluğu
+    tarafından desteklenmedikçe paftanın ölçeği sayılmaz. Ölçüldü (H-R18): `examples/flange-elbow-90.png`
+    üzerinde 12 yerleşmiş okumanın ikisi 0.5077 px/mm'de buluşuyor ve o ölçek "paftanın ölçeği" ilan
+    edilince **10 doğru okuma** şüpheli görünüyordu; 0.5077 px/mm ile 2500 px'lik pafta 5 metrelik bir
+    parça olurdu. `pilot-block-01`'de durum tersi: iki yerleşmiş okumanın biri (60 mm / 506 px = 8.433)
+    tanık ölçeğini tutuyor, öteki paftanın `55` yazdığı yeri `9` okuyor — orada şüpheli gerçekten yanlış.
+    """
+    groups = _witness_groups(witnesses)
+    if not groups:
+        return None
+    calibration = _calibration_from_witnesses(groups, minimum=minimum, tolerance=tolerance)
+    if calibration is None:
+        return None
+    usable = [(value, length) for value, length in pairs if value > 0 and length > 0]
+    agreeing = sum(1 for value, length in usable if not calibration.disagrees(value, length))
+    if not usable or agreeing * 2 < len(usable):
+        return None
+    return calibration
+
+
+def _witness_groups(witnesses: Sequence) -> dict[str, list[float]]:
     """Aday çiftleri okuma kimliğine göre topla: her okumanın öne sürdüğü oranlar."""
     groups: dict[str, list[float]] = {}
     for reading_id, value, length in witnesses:

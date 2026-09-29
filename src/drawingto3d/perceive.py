@@ -323,7 +323,9 @@ def _oriented_spans(gray: np.ndarray, reader=None, report: dict | None = None) -
     # The pairing first, the value second: the re-read judges a candidate against the line it would sit on,
     # so a reading anchored to somebody else's line has to be given its own before it can be judged at all.
     spans = _repoint_lines_that_are_not_their_own(segments, spans)
-    spans = _reread_against_the_sheet_scale(gray, glyphs, spans, clusters, reader)
+    spans = _reread_against_the_sheet_scale(
+        gray, glyphs, spans, clusters, reader, witnesses=(report or {}).get("scale_witnesses", [])
+    )
     if report is not None:
         report.setdefault("unpaired", []).extend(unpaired)
     return spans
@@ -909,6 +911,7 @@ def _reread_against_the_sheet_scale(
     spans: list[Span],
     clusters: dict[int, list[int]],
     reader=None,
+    witnesses=(),
 ) -> list[Span]:
     """A reading the sheet's own scale calls wrong is offered the reader the angles it was not asked at.
 
@@ -928,7 +931,9 @@ def _reread_against_the_sheet_scale(
     """
     if reader is not None:
         return spans
-    calibration, suspect = scale.audit(spans)
+    # Ölçek, yerleşmiş okumalar adlandıramadığında tanıklardan da gelebilir (H-R19): yoksa paftanın kendi
+    # sayılarının çeliştiği bir okuma ikinci bir şans hiç görmez.
+    calibration, suspect = scale.audit(spans, witnesses=witnesses)
     if calibration is None or not suspect:
         return spans
     by_id = {span.id: span for span in spans}

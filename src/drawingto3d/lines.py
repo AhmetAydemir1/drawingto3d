@@ -281,13 +281,20 @@ def ink(gray: np.ndarray, contrast: float = 0.08) -> np.ndarray:
     return np.where(gray <= threshold, 255, 0).astype(np.uint8)
 
 
-def thin_segments(binary: np.ndarray, min_length: int = 36, max_thickness: int = 4, max_length: float = 1400.0) -> list[Segment]:
+def thin_segments(binary: np.ndarray, min_length: int = 36, max_thickness: int | None = 4, max_length: float = 1400.0) -> list[Segment]:
     """Every long, thin, straight stroke, horizontal or vertical, anywhere on the sheet.
 
     Runs are found row by row (and column by column) and merged across rows, so an arrowhead on the end
-    of a line - short runs, never `min_length` long - does not hide the line it sits on. Line weight
-    separates the strokes that carry dimensions from the ones that do not: an outline or a title-block
-    rule prints at 5-6 px at 200 dpi, a dimension or extension line at 2-3 px.
+    of a line - short runs, never `min_length` long - does not hide the line it sits on.
+
+    Line weight separates the strokes that carry dimensions from the ones that do not, and that weight is
+    *the sheet's own*: a fixed ceiling is only right on the sheet it was picked on. Measured on the plastic
+    sheet (2526 px wide) the ceiling of 4 px taken from a 200 dpi sheet — where a dimension line prints at
+    2-3 px and an outline rule at 5-6 — returned 27 segments and not one near the 337.3 px its own
+    8.433 px/mm scale gives for a 40 mm dimension; at 6 px the same pass returned 64 segments including
+    three at 333 px, the very line that dimension hangs on. So with `max_thickness=None` the strokes are
+    found once with a generous ceiling and the ceiling becomes the thick end (90th percentile) of what this
+    sheet actually draws as a line, never below 4 px — the 200 dpi sheet keeps its own outline rules out.
 
     A dimension line is cut where an extension line crosses it, which is exactly where it ends: two
     chained dimensions drawn on one row are two segments, not one long one, and each segment's ends are
@@ -296,6 +303,15 @@ def thin_segments(binary: np.ndarray, min_length: int = 36, max_thickness: int =
     horizontal_mask = _line_mask(binary, True, min_length)
     vertical_mask = _line_mask(binary, False, min_length)
     wide = np.ones((3, 3), np.uint8)
+    if max_thickness is None:
+        # 12 px is above any drawn line at these resolutions and below a filled shape or a heavy border.
+        generous = 12
+        probe, _ = _axis_segments(
+            binary & ~cv2.dilate(vertical_mask, wide), True, min_length, generous, max_length
+        )
+        thicknesses = sorted(segment.thickness for segment in probe if segment.thickness > 0)
+        ceiling = int(round(float(np.percentile(thicknesses, 90)))) if thicknesses else 4
+        max_thickness = max(4, min(generous, ceiling))
     horizontal, _ = _axis_segments(binary & ~cv2.dilate(vertical_mask, wide), True, min_length, max_thickness, max_length)
     vertical, _ = _axis_segments(binary & ~cv2.dilate(horizontal_mask, wide), False, min_length, max_thickness, max_length)
     return horizontal + vertical

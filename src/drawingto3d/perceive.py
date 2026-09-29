@@ -290,7 +290,10 @@ def _oriented_spans(gray: np.ndarray, reader=None, report: dict | None = None) -
     if shutil.which("tesseract") is None and reader is None:
         return []
     binary = lines.ink(gray)
-    segments = lines.thin_segments(binary)
+    # The ceiling comes from this sheet's own line weight: the 4 px default was picked on a 200 dpi sheet and
+    # cuts this one's dimension lines away (measured: 27 segments and no 337.3 px line for a 40 mm dimension;
+    # 64 segments including three at 333 px once the ceiling is the sheet's own).
+    segments = lines.thin_segments(binary, max_thickness=None)
     text_mask = _text_mask(gray)
     # One glyph list for both passes. Narrow per-pass size limits used to drop half of a rotated number
     # (the digit that looked too wide for that pass), leaving a fragment that then read as a stray digit.

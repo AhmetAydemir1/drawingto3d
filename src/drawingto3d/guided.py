@@ -706,6 +706,33 @@ def sketch_diagnostics(options: dict, decisions: Decisions) -> dict:
     return picture
 
 
+def unsupported_binding_reasons(profile: dict, decisions: Decisions) -> list[str]:
+    """Why the constraint core cannot measure these ties at all (PLAN P04-b).
+
+    The core measures an all-line contour's vertices and any contour's circle centres; on a contour that
+    carries an arc it accepts only the centres ("yaylı veya dairesel dış konturda yalnız daire merkezleri
+    ölçülendirilebilir"). That rule lives in the core — this reads the same shape of profile and says the
+    same thing *before* the build, so the interface can ask instead of letting the user find out at the end.
+    A test pins both paths to the same behaviour, because the duplicate must not drift.
+    """
+    bindings = list(getattr(decisions, "bindings", []) or [])
+    if not bindings or profile is None:
+        return []
+    curved = any(edge.get("kind") in ("arc", "circle") for edge in profile.get("edges") or [])
+    if not curved:
+        return []
+    reasons = []
+    for binding in bindings:
+        for end in (binding.first, binding.second):
+            if getattr(end, "kind", None) == "centre":
+                continue
+            reasons.append(f"Bağlanan ölçü desteklenmiyor ({binding.id or 'bağ'}): yaylı veya dairesel dış "
+                           "konturda yalnız daire merkezleri ölçülendirilebilir; bağı bir merkezler arasına "
+                           "taşıyın ya da kaldırın.")
+            break
+    return reasons
+
+
 def bindings_solvable(decisions: Decisions, options: dict | None = None) -> bool:
     """Can the constraint core measure *every* tie in this decision set? (PLAN §26.4-B)
 
@@ -767,6 +794,14 @@ def questions(decisions: Decisions, diagnostics: dict | None = None, options: di
         elif _view_mismatch(view, product):
             missing.append("Onaylanan görüş yönü bu okumayla uyuşmuyor (çerçeve ya da eksenler değişti); "
                            "görüş yeniden onaylanmalı.")
+    if options is not None:
+        profile = next((row for row in options.get("profiles") or [] if row["id"] == decisions.profile_id), None)
+        unsupported = unsupported_binding_reasons(profile, decisions)
+        if unsupported:
+            # PLAN P04-b: said out loud, in the user's own terms, before the build tries and fails. The fit
+            # residuals are not the question here — the tie is not measurable at all.
+            missing.extend(unsupported)
+            return missing
     if diagnostics and not bindings_solvable(decisions, options):
         # PLAN §26.4-B: when the constraint core can measure these ties, printed values that disagree under
         # one scale are not a blocking error any more — they are the reason the geometry moves. The residuals

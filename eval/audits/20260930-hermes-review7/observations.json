@@ -1,0 +1,1000 @@
+{
+  "head": "b1aec25",
+  "focused_tests": {
+    "passed": 70,
+    "seconds": 0.54,
+    "exit_code": 0
+  },
+  "steps": [
+    {
+      "case": "pilot-block-01",
+      "step": "out/lab/product-goal/offline-flow/pilot-block-01/build/part.step",
+      "extracted": {
+        "schema": "drawingto3d.features/1",
+        "evaluator": "feature-metrics/1.0.0",
+        "path": "out/lab/product-goal/offline-flow/pilot-block-01/build/part.step",
+        "recorded_units": "mm",
+        "solids": 1,
+        "valid": true,
+        "bbox": {
+          "min": [
+            -27.5,
+            -30.0,
+            0.0
+          ],
+          "max": [
+            27.5,
+            30.0,
+            40.0
+          ],
+          "size": [
+            55.0,
+            60.0,
+            40.0
+          ]
+        },
+        "volume_mm3": 119433.629,
+        "features": [
+          {
+            "id": "hole_1",
+            "kind": "hole",
+            "diameter_mm": 10.0,
+            "axis_point": [
+              -10.0,
+              -10.0,
+              -1.0
+            ],
+            "axis_direction": [
+              0.0,
+              0.0,
+              1.0
+            ],
+            "centre": [
+              -10.0,
+              -10.0,
+              20.0
+            ],
+            "span_mm": [
+              40.0
+            ],
+            "depth_mm": null,
+            "through": true,
+            "faces": 1,
+            "area_mm2": 1256.6371
+          },
+          {
+            "id": "hole_2",
+            "kind": "hole",
+            "diameter_mm": 10.0,
+            "axis_point": [
+              -10.0,
+              10.0,
+              -1.0
+            ],
+            "axis_direction": [
+              0.0,
+              0.0,
+              1.0
+            ],
+            "centre": [
+              -10.0,
+              10.0,
+              20.0
+            ],
+            "span_mm": [
+              40.0
+            ],
+            "depth_mm": null,
+            "through": true,
+            "faces": 1,
+            "area_mm2": 1256.6371
+          },
+          {
+            "id": "hole_3",
+            "kind": "hole",
+            "diameter_mm": 10.0,
+            "axis_point": [
+              10.0,
+              -10.0,
+              -1.0
+            ],
+            "axis_direction": [
+              0.0,
+              0.0,
+              1.0
+            ],
+            "centre": [
+              10.0,
+              -10.0,
+              20.0
+            ],
+            "span_mm": [
+              40.0
+            ],
+            "depth_mm": null,
+            "through": true,
+            "faces": 1,
+            "area_mm2": 1256.6371
+          },
+          {
+            "id": "hole_4",
+            "kind": "hole",
+            "diameter_mm": 10.0,
+            "axis_point": [
+              10.0,
+              10.0,
+              -1.0
+            ],
+            "axis_direction": [
+              0.0,
+              0.0,
+              1.0
+            ],
+            "centre": [
+              10.0,
+              10.0,
+              20.0
+            ],
+            "span_mm": [
+              40.0
+            ],
+            "depth_mm": null,
+            "through": true,
+            "faces": 1,
+            "area_mm2": 1256.6371
+          }
+        ],
+        "unmodelled": {},
+        "projected_area_mm2": {
+          "x": 4800.0,
+          "y": 4400.0,
+          "z": 5971.682
+        },
+        "face_types": {
+          "CYLINDER": 4,
+          "PLANE": 6
+        },
+        "unreadable": null
+      },
+      "reported_diameters": [
+        5.0,
+        5.0,
+        5.0,
+        5.0
+      ],
+      "product_output": [
+        "  \"stl\": \"/Users/aydemir/Desktop/drawingto3d/out/lab/product-goal/offline-flow/pilot-block-01/build/part.stl\",",
+        "  \"accepted\": true",
+        "}"
+      ]
+    },
+    {
+      "case": "pilot-plate-01",
+      "step": "out/lab/product-goal/offline-flow/pilot-plate-01/build/part.step",
+      "extracted": {
+        "schema": "drawingto3d.features/1",
+        "evaluator": "feature-metrics/1.0.0",
+        "path": "out/lab/product-goal/offline-flow/pilot-plate-01/build/part.step",
+        "recorded_units": "mm",
+        "solids": 1,
+        "valid": true,
+        "bbox": {
+          "min": [
+            -30.0,
+            -22.5,
+            0.0
+          ],
+          "max": [
+            30.0,
+            22.5,
+            10.0
+          ],
+          "size": [
+            60.0,
+            45.0,
+            10.0
+          ]
+        },
+        "volume_mm3": 22855.614,
+        "features": [
+          {
+            "id": "hole_1",
+            "kind": "hole",
+            "diameter_mm": 6.0,
+            "axis_point": [
+              -20.0,
+              -20.0,
+              -1.0
+            ],
+            "axis_direction": [
+              0.0,
+              0.0,
+              1.0
+            ],
+            "centre": [
+              -20.0,
+              -20.0,
+              5.0
+            ],
+            "span_mm": [
+              10.0
+            ],
+            "depth_mm": null,
+            "through": true,
+            "faces": 1,
+            "area_mm2": 153.3544
+          },
+          {
+            "id": "hole_2",
+            "kind": "hole",
+            "diameter_mm": 6.0,
+            "axis_point": [
+              -20.0,
+              20.0,
+              -1.0
+            ],
+            "axis_direction": [
+              0.0,
+              0.0,
+              1.0
+            ],
+            "centre": [
+              -20.0,
+              20.0,
+              5.0
+            ],
+            "span_mm": [
+              10.0
+            ],
+            "depth_mm": null,
+            "through": true,
+            "faces": 1,
+            "area_mm2": 153.3544
+          },
+          {
+            "id": "hole_3",
+            "kind": "hole",
+            "diameter_mm": 6.0,
+            "axis_point": [
+              -15.0,
+              -15.0,
+              -1.0
+            ],
+            "axis_direction": [
+              0.0,
+              0.0,
+              1.0
+            ],
+            "centre": [
+              -15.0,
+              -15.0,
+              5.0
+            ],
+            "span_mm": [
+              10.0
+            ],
+            "depth_mm": null,
+            "through": true,
+            "faces": 1,
+            "area_mm2": 188.4956
+          },
+          {
+            "id": "hole_4",
+            "kind": "hole",
+            "diameter_mm": 6.0,
+            "axis_point": [
+              -15.0,
+              15.0,
+              -1.0
+            ],
+            "axis_direction": [
+              0.0,
+              0.0,
+              1.0
+            ],
+            "centre": [
+              -15.0,
+              15.0,
+              5.0
+            ],
+            "span_mm": [
+              10.0
+            ],
+            "depth_mm": null,
+            "through": true,
+            "faces": 1,
+            "area_mm2": 188.4956
+          },
+          {
+            "id": "hole_5",
+            "kind": "hole",
+            "diameter_mm": 6.0,
+            "axis_point": [
+              -7.5,
+              -7.5,
+              -1.0
+            ],
+            "axis_direction": [
+              0.0,
+              0.0,
+              1.0
+            ],
+            "centre": [
+              -7.5,
+              -7.5,
+              5.0
+            ],
+            "span_mm": [
+              10.0
+            ],
+            "depth_mm": null,
+            "through": true,
+            "faces": 1,
+            "area_mm2": 132.056
+          },
+          {
+            "id": "hole_6",
+            "kind": "hole",
+            "diameter_mm": 6.0,
+            "axis_point": [
+              -7.5,
+              7.5,
+              -1.0
+            ],
+            "axis_direction": [
+              0.0,
+              0.0,
+              1.0
+            ],
+            "centre": [
+              -7.5,
+              7.5,
+              5.0
+            ],
+            "span_mm": [
+              10.0
+            ],
+            "depth_mm": null,
+            "through": true,
+            "faces": 1,
+            "area_mm2": 132.056
+          },
+          {
+            "id": "hole_7",
+            "kind": "hole",
+            "diameter_mm": 6.0,
+            "axis_point": [
+              -5.0,
+              -5.0,
+              -1.0
+            ],
+            "axis_direction": [
+              0.0,
+              0.0,
+              1.0
+            ],
+            "centre": [
+              -5.0,
+              -5.0,
+              5.0
+            ],
+            "span_mm": [
+              10.0
+            ],
+            "depth_mm": null,
+            "through": true,
+            "faces": 1,
+            "area_mm2": 132.056
+          },
+          {
+            "id": "hole_8",
+            "kind": "hole",
+            "diameter_mm": 6.0,
+            "axis_point": [
+              -5.0,
+              5.0,
+              -1.0
+            ],
+            "axis_direction": [
+              0.0,
+              0.0,
+              1.0
+            ],
+            "centre": [
+              -5.0,
+              5.0,
+              5.0
+            ],
+            "span_mm": [
+              10.0
+            ],
+            "depth_mm": null,
+            "through": true,
+            "faces": 1,
+            "area_mm2": 132.056
+          },
+          {
+            "id": "hole_9",
+            "kind": "hole",
+            "diameter_mm": 6.0,
+            "axis_point": [
+              5.0,
+              -5.0,
+              -1.0
+            ],
+            "axis_direction": [
+              0.0,
+              0.0,
+              1.0
+            ],
+            "centre": [
+              5.0,
+              -5.0,
+              5.0
+            ],
+            "span_mm": [
+              10.0
+            ],
+            "depth_mm": null,
+            "through": true,
+            "faces": 1,
+            "area_mm2": 132.056
+          },
+          {
+            "id": "hole_10",
+            "kind": "hole",
+            "diameter_mm": 6.0,
+            "axis_point": [
+              5.0,
+              5.0,
+              -1.0
+            ],
+            "axis_direction": [
+              0.0,
+              0.0,
+              1.0
+            ],
+            "centre": [
+              5.0,
+              5.0,
+              5.0
+            ],
+            "span_mm": [
+              10.0
+            ],
+            "depth_mm": null,
+            "through": true,
+            "faces": 1,
+            "area_mm2": 132.056
+          },
+          {
+            "id": "hole_11",
+            "kind": "hole",
+            "diameter_mm": 6.0,
+            "axis_point": [
+              7.5,
+              -7.5,
+              -1.0
+            ],
+            "axis_direction": [
+              0.0,
+              0.0,
+              1.0
+            ],
+            "centre": [
+              7.5,
+              -7.5,
+              5.0
+            ],
+            "span_mm": [
+              10.0
+            ],
+            "depth_mm": null,
+            "through": true,
+            "faces": 1,
+            "area_mm2": 132.056
+          },
+          {
+            "id": "hole_12",
+            "kind": "hole",
+            "diameter_mm": 6.0,
+            "axis_point": [
+              7.5,
+              7.5,
+              -1.0
+            ],
+            "axis_direction": [
+              0.0,
+              0.0,
+              1.0
+            ],
+            "centre": [
+              7.5,
+              7.5,
+              5.0
+            ],
+            "span_mm": [
+              10.0
+            ],
+            "depth_mm": null,
+            "through": true,
+            "faces": 1,
+            "area_mm2": 132.056
+          },
+          {
+            "id": "hole_13",
+            "kind": "hole",
+            "diameter_mm": 6.0,
+            "axis_point": [
+              15.0,
+              -15.0,
+              -1.0
+            ],
+            "axis_direction": [
+              0.0,
+              0.0,
+              1.0
+            ],
+            "centre": [
+              15.0,
+              -15.0,
+              5.0
+            ],
+            "span_mm": [
+              10.0
+            ],
+            "depth_mm": null,
+            "through": true,
+            "faces": 1,
+            "area_mm2": 188.4956
+          },
+          {
+            "id": "hole_14",
+            "kind": "hole",
+            "diameter_mm": 6.0,
+            "axis_point": [
+              15.0,
+              15.0,
+              -1.0
+            ],
+            "axis_direction": [
+              0.0,
+              0.0,
+              1.0
+            ],
+            "centre": [
+              15.0,
+              15.0,
+              5.0
+            ],
+            "span_mm": [
+              10.0
+            ],
+            "depth_mm": null,
+            "through": true,
+            "faces": 1,
+            "area_mm2": 188.4956
+          },
+          {
+            "id": "hole_15",
+            "kind": "hole",
+            "diameter_mm": 6.0,
+            "axis_point": [
+              20.0,
+              -20.0,
+              -1.0
+            ],
+            "axis_direction": [
+              0.0,
+              0.0,
+              1.0
+            ],
+            "centre": [
+              20.0,
+              -20.0,
+              5.0
+            ],
+            "span_mm": [
+              10.0
+            ],
+            "depth_mm": null,
+            "through": true,
+            "faces": 1,
+            "area_mm2": 153.3544
+          },
+          {
+            "id": "hole_16",
+            "kind": "hole",
+            "diameter_mm": 6.0,
+            "axis_point": [
+              20.0,
+              20.0,
+              -1.0
+            ],
+            "axis_direction": [
+              0.0,
+              0.0,
+              1.0
+            ],
+            "centre": [
+              20.0,
+              20.0,
+              5.0
+            ],
+            "span_mm": [
+              10.0
+            ],
+            "depth_mm": null,
+            "through": true,
+            "faces": 1,
+            "area_mm2": 153.3544
+          }
+        ],
+        "unmodelled": {},
+        "projected_area_mm2": {
+          "x": 900.0,
+          "y": 1067.336,
+          "z": 4571.122
+        },
+        "face_types": {
+          "CYLINDER": 16,
+          "PLANE": 10
+        },
+        "unreadable": null
+      },
+      "reported_diameters": [
+        3.0,
+        3.0,
+        3.0,
+        3.0,
+        3.0,
+        3.0,
+        3.0,
+        3.0,
+        3.0,
+        3.0,
+        3.0,
+        3.0,
+        3.0,
+        3.0,
+        3.0,
+        3.0
+      ],
+      "product_output": [
+        "  \"stl\": \"/Users/aydemir/Desktop/drawingto3d/out/lab/product-goal/offline-flow/pilot-plate-01/build/part.stl\",",
+        "  \"accepted\": true",
+        "}"
+      ]
+    },
+    {
+      "case": "pilot-plate-02",
+      "step": "out/lab/product-goal/offline-flow/pilot-plate-02/build/part.step",
+      "extracted": {
+        "schema": "drawingto3d.features/1",
+        "evaluator": "feature-metrics/1.0.0",
+        "path": "out/lab/product-goal/offline-flow/pilot-plate-02/build/part.step",
+        "recorded_units": "mm",
+        "solids": 1,
+        "valid": true,
+        "bbox": {
+          "min": [
+            -30.0,
+            -30.0,
+            0.0
+          ],
+          "max": [
+            30.0,
+            30.0,
+            10.0
+          ],
+          "size": [
+            60.0,
+            60.0,
+            10.0
+          ]
+        },
+        "volume_mm3": 28931.417,
+        "features": [
+          {
+            "id": "hole_1",
+            "kind": "hole",
+            "diameter_mm": 15.0,
+            "axis_point": [
+              -18.5,
+              -18.5,
+              -1.0
+            ],
+            "axis_direction": [
+              0.0,
+              0.0,
+              1.0
+            ],
+            "centre": [
+              -18.5,
+              -18.5,
+              5.0
+            ],
+            "span_mm": [
+              10.0
+            ],
+            "depth_mm": null,
+            "through": true,
+            "faces": 1,
+            "area_mm2": 471.2389
+          },
+          {
+            "id": "hole_2",
+            "kind": "hole",
+            "diameter_mm": 15.0,
+            "axis_point": [
+              -18.5,
+              18.5,
+              -1.0
+            ],
+            "axis_direction": [
+              0.0,
+              0.0,
+              1.0
+            ],
+            "centre": [
+              -18.5,
+              18.5,
+              5.0
+            ],
+            "span_mm": [
+              10.0
+            ],
+            "depth_mm": null,
+            "through": true,
+            "faces": 1,
+            "area_mm2": 471.2389
+          },
+          {
+            "id": "hole_3",
+            "kind": "hole",
+            "diameter_mm": 15.0,
+            "axis_point": [
+              18.5,
+              -18.5,
+              -1.0
+            ],
+            "axis_direction": [
+              0.0,
+              0.0,
+              1.0
+            ],
+            "centre": [
+              18.5,
+              -18.5,
+              5.0
+            ],
+            "span_mm": [
+              10.0
+            ],
+            "depth_mm": null,
+            "through": true,
+            "faces": 1,
+            "area_mm2": 471.2389
+          },
+          {
+            "id": "hole_4",
+            "kind": "hole",
+            "diameter_mm": 15.0,
+            "axis_point": [
+              18.5,
+              18.5,
+              -1.0
+            ],
+            "axis_direction": [
+              0.0,
+              0.0,
+              1.0
+            ],
+            "centre": [
+              18.5,
+              18.5,
+              5.0
+            ],
+            "span_mm": [
+              10.0
+            ],
+            "depth_mm": null,
+            "through": true,
+            "faces": 1,
+            "area_mm2": 471.2389
+          }
+        ],
+        "unmodelled": {},
+        "projected_area_mm2": {
+          "x": 1200.0,
+          "y": 1200.0,
+          "z": 5786.284
+        },
+        "face_types": {
+          "CYLINDER": 4,
+          "PLANE": 6
+        },
+        "unreadable": null
+      },
+      "reported_diameters": [
+        7.5,
+        7.5,
+        7.5,
+        7.5
+      ],
+      "product_output": [
+        "  \"stl\": \"/Users/aydemir/Desktop/drawingto3d/out/lab/product-goal/offline-flow/pilot-plate-02/build/part.stl\",",
+        "  \"accepted\": true",
+        "}"
+      ]
+    },
+    {
+      "case": "pilot-step-01",
+      "step": "out/lab/product-goal/offline-flow/pilot-step-01/build/part.step",
+      "extracted": {
+        "schema": "drawingto3d.features/1",
+        "evaluator": "feature-metrics/1.0.0",
+        "path": "out/lab/product-goal/offline-flow/pilot-step-01/build/part.step",
+        "recorded_units": "mm",
+        "solids": 1,
+        "valid": true,
+        "bbox": {
+          "min": [
+            -20.0,
+            -14.0,
+            0.0
+          ],
+          "max": [
+            20.0,
+            14.0,
+            15.0
+          ],
+          "size": [
+            40.0,
+            28.0,
+            15.0
+          ]
+        },
+        "volume_mm3": 12087.611,
+        "features": [
+          {
+            "id": "hole_1",
+            "kind": "hole",
+            "diameter_mm": 10.0,
+            "axis_point": [
+              -7.5,
+              -7.5,
+              -1.0
+            ],
+            "axis_direction": [
+              0.0,
+              0.0,
+              1.0
+            ],
+            "centre": [
+              -7.5,
+              -7.5,
+              7.5
+            ],
+            "span_mm": [
+              15.0
+            ],
+            "depth_mm": null,
+            "through": true,
+            "faces": 1,
+            "area_mm2": 471.2389
+          },
+          {
+            "id": "hole_2",
+            "kind": "hole",
+            "diameter_mm": 10.0,
+            "axis_point": [
+              -7.5,
+              7.5,
+              -1.0
+            ],
+            "axis_direction": [
+              0.0,
+              0.0,
+              1.0
+            ],
+            "centre": [
+              -7.5,
+              7.5,
+              7.5
+            ],
+            "span_mm": [
+              15.0
+            ],
+            "depth_mm": null,
+            "through": true,
+            "faces": 1,
+            "area_mm2": 471.2389
+          },
+          {
+            "id": "hole_3",
+            "kind": "hole",
+            "diameter_mm": 10.0,
+            "axis_point": [
+              7.5,
+              -7.5,
+              -1.0
+            ],
+            "axis_direction": [
+              0.0,
+              0.0,
+              1.0
+            ],
+            "centre": [
+              7.5,
+              -7.5,
+              7.5
+            ],
+            "span_mm": [
+              15.0
+            ],
+            "depth_mm": null,
+            "through": true,
+            "faces": 1,
+            "area_mm2": 471.2389
+          },
+          {
+            "id": "hole_4",
+            "kind": "hole",
+            "diameter_mm": 10.0,
+            "axis_point": [
+              7.5,
+              7.5,
+              -1.0
+            ],
+            "axis_direction": [
+              0.0,
+              0.0,
+              1.0
+            ],
+            "centre": [
+              7.5,
+              7.5,
+              7.5
+            ],
+            "span_mm": [
+              15.0
+            ],
+            "depth_mm": null,
+            "through": true,
+            "faces": 1,
+            "area_mm2": 471.2389
+          }
+        ],
+        "unmodelled": {},
+        "projected_area_mm2": {
+          "x": 840.0,
+          "y": 1200.0,
+          "z": 1611.682
+        },
+        "face_types": {
+          "CYLINDER": 4,
+          "PLANE": 6
+        },
+        "unreadable": null
+      },
+      "reported_diameters": [
+        5.0,
+        5.0,
+        5.0,
+        5.0
+      ],
+      "product_output": [
+        "  \"stl\": \"/Users/aydemir/Desktop/drawingto3d/out/lab/product-goal/offline-flow/pilot-step-01/build/part.stl\",",
+        "  \"accepted\": true",
+        "}"
+      ]
+    }
+  ],
+  "source_hashes": {
+    "eval/offline_flow.py": "ecdff640a76f5ede2ee128011d38bb91a8dc5ed333734547bc68f6a3836fd19c",
+    "eval/end_to_end.py": "38380900b8b8dc36bb08a53c448a5fd193bd32d7732ce26e889e878fa9553e9b",
+    "src/drawingto3d/reason.py": "95005b12358f6ec79f3acc8004d717e572063f170acdf37c536192fa86833c85",
+    "src/drawingto3d/cadrun.py": "0ad6bacc8a517a6bf696dc1708fe402d85ee88f0d538cfdd0dbde1ecb0ad7060"
+  }
+}

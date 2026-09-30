@@ -1,0 +1,113 @@
+{
+  "head": "e801cb1",
+  "focused_tests": {
+    "passed": 88,
+    "seconds": 10.76,
+    "exit_code": 0,
+    "files": [
+      "test_inference_log.py",
+      "test_baseline_fields.py",
+      "test_calibration_trace.py",
+      "test_lab_runner.py",
+      "test_feature_metrics.py"
+    ]
+  },
+  "model_geometry": {
+    "produced": {
+      "bbox_mm": [
+        60.0,
+        10.0,
+        10.0
+      ],
+      "volume_mm3": 6000.0,
+      "features": []
+    },
+    "reference": {
+      "bbox_mm": [
+        60.0,
+        40.0,
+        6.0
+      ],
+      "volume_mm3": 11830.354,
+      "features": [
+        {
+          "id": "hole_1",
+          "kind": "hole",
+          "diameter_mm": 6.0,
+          "axis_point": [
+            -15.0,
+            8.0,
+            -120.0
+          ],
+          "axis_direction": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "centre": [
+            -15.0,
+            8.0,
+            0.0
+          ],
+          "span_mm": [
+            6.0
+          ],
+          "depth_mm": null,
+          "through": true,
+          "faces": 1,
+          "area_mm2": 113.0973
+        }
+      ]
+    }
+  },
+  "classification_probe": [
+    {
+      "verdict": "not_evaluated",
+      "classified": "positive"
+    },
+    {
+      "verdict": "error",
+      "classified": "positive"
+    },
+    {
+      "verdict": null,
+      "classified": "positive"
+    },
+    {
+      "verdict": "fail",
+      "classified": "negative"
+    },
+    {
+      "verdict": "pass",
+      "classified": "positive"
+    }
+  ],
+  "trace_probe": {
+    "stages": [
+      {
+        "stage": "plan_produced",
+        "ok": false,
+        "detail": "not made"
+      },
+      {
+        "stage": "step_built",
+        "ok": false,
+        "detail": "not run"
+      },
+      {
+        "stage": "verdict_pass",
+        "ok": false,
+        "detail": "not evaluated"
+      }
+    ],
+    "first_divergence": "plan_produced",
+    "terminal_failure": "verdict_pass"
+  },
+  "product_source_changed": false,
+  "model_or_cloud_called": false,
+  "source_hashes": {
+    "eval/lab_baseline.py": "fd027e4e07619684fbc3b3580d93d67552612773cf9a198495f8f1242dd5149a",
+    "src/drawingto3d/inference_log.py": "8f41f497cb6f51a3ec491376700780af9a256696c45ecabdc98cf84f24ba3915",
+    "eval/calibration_trace.py": "53f1e2395e3ae02b0e5f0316d868ea540757c764b081c9774951cf0bd7ba7d2b"
+  }
+}

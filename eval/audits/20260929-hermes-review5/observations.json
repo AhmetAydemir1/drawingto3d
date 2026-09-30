@@ -1,0 +1,617 @@
+{
+  "bootstrap_probe": {
+    "before": {
+      "schema": "drawingto3d.sheet-scale/1",
+      "readings": 2,
+      "usable_readings": 2,
+      "px_per_mm": null,
+      "samples": 0,
+      "spread": null,
+      "ratios": [
+        10.0,
+        10.0
+      ],
+      "inliers": [],
+      "suspect": [],
+      "state": "uncalibrated",
+      "note": "ölçülecek okuma sayısı 2: en az ikisi aynı ölçeği tutuyor ama ölçek için 3 okuma gerekiyor"
+    },
+    "after": {
+      "schema": "drawingto3d.sheet-scale/1",
+      "readings": 3,
+      "usable_readings": 3,
+      "px_per_mm": 10.0,
+      "samples": 3,
+      "spread": 0.0,
+      "ratios": [
+        10.0,
+        10.0,
+        10.0
+      ],
+      "inliers": [
+        0,
+        1,
+        2
+      ],
+      "suspect": [],
+      "state": "calibrated"
+    },
+    "matched_arbitrary_stroke": true
+  },
+  "review_probe": {
+    "original_verbatim": true,
+    "one_unverified_change_verbatim": false,
+    "dropped_record_verbatim": false,
+    "sheet_state": "contradictory"
+  },
+  "current_text_layer_coverage": {
+    "pilot-block-01": {
+      "raw": [
+        {
+          "id": "pdf-0",
+          "text": "60",
+          "value": 60.0
+        },
+        {
+          "id": "pdf-1",
+          "text": "20",
+          "value": 20.0
+        },
+        {
+          "id": "pdf-2",
+          "text": "40",
+          "value": 40.0
+        },
+        {
+          "id": "pdf-3",
+          "text": "40",
+          "value": 40.0
+        },
+        {
+          "id": "pdf-4",
+          "text": "25",
+          "value": 25.0
+        },
+        {
+          "id": "pdf-5",
+          "text": "8",
+          "value": 8.0
+        },
+        {
+          "id": "pdf-6",
+          "text": "Ø8 THRU",
+          "value": 8.0
+        },
+        {
+          "id": "pdf-7",
+          "text": "55",
+          "value": 55.0
+        },
+        {
+          "id": "pdf-8",
+          "text": "4",
+          "value": 4.0
+        }
+      ],
+      "kept": [
+        {
+          "id": "pdf-0",
+          "value": 60.0,
+          "anchors": [
+            [
+              354.5,
+              1331.0
+            ],
+            [
+              827.0,
+              1331.0
+            ]
+          ],
+          "mode": "dimension"
+        },
+        {
+          "id": "pdf-7",
+          "value": 55.0,
+          "anchors": [
+            [
+              354.5,
+              780.0
+            ],
+            [
+              787.5,
+              780.0
+            ]
+          ],
+          "mode": "dimension"
+        },
+        {
+          "id": "pdf-4",
+          "value": 25.0,
+          "anchors": [
+            [
+              660.0,
+              393.0
+            ],
+            [
+              663.0,
+              583.0
+            ]
+          ],
+          "mode": "dimension"
+        }
+      ],
+      "verdict": {
+        "schema": "drawingto3d.sheet-scale/1",
+        "readings": 3,
+        "usable_readings": 3,
+        "px_per_mm": 7.8727,
+        "samples": 3,
+        "spread": 0.0348,
+        "ratios": [
+          7.875,
+          7.8727,
+          7.6009
+        ],
+        "inliers": [
+          0,
+          1,
+          2
+        ],
+        "suspect": [],
+        "state": "calibrated"
+      }
+    },
+    "pilot-plate-01": {
+      "raw": [
+        {
+          "id": "pdf-0",
+          "text": "60",
+          "value": 60.0
+        },
+        {
+          "id": "pdf-1",
+          "text": "6",
+          "value": 6.0
+        },
+        {
+          "id": "pdf-2",
+          "text": "40",
+          "value": 40.0
+        },
+        {
+          "id": "pdf-3",
+          "text": "Ø8 THRU",
+          "value": 8.0
+        },
+        {
+          "id": "pdf-4",
+          "text": "45",
+          "value": 45.0
+        },
+        {
+          "id": "pdf-5",
+          "text": "30",
+          "value": 30.0
+        },
+        {
+          "id": "pdf-6",
+          "text": "1 5",
+          "value": 15.0
+        },
+        {
+          "id": "pdf-7",
+          "text": "1 0",
+          "value": 10.0
+        }
+      ],
+      "kept": [
+        {
+          "id": "pdf-0",
+          "value": 60.0,
+          "anchors": [
+            [
+              354.5,
+              1331.0
+            ],
+            [
+              827.0,
+              1331.0
+            ]
+          ],
+          "mode": "dimension"
+        },
+        {
+          "id": "pdf-4",
+          "value": 45.0,
+          "anchors": [
+            [
+              354.5,
+              780.0
+            ],
+            [
+              709.0,
+              780.0
+            ]
+          ],
+          "mode": "dimension"
+        },
+        {
+          "id": "pdf-7",
+          "value": 10.0,
+          "anchors": [
+            [
+              830.0,
+              645.0
+            ],
+            [
+              872.0,
+              647.0
+            ]
+          ],
+          "mode": "leader"
+        },
+        {
+          "id": "pdf-2",
+          "value": 40.0,
+          "anchors": [
+            [
+              456.0,
+              334.0
+            ],
+            [
+              458.0,
+              642.0
+            ]
+          ],
+          "mode": "dimension"
+        },
+        {
+          "id": "pdf-5",
+          "value": 30.0,
+          "anchors": [
+            [
+              786.0,
+              412.0
+            ],
+            [
+              789.0,
+              642.0
+            ]
+          ],
+          "mode": "dimension"
+        }
+      ],
+      "verdict": {
+        "schema": "drawingto3d.sheet-scale/1",
+        "readings": 4,
+        "usable_readings": 4,
+        "px_per_mm": 7.875,
+        "samples": 4,
+        "spread": 0.0267,
+        "ratios": [
+          7.875,
+          7.8778,
+          7.7002,
+          7.6673
+        ],
+        "inliers": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "suspect": [],
+        "state": "calibrated"
+      }
+    },
+    "pilot-plate-02": {
+      "raw": [
+        {
+          "id": "pdf-0",
+          "text": "80",
+          "value": 80.0
+        },
+        {
+          "id": "pdf-1",
+          "text": "8",
+          "value": 8.0
+        },
+        {
+          "id": "pdf-2",
+          "text": "50",
+          "value": 50.0
+        },
+        {
+          "id": "pdf-3",
+          "text": "Ø1 0 THRU",
+          "value": 10.0
+        },
+        {
+          "id": "pdf-4",
+          "text": "60",
+          "value": 60.0
+        },
+        {
+          "id": "pdf-5",
+          "text": "37",
+          "value": 37.0
+        },
+        {
+          "id": "pdf-6",
+          "text": "Ø6 THRU",
+          "value": 6.0
+        },
+        {
+          "id": "pdf-7",
+          "text": "1 5",
+          "value": 15.0
+        },
+        {
+          "id": "pdf-8",
+          "text": "1 0",
+          "value": 10.0
+        }
+      ],
+      "kept": [
+        {
+          "id": "pdf-0",
+          "value": 80.0,
+          "anchors": [
+            [
+              354.5,
+              1331.0
+            ],
+            [
+              984.5,
+              1331.0
+            ]
+          ],
+          "mode": "dimension"
+        },
+        {
+          "id": "pdf-4",
+          "value": 60.0,
+          "anchors": [
+            [
+              354.5,
+              701.0
+            ],
+            [
+              827.0,
+              701.0
+            ]
+          ],
+          "mode": "dimension"
+        },
+        {
+          "id": "pdf-8",
+          "value": 10.0,
+          "anchors": [
+            [
+              988.0,
+              566.0
+            ],
+            [
+              1030.0,
+              568.0
+            ]
+          ],
+          "mode": "leader"
+        },
+        {
+          "id": "pdf-2",
+          "value": 50.0,
+          "anchors": [
+            [
+              456.0,
+              177.0
+            ],
+            [
+              458.0,
+              564.0
+            ]
+          ],
+          "mode": "dimension"
+        },
+        {
+          "id": "pdf-5",
+          "value": 37.0,
+          "anchors": [
+            [
+              944.0,
+              278.0
+            ],
+            [
+              946.0,
+              564.0
+            ]
+          ],
+          "mode": "dimension"
+        }
+      ],
+      "verdict": {
+        "schema": "drawingto3d.sheet-scale/1",
+        "readings": 4,
+        "usable_readings": 4,
+        "px_per_mm": 7.875,
+        "samples": 4,
+        "spread": 0.0184,
+        "ratios": [
+          7.875,
+          7.875,
+          7.7401,
+          7.7299
+        ],
+        "inliers": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "suspect": [],
+        "state": "calibrated"
+      }
+    },
+    "pilot-step-01": {
+      "raw": [
+        {
+          "id": "pdf-0",
+          "text": "60",
+          "value": 60.0
+        },
+        {
+          "id": "pdf-1",
+          "text": "6",
+          "value": 6.0
+        },
+        {
+          "id": "pdf-2",
+          "text": "40",
+          "value": 40.0
+        },
+        {
+          "id": "pdf-3",
+          "text": "20",
+          "value": 20.0
+        },
+        {
+          "id": "pdf-4",
+          "text": "3",
+          "value": 3.0
+        },
+        {
+          "id": "pdf-5",
+          "text": "Ø6 THRU",
+          "value": 6.0
+        },
+        {
+          "id": "pdf-6",
+          "text": "1 5",
+          "value": 15.0
+        },
+        {
+          "id": "pdf-7",
+          "text": "28",
+          "value": 28.0
+        }
+      ],
+      "kept": [
+        {
+          "id": "pdf-0",
+          "value": 60.0,
+          "anchors": [
+            [
+              354.5,
+              1331.0
+            ],
+            [
+              827.0,
+              1331.0
+            ]
+          ],
+          "mode": "dimension"
+        },
+        {
+          "id": "pdf-3",
+          "value": 20.0,
+          "anchors": [
+            [
+              669.5,
+              1418.0
+            ],
+            [
+              827.0,
+              1418.0
+            ]
+          ],
+          "mode": "dimension"
+        },
+        {
+          "id": "pdf-6",
+          "value": 15.0,
+          "anchors": [
+            [
+              354.5,
+              780.0
+            ],
+            [
+              472.5,
+              780.0
+            ]
+          ],
+          "mode": "dimension"
+        },
+        {
+          "id": "pdf-2",
+          "value": 40.0,
+          "anchors": [
+            [
+              456.0,
+              334.0
+            ],
+            [
+              458.0,
+              642.0
+            ]
+          ],
+          "mode": "dimension"
+        },
+        {
+          "id": "pdf-7",
+          "value": 28.0,
+          "anchors": [
+            [
+              786.0,
+              427.0
+            ],
+            [
+              789.0,
+              642.0
+            ]
+          ],
+          "mode": "dimension"
+        }
+      ],
+      "verdict": {
+        "schema": "drawingto3d.sheet-scale/1",
+        "readings": 5,
+        "usable_readings": 5,
+        "px_per_mm": 7.8667,
+        "samples": 5,
+        "spread": 0.0249,
+        "ratios": [
+          7.875,
+          7.875,
+          7.8667,
+          7.7002,
+          7.6793
+        ],
+        "inliers": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "suspect": [],
+        "state": "calibrated"
+      }
+    }
+  },
+  "focused_tests": {
+    "passed": 37,
+    "seconds": 0.66,
+    "files": [
+      "test_baseline_fields.py",
+      "test_sheet_scale.py",
+      "test_value_pairing.py",
+      "test_reading_gate.py"
+    ]
+  },
+  "source_hashes": {
+    "src/drawingto3d/perceive.py": "63218e587c0eca7fee957fa0a4741ca40503871c41d5a0924d10aca02ed04b83",
+    "src/drawingto3d/reason.py": "435d61ecbb9984cdb38f7720dcfbb8f7dcb38a41ba2ef0df67463fb174458116",
+    "src/drawingto3d/scale.py": "28e07632ba34a338b6ab993508d151eca02ba8aec7f26623d6d0efdfeb48cd6e",
+    "eval/lab_baseline.py": "47edea6cf1d798a182018af79ebf80f70cbc05a94c62c4d43a1ed29a7eba1387"
+  }
+}

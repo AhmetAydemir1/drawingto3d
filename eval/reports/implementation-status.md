@@ -561,3 +561,47 @@ Olculdu (plaka, kalibrasyon 10,568 px/mm, bagi 120 mm, cizili 472,53 px = 44,71 
 bosluk burada acikca kayitli. P04-f baslarken **ilk madde** bu: cozulen merkezleri kesime/STEP'e tasi.
 Ayrica not: ayni gap `test_guided_geometry_migration`/`test_measure_meaning` gibi setlerde gorunmez, cunku
 onlar CAD ciktisindaki merkezi denetlemiyor.
+
+### P04-b INDI: celiski / desteklenmeyen bag / gecersiz referans uretimi durdurur (2026-09-29 05:57)
+
+**Once olcum (kod degismeden):**
+| Senaryo | Bugun |
+|---|---|
+| Ayni iki daireye 120 ve 90 mm bagi (celiski) | `make_plan` + `store.build` **istisna**: "baglanan olculer birlikte tutmuyor (cakisan: b0, b1)" ✓; kayit **korunuyor** ✓ |
+| Reddedilen build sonrasi eski STEP | `build` alani sifirlanmis; `artifact()` -> "**bu kararlar icin guncel STEP yok**" ✓; eski klasor diskte ✓ |
+| Yayli konturda kose bagi (plaka `outline_1`: 8 kenar / 4 yay; `2/Drawing.pdf outline_2`: 1 yay) | core **unsupported** ("yayli veya dairesel dis konturda yalniz daire merkezleri olculendirilebilir") ✓ ve `make_plan` (P04-a'nin one alinan kapisiyla) **duruyor** ✓ — ama arayuz sorulari **bos** ✗ |
+
+**Ne indi (`guided.py`):** `unsupported_binding_reasons(profile, decisions)` — core'un kuralini *ayni profil
+seklinden* okuyup **build'den once** kullanicinin dilinde soran yardimci; `questions()` bunu once ekliyor ve
+bu durumda uyum artiklarini sormuyor (artik sorusu burada anlamsiz). `bindings_solvable` ucta destek kuralina
+gore kaliyor (celiski mesajini core veriyor).
+
+**Kanit:** `tests/test_guided.py` -> **2 passed / 9,26 s** (yeni iki test):
+- `test_a_conflicting_pair_of_ties_stops_the_build_and_leaves_no_current_step`: baglar **korunur** (kimlikler
+  yerinde), `make_plan` ve `store.build` **b0+b1 adiyla** durur, `build.revision` bu revizyon degil,
+  `artifact()` "guncel STEP yok" der, **eski build klasoru diskte kalir**.
+- `test_a_vertex_tie_on_an_arc_contour_is_asked_and_refused_by_name`: gercek korpus paftasi (`2/Drawing.pdf`,
+  yayli kontur) -> arayuz **soruyor**, `make_plan` "desteklenmiyor/yayli" ile durur, `store.build` istisna
+  atar ve **cikti klasoru acilmaz**; ayrica core'un kendi kurali da testte pinlendi (`user_dimensions` ->
+  `unsupported`), boylece arayuzdeki kopya core'dan ayrisirsa test kirmizilasir.
+
+**Durust sinirlar:** (1) `unsupported_binding_reasons` core'un kuralini *kopyaliyor* (kural `sketch_constraints.py`
+icinde; o modul bu dilimin degil) — senkron testle baglandi, ortak yardimci P04-c/d'de core'a sorulabilir;
+(2) gecersiz referans zaten P04-a testiyle kapali; (3) tam takim kosuyor (`proc_74f8712272e4`).
+
+### P04-c OLCUMU: onizleme cozumu hic gormuyor (P01-c maddesi) (2026-09-29 06:16)
+
+**Tam takim P04-a+b sonrasi: 672 passed / 1079,27 s** (669 -> +3 test). P04-a ✓ P04-b ✓.
+
+**P04-c oncesi olcum** (sentetik kayit: 100x60 px govde, kalibrasyon 2 px/mm; 60 px'lik kenara 40 mm bagi):
+- `public()["sketch"]["solved_dimensions"]` = **null** — onizleme cozum raporunu hic gormuyor.
+- Onizlemedeki kontur kosesi: **[20, 80]** (izlenen) — plan/CAD ise **cozulen** geometriyi kuruyor (kenar bagi 60 px -> 80 px; yapilan gecici kosuda cozum sonrasi kutu 100x140 px, durum `underconstrained`, `moved=140 px`).
+- Yani bugun: **cizim ve plan ayni seyi gostermiyor** — P04-c'nin kabulunun birinci yarisi ("degisen kose/merkez cizimde ve planda aynidir") saglanmiyor.
+
+**P04-c giris noktasi (kayitli plan):**
+1. Tek hazirlama sonucu: `prepare(options, decisions) -> Prepared` (derin kopya -> P02 on denetimi -> sorular ->
+   olcu cozumu -> rapor); `sketch_diagnostics`, `public()` ve `make_plan` **ayni** sonucu okur (ikinci cozum yolu yok).
+2. `public()["sketch"]`: cozulen kontur/merkezler + `solved_dimensions` raporu (onizleme cizimi cozulmus
+   konumlari gosterir).
+3. Kabul testleri: onizlemedeki cozulen kose/merkez plan/STEP ile **ayni**; P01 kopyalama/geri alma ve
+   "temel geometri degismez" testleri hala gecer.

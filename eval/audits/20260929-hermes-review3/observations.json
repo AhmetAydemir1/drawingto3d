@@ -1,0 +1,273 @@
+{
+  "T01_log_overwrite": {
+    "before": {
+      "schema": "drawingto3d.inference-log/1",
+      "note": "read",
+      "calls": 1,
+      "inference_called": true,
+      "image_sent": true,
+      "kinds": [
+        "vision"
+      ],
+      "models": {},
+      "calls_detail": [
+        {
+          "index": 1,
+          "kind": "vision",
+          "at": "2026-09-29T20:38:11+0300",
+          "image_sent": true,
+          "image_bytes": 100,
+          "prompt_chars": 0,
+          "ok": true,
+          "error": null
+        }
+      ]
+    },
+    "after": {
+      "schema": "drawingto3d.inference-log/1",
+      "note": "build",
+      "calls": 1,
+      "inference_called": true,
+      "image_sent": false,
+      "kinds": [
+        "coder"
+      ],
+      "models": {},
+      "calls_detail": [
+        {
+          "index": 1,
+          "kind": "coder",
+          "at": "2026-09-29T20:38:11+0300",
+          "image_sent": false,
+          "image_bytes": 0,
+          "prompt_chars": 0,
+          "ok": true,
+          "error": null
+        }
+      ]
+    },
+    "reproduced": true
+  },
+  "T02_unfinished_call": {
+    "schema": "drawingto3d.inference-log/1",
+    "note": "",
+    "calls": 0,
+    "inference_called": false,
+    "image_sent": false,
+    "kinds": [],
+    "models": {},
+    "calls_detail": []
+  },
+  "T03_model_build_source": {
+    "commands": [
+      [
+        "model-plan",
+        "/var/folders/64/gbxy2yq51p7d3yny24wzwvkc0000gn/T/hermes-review3-_5c_njr2/drawing.pdf",
+        "/var/folders/64/gbxy2yq51p7d3yny24wzwvkc0000gn/T/hermes-review3-_5c_njr2/model"
+      ],
+      [
+        "build-general",
+        "/var/folders/64/gbxy2yq51p7d3yny24wzwvkc0000gn/T/hermes-review3-_5c_njr2/model/plan.json",
+        "/var/folders/64/gbxy2yq51p7d3yny24wzwvkc0000gn/T/hermes-review3-_5c_njr2/model"
+      ]
+    ],
+    "missing_drawing_flag": true
+  },
+  "T04_timeout": {
+    "actual_cli_seconds": 900,
+    "agreed_case_seconds": 600
+  },
+  "calibration_now": [
+    {
+      "part": "pilot-plate-01",
+      "pairs": [
+        [
+          60.0,
+          472.5
+        ],
+        [
+          45.0,
+          354.5
+        ]
+      ],
+      "fits": {
+        "2": {
+          "calibration": {
+            "px_per_mm": 7.877777777777778,
+            "samples": 2,
+            "spread": 0.0003526093088858097
+          },
+          "inliers": [
+            0,
+            1
+          ],
+          "implied_px_per_mm": [
+            7.875,
+            7.8778
+          ]
+        },
+        "3": {
+          "calibration": null,
+          "inliers": [],
+          "implied_px_per_mm": [
+            7.875,
+            7.8778
+          ]
+        },
+        "4": {
+          "calibration": null,
+          "inliers": [],
+          "implied_px_per_mm": [
+            7.875,
+            7.8778
+          ]
+        }
+      },
+      "kept": [
+        "60",
+        "45",
+        "1 0"
+      ],
+      "dropped": [
+        "6",
+        "40",
+        "Ø8 THRU",
+        "30",
+        "1 5"
+      ]
+    },
+    {
+      "part": "pilot-plate-02",
+      "pairs": [
+        [
+          80.0,
+          630.0
+        ],
+        [
+          60.0,
+          472.5
+        ]
+      ],
+      "fits": {
+        "2": {
+          "calibration": {
+            "px_per_mm": 7.875,
+            "samples": 2,
+            "spread": 0.0
+          },
+          "inliers": [
+            0,
+            1
+          ],
+          "implied_px_per_mm": [
+            7.875,
+            7.875
+          ]
+        },
+        "3": {
+          "calibration": null,
+          "inliers": [],
+          "implied_px_per_mm": [
+            7.875,
+            7.875
+          ]
+        },
+        "4": {
+          "calibration": null,
+          "inliers": [],
+          "implied_px_per_mm": [
+            7.875,
+            7.875
+          ]
+        }
+      },
+      "kept": [
+        "80",
+        "60",
+        "1 0"
+      ],
+      "dropped": [
+        "8",
+        "50",
+        "Ø1 0 THRU",
+        "37",
+        "Ø6 THRU",
+        "1 5"
+      ]
+    },
+    {
+      "part": "pilot-step-01",
+      "pairs": [
+        [
+          60.0,
+          472.5
+        ],
+        [
+          20.0,
+          157.5
+        ],
+        [
+          15.0,
+          118.0
+        ]
+      ],
+      "fits": {
+        "2": {
+          "calibration": {
+            "px_per_mm": 7.875,
+            "samples": 3,
+            "spread": 0.0010582010582011107
+          },
+          "inliers": [
+            0,
+            1,
+            2
+          ],
+          "implied_px_per_mm": [
+            7.875,
+            7.875,
+            7.8667
+          ]
+        },
+        "3": {
+          "calibration": {
+            "px_per_mm": 7.875,
+            "samples": 3,
+            "spread": 0.0010582010582011107
+          },
+          "inliers": [
+            0,
+            1,
+            2
+          ],
+          "implied_px_per_mm": [
+            7.875,
+            7.875,
+            7.8667
+          ]
+        },
+        "4": {
+          "calibration": null,
+          "inliers": [],
+          "implied_px_per_mm": [
+            7.875,
+            7.875,
+            7.8667
+          ]
+        }
+      },
+      "kept": [
+        "60",
+        "20",
+        "1 5"
+      ],
+      "dropped": [
+        "6",
+        "40",
+        "3",
+        "Ø6 THRU",
+        "28"
+      ]
+    }
+  ]
+}

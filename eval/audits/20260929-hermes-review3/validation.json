@@ -1,0 +1,40 @@
+{
+  "head": "c77ad16",
+  "focused_tests": [
+    {
+      "files": [
+        "test_lab_runner.py",
+        "test_inference_log.py",
+        "test_baseline_fields.py",
+        "test_lines.py",
+        "test_scale.py"
+      ],
+      "passed": 54,
+      "seconds": 3.14,
+      "exit_code": 0
+    },
+    {
+      "files": [
+        "test_bind.py",
+        "test_meaning.py",
+        "test_perceive.py",
+        "test_dimensions.py"
+      ],
+      "passed": 100,
+      "seconds": 13.95,
+      "exit_code": 0
+    }
+  ],
+  "total_passed": 154,
+  "historical_755_suite_rerun": false,
+  "source_sha256": {
+    "eval/lab_baseline.py": "74903d7345b70d85dc3138c97e1b90a9ccfd66664ec7f36d633fe61f3b5a9e84",
+    "src/drawingto3d/inference_log.py": "04295c809a95f07a4e128bf00e0ea253fbe101d976ca3bc320867a5e196d30aa",
+    "src/drawingto3d_lab/state.py": "503f169426cfa2e4f50956b2d90dc1481cb9be48136b1046bee648c30cc46bf3",
+    "src/drawingto3d/lines.py": "722c0bf1a1974ae5fea9d15a258bc2018f0e5e690cd7efdbef0f6e9ef41f1e7f",
+    "src/drawingto3d/cli.py": "c55ee7039f0d98317e81d9d386d7db505c0ea34ca1246a413e49eec000b65134"
+  },
+  "document_checks": "links/fences/whitespace/task dependencies/budget pass",
+  "product_code_changed_by_review": false,
+  "real_inference_or_cloud_called": false
+}

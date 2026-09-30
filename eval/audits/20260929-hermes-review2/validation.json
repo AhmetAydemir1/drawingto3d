@@ -1,0 +1,18 @@
+{
+  "command": ".venv/bin/python -m pytest tests/test_feature_metrics.py tests/test_lab_runner.py tests/test_lab_generator.py -q -p no:cacheprovider",
+  "exit_code": 1,
+  "passed": 66,
+  "failed": 1,
+  "seconds": 9.65,
+  "failed_test": "tests/test_lab_runner.py::test_the_lock_is_atomic_across_two_processes",
+  "failure": "state.py acquire_heavy reads empty heavy.lock after another process creates it with O_EXCL; JSONDecodeError -> ValueError, child prints no result, test raises IndexError",
+  "historical_full_suite": {
+    "passed": 739,
+    "source": "out/lab/review-checkpoint/pytest-full.log",
+    "rerun_in_this_review": false
+  },
+  "probe": "observations.json",
+  "product_source_modified": false,
+  "model_inference_called_by_review": false,
+  "cloud_resources_created": false
+}

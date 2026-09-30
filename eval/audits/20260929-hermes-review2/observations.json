@@ -1,0 +1,330 @@
+{
+  "calibration": [
+    {
+      "part": "pilot-plate-01",
+      "raw_text": [
+        {
+          "text": "60",
+          "value": 60.0
+        },
+        {
+          "text": "6",
+          "value": 6.0
+        },
+        {
+          "text": "40",
+          "value": 40.0
+        },
+        {
+          "text": "Ø8 THRU",
+          "value": 8.0
+        },
+        {
+          "text": "45",
+          "value": 45.0
+        },
+        {
+          "text": "30",
+          "value": 30.0
+        },
+        {
+          "text": "1 5",
+          "value": 15.0
+        },
+        {
+          "text": "1 0",
+          "value": 10.0
+        }
+      ],
+      "retained": [
+        {
+          "text": "60",
+          "value": 60.0,
+          "anchor_mode": "dimension",
+          "anchors": [
+            [
+              354.5,
+              1331.0
+            ],
+            [
+              827.0,
+              1331.0
+            ]
+          ]
+        },
+        {
+          "text": "45",
+          "value": 45.0,
+          "anchor_mode": "dimension",
+          "anchors": [
+            [
+              472.5,
+              780.0
+            ],
+            [
+              709.0,
+              780.0
+            ]
+          ]
+        },
+        {
+          "text": "1 0",
+          "value": 10.0,
+          "anchor_mode": "leader",
+          "anchors": [
+            [
+              830.0,
+              645.0
+            ],
+            [
+              872.0,
+              647.0
+            ]
+          ]
+        }
+      ],
+      "calibration_pairs": [
+        [
+          60.0,
+          472.5
+        ],
+        [
+          45.0,
+          236.5
+        ]
+      ],
+      "fits": {
+        "2": {
+          "calibration": null,
+          "inliers": []
+        },
+        "3": {
+          "calibration": null,
+          "inliers": []
+        }
+      }
+    },
+    {
+      "part": "pilot-plate-02",
+      "raw_text": [
+        {
+          "text": "80",
+          "value": 80.0
+        },
+        {
+          "text": "8",
+          "value": 8.0
+        },
+        {
+          "text": "50",
+          "value": 50.0
+        },
+        {
+          "text": "Ø1 0 THRU",
+          "value": 10.0
+        },
+        {
+          "text": "60",
+          "value": 60.0
+        },
+        {
+          "text": "37",
+          "value": 37.0
+        },
+        {
+          "text": "Ø6 THRU",
+          "value": 6.0
+        },
+        {
+          "text": "1 5",
+          "value": 15.0
+        },
+        {
+          "text": "1 0",
+          "value": 10.0
+        }
+      ],
+      "retained": [
+        {
+          "text": "80",
+          "value": 80.0,
+          "anchor_mode": "dimension",
+          "anchors": [
+            [
+              354.5,
+              1331.0
+            ],
+            [
+              984.5,
+              1331.0
+            ]
+          ]
+        },
+        {
+          "text": "60",
+          "value": 60.0,
+          "anchor_mode": "dimension",
+          "anchors": [
+            [
+              472.5,
+              701.0
+            ],
+            [
+              827.0,
+              701.0
+            ]
+          ]
+        },
+        {
+          "text": "1 0",
+          "value": 10.0,
+          "anchor_mode": "leader",
+          "anchors": [
+            [
+              988.0,
+              566.0
+            ],
+            [
+              1030.0,
+              568.0
+            ]
+          ]
+        }
+      ],
+      "calibration_pairs": [
+        [
+          80.0,
+          630.0
+        ],
+        [
+          60.0,
+          354.5
+        ]
+      ],
+      "fits": {
+        "2": {
+          "calibration": null,
+          "inliers": []
+        },
+        "3": {
+          "calibration": null,
+          "inliers": []
+        }
+      }
+    },
+    {
+      "part": "pilot-step-01",
+      "raw_text": [
+        {
+          "text": "60",
+          "value": 60.0
+        },
+        {
+          "text": "6",
+          "value": 6.0
+        },
+        {
+          "text": "40",
+          "value": 40.0
+        },
+        {
+          "text": "20",
+          "value": 20.0
+        },
+        {
+          "text": "3",
+          "value": 3.0
+        },
+        {
+          "text": "Ø6 THRU",
+          "value": 6.0
+        },
+        {
+          "text": "1 5",
+          "value": 15.0
+        },
+        {
+          "text": "28",
+          "value": 28.0
+        }
+      ],
+      "retained": [
+        {
+          "text": "20",
+          "value": 20.0,
+          "anchor_mode": "dimension",
+          "anchors": [
+            [
+              669.5,
+              1418.0
+            ],
+            [
+              827.0,
+              1418.0
+            ]
+          ]
+        },
+        {
+          "text": "1 5",
+          "value": 15.0,
+          "anchor_mode": "dimension",
+          "anchors": [
+            [
+              354.5,
+              780.0
+            ],
+            [
+              472.5,
+              780.0
+            ]
+          ]
+        }
+      ],
+      "calibration_pairs": [
+        [
+          20.0,
+          157.5
+        ],
+        [
+          15.0,
+          118.0
+        ]
+      ],
+      "fits": {
+        "2": {
+          "calibration": {
+            "px_per_mm": 7.875,
+            "samples": 2,
+            "spread": 0.0010582010582011107
+          },
+          "inliers": [
+            0,
+            1
+          ]
+        },
+        "3": {
+          "calibration": null,
+          "inliers": []
+        }
+      }
+    }
+  ],
+  "model_call_probe": {
+    "inference_calls": 0,
+    "payload": {
+      "evidence": "/var/folders/64/gbxy2yq51p7d3yny24wzwvkc0000gn/T/hermes-review2-cc5vr1t6/plan/evidence.json",
+      "printed": 3,
+      "claims": 0,
+      "circles": 0,
+      "scale_known": false,
+      "model": "spy-no-network"
+    },
+    "reason": "Çizim milimetreye çevrilemedi: pafta ölçeği okunamadı (kalibrasyon yok)"
+  },
+  "partial_lock_probe": {
+    "exception": "ValueError",
+    "message": "bozuk JSON: /var/folders/64/gbxy2yq51p7d3yny24wzwvkc0000gn/T/hermes-review2-cc5vr1t6/lock/heavy.lock"
+  },
+  "manifest_checked": 56,
+  "manifest_mismatches": []
+}

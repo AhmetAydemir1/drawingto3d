@@ -1,4 +1,5 @@
 """User decisions must survive edits/restarts and produce the measured solid through GeneralPlan."""
+import copy
 import hashlib
 import json
 import math
@@ -6,7 +7,8 @@ from pathlib import Path
 
 import pytest
 from drawingto3d import guided
-from drawingto3d.guided import Decisions, GuidedStore, drawing_options, make_plan, _atomic
+from drawingto3d.guided import (Decisions, GuidedStore, drawing_options, make_plan, user_dimensions,
+                                 _atomic)
 from drawingto3d.observe import Observations, observe
 
 
@@ -372,6 +374,80 @@ def test_a_lone_centre_tie_does_not_shrink_the_body(store, record):
     plan = make_plan({**record, "decisions": opened["decisions"]})
     width, height = plan_bbox(plan)
     assert width == pytest.approx(100.0, abs=1e-6) and height == pytest.approx(60.0, abs=1e-6)
+
+
+def test_a_conflicting_pair_of_ties_stops_the_build_and_leaves_no_current_step(store, record):
+    """PLAN P04-b: two ties that cannot both hold stop this revision — no plan, no STEP, old STEP not current.
+
+    The pair is *kept* (it is the user's decision set, PLAN §8.9) and the refusal names both ids; the build
+    raises before any output folder exists, and the artifact route says there is no current STEP for these
+    decisions instead of serving the previous build as if it were. The earlier build's files stay on disk.
+    """
+    first = store.save(record["token"], 0, record["decisions"])["revision"]
+    built = store.build(record["token"], first)
+    assert built["build_status"] == "complete", built.get("error")
+    earlier = Path(store.load(record["token"])["build"]["folder"])
+    assert earlier.exists()
+
+    ties = [{"id": "b0", "value": 40.0, "unit": "mm", "span_id": None, "axis": "y", "direction": -1,
+             "first": {"kind": "vertex", "id": "edge:0", "x": 20, "y": 20},
+             "second": {"kind": "vertex", "id": "edge:3", "x": 20, "y": 80}},
+            {"id": "b1", "value": 55.0, "unit": "mm", "span_id": None, "axis": "y", "direction": -1,
+             "first": {"kind": "vertex", "id": "edge:0", "x": 20, "y": 20},
+             "second": {"kind": "vertex", "id": "edge:3", "x": 20, "y": 80}}]
+    opened = store.save(record["token"], first, {**record["decisions"], "bindings": ties})
+    assert [binding["id"] for binding in opened["decisions"]["bindings"]] == ["b0", "b1"]      # kept
+    with pytest.raises(ValueError) as error:
+        make_plan({**record, "decisions": opened["decisions"]})
+    assert "b0" in str(error.value) and "b1" in str(error.value), str(error.value)
+    with pytest.raises(ValueError, match="tutmuyor"):
+        store.build(record["token"], opened["revision"])
+    assert (store.load(record["token"]).get("build") or {}).get("revision") != opened["revision"]
+    with pytest.raises(ValueError, match="güncel STEP yok"):
+        store.artifact(record["token"], "part.step")
+    assert earlier.exists(), "eski çıktı kanıt olarak diskte kalmalı"
+
+
+def test_a_vertex_tie_on_an_arc_contour_is_asked_and_refused_by_name(tmp_path):
+    """PLAN P04-b: an arc contour can only dimension its circle centres — said out loud, not discovered late.
+
+    On `2/Drawing.pdf` the offered contour carries an arc. A tie between two of its corners is not something
+    this core can measure, so the interface must ask about it in the user's own terms *before* the build, and
+    the build must refuse with the core's reason. The refusal must not look like an infrastructure failure:
+    no output folder, and no STEP for these decisions.
+    """
+    sheet = Path("examples/pdf with steps/2/Drawing.pdf")
+    assert sheet.exists(), "synthetic corpus sheet missing"
+    store = GuidedStore(tmp_path / "store")
+    opened = store.create(sheet.read_bytes())
+    options = opened["options"]
+    profile = next(p for p in options["profiles"] if any(e["kind"] == "arc" for e in p.get("edges") or []))
+    points = [point for edge in profile["edges"] for point in (edge["start"], edge["end"])]
+    left = min(points, key=lambda point: point[0])
+    right = max(points, key=lambda point: point[0])
+    first_edge, second_edge = profile["edges"][0], profile["edges"][1]
+    binding = {"id": "a0", "value": 10.0, "unit": "mm", "span_id": None, "axis": "x", "direction": 1,
+               "first": {"kind": "vertex", "id": f"{first_edge['id']}:start", "x": first_edge["start"][0],
+                         "y": first_edge["start"][1], "profile": profile["id"]},
+               "second": {"kind": "vertex", "id": f"{second_edge['id']}:start", "x": second_edge["start"][0],
+                          "y": second_edge["start"][1], "profile": profile["id"]}}
+    decisions = {"calibration": {"first": list(left), "second": list(right), "value": 50.0, "unit": "mm",
+                                 "span_id": None},
+                 "profile_id": profile["id"], "thickness": 10.0, "trace_acknowledged": True,
+                 "bindings": [binding], "holes": []}
+    opened = store.save(opened["token"], opened["revision"], decisions)
+    assert any("yaylı" in str(question) or "desteklenmiyor" in str(question)
+               for question in opened["questions"]), opened["questions"]
+    with pytest.raises(ValueError, match="desteklenmiyor|yaylı"):
+        make_plan({**store.load(opened["token"]), "decisions": opened["decisions"]})
+    # The core's own rule is pinned too, so the interface's copy of it cannot drift from the core's.
+    solving = copy.deepcopy(options)
+    solving_profile = next(p for p in solving["profiles"] if p["id"] == decisions["profile_id"])
+    solved = user_dimensions(solving_profile, solving, Decisions.model_validate(decisions), 1.0, [0.0, 0.0])
+    assert solved is not None and solved["status"] == "unsupported", solved
+    with pytest.raises(ValueError):
+        store.build(opened["token"], opened["revision"])
+    assert not [path for path in store.folder(opened["token"]).glob("build-*")], "çıktı klasörü açılmamalı"
 
 
 def test_removing_the_profile_keeps_the_ties_and_asks_instead_of_failing(store, record):

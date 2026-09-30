@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "document_kind": "review_snapshot_not_an_executable_scheduler",
-  "updated_at": "2026-09-29T22:45:00Z",
+  "updated_at": "2026-09-30T00:26:43.115879+00:00",
   "execution_started": true,
   "plan": "docs/HERMES_IMPLEMENTATION_PLAN.md",
   "goal_prompt": "HERMES_PROMPT.md",
@@ -41,7 +41,7 @@
     "shutdown_mechanism_verified",
     "cost_reserve_available"
   ],
-  "evidence_note": "Tam takim 799 passed / 0 failed (HEAD b462181, 1151.79 s; out/lab/product-goal/tests.json). V01: degerle secilen eslesme terfi etmiyor (kayitlar 2/3/3/3). V02: kapi kaynak=user dogrulamasi ariyor; 4->4.1 ve satir silme reddediliyor. V03: eval/reading_coverage.py kimlik tabanli kapsam (kept/unpaired/hesaba girmemis), sinif ayrimi (cap/cagri != lineer), etiket-pafta karsilastirmasi; plate-02 pdf-3=10 kaybi ve uc etiket uyusmazligi bulundu. Raster sira cevirme ve STEP kabulu acik.",
+  "evidence_note": "Review7 b1aec25:70 focused tests passed. Four offline-flow builds have wrong bboxes but accepted=true. Tool simulates all user reviews, reports radii as diameters and bypasses runner budgets. X01–X05 precede new product acceptance.",
   "tasks": [
     {
       "id": "H00",
@@ -139,18 +139,19 @@
       "acceptance": "Hata katmanları ölçülmüş, eğitim kararı somut örneklerle gerekçelendirilmiş.",
       "requires_training_justification": false,
       "requires_first_checkpoint_review": false,
-      "review_status": "changes_requested_review5",
+      "review_status": "changes_requested_review7",
       "review_findings": [
-        "V01",
-        "V02",
-        "V03",
-        "raster_and_semantic_geometry_errors"
+        "X01",
+        "X02",
+        "X03",
+        "X04",
+        "X05"
       ],
       "evidence": [
-        "eval/audits/20260929-hermes-review5/observations.json",
-        "out/lab/product-goal/iterations/value-pairing-landed/record.json"
+        "eval/audits/20260930-hermes-review7/observations.json",
+        "out/lab/product-goal/offline-flow/offline-flow.json"
       ],
-      "review_note": "U01/U02 closed. Candidate recall increased but independent calibration and explicit review provenance remain unsafe; repair before trusting new baseline."
+      "review_note": "Closed old regressions retained. Correct acceptance/experiment semantics and integrate existing evaluator/runner before new product runs."
     },
     {
       "id": "H05",
@@ -260,12 +261,12 @@
       ]
     }
   ],
-  "review": "docs/HERMES_PROGRESS_REVIEW_5_20260929.md",
+  "review": "docs/HERMES_PROGRESS_REVIEW_7_20260930.md",
   "next_checkpoint": "out/lab/product-goal/final/report.md",
   "active_goal_scope": [
-    "H04_V01_V02_V03",
-    "raster_callouts_and_small_dimensions",
-    "four_fixed_v2_cases",
+    "H04_X01_X02_X03_X04",
+    "four_fixed_v2_baseline",
+    "X05_callout_semantics",
     "PLAN_P01_P08_product_acceptance",
     "new_final_set_min20_min10_raster",
     "offline_M1_UI_store_CAD",

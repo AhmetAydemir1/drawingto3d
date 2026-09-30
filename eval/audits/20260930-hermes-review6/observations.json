@@ -1,0 +1,68 @@
+{
+  "head": "68db985",
+  "bootstrap": {
+    "unique_readings": 1,
+    "candidate_strokes": 3,
+    "calibration": {
+      "px_per_mm": 10.0,
+      "samples": 3,
+      "spread": 0.0
+    },
+    "promoted": [
+      {
+        "id": "one_number",
+        "value": 40.0,
+        "anchor_source": "value"
+      }
+    ]
+  },
+  "suspect_guard": {
+    "verdict": {
+      "schema": "drawingto3d.sheet-scale/1",
+      "readings": 4,
+      "usable_readings": 4,
+      "px_per_mm": 10.0,
+      "samples": 3,
+      "spread": 0.0,
+      "ratios": [
+        10.0,
+        10.0,
+        10.0,
+        61.1111
+      ],
+      "inliers": [
+        0,
+        1,
+        2
+      ],
+      "suspect": [
+        "wrong"
+      ],
+      "state": "calibrated_with_suspects"
+    },
+    "contradictory_only_guard_triggers": false
+  },
+  "numeric_membership_counterexample": {
+    "expected": [
+      40.0
+    ],
+    "readings": [
+      40.0,
+      40.0,
+      41.0
+    ],
+    "reported_label_matching": 3,
+    "note": "Same any-value 4% criterion used in eval/raster_label_match.py; not identity/role matching."
+  },
+  "focused_tests": {
+    "passed": 59,
+    "seconds": 0.35,
+    "exit_code": 0
+  },
+  "source_hashes": {
+    "src/drawingto3d/perceive.py": "aaaa0e5aa44c30cdd1dd642e3535f0b161b70f78cbe441b5bee92ca0445bfd61",
+    "src/drawingto3d/scale.py": "c2e330b046d5c491d161c790823b4998f4df12f80b5f76f66cfda43c9edb1133",
+    "src/drawingto3d/reason.py": "6ef0ae70b20f310f7455924f3e00104b14c45f77a5ed91668df2f49b78491033",
+    "eval/raster_label_match.py": "8caab55051668054f76907128ed253e4f3b44e576d5a293dce74f6b5e821bf91"
+  }
+}

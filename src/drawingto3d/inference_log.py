@@ -20,7 +20,9 @@ korunması gerekiyor.
 
 Ölçülen sınır dürüst yazılır: `image_attached` isteğin görüntü taşıdığını söyler, `server_ok` çağrının
 hatasız döndüğünü söyler. Sunucunun görüntüyü *kullandığı* buradan anlaşılmaz; bu kayıt o iddiayı
-kurmuş sayılmaz.
+kurmuş sayılmaz. `images_in_request` (SEMREAD-001A) isteğe konan görsel **sayısıdır**: tek görselli
+eski çağrılar `1`, metin çağrıları `0` yazar ve çoklu görsel çağrısı "görüntüsüz" kaydedilemez.
+Gönderilen byte'ların hash'i/sırası ise adapter sınırının altındaki actual-request kaydındadır.
 """
 
 from __future__ import annotations
@@ -76,12 +78,13 @@ class Recorder:
     # -- çağrının iki ucu -------------------------------------------------
 
     def started(self, kind: str, *, image_attached: bool = False, image_bytes: int = 0,
-                prompt_chars: int = 0) -> str:
+                prompt_chars: int = 0, images_in_request: int = 0) -> str:
         """Adapter'a girmeden **önce** yazılır; dönen `call_id` ile çağrı kapatılır."""
         call_id = f"{len(self.calls) + 1:04d}"
         self.calls.append({"call_id": call_id, "kind": kind, "state": STARTED,
                            "started_at": _now(), "finished_at": None,
                            "image_attached": bool(image_attached), "image_bytes": int(image_bytes),
+                           "images_in_request": int(images_in_request),
                            "prompt_chars": int(prompt_chars), "server_ok": None, "error": None})
         self.write()
         return call_id
@@ -98,10 +101,10 @@ class Recorder:
         self.write()
 
     def note(self, kind: str, *, image_attached: bool = False, image_bytes: int = 0,
-             prompt_chars: int = 0, error: str | None = None) -> str:
+             prompt_chars: int = 0, error: str | None = None, images_in_request: int = 0) -> str:
         """Tek adımlık kayıt (açılış ve kapanış aynı yerde): kısa yollar ve testler için."""
         call_id = self.started(kind, image_attached=image_attached, image_bytes=image_bytes,
-                               prompt_chars=prompt_chars)
+                               prompt_chars=prompt_chars, images_in_request=images_in_request)
         self.finished(call_id, server_ok=error is None, error=error)
         return call_id
 
@@ -120,6 +123,8 @@ class Recorder:
             "unfinished": sum(1 for call in self.calls if call["state"] == STARTED),
             "inference_called": attempts > 0,
             "image_attached": any(call["image_attached"] for call in self.calls),
+            "images_in_request": max([int(call.get("images_in_request") or 0) for call in self.calls]
+                                     or [0]),
             "server_ok": any(call["server_ok"] is True for call in self.calls),
             "kinds": sorted({call["kind"] for call in self.calls}),
             "models": self.models,
@@ -163,6 +168,7 @@ def merge_records(records: list[dict]) -> dict:
         "unfinished": sum(1 for call in calls if call.get("state") == STARTED),
         "inference_called": bool(calls),
         "image_attached": any(call.get("image_attached") for call in calls),
+        "images_in_request": max([int(call.get("images_in_request") or 0) for call in calls] or [0]),
         "server_ok": any(call.get("server_ok") is True for call in calls),
         "kinds": sorted({call.get("kind") for call in calls if call.get("kind")}),
         "models": {kind: model for record in records for kind, model in (record.get("models") or {}).items()},
@@ -197,9 +203,18 @@ class _Recorded:
     _recorder: Recorder
     _kind: str = "model"
 
-    def _enter(self, prompt, image_png: bytes | None) -> str:
-        return self._recorder.started(self._kind, image_attached=image_png is not None,
-                                      image_bytes=len(image_png or b""),
+    def _enter(self, prompt, image_png: bytes | None, images: list[bytes] | None = None) -> str:
+        """Çağrıyı aç. Görsel **listesi** de sayılır: çoklu görsel çağrısı "görüntüsüz" yazılamaz.
+
+        `image_png` ile `images` birlikte verilirse iç adapter hata verir; kayıt yine de gerçekten
+        verilen listeyi yazar, böylece reddedilen bir çağrı da kanıtta doğru görünür.
+        """
+        attached = [image_png] if image_png is not None else []
+        sent = list(images) if images is not None else []
+        total = attached + sent
+        return self._recorder.started(self._kind, image_attached=bool(total),
+                                      image_bytes=sum(len(item or b"") for item in total),
+                                      images_in_request=len(total),
                                       prompt_chars=len(prompt) if isinstance(prompt, str) else 0)
 
     def _leave(self, call_id: str, error: BaseException | None) -> None:
@@ -220,12 +235,35 @@ class RecordedChat(_Recorded, OllamaChat):
         self._recorder.describe("chat", self)
 
     def complete(self, prompt: str, image_png: bytes | None = None, num_predict: int | None = None,
-                 response_format: dict | str | None = None, stats: dict | None = None) -> str:
-        call_id = self._enter(prompt, image_png)
+                 response_format: dict | str | None = None, stats: dict | None = None, *,
+                 images: list[bytes] | None = None, trace: dict | None = None,
+                 raw_response: dict | None = None, image_labels: list[str] | None = None,
+                 images_layout: str | None = None, image_label_prefix: str = "") -> str:
+        """Metin, tek görsel ya da görsel **listesi**; kayıt yeni imzayı da taşır.
+
+        `images=None` iken eski çağrı biçimi birebir korunur (tek görselli/test çağrıları ve onları
+        taklit eden sarmalayıcılar etkilenmez); `images` verildiğinde yalnız o zaman iletilir.
+        """
+        call_id = self._enter(prompt, image_png, images)
         error: BaseException | None = None
         try:
+            # Yeni anahtarlar yalnız gerçekten verildiğinde iletilir: eski imzayı taşıyan sarmalayıcı
+            # ve test çiftleri (tek görselli/metin çağrıları) değişmeden çalışmaya devam eder.
+            extra: dict = {}
+            if images is not None:
+                extra["images"] = images
+            if trace is not None:
+                extra["trace"] = trace
+            if raw_response is not None:
+                extra["raw_response"] = raw_response
+            if image_labels is not None:
+                extra["image_labels"] = image_labels
+            if images_layout is not None:
+                extra["images_layout"] = images_layout
+            if image_label_prefix:
+                extra["image_label_prefix"] = image_label_prefix
             return super().complete(prompt, image_png=image_png, num_predict=num_predict,
-                                    response_format=response_format, stats=stats)
+                                    response_format=response_format, stats=stats, **extra)
         except BaseException as exc:
             error = exc
             raise

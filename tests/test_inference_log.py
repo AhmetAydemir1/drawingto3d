@@ -182,6 +182,81 @@ RecordedChat("qwen3-vl:8b-instruct", recorder=Recorder({str(path)!r}, label="kes
     assert record["image_attached"] is False, "görüntü gitmediyse gitmiş gibi yazılmamalı"
 
 
+def test_a_multi_image_call_is_never_recorded_as_image_less(tmp_path, monkeypatch):
+    """Çoklu görsel çağrısı (SEMREAD-001A): kayıt görselleri saymalı, "görüntü yok" yazmamalı."""
+    seen = {}
+
+    def fake_init(self, model, *args, **kwargs):
+        self.settings = llama.ChatSettings(model=model)
+
+    def fake_complete(self, prompt, image_png=None, num_predict=None, response_format=None,
+                      stats=None, *, images=None, trace=None, raw_response=None):
+        seen.update({"image_png": image_png, "images": images})
+        return "cevap"
+
+    monkeypatch.setattr(llama.OllamaChat, "__init__", fake_init)
+    monkeypatch.setattr(llama.OllamaChat, "complete", fake_complete)
+
+    recorder = Recorder(tmp_path / "inference-log.json")
+    chat = RecordedChat("qwen3-vl:8b-instruct", recorder=recorder)
+    assert chat.complete("üç görsel", images=[b"a" * 10, b"b" * 20, b"c" * 30]) == "cevap"
+
+    assert seen["image_png"] is None and seen["images"] == [b"a" * 10, b"b" * 20, b"c" * 30]
+    record = read_record(recorder.path)
+    call = record["calls"][0]
+    assert call["image_attached"] is True and call["images_in_request"] == 3
+    assert call["image_bytes"] == 60
+    assert record["images_in_request"] == 3 and record["image_attached"] is True
+
+
+def test_a_text_only_call_records_zero_images(tmp_path, monkeypatch):
+    fake_init, fake_complete = _fake_chat("qwen3-vl:8b-instruct")
+    monkeypatch.setattr(llama.OllamaChat, "__init__", fake_init)
+    monkeypatch.setattr(llama.OllamaChat, "complete", fake_complete)
+
+    recorder = Recorder(tmp_path / "inference-log.json")
+    RecordedChat("qwen3-vl:8b-instruct", recorder=recorder).complete("sadece metin")
+
+    call = read_record(recorder.path)["calls"][0]
+    assert call["image_attached"] is False and call["images_in_request"] == 0 and call["image_bytes"] == 0
+
+
+def test_a_single_image_call_still_counts_as_one(tmp_path, monkeypatch):
+    fake_init, fake_complete = _fake_chat("qwen3-vl:8b-instruct")
+    monkeypatch.setattr(llama.OllamaChat, "__init__", fake_init)
+    monkeypatch.setattr(llama.OllamaChat, "complete", fake_complete)
+
+    recorder = Recorder(tmp_path / "inference-log.json")
+    RecordedChat("qwen3-vl:8b-instruct", recorder=recorder).complete("oku", image_png=b"png")
+
+    call = read_record(recorder.path)["calls"][0]
+    assert call["image_attached"] is True and call["images_in_request"] == 1
+    assert call["image_bytes"] == len(b"png")
+
+
+def test_a_rejected_conflicting_call_is_still_recorded_as_failed(tmp_path, monkeypatch):
+    """`image_png` + `images` birlikte verilirse iç adapter hata verir; kayıt bunu `failed` yazar."""
+    fake_init, _ = _fake_chat("qwen3-vl:8b-instruct")
+
+    def refusing_complete(self, prompt, image_png=None, num_predict=None, response_format=None,
+                          stats=None, *, images=None, **kwargs):
+        if image_png is not None and images is not None:
+            raise ValueError("image_png ile images birlikte verilemez")
+        return "cevap"
+
+    monkeypatch.setattr(llama.OllamaChat, "__init__", fake_init)
+    monkeypatch.setattr(llama.OllamaChat, "complete", refusing_complete)
+
+    recorder = Recorder(tmp_path / "inference-log.json")
+    with pytest.raises(ValueError):
+        RecordedChat("qwen3-vl:8b-instruct", recorder=recorder).complete(
+            "oku", image_png=b"png", images=[b"png2"])
+
+    record = read_record(recorder.path)
+    assert record["failed"] == 1 and record["calls"][0]["state"] == "failed"
+    assert "birlikte verilemez" in record["calls"][0]["error"]
+
+
 def test_the_record_is_replaced_atomically(tmp_path):
     """Yazım yanına yazıp `os.replace` ile yerine koyar: yarım JSON kalmaz, `.tmp` sızmaz."""
     recorder = Recorder(tmp_path / "inference-log.json", label="atomik")

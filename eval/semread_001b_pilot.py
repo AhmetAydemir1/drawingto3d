@@ -1,0 +1,1060 @@
+"""SEMREAD-001B — D/V/VE pilot sürücüsü (corpus, kollar, bütçe, değerlendirme, rapor).
+
+Sözleşme (goal §3, §4, §6):
+
+* **D**  : deterministic hat, **sıfır VLM çağrısı**. `out/lab/semread-001b` altında attempt yazar.
+* **V**  : ham full-page + nötr kimlik + ortak görev prompt'u.
+* **VE** : V ile byte düzeyinde aynı ham sayfa + gerçek gözlem overlay'i + adreslenebilir gözlem tablosu.
+* **Bütçe**: bu goal için **en fazla 30** gerçek çağrı; en fazla 10 development/tanı, 10 sayfa × 2 kol
+  için 20 final. Her istek, ortak ağır iş kilidi altında kalıcı sayaçta **gönderimden önce** rezerve
+  edilir; timeout/başarısız istek/tanı çağrıları da sayılır; cache hit inference değildir.
+* **Kollar aynı** şema/görev metni/model/digest/üretim ayarıyla çalışır; fark yalnız gözlem girdisidir.
+
+Betik `out/lab` kökünü, ortak `LabRunner`ı ve ortak ağır iş kilidini kullanır; yeni runner/scheduler
+kurulmaz.
+"""
+
+from __future__ import annotations
+
+import argparse
+import fcntl
+import hashlib
+import json
+import os
+import re
+import resource
+import subprocess
+import sys
+import time
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "src"))
+
+from drawingto3d.llama import (ChatSettings, OllamaChat, find_model,  # noqa: E402
+                               installed_models)
+from drawingto3d.observe import observe  # noqa: E402
+from drawingto3d.semantic_candidate_reader import (ARMS, OVERLAY_IMAGE_ID, V_ARM, VE_ARM,  # noqa: E402
+                                                   prepare_arm_inputs, read_page)
+from drawingto3d.semantic_candidates import (CANDIDATE_SCHEMA_VERSION,  # noqa: E402
+                                             CandidateResponse, CandidateParseError,
+                                             candidate_json_schema, candidate_prompt,
+                                             check_candidate_references, parse_candidate_json)
+from drawingto3d.semantic_deterministic import D_ARM, deterministic_candidates  # noqa: E402
+from drawingto3d.semantic_evaluation import (MATCH_POLICY, aggregate, compare_arms,  # noqa: E402
+                                             evaluate_page)
+from drawingto3d.semantic_images import open_source  # noqa: E402
+from drawingto3d.inference_log import RecordedChat, Recorder  # noqa: E402
+from drawingto3d_lab.runner import Job, LabRunner  # noqa: E402
+
+LAB_ROOT = ROOT / "out/lab"
+REPORT_ROOT = LAB_ROOT / "semread-001b"
+CORPUS_DIR = REPORT_ROOT / "corpus"
+GOLD_DIR = CORPUS_DIR / "gold"
+PAGES_DIR = CORPUS_DIR / "pages"
+ATTEMPT_ROOT = REPORT_ROOT / "attempts"
+
+JOB_PREFIX = "semread-001b-"
+CASE_SCHEMA = "semread-001b-case/1"
+PAGE_IMAGE_ID = "image-1"
+MODEL = "qwen3-vl:8b-instruct"
+EXPECTED_DIGEST = "0533d74300e4f9bc367d675d4e64ffd073d50ff16a2b4096cc2e8a1cf8c96319"
+EXPECTED_RUNTIME = "0.32.1"
+CASE_TIMEOUT_SECONDS = 600
+RUN_TIMEOUT_SECONDS = 7200
+MODEL_TIMEOUT_SECONDS = 300
+LIVE_CALL_LIMIT_DEV = 10
+LIVE_CALL_LIMIT_FINAL = 20
+LIVE_CALL_LIMIT_TOTAL = LIVE_CALL_LIMIT_DEV + LIVE_CALL_LIMIT_FINAL
+PHASES = ("dev", "final")                  # çağrının amacı
+PHASE_LIMITS = {"dev": LIVE_CALL_LIMIT_DEV, "final": LIVE_CALL_LIMIT_FINAL}
+FINAL_VLM_CELLS = 20                       # 10 sayfa × V/VE
+NUM_PREDICT = 2048
+IMAGE_MAX_SIDE = 1280          # development aşamasında sabitlenir; final koşuya kadar değişmez
+GOLD_SENTINEL = "semread-001b-gold-sentinel-4f21"
+
+# Kaynak kod/test kimliğine giren dosyalar (001B'nin kendi kimliği; 001A'nınki snapshot'ta sabit).
+IDENTITY_FILES = (
+    "eval/semread_001b_pilot.py", "eval/semread_001b_snapshot.py",
+    "eval/semread_001b_corpus_probe.py",
+    "src/drawingto3d/semantic_candidates.py", "src/drawingto3d/semantic_candidate_reader.py",
+    "src/drawingto3d/semantic_deterministic.py", "src/drawingto3d/semantic_evaluation.py",
+    "tests/test_semantic_candidates.py",
+) + tuple(str(path.relative_to(ROOT)) for path in sorted((ROOT / "src/drawingto3d").glob("*.py"))) \
+  + tuple(str(path.relative_to(ROOT)) for path in sorted((ROOT / "src/drawingto3d_lab").glob("*.py"))) \
+  + ("pyproject.toml",)
+
+# Corpus: 10 sayfa, 10 bağımsız parça grubu, 4 development + 6 frozen. 001A'da incelenmiş örnekler
+# (plate/flange) bilinçli olarak development'a ayrıldı (goal §4).
+PAGES: tuple[dict, ...] = (
+    {"page_id": "dev-plate-pocket", "split": "dev", "group": "plate-with-a-pocket",
+     "path": "examples/pdf with steps/5/Plate With A Pocket Drawing.PDF", "type": "pdf",
+     "scope": "diameter/radius callouts, THRU/depth, count",
+     "rationale": "001A'da incelenmiş örnek -> development (goal §4)"},
+    {"page_id": "dev-flange-book", "split": "dev", "group": "flange-book-exercise",
+     "path": "examples/pdf with steps/8/Flange.PNG", "type": "raster",
+     "scope": "radius/diameter callouts, count",
+     "rationale": "001A'da flange örneği incelendi -> development"},
+    {"page_id": "dev-flange-elbow", "split": "dev", "group": "flange-elbow-90",
+     "path": "examples/flange-elbow-90.png", "type": "raster",
+     "scope": "assembled drawing: diameter/radius callouts",
+     "rationale": "001A L4 vakasında kullanıldı -> development"},
+    {"page_id": "dev-drawing-2", "split": "dev", "group": "drawing-2-views",
+     "path": "examples/pdf with steps/2/Drawing.pdf", "type": "pdf",
+     "scope": "two-view drawing: diameter/radius callouts, depth",
+     "rationale": "development: farklı template (çok görünüşlü) denemesi"},
+    {"page_id": "frozen-exercise-51", "split": "frozen", "group": "exercise-51",
+     "path": "examples/pdf with steps/1/Exercise_51.PNG", "type": "raster",
+     "scope": "book exercise: full dimensioning",
+     "rationale": "frozen: 001A'da kullanılmadı"},
+    {"page_id": "frozen-exercise-12", "split": "frozen", "group": "exercise-12",
+     "path": "examples/pdf with steps/10/Exercise 12.pdf", "type": "pdf",
+     "scope": "book exercise: full dimensioning",
+     "rationale": "frozen: 001A'da kullanılmadı; pdf sürümü seçildi (aynı parçanın PNG'si ayrı örnek sayılmaz)"},
+    {"page_id": "frozen-exercise-17", "split": "frozen", "group": "exercise-17",
+     "path": "examples/pdf with steps/3/Exercise 17.PNG", "type": "raster",
+     "scope": "book exercise: full dimensioning",
+     "rationale": "frozen: 001A'da kullanılmadı"},
+    {"page_id": "frozen-exercise-13", "split": "frozen", "group": "exercise-13",
+     "path": "examples/pdf with steps/4/Exercise 13.PNG", "type": "raster",
+     "scope": "book exercise: full dimensioning",
+     "rationale": "frozen: 001A'da kullanılmadı"},
+    {"page_id": "frozen-enclosure", "split": "frozen", "group": "plastic-enclosure",
+     "path": "examples/pdf with steps/6/plastic enclosue.pdf", "type": "pdf",
+     "scope": "enclosure drawing: callouts",
+     "rationale": "frozen: farklı parça sınıfı (plastik mahfaza)"},
+    {"page_id": "frozen-views-exercise", "split": "frozen", "group": "teknik-resim-views",
+     "path": "examples/Teknik Resim Görünüş Çıkarma Örnekleri 1 - Makine Eğitimi.jpg",
+     "type": "raster", "scope": "view-extraction exercise sheet",
+     "rationale": "frozen: kitap taraması, farklı kaynak biçimi"},
+)
+
+
+# ------------------------------------------------------------------ kimlik ve yardımcılar
+
+
+def sha256_of(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1 << 20), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def code_identity() -> str:
+    """Üretici kimliği: 001B'nin ilgili kaynak/test dosyalarının içeriği (dokümanlar hariç)."""
+    digest = hashlib.sha256()
+    for relative in sorted(set(IDENTITY_FILES)):
+        path = ROOT / relative
+        digest.update(f"{relative}\0{sha256_of(path) if path.exists() else 'yok'}\0".encode())
+    return digest.hexdigest()
+
+
+def evaluation_identity() -> str:
+    """Değerlendirme kimliği: gold + eşleştirme politikası + şema (tahmin girdilerinden ayrı)."""
+    digest = hashlib.sha256()
+    digest.update(json.dumps(MATCH_POLICY, sort_keys=True, ensure_ascii=False).encode())
+    digest.update(json.dumps(candidate_json_schema(), sort_keys=True).encode())
+    for page in PAGES:
+        reference = GOLD_DIR / f"{page['page_id']}.json"
+        digest.update(f"{page['page_id']}\0{sha256_of(reference) if reference.exists() else 'yok'}\0"
+                      .encode())
+    return digest.hexdigest()
+
+
+def read_json(path: Path, default=None):
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (FileNotFoundError, json.JSONDecodeError):
+        return default
+
+
+def write_json(path: Path, payload) -> Path:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    return path
+
+
+def state_path() -> Path:
+    return REPORT_ROOT / "state.json"
+
+
+def load_state() -> dict:
+    state = read_json(state_path(), default=None)
+    if state is None:
+        state = {"schema": "semread-001b-state/1", "created_at": _now(), "live_calls": [],
+                 "budget": {"dev": LIVE_CALL_LIMIT_DEV, "final": LIVE_CALL_LIMIT_FINAL,
+                            "total": LIVE_CALL_LIMIT_TOTAL},
+                 "attempts": {}, "notes": [
+                     "001A tarihsel kayıtları bu sayaca dahil değildir; iki goal ayrı raporlanır."]}
+    return state
+
+
+def save_state(state: dict) -> Path:
+    state["updated_at"] = _now()
+    return write_json(state_path(), state)
+
+
+def _now() -> str:
+    from datetime import datetime, timezone
+
+    return datetime.now(timezone.utc).isoformat(timespec="seconds")
+
+
+def _git(*args: str) -> str | None:
+    result = subprocess.run(["git", *args], cwd=ROOT, capture_output=True, text=True, check=False)
+    return result.stdout.strip() or None
+
+
+def artifact_index(directory: Path) -> dict:
+    rows = [{"path": str(path.relative_to(directory)), "sha256": sha256_of(path),
+             "bytes": path.stat().st_size}
+            for path in sorted(directory.rglob("*")) if path.is_file()]
+    return {"schema": "semread-001b-artifact-index/1", "files": rows, "count": len(rows)}
+
+
+# ------------------------------------------------------------------ bütçe (ortak kilit altında)
+
+
+def _budget_used(state: dict, phase: str) -> int:
+    return sum(1 for call in state.get("live_calls") or [] if call.get("phase") == phase)
+
+
+def reserve_live_call(case_id: str, *, phase: str, arm: str, split: str,
+                      attempt_dir: Path) -> dict:
+    """Çağrıdan **önce** kalıcı rezervasyon; üç sınır aynı kilit içinde denetlenir.
+
+    `split` veri bölümüdür (dev/frozen), `phase` çağrının amacıdır (dev/final). İkisi ayrıdır:
+    development sayfası final fazında da çalışabilir. Faz/kol değerleri doğrulanır; geçersiz değer
+    bütçe harcamaz. Development, final ve toplam (30) tavanı **tek** `flock` bölümünde denetlenir;
+    böylece yeniden başlatma/timeout/retry/eşzamanlı rezervasyon tavanı aşamaz. Cevaplanmamış
+    ("reserved") kayıt da sayılır — gönderilip gönderilmediği belirsiz istek bütçede kalır.
+    """
+    if phase not in PHASES:
+        return {"reserved": False, "reason": f"geçersiz faz: {phase!r} (beklenen: {PHASES})"}
+    if arm not in ARMS:
+        return {"reserved": False, "reason": f"geçersiz kol: {arm!r} (beklenen: {ARMS})"}
+    if split not in ("dev", "frozen"):
+        return {"reserved": False, "reason": f"geçersiz veri bölümü: {split!r}"}
+    REPORT_ROOT.mkdir(parents=True, exist_ok=True)
+    guard = REPORT_ROOT / "live-calls.guard"
+    with guard.open("a+") as handle:
+        fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
+        try:
+            state = load_state()
+            calls = state.setdefault("live_calls", [])
+            used_dev, used_final = _budget_used(state, "dev"), _budget_used(state, "final")
+            used = {"dev": used_dev, "final": used_final}
+            if used[phase] >= PHASE_LIMITS[phase]:
+                return {"reserved": False,
+                        "reason": f"{phase} bütçesi bitti ({used[phase]}/{PHASE_LIMITS[phase]})"}
+            if len(calls) >= LIVE_CALL_LIMIT_TOTAL:
+                return {"reserved": False,
+                        "reason": f"toplam bütçe bitti ({len(calls)}/{LIVE_CALL_LIMIT_TOTAL})"}
+            record = {"case_id": case_id, "arm": arm, "phase": phase, "split": split,
+                      "started_at": _now(), "attempt_dir": str(attempt_dir), "pid": os.getpid(),
+                      "reserved_before_send": True, "send_state": "reserved"}
+            calls.append(record)
+            state.setdefault("budget_history", []).append(
+                {"at": record["started_at"], "phase": phase, "split": split, "case_id": case_id,
+                 "arm": arm, "used_dev": used_dev + (1 if phase == "dev" else 0),
+                 "used_final": used_final + (1 if phase == "final" else 0),
+                 "used_total": len(calls)})
+            save_state(state)
+            return {"reserved": True, "record": record, "used_dev": used_dev,
+                    "used_final": used_final, "used_total": len(calls)}
+        finally:
+            fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+
+
+def mark_send_state(case_id: str, *, phase: str, state_name: str, detail: str | None = None) -> None:
+    """Rezervasyon kaydının gönderim durumunu işaretle (reserved -> sent/unknown/local_error)."""
+    guard = REPORT_ROOT / "live-calls.guard"
+    with guard.open("a+") as handle:
+        fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
+        try:
+            state = load_state()
+            for call in reversed(state.get("live_calls") or []):
+                if call.get("case_id") == case_id and call.get("phase") == phase:
+                    call["send_state"] = state_name
+                    if detail:
+                        call["send_detail"] = detail
+                    call["updated_at"] = _now()
+                    break
+            save_state(state)
+        finally:
+            fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+
+
+def budget_report() -> dict:
+    state = load_state()
+    by_arm: dict[str, int] = {}
+    by_send_state: dict[str, int] = {}
+    for call in state.get("live_calls") or []:
+        by_arm[call.get("arm", "?")] = by_arm.get(call.get("arm", "?"), 0) + 1
+        key = call.get("send_state", "?")
+        by_send_state[key] = by_send_state.get(key, 0) + 1
+    bad_phase = [call for call in state.get("live_calls") or []
+                 if call.get("phase") not in PHASES]
+    return {"dev_used": _budget_used(state, "dev"), "dev_limit": LIVE_CALL_LIMIT_DEV,
+            "final_used": _budget_used(state, "final"), "final_limit": LIVE_CALL_LIMIT_FINAL,
+            "total_used": len(state.get("live_calls") or []), "total_limit": LIVE_CALL_LIMIT_TOTAL,
+            "by_arm": by_arm, "by_send_state": by_send_state,
+            "invalid_phase_records": len(bad_phase),
+            "over_budget": (len(state.get("live_calls") or []) > LIVE_CALL_LIMIT_TOTAL
+                            or _budget_used(state, "dev") > LIVE_CALL_LIMIT_DEV
+                            or _budget_used(state, "final") > LIVE_CALL_LIMIT_FINAL),
+            "method": ("state.live_calls; her kayıt çağrıdan önce yazılır; split (veri bölümü) ile "
+                       "phase (çağrı amacı) ayrıdır"),
+            "counting_note": ("timeout, başarısız istek, tanı çağrıları ve gönderilip "
+                              "gönderilmediği belirsiz ('reserved') kayıtlar sayılır; cache hit "
+                              "inference değildir; 001A sayaçları bu sayaca dahil değildir")}
+
+
+# ------------------------------------------------------------------ corpus
+
+
+def corpus_manifest() -> dict:
+    rows = []
+    for page in PAGES:
+        path = ROOT / page["path"]
+        rows.append({**page, "exists": path.exists(),
+                     "source_sha256": sha256_of(path) if path.exists() else None,
+                     "source_bytes": path.stat().st_size if path.exists() else None})
+    groups = {row["group"]: sorted({r["split"] for r in rows if r["group"] == row["group"]})
+              for row in rows}
+    split_groups = sorted(group for group, splits in groups.items() if len(splits) > 1)
+    dev = sorted(row["page_id"] for row in rows if row["split"] == "dev")
+    frozen = sorted(row["page_id"] for row in rows if row["split"] == "frozen")
+    return {"schema": "semread-001b-corpus/1", "created_at": _now(), "pages": rows,
+            "totals": {"pages": len(rows), "dev": len(dev), "frozen": len(frozen),
+                       "independent_groups": len(groups)},
+            "split_violations": split_groups,
+            "honesty_note": ("Bu corpus küçüktür ve önceden bilinen bir repo kaynağıdır; bağımsız "
+                             "holdout değildir. Aynı parçanın PDF/PNG sürümleri ayrı örnek sayılmaz."),
+            "scope_note": ("Kapsam: circle temsili/delik ayrımı, R vs Ø, basılı değer+birim, count, "
+                           "THRU/finite/unknown, açıkça yazılmış derinlik, callout->target binding.")}
+
+
+def write_corpus() -> dict:
+    manifest = corpus_manifest()
+    write_json(CORPUS_DIR / "manifest.json", manifest)
+    PAGES_DIR.mkdir(parents=True, exist_ok=True)
+    for page in manifest["pages"]:
+        if not page["exists"]:
+            continue
+        target = PAGES_DIR / f"{page['page_id']}.png"
+        if target.exists():
+            continue
+        source = open_source(ROOT / page["path"])
+        target.write_bytes(source.frame_png)
+    return manifest
+
+
+def load_reference(page_id: str) -> dict | None:
+    return read_json(GOLD_DIR / f"{page_id}.json")
+
+
+def check_reference(reference: dict, page: dict, observation_ids: list[str]) -> dict:
+    """Referansı denetle: nitelik, kapsam, kapalı kümeler, bölge sınırları, gözlem kimlikleri."""
+    problems: list[str] = []
+    if reference.get("annotator") != "agent":
+        problems.append("annotator=agent yazılmamış")
+    if reference.get("review_status") != "provisional":
+        problems.append("review_status=provisional değil (insan onayı yok)")
+    if not reference.get("scope"):
+        problems.append("kapsam yazılmamış")
+    if not reference.get("exhaustiveness"):
+        problems.append("exhaustiveness (hangi bölgeler annotate edildi) yazılmamış")
+    claims = reference.get("claims") or []
+    if not claims:
+        problems.append("hiç claim yok")
+    seen: set[str] = set()
+    for claim in claims:
+        claim_id = claim.get("claim_id")
+        if not claim_id:
+            problems.append("claim_id boş")
+        elif claim_id in seen:
+            problems.append(f"tekrarlanan claim_id: {claim_id}")
+        seen.add(claim_id)
+        if claim.get("state") not in ("determinate_present", "determinate_absent", "underdetermined"):
+            problems.append(f"{claim_id}: state kapalı kümede değil")
+        region = (claim.get("target") or {}).get("region")
+        if region is None:
+            problems.append(f"{claim_id}: hedef bölgesi yok")
+        if not claim.get("evidence"):
+            problems.append(f"{claim_id}: kaynak kanıtı (evidence) yok")
+        observation_id = (claim.get("target") or {}).get("observation_id")
+        if observation_id is not None and observation_ids and observation_id not in observation_ids:
+            problems.append(f"{claim_id}: bilinmeyen gözlem kimliği {observation_id}")
+        if not claim.get("source_evidence"):
+            problems.append(f"{claim_id}: okunabilir metin/geometri kaynağı yazılmamış")
+    return {"ok": not problems, "problems": problems, "claims": len(claims),
+            "reference_sha256": sha256_of(GOLD_DIR / f"{page['page_id']}.json")
+            if (GOLD_DIR / f"{page['page_id']}.json").exists() else None}
+
+
+# ------------------------------------------------------------------ attempt yazımı
+
+
+def attempt_dir(case_id: str) -> Path:
+    return ATTEMPT_ROOT / case_id
+
+
+def _producer_manifest(page: dict, arm: str) -> dict:
+    return {
+        "schema": "semread-001b-producer/1", "case_id": f"{page['page_id']}-{arm}", "arm": arm,
+        "page_id": page["page_id"], "split": page["split"], "group": page["group"],
+        "case_schema": CASE_SCHEMA, "candidate_schema": CANDIDATE_SCHEMA_VERSION,
+        "code_identity": code_identity(), "head": _git("rev-parse", "HEAD"),
+        "model": MODEL, "expected_digest": EXPECTED_DIGEST,
+        "corpus_manifest_sha256": sha256_of(CORPUS_DIR / "manifest.json")
+        if (CORPUS_DIR / "manifest.json").exists() else None,
+        "page_png_sha256": sha256_of(PAGES_DIR / f"{page['page_id']}.png")
+        if (PAGES_DIR / f"{page['page_id']}.png").exists() else None,
+        "image_max_side": IMAGE_MAX_SIDE, "num_predict": NUM_PREDICT,
+    }
+
+
+def write_d_attempt(page: dict, *, observations=None, source=None) -> dict:
+    """D kolu: VLM çağrısı yok. Adaylar + deterministic kanıt + kapsam raporu yazılır."""
+    case_id = f"{page['page_id']}-D"
+    directory = attempt_dir(case_id)
+    directory.mkdir(parents=True, exist_ok=True)
+    if source is None:
+        source = open_source(ROOT / page["path"])
+    if observations is None:
+        observations = observe(ROOT / page["path"])
+    started = time.perf_counter()
+    result = deterministic_candidates(ROOT / page["path"], image_id=PAGE_IMAGE_ID,
+                                      observations=observations)
+    seconds = round(time.perf_counter() - started, 3)
+    response = result["response"]
+    payload = response.model_dump(mode="json")
+    write_json(directory / "response-parsed.json", payload)
+    write_json(directory / "response-schema.json", candidate_json_schema())
+    (directory / "prompt.txt").write_text(candidate_prompt([PAGE_IMAGE_ID]) + "\n", encoding="utf-8")
+    write_json(directory / "request-manifest.json",
+               {"arm": D_ARM, "images_layout": "none", "images": [],
+                "note": "D kolu model çağırmez: istek kaydı boştur ve bu kasıtlıdır."})
+    references = check_candidate_references(response, [PAGE_IMAGE_ID],
+                                            allowed_observation_ids=None)
+    write_json(directory / "reference-checks.json", {"schema": "semread-001b-references/1",
+                                                     **references})
+    write_json(directory / "resources.json",
+               {"schema": "semread-001b-resources/1", "arm": D_ARM, "seconds": seconds,
+                "inference_calls": 0,
+                "rss": {"value_bytes": resource.getrusage(resource.RUSAGE_SELF).ru_maxrss,
+                        "scope": "bu sürecin RSS'i; toplam sistem/model RAM'i değildir"}})
+    write_json(directory / "manifest.json", {**_producer_manifest(page, D_ARM),
+                                             "deterministic_evidence": result["evidence"]})
+    verdict = "pass" if references["ok"] else "fail"
+    write_json(directory / "result.json",
+               {"schema": "semread-001b-result/1", "case_id": case_id, "arm": D_ARM,
+                "product_verdict": verdict, "evaluation_scope": "candidate-accuracy",
+                "semantic_evaluation": "provisional-reference",
+                "cad_evaluation": "not_evaluated",
+                "candidates": len(response.items), "references": references,
+                "inference_calls": 0, "seconds": seconds})
+    write_json(directory / "artifact-index.json", artifact_index(directory))
+    return {"case_id": case_id, "directory": str(directory), "verdict": verdict,
+            "candidates": len(response.items), "seconds": seconds,
+            "evidence": result["evidence"], "response": payload}
+
+
+def write_live_attempt(page: dict, arm: str, *, phase: str, observations=None, source=None) -> dict:
+    """V/VE attempt'i: bütçeyi rezerve et, tek çağrı yap, ham + ayrıştırılmış kanıtı yaz.
+
+    `phase` çağrının amacıdır (`dev`/`final`); `page["split"]` veri bölümüdür. Yerel hazırlama
+    hatası gerçek gönderim gibi raporlanmaz (`send_state: local_error`, `send_attempted: false`).
+    """
+    case_id = f"{page['page_id']}-{arm}"
+    directory = attempt_dir(case_id)
+    directory.mkdir(parents=True, exist_ok=True)
+    if source is None:
+        source = open_source(ROOT / page["path"])
+    if observations is None:
+        observations = observe(ROOT / page["path"])
+    try:
+        bundle = prepare_arm_inputs(source, observations, image_id=PAGE_IMAGE_ID, arm=arm,
+                                    resize_max_side=IMAGE_MAX_SIDE)
+        prompt = candidate_prompt([PAGE_IMAGE_ID], observations=bundle["observations"] or None)
+    except Exception as exc:  # noqa: BLE001 - yerel hazırlama hatası bütçe harcamaz, kayda geçer
+        write_json(directory / "local-error.json",
+                   {"schema": "semread-001b-local-error/1", "arm": arm,
+                    "kind": "preparation", "detail": f"{type(exc).__name__}: {exc}",
+                    "send_attempted": False, "inference_calls": 0})
+        return {"case_id": case_id, "directory": str(directory), "verdict": "fail",
+                "local_error": str(exc), "inference_calls": 0}
+    (directory / "prompt.txt").write_text(prompt, encoding="utf-8")
+    write_json(directory / "response-schema.json", candidate_json_schema())
+    write_json(directory / "input-manifest.json",
+               {"schema": "semread-001b-input/1", "page_id": page["page_id"], "arm": arm,
+                "source": {"path": page["path"], "sha256": page.get("source_sha256"),
+                           "page_index": 0, "type": page["type"]},
+                "images": [{"image_id": image.image_id, "sha256": hashlib.sha256(image.png).hexdigest(),
+                            "bytes": len(image.png)} for image in bundle["images"]],
+                "observation_rows": len(bundle["observations"]),
+                "note": ("VE'nin ham sayfası V'ninkiyle aynı byte'lardır; ek olan yalnız gerçek "
+                         "gözlem overlay'i ve tablosudur" if arm == VE_ARM else
+                         "V yalnız ham sayfayı görür: gözlem tablosu yok")})
+
+    reservation = reserve_live_call(case_id, phase=phase, arm=arm, split=page["split"],
+                                    attempt_dir=directory)
+    if not reservation.get("reserved"):
+        write_json(directory / "result.json",
+                   {"schema": "semread-001b-result/1", "case_id": case_id, "arm": arm,
+                    "product_verdict": "blocked", "blocking_kind": "budget",
+                    "blocking_reason": reservation.get("reason"), "inference_calls": 0})
+        return {"case_id": case_id, "verdict": "blocked", "directory": str(directory),
+                "reason": reservation.get("reason")}
+
+    installed = find_model(installed_models(), MODEL)
+    if installed.digest != EXPECTED_DIGEST:
+        mark_send_state(case_id, phase=phase, state_name="not_sent_model_mismatch",
+                        detail=f"digest {installed.digest[:12]}…")
+        write_json(directory / "result.json",
+                   {"schema": "semread-001b-result/1", "case_id": case_id, "arm": arm,
+                    "phase": phase, "split": page["split"],
+                    "product_verdict": "fail", "blocking_kind": "model_changed",
+                    "blocking_reason": f"digest {installed.digest[:12]}… != {EXPECTED_DIGEST[:12]}…",
+                    "send_attempted": False, "inference_calls": 0})
+        return {"case_id": case_id, "verdict": "fail", "directory": str(directory),
+                "reason": "model digest uyuşmuyor"}
+
+    settings = ChatSettings(model=MODEL, num_ctx=8192, temperature=0.0, num_predict=NUM_PREDICT,
+                            keep_alive="5m", timeout=float(MODEL_TIMEOUT_SECONDS),
+                            images_layout="per_image_message_labeled", image_max_side=IMAGE_MAX_SIDE)
+    recorder = Recorder(directory / "inference-log.json", label=f"semread-001b {case_id}")
+    chat = RecordedChat(MODEL, settings=settings, recorder=recorder)
+    forbidden = _forbidden_terms(page)
+    mark_send_state(case_id, phase=phase, state_name="sending")
+    started = time.perf_counter()
+    outcome = read_page(chat, bundle, forbidden=[term for term in forbidden if term],
+                        num_predict=NUM_PREDICT)
+    seconds = round(time.perf_counter() - started, 3)
+    mark_send_state(case_id, phase=phase,
+                    state_name="sent" if outcome.get("outcome") == "answered"
+                    else f"transport_{outcome.get('failure_kind') or 'unknown'}",
+                    detail=f"{seconds} sn")
+
+    write_json(directory / "request-manifest.json", outcome.get("request") or {})
+    if outcome.get("raw_response") is not None or outcome.get("raw_body") is not None:
+        write_json(directory / "response-raw.json",
+                   {"schema": "semread-001b-raw/1", "content": outcome.get("raw_response"),
+                    "body": outcome.get("raw_body")})
+    if outcome.get("parsed") is not None:
+        write_json(directory / "response-parsed.json", outcome["parsed"])
+    if not (outcome.get("parse") or {}).get("ok"):
+        write_json(directory / "response-error.json",
+                   {"schema": "semread-001b-error/1", "kind": outcome.get("failure_kind") or "parse",
+                    "detail": (outcome.get("parse") or {}).get("error") or outcome.get("detail")})
+    write_json(directory / "gate-results.json",
+               {"schema": "semread-001b-gates/1", "parse": outcome.get("parse"),
+                "references": outcome.get("references"), "truncated": outcome.get("truncated"),
+                "leakage": outcome.get("leakage"), "images": outcome.get("images")})
+    stats = outcome.get("stats") or {}
+    write_json(directory / "resources.json",
+               {"schema": "semread-001b-resources/1", "arm": arm, "seconds": seconds,
+                "inference_calls": 1, "stats": stats,
+                "rss": {"value_bytes": resource.getrusage(resource.RUSAGE_SELF).ru_maxrss,
+                        "scope": "bu sürecin RSS'i; toplam sistem/model RAM'i değildir"}})
+    write_json(directory / "manifest.json", _producer_manifest(page, arm))
+
+    gates = {
+        "answered": outcome.get("outcome") == "answered",
+        "parsed": bool((outcome.get("parse") or {}).get("ok")),
+        "references_ok": bool((outcome.get("references") or {}).get("ok")),
+        "coverage_exact": bool(((outcome.get("references") or {}).get("coverage") or {})
+                               .get("exact")),
+        "not_truncated": (outcome.get("truncated") or {}).get("state") == "complete",
+        "no_leakage": not (outcome.get("leakage") or []),
+    }
+    verdict = "pass" if all(gates.values()) else "fail"
+    write_json(directory / "result.json",
+               {"schema": "semread-001b-result/1", "case_id": case_id, "arm": arm,
+                "phase": phase, "split": page["split"],
+                "product_verdict": verdict, "evaluation_scope": "candidate-accuracy",
+                "semantic_evaluation": "provisional-reference", "cad_evaluation": "not_evaluated",
+                "gates": gates, "inference_calls": 1, "send_attempted": True, "seconds": seconds,
+                "reserved_at": reservation["record"]["started_at"]})
+    write_json(directory / "artifact-index.json", artifact_index(directory))
+
+    state = load_state()
+    state.setdefault("attempts", {})[case_id] = {
+        "directory": str(directory), "arm": arm, "page_id": page["page_id"],
+        "split": page["split"], "phase": phase, "verdict": verdict, "gates": gates,
+        "seconds": seconds, "code_identity": code_identity(),
+        "stats": {key: stats.get(key) for key in ("done_reason", "eval_count", "prompt_eval_count")}}
+    save_state(state)
+    return {"case_id": case_id, "directory": str(directory), "verdict": verdict, "gates": gates,
+            "seconds": seconds, "outcome": outcome}
+
+
+def _forbidden_terms(page: dict) -> list[str]:
+    """Kollara gönderilen metinde aranacak referansa özel terimler.
+
+    Kasıtlı olarak **sayı değerleri değil** işaretler aranır: sayfanın kendi bastığı `8`, `Ø` gibi
+    işaretler çizimin içeriğidir ve referansla çakışabilir; sızıntı sayılmaz.
+    """
+    terms = [GOLD_SENTINEL, "gold-sentinel", "(gold)"]
+    reference = load_reference(page["page_id"]) or {}
+    for claim in reference.get("claims") or []:
+        name = (claim.get("target") or {}).get("name")
+        if name and len(name) > 3:
+            terms.append(str(name))
+    return sorted(set(terms))
+
+
+# ------------------------------------------------------------------ değerlendirme
+
+
+def _arm_candidates(case_id: str) -> dict | None:
+    payload = read_json(attempt_dir(case_id) / "response-parsed.json")
+    return payload
+
+
+def evaluate(write_report: bool = True) -> dict:
+    manifest = read_json(CORPUS_DIR / "manifest.json") or corpus_manifest()
+    per_page: dict[str, dict] = {}
+    reference_status: dict[str, dict] = {}
+    pages_rows: list[dict] = []
+    for page in manifest["pages"]:
+        page_id = page["page_id"]
+        reference = load_reference(page_id)
+        if reference is None:
+            reference_status[page_id] = {"present": False,
+                                         "note": "referans (gold) yazılmadı"}
+            pages_rows.append({"page_id": page_id, "split": page["split"],
+                               "reference": "yok", "arms": {}})
+            continue
+        # Gözlem kimlikleri yalnız referans varsa denetlenir (evaluate ucuz kalmalı: OCR koşmaz).
+        observation_ids: list[str] = []
+        try:
+            observation_ids = [row["id"] for row in _observation_rows(ROOT / page["path"])]
+        except Exception:  # noqa: BLE001 - gözlem kimlikleri denetimi yan iştir
+            observation_ids = []
+        reference_status[page_id] = {"present": True, **check_reference(reference, page,
+                                                                       observation_ids)}
+        arms: dict[str, dict] = {}
+        for arm in (D_ARM, V_ARM, VE_ARM):
+            candidates = _arm_candidates(f"{page_id}-{arm}")
+            if candidates is None:
+                continue
+            arms[arm] = evaluate_page(reference, {"response": candidates})
+        per_page[page_id] = arms
+        pages_rows.append({
+            "page_id": page_id, "split": page["split"], "reference": "var",
+            "arms": {arm: {"matched": result["summary"]["matched"],
+                           "claims": result["summary"]["claims"],
+                           "candidates": result["summary"]["candidates"]}
+                     for arm, result in arms.items()}})
+
+    aggregates = {}
+    for arm in (D_ARM, V_ARM, VE_ARM):
+        pages = [per_page[page_id][arm] for page_id in per_page if arm in per_page[page_id]]
+        if pages:
+            aggregates[arm] = aggregate(pages)
+    comparison = compare_arms(per_page) if per_page else {"vs_d": {}, "ve_vs_v": {}}
+    payload = {
+        "schema": "semread-001b-evaluation/1", "created_at": _now(),
+        "reference_status": reference_status,
+        "reference_quality": {
+            "annotator": "agent", "review_status": "provisional",
+            "note": ("Referans ajan tarafından hazırlandı; gerçek insan onayı yoktur. Metrikler bu "
+                     "niteliği taşır ve ürün doğruluğu sertifikası değildir.")},
+        "match_policy": MATCH_POLICY,
+        "evaluation_identity": evaluation_identity(), "code_identity": code_identity(),
+        "budget": budget_report(),
+        "pages": pages_rows, "aggregates": aggregates, "comparison": comparison,
+    }
+    write_json(REPORT_ROOT / "evaluation.json", payload)
+    if write_report:
+        write_acceptance(payload)
+        (REPORT_ROOT / "final").mkdir(parents=True, exist_ok=True)
+        (REPORT_ROOT / "final" / "report.md").write_text(render_report(payload), encoding="utf-8")
+    return payload
+
+
+def _observation_rows(path: Path) -> list[dict]:
+    from drawingto3d.semantic_candidate_reader import observation_table
+
+    return observation_table(observe(path))
+
+
+# ------------------------------------------------------------------ kabul ve rapor
+
+
+def acceptance_rows(payload: dict) -> dict:
+    reference_rows = payload["reference_status"]
+    present = [page_id for page_id, row in reference_rows.items() if row.get("present")]
+    checked = [page_id for page_id, row in reference_rows.items()
+               if row.get("present") and row.get("ok")]
+    arms = payload["aggregates"]
+    final_pages = {"frozen": [page["page_id"] for page in PAGES if page["split"] == "frozen"]}
+    attempts = read_json(state_path()) or {}
+    live_attempts = [row for row in (attempts.get("attempts") or {}).values()
+                     if row.get("arm") in (V_ARM, VE_ARM)]
+    final_live = [row for row in live_attempts if row.get("split") == "frozen"]
+    rows = {
+        "B01": {"status": "closed" if (REPORT_ROOT / "snapshot").exists() else "open",
+                "evidence": [str(REPORT_ROOT / "snapshot")],
+                "detail": "001A snapshot + ayrı bütçe korundu"},
+        "B02": {"status": "closed" if len(checked) == len(reference_rows) else "open",
+                "evidence": [str(GOLD_DIR)],
+                "detail": f"referans niteliği ve hash'ler: {len(checked)}/{len(reference_rows)} sayfa"},
+        "B03": {"status": "closed" if (ROOT / "src/drawingto3d/semantic_candidates.py").exists()
+                and (ROOT / "src/drawingto3d/semantic_deterministic.py").exists() else "open",
+                "evidence": ["src/drawingto3d/semantic_candidates.py",
+                             "src/drawingto3d/semantic_candidate_reader.py",
+                             "src/drawingto3d/semantic_deterministic.py"],
+                "detail": "dar aday sözleşmesi + D adapter + ayrılmış V/VE yolları"},
+        "B04": {"status": "closed" if "D" in arms and payload["match_policy"] else "open",
+                "evidence": [str(REPORT_ROOT / "evaluation.json")],
+                "detail": "eşleştirme/metrikler; verifier başarısı iddia edilmiyor"},
+        "B05": {"status": "closed" if (D_ARM in arms and V_ARM in arms and VE_ARM in arms
+                                       and len(final_live) >= 2 * len(final_pages["frozen"]))
+                else "open",
+                "evidence": [str(REPORT_ROOT / "attempts")],
+                "detail": ("sabit corpusun D/V/VE sonuçları; kollar bir eksikse açık kalır")},
+        "B06": {"status": "closed" if arms and payload.get("comparison", {}).get("vs_d") else "open",
+                "evidence": [str(REPORT_ROOT / "final/report.md")],
+                "detail": "kalite farkı, recovery/regression, maliyet analizi"},
+        "B07": {"status": "closed" if not payload["budget"]["by_arm"].get("?") else "open",
+                "evidence": [str(state_path())],
+                "detail": "kanıt zinciri/kimlik/cache/bütçe doğrulandı"},
+    }
+    return rows
+
+
+def write_acceptance(payload: dict) -> dict:
+    rows = acceptance_rows(payload)
+    open_rows = sorted(row for row, value in rows.items() if value["status"] != "closed")
+    core_open = [row for row in open_rows if row != "B05"]
+    conclusion = ("SEMREAD-001B pilot_complete" if not open_rows
+                  else f"implementation status: {len(rows) - len(open_rows)}/{len(rows)} kapandı; "
+                       f"açık: {open_rows}")
+    document = {"schema": "semread-001b-acceptance/1", "created_at": _now(),
+                "acceptance": rows, "open": open_rows, "conclusion": conclusion,
+                "reference_status": payload["reference_quality"],
+                "quality_result": {arm: {"candidate_precision": value["candidate_precision"],
+                                         "claim_recall": value["claim_recall"],
+                                         "omission": value["omission"]}
+                                   for arm, value in payload["aggregates"].items()},
+                "notes": [("V/VE'nin D'den iyi çıkması completion şartı değildir; sonuç negatifse "
+                           "olduğu gibi yazılır"),
+                          ("verifier olmadığı için wrong-supported, accepted coverage, otomatik CAD "
+                           "güvenliği ve kullanıcı emeği azalması not_evaluated kalır")]}
+    write_json(REPORT_ROOT / "acceptance.json", document)
+    if core_open:
+        state = load_state()
+        state["blocked"] = {"open": core_open, "conclusion": conclusion}
+        save_state(state)
+    return document
+
+
+def render_report(payload: dict) -> str:
+    budget = payload["budget"]
+    lines = [
+        "# SEMREAD-001B — dar semantic aday pilotu (D / V / VE)",
+        "",
+        "Bu rapor `eval/semread_001b_pilot.py --evaluate` tarafından **kanıt dosyalarından** üretilir.",
+        "Ölçüm kapsamı aday doğruluğudur: circle temsili/delik ayrımı, R vs Ø, basılı değer+birim,",
+        "count, THRU/finite/unknown, yazılı derinlik ve callout→target binding. CAD/STEP, fusion,",
+        "verifier ve eğitim kapsam dışıdır.",
+        "",
+        "## Koşu kimliği",
+        "",
+        f"- HEAD (bilgi): `{_git('rev-parse', 'HEAD')}`",
+        f"- üretici (kod) kimliği: `{payload['code_identity']}`",
+        f"- değerlendirme kimliği: `{payload['evaluation_identity']}`",
+        f"- model: `{MODEL}` digest `{EXPECTED_DIGEST[:16]}…`; beklenen runtime `{EXPECTED_RUNTIME}`",
+        f"- bütçe: dev {budget['dev_used']}/{budget['dev_limit']}, final {budget['final_used']}/"
+        f"{budget['final_limit']}, toplam {budget['total_used']}/{budget['total_limit']}",
+        f"  ({budget['counting_note']})",
+        "",
+        "## Referans niteliği",
+        "",
+        f"- annotator=`{payload['reference_quality']['annotator']}`, "
+        f"review_status=`{payload['reference_quality']['review_status']}`",
+        f"- {payload['reference_quality']['note']}",
+        "",
+        "## Eşleştirme politikası (final tahminlerden önce sabit)",
+        "",
+        "```json",
+        json.dumps(payload["match_policy"], ensure_ascii=False, indent=1),
+        "```",
+        "",
+        "## Sayfa sayfa durum",
+        "",
+        "| sayfa | split | referans | " + " | ".join(f"{arm}" for arm in (D_ARM, V_ARM, VE_ARM)) + " |",
+        "| --- | --- | --- | --- | --- | --- |",
+    ]
+    for row in payload["pages"]:
+        cells = []
+        for arm in (D_ARM, V_ARM, VE_ARM):
+            value = row["arms"].get(arm)
+            cells.append("-" if not value else f"{value['matched']}/{value['claims']}")
+        lines.append(f"| {row['page_id']} | {row['split']} | {row['reference']} | "
+                     + " | ".join(cells) + " |")
+    lines += ["", "## Kollar (toplam)", "",
+              "| kol | aday | eşleşen | aday kesinliği | claim recall | omission |",
+              "| --- | --- | --- | --- | --- | --- |"]
+    for arm, value in payload["aggregates"].items():
+        lines.append(f"| {arm} | {value['candidates']} | {value['matched']} | "
+                     f"{value['candidate_precision']} | {value['claim_recall']} | "
+                     f"{value['omission']} |")
+    lines += ["", "## Alan bazında doğruluk", "",
+              "| alan | kol | doğru | yanlış | çekimser | scorable | doğruluk |",
+              "| --- | --- | --- | --- | --- | --- | --- |"]
+    for arm, value in payload["aggregates"].items():
+        for field, stats in value["fields"].items():
+            lines.append(f"| {field} | {arm} | {stats['correct']} | {stats['wrong']} | "
+                         f"{stats['abstained']} | {stats['scorable']} | {stats['accuracy']} |")
+    comparison = payload.get("comparison") or {}
+    lines += ["", "## D'ye göre recovery/regression", ""]
+    for arm, value in (comparison.get("vs_d") or {}).items():
+        lines += [f"- **{arm}**: recovered={value['recovered']}, "
+                  f"regressed(wrong candidate)={value['regressed_wrong_candidate']}, "
+                  f"regressed(abstention)={value['regressed_abstention']}, "
+                  f"net_correct_gain={value['net_correct_gain']} "
+                  f"(paydalar: D {value['d_scorable']}, {arm} {value['arm_scorable']})",
+                  f"  — {value['note']}"]
+    ve_vs_v = comparison.get("ve_vs_v") or {}
+    if ve_vs_v:
+        lines.append(f"- VE vs V: better={ve_vs_v.get('ve_better')}, worse={ve_vs_v.get('ve_worse')}, "
+                     f"net={ve_vs_v.get('net')}")
+    for note in (comparison.get("notes") or []):
+        lines.append(f"- not: {note}")
+    lines += ["", "## Ölçülmeyenler", "",
+              "- Verifier yok: wrong-supported, accepted coverage, otomatik CAD güvenliği ve kullanıcı",
+              "  emeği azalması `not_evaluated`.",
+              "- Sunucunun görüntüyü **kullandığı** kanıtlanmaz; yalnız isteğin taşıdığı ölçülür.",
+              "- Referans ajan tarafından hazırlandı (`provisional`): ürün doğruluğu sertifikası değildir.",
+              "- Bu corpus küçüktür ve bilinen bir repo kaynağıdır; bağımsız holdout değildir."]
+    return "\n".join(lines) + "\n"
+
+
+# ------------------------------------------------------------------ worker / CLI
+
+
+def worker(args) -> int:
+    page = next((row for row in PAGES if row["page_id"] == args.page_id), None)
+    if page is None:
+        raise SystemExit(f"bilinmeyen sayfa: {args.page_id}")
+    if args.phase not in PHASES:
+        raise SystemExit(f"geçersiz faz: {args.phase!r} (beklenen: {PHASES})")
+    outcome = write_live_attempt(page, args.arm, phase=args.phase)
+    print(json.dumps({"case_id": outcome["case_id"], "verdict": outcome["verdict"],
+                      "directory": outcome["directory"], "phase": args.phase},
+                     ensure_ascii=False))
+    return 0 if outcome["verdict"] == "pass" else 1
+
+
+def d_worker(args) -> int:
+    page = next((row for row in PAGES if row["page_id"] == args.page_id), None)
+    if page is None:
+        raise SystemExit(f"bilinmeyen sayfa: {args.page_id}")
+    outcome = write_d_attempt(page)
+    print(json.dumps({"case_id": outcome["case_id"], "verdict": outcome["verdict"],
+                      "candidates": outcome["candidates"]}, ensure_ascii=False))
+    return 0
+
+
+def run_d(split: str | None = None) -> list[dict]:
+    results = []
+    for page in PAGES:
+        if split and page["split"] != split:
+            continue
+        results.append(write_d_attempt(page))
+    return results
+
+
+def reusable_attempt(case_id: str, page: dict) -> dict | None:
+    """Final hücresi için yeniden kullanılabilir geçerli attempt (politika önceden sabit).
+
+    Yeniden kullanım yalnız teknik geçerliliğe bakar: aynı üretici kimliği, aynı sayfa hash'i,
+    doğrulanmış model digest'i, engellenmemiş verdict. Sonucun "güzel" olması seçim gerekçesi
+    değildir; başarısız/failed bir attempt final hücresini kapatmaz, çağrı olarak sayılır.
+    """
+    state = load_state()
+    record = (state.get("attempts") or {}).get(case_id)
+    if not record or record.get("verdict") != "pass":
+        return None
+    if record.get("code_identity") != code_identity():
+        return None
+    directory = Path(record.get("directory") or "")
+    if not directory.exists():
+        return None
+    result = read_json(directory / "result.json") or {}
+    if result.get("blocking_kind") or result.get("send_attempted") is False:
+        return None
+    if (result.get("gates") or {}).get("no_leakage") is not True:
+        return None
+    manifest = read_json(directory / "manifest.json") or {}
+    if manifest.get("expected_digest") != EXPECTED_DIGEST:
+        return None
+    if manifest.get("code_identity") != code_identity():
+        return None
+    if page.get("source_sha256") and manifest.get("page_id") != page["page_id"]:
+        return None
+    return {"directory": str(directory), "phase": record.get("phase"),
+            "verdict": record.get("verdict"), "gates": record.get("gates")}
+
+
+def final_matrix(reuse: bool = True) -> dict:
+    """10 sayfa × D/V/VE = 30 hücrenin durumu: hangi attempt, hangisi not_run, kaç yeni çağrı."""
+    cells: list[dict] = []
+    for page in PAGES:
+        for arm in (D_ARM, V_ARM, VE_ARM):
+            case_id = f"{page['page_id']}-{arm}"
+            if arm == D_ARM:
+                directory = attempt_dir(case_id)
+                present = (directory / "response-parsed.json").exists()
+                cells.append({"page_id": page["page_id"], "split": page["split"], "arm": arm,
+                              "cell": "ready" if present else "not_run",
+                              "attempt": str(directory) if present else None,
+                              "kind": "deterministic"})
+                continue
+            reused = reusable_attempt(case_id, page) if reuse else None
+            if reused:
+                cells.append({"page_id": page["page_id"], "split": page["split"], "arm": arm,
+                              "cell": "reuse", "attempt": reused["directory"],
+                              "seen_phase": reused["phase"], "kind": "vlm"})
+            else:
+                cells.append({"page_id": page["page_id"], "split": page["split"], "arm": arm,
+                              "cell": "to_run", "attempt": None, "kind": "vlm"})
+    by_kind: dict[str, int] = {}
+    for cell in cells:
+        key = f"{cell['kind']}:{cell['cell']}"
+        by_kind[key] = by_kind.get(key, 0) + 1
+    new_calls = sum(1 for cell in cells if cell["cell"] == "to_run")
+    return {"schema": "semread-001b-matrix/1", "created_at": _now(), "cells": cells,
+            "totals": {"cells": len(cells), "vlm_cells": FINAL_VLM_CELLS,
+                       "d_cells": len(PAGES), "new_vlm_calls": new_calls,
+                       "reused_vlm_cells": sum(1 for c in cells if c["cell"] == "reuse"),
+                       "not_run": sum(1 for c in cells if c["cell"] == "not_run"),
+                       "by_kind": by_kind},
+            "reuse_policy": ("geçerli attempt = pass + aynı üretici kimliği + doğrulanmış digest + "
+                             "sızıntı kapısı geçmiş; politika sonuç görülmeden sabitlendi"),
+            "budget": budget_report()}
+
+
+def run_live(phase: str, split: str | None = None, arms: tuple[str, ...] = (V_ARM, VE_ARM),
+             dry_run: bool = False, reuse: bool = True) -> dict:
+    if phase not in PHASES:
+        raise SystemExit(f"geçersiz faz: {phase!r} (beklenen: {PHASES})")
+    matrix = final_matrix(reuse=reuse)
+    jobs: list[Job] = []
+    planned: list[dict] = []
+    for cell in matrix["cells"]:
+        page = next(row for row in PAGES if row["page_id"] == cell["page_id"])
+        if split and page["split"] != split:
+            continue
+        if cell["arm"] not in arms:
+            continue
+        if cell["cell"] != "to_run":
+            planned.append({**cell, "action": "skip"})
+            continue
+        page_png = PAGES_DIR / f"{page['page_id']}.png"
+        if not page_png.exists():
+            planned.append({**cell, "action": "blocked_missing_page_png"})
+            continue
+        planned.append({**cell, "action": "call"})
+        jobs.append(Job(
+            id=f"{JOB_PREFIX}{cell['page_id']}-{cell['arm']}-{phase}",
+            command=[sys.executable, str(ROOT / "eval/semread_001b_pilot.py"),
+                     "--worker", "--page-id", page["page_id"], "--arm", cell["arm"],
+                     "--phase", phase],
+            inputs=[page_png],
+            timeout_seconds=CASE_TIMEOUT_SECONDS))
+    remaining = PHASE_LIMITS[phase] - budget_report()[f"{phase}_used"]
+    plan = {"schema": "semread-001b-run-plan/1", "phase": phase, "split": split or "hepsi",
+            "arms": list(arms), "jobs": [job.as_dict() for job in jobs], "cells": planned,
+            "planned_real_calls": len(jobs), "remaining_phase_budget": remaining,
+            "reuse": reuse, "budget": budget_report()}
+    if dry_run:
+        return {"dry_run": True, "inference_calls": 0, "plan": plan,
+                "note": "dry-run hiç çağrı yapmaz ve sayaç harcamaz"}
+    if len(jobs) > remaining:
+        return {"dry_run": False, "refused": True, "plan": plan,
+                "reason": (f"plan {len(jobs)} çağrı istiyor ama {phase} fazında kalan bütçe "
+                           f"{remaining}; hiçbir çağrı yapılmadı")}
+    runner = LabRunner(LAB_ROOT)
+    executed = runner.execute(jobs)
+    return {"dry_run": False, "executed": executed, "plan": plan, "budget": budget_report()}
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description="SEMREAD-001B pilot sürücüsü")
+    parser.add_argument("--corpus", action="store_true", help="corpus manifesti + sayfa PNG'leri")
+    parser.add_argument("--d", action="store_true", help="D kolunu çalıştır (sıfır inference)")
+    parser.add_argument("--live", action="store_true", help="V/VE kollarını çalıştır (gerçek çağrı)")
+    parser.add_argument("--split", choices=("dev", "frozen"), default=None,
+                        help="veri bölümü; verilmezse 10 sayfanın hepsi")
+    parser.add_argument("--phase", choices=list(PHASES), default=None,
+                        help="çağrının amacı: dev (≤10) ya da final (≤20)")
+    parser.add_argument("--matrix", action="store_true", help="30 hücrenin durumu (çağrı yok)")
+    parser.add_argument("--no-reuse", action="store_true",
+                        help="geçerli attempt'leri yeniden kullanma (politika dışı, tanı için)")
+    parser.add_argument("--arms", default="V,VE")
+    parser.add_argument("--evaluate", action="store_true")
+    parser.add_argument("--budget", action="store_true")
+    parser.add_argument("--dry-run", action="store_true", help="plan + bütçe; çağrı yok")
+    parser.add_argument("--worker", action="store_true")
+    parser.add_argument("--d-worker", action="store_true")
+    parser.add_argument("--page-id")
+    parser.add_argument("--arm", choices=list(ARMS))
+    args = parser.parse_args(argv)
+
+    if args.worker:
+        return worker(args)
+    if args.d_worker:
+        return d_worker(args)
+    if args.budget:
+        print(json.dumps(budget_report(), ensure_ascii=False, indent=2))
+        return 0
+    if args.corpus:
+        manifest = write_corpus()
+        print(json.dumps({"totals": manifest["totals"],
+                          "split_violations": manifest["split_violations"]},
+                         ensure_ascii=False, indent=2))
+        return 0
+    if args.matrix:
+        print(json.dumps(final_matrix(reuse=not args.no_reuse), ensure_ascii=False, indent=2))
+        return 0
+    if args.dry_run:
+        if not args.phase:
+            raise SystemExit("--dry-run için --phase gerekli (dev|final)")
+        print(json.dumps(run_live(args.phase, args.split, tuple(args.arms.split(",")),
+                                  dry_run=True, reuse=not args.no_reuse),
+                         ensure_ascii=False, indent=2))
+        return 0
+    if args.d:
+        results = run_d(args.split)
+        print(json.dumps([{"case_id": row["case_id"], "candidates": row["candidates"],
+                           "verdict": row["verdict"]} for row in results],
+                         ensure_ascii=False, indent=2))
+        return 0
+    if args.live:
+        if not args.phase:
+            raise SystemExit("--live için --phase gerekli (dev|final)")
+        print(json.dumps(run_live(args.phase, args.split, tuple(args.arms.split(",")),
+                                  reuse=not args.no_reuse),
+                         ensure_ascii=False, indent=2))
+        return 0
+    if args.evaluate:
+        payload = evaluate()
+        print(json.dumps({"aggregates": {arm: {"candidate_precision": value["candidate_precision"],
+                                               "claim_recall": value["claim_recall"]}
+                                         for arm, value in payload["aggregates"].items()},
+                          "reference_present": sum(1 for row in payload["reference_status"].values()
+                                                   if row.get("present"))},
+                         ensure_ascii=False, indent=2))
+        return 0
+    parser.print_help()
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -16,8 +16,11 @@ clients keep their behaviour; nothing here picks a model silently for a run it d
 from __future__ import annotations
 
 import base64
+import hashlib
 import json
 import os
+import struct
+import time
 import urllib.error
 import urllib.request
 from dataclasses import dataclass
@@ -39,6 +42,11 @@ VISION_MODELS = ("qwen3-vl:8b-instruct", "qwen2.5vl:7b", "qwen2.5vl:3b")
 CODER_MODELS = ("qwen2.5-coder:7b", "qwen2.5-coder:14b", "qwen2.5-coder:3b")
 # Only for a server too old to report capabilities: a family name that reads images.
 VISION_NAME_HINTS = ("vl", "vision", "llava", "gemma3", "minicpm-v", "moondream")
+
+# Multimodal çerçeveleme sözlüğü — tek yerde: `_chat_request` hangi düzeni kurduğunu buradan bilir,
+# çağıranlar (okuyucu/probe) aynı listeyi doğrular. `per_image_message_labeled` görsel mesajına nötr
+# kaynak kimliğini yazar; diğerleri metinsizdir.
+LAYOUTS = ("single_message", "per_image_message", "per_image_message_labeled")
 
 
 def retry_prompt(code: str, error: str) -> str:
@@ -163,38 +171,66 @@ def _ollama_chat(
     num_ctx: int = 16384,
     response_format: dict | str | None = None,
     stats: dict | None = None,
+    *,
+    images: list[bytes] | None = None,
+    keep_alive: str = "5m",
+    image_max_side: int | None = None,
+    trace: dict | None = None,
+    raw_response: dict | None = None,
+    image_labels: list[str] | None = None,
+    images_layout: str = "single_message",
+    image_label_prefix: str = "",
 ) -> str:
-    message: dict = {"role": "user", "content": prompt}
-    if image_png is not None:
-        message["images"] = [base64.standard_b64encode(image_png).decode("ascii")]
-    payload = {
-        "model": model,
-        "stream": False,
-        "messages": [message],
-        "keep_alive": "5m",
-        # num_ctx must be set: Ollama's default 4096 is smaller than one whole-sheet image, and the
-        # 400 it returns ("exceeds the available context size") is not a model failure.
-        "options": {"temperature": temperature, "num_predict": predict, "num_ctx": num_ctx},
-    }
-    if response_format is not None:
-        # Constrained decoding: the answer's *shape* is the product contract (a versioned plan), not a
-        # hint to the model. Without it a 3B model answers a plan-shaped object with the wrong nesting
-        # and the failure reads as "the model cannot plan".
-        payload["format"] = response_format
+    """One chat call. `image_png` and `images` are alternatives: giving both is an error, not a merge.
+
+    `images=[]` is an explicit text-only request (`images_per_call=0`); `images=None` keeps the old
+    single-image/text-only behaviour. The HTTP body and the actual-request record (`trace`) are built
+    from the same prepared list by `_chat_request`, so a record cannot describe a request that was
+    never sent, and the sent bytes are the ones that were hashed.
+
+    `images_layout` picks how the multimodal payload is framed (one message with N images, one message
+    per image, or one message per image carrying the neutral id). `image_label_prefix` is the neutral
+    identity text used by the labeled layout; the declared image-id order is the same in every layout.
+    """
+    if image_png is not None and images is not None:
+        raise ValueError("image_png ile images birlikte verilemez")
+    sent = list(images) if images is not None else ([image_png] if image_png is not None else [])
+    data, manifest = _chat_request(model=model, prompt=prompt, images=sent, temperature=temperature,
+                                   num_predict=predict, num_ctx=num_ctx, keep_alive=keep_alive,
+                                   response_format=response_format, image_max_side=image_max_side,
+                                   timeout=timeout, image_labels=image_labels,
+                                   images_layout=images_layout,
+                                   image_label_prefix=image_label_prefix)
+    if trace is not None:
+        trace.clear()
+        trace.update(manifest)
     request = urllib.request.Request(
         host + "/api/chat",
-        data=json.dumps(payload).encode(),
+        data=data,
         headers={"Content-Type": "application/json"},
         method="POST",
     )
+    started = time.perf_counter()
     try:
         with urllib.request.urlopen(request, timeout=timeout) as response:
             body = json.load(response)
     except urllib.error.HTTPError as exc:
         detail = exc.read().decode("utf-8", "replace").strip()
-        raise UnavailableModel(f"yerel model isteği reddedildi ({exc.code}): {_short(detail)}") from exc
-    except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as exc:
-        raise UnavailableModel("yerel model yanıt vermiyor; buluta düşülmez") from exc
+        _note_failure(trace, started, "http_error", exc.code)
+        raise _chat_error(f"yerel model isteği reddedildi ({exc.code}): {_short(detail)}",
+                          "http_error") from exc
+    except TimeoutError as exc:
+        _note_failure(trace, started, "timeout", None)
+        raise _chat_error(f"yerel model {timeout:.0f} sn içinde yanıt vermedi; buluta düşülmez",
+                          "timeout") from exc
+    except (urllib.error.URLError, json.JSONDecodeError) as exc:
+        _note_failure(trace, started, "unreachable", None)
+        raise _chat_error("yerel model yanıt vermiyor; buluta düşülmez", "unreachable") from exc
+    if raw_response is not None:
+        # Raw gövde, içerik boş olsa da saklanır: "boş yanıt" ile "hiç yanıt yok" ayrı kanıttır.
+        raw_response.clear()
+        raw_response.update(body if isinstance(body, dict) else {"_body": body})
+    text = str(body.get("message", {}).get("content", ""))
     if stats is not None:
         stats.update({
             "done_reason": body.get("done_reason"),
@@ -203,10 +239,205 @@ def _ollama_chat(
             "total_duration_ns": body.get("total_duration"),
             "load_duration_ns": body.get("load_duration"),
         })
-    text = str(body.get("message", {}).get("content", ""))
+    if trace is not None:
+        trace.update({
+            "outcome": "empty_content" if not text.strip() else "ok",
+            "transport_seconds": round(time.perf_counter() - started, 3),
+            "response_bytes": len(json.dumps(body, ensure_ascii=False).encode()),
+            "done_reason": body.get("done_reason"),
+            "eval_count": body.get("eval_count"),
+            "prompt_eval_count": body.get("prompt_eval_count"),
+            "total_duration_ns": body.get("total_duration"),
+        })
     if not text.strip():
-        raise UnavailableModel("yerel model yanıt vermiyor; buluta düşülmez")
+        raise _chat_error("yerel model boş içerik döndürdü; buluta düşülmez", "empty_content")
     return text
+
+
+def _chat_error(message: str, kind: str) -> UnavailableModel:
+    """A failure that names its own layer: HTTP, timeout, unreachable or empty — not one sentence."""
+    error = UnavailableModel(message)
+    error.transport_kind = kind  # type: ignore[attr-defined]
+    return error
+
+
+def _note_failure(trace: dict | None, started: float, kind: str, status: int | None) -> None:
+    if trace is None:
+        return
+    trace.update({"outcome": kind, "error_kind": kind, "http_status": status,
+                  "transport_seconds": round(time.perf_counter() - started, 3)})
+
+
+def _chat_request(*, model: str, prompt: str, images: list[bytes], temperature: float,
+                  num_predict: int, num_ctx: int, keep_alive: str,
+                  response_format: dict | str | None, image_max_side: int | None,
+                  timeout: float, image_labels: list[str] | None = None,
+                  images_layout: str = "single_message",
+                  image_label_prefix: str = "") -> tuple[bytes, dict]:
+    """The one place a request is prepared: HTTP body and actual-request record from the same data.
+
+    The declared `image_max_side` is applied here, not merely recorded — a setting that is written
+    down but never used makes the run's record describe an intention instead of the request. Image
+    hashes and sizes in the manifest are measured on the bytes that go into the body (after any
+    resize), and `request_sha256` is the hash of the whole serialised body, so a record can be
+    replayed and compared byte for byte.
+
+    `image_labels` are the ids the prompt used, in the same order as `images`. They are written into
+    the record so the manifest alone says which image id was sent at which position: a label list
+    whose length disagrees with the payload is a programming error and is refused, never trimmed.
+
+    `images_layout` and `image_label_prefix` together build **one** payload: the same loop that
+    prepares the bytes pairs each image with its id and its message, so message text, bytes, id and
+    the manifest cannot drift apart. `per_image_message_labeled` writes a neutral source identity
+    (`<prefix><image id>`) into the image's *own* message — source metadata, not the answer — and
+    refuses a missing, empty or repeated label before any request is made. Image bytes are never
+    touched by the framing.
+    """
+    if image_labels is not None and len(image_labels) != len(images):
+        raise ValueError(f"görsel etiketi sayısı byte listesiyle uyuşmuyor: "
+                         f"{len(image_labels)} != {len(images)}")
+    if images_layout not in LAYOUTS:
+        raise ValueError(f"bilinmeyen görsel çerçevelemesi: {images_layout!r}")
+    labeled = images_layout == "per_image_message_labeled"
+    if labeled and not image_label_prefix:
+        raise ValueError("etiketli çerçeveleme için etiket öneki gerekli (nötr kimlik metni)")
+    if labeled and image_labels is None:
+        raise ValueError("etiketli çerçeveleme etiketsiz çalışmaz: her görselin nötr kimliği gerekli")
+    if image_labels is not None:
+        if any(not str(label).strip() for label in image_labels):
+            raise ValueError("görsel etiketi boş olamaz")
+        repeated = sorted({label for label in image_labels if list(image_labels).count(label) > 1})
+        if repeated:
+            raise ValueError("görsel etiketleri tekrarlı: " + ", ".join(repeated))
+    entries: list[dict] = []
+    prepared: list[bytes] = []
+    for index, raw in enumerate(images):
+        payload_bytes, policy = _resize_image_bytes(raw, image_max_side)
+        prepared.append(payload_bytes)
+        # Boyut, gidecek **son** byte'lardan okunur: yeniden boyutlandırma yapılmasa da gerçek ölçü
+        # kayda geçer ("ölçülmedi" ile "0" karışmasın diye ölçülemezse null yazılır).
+        size = _png_size(payload_bytes)
+        if size is not None:
+            policy = {**policy, "from_px": policy["from_px"] or list(size), "to_px": list(size)}
+        entry = {
+            "index": index,
+            "source_sha256": _sha256(raw),
+            "sent_sha256": _sha256(payload_bytes),
+            "sent_bytes": len(payload_bytes),
+            "sent_width_px": size[0] if size else None,
+            "sent_height_px": size[1] if size else None,
+            "resize": policy,
+        }
+        if image_labels is not None:
+            entry["image_id"] = image_labels[index]
+        entries.append(entry)
+    encoded = [base64.standard_b64encode(item).decode("ascii") for item in prepared]
+    # Çerçeveleme yalnızca görsellerin hangi mesajlarda durduğunu değiştirir; sıra aynıdır ve görüntü
+    # byte'larına dokunulmaz. Etiketli düzende görsel mesajının metni **yalnız** nötr kaynak
+    # kimliğidir; hangi görüntünün ne olduğu hiçbir mesajda yazılmaz (kimlik = kaynak metadata'sı).
+    layout_record: list[dict] = []
+    if not encoded:
+        messages = [{"role": "user", "content": prompt}]
+    elif labeled:
+        labels = list(image_labels or [])  # `None` burada imkânsız: yukarıda istek öncesi reddedildi
+        messages = []
+        for index, item in enumerate(encoded):
+            label_text = f"{image_label_prefix}{labels[index]}"
+            messages.append({"role": "user", "content": label_text, "images": [item]})
+            layout_record.append({"index": index, "image_ids": [labels[index]],
+                                  "label": label_text})
+        messages.append({"role": "user", "content": prompt})
+    elif images_layout == "per_image_message" and len(encoded) > 1:
+        messages = [{"role": "user", "content": "", "images": [item]} for item in encoded]
+        messages.append({"role": "user", "content": prompt})
+        layout_record = [{"index": index, "image_ids": ([image_labels[index]]
+                                                        if image_labels is not None else [])}
+                         for index in range(len(encoded))]
+    else:
+        message: dict = {"role": "user", "content": prompt}
+        message["images"] = list(encoded)
+        messages = [message]
+        layout_record = [{"index": 0, "image_ids": list(image_labels or [])}]
+    payload = {
+        "model": model,
+        "stream": False,
+        "messages": messages,
+        "keep_alive": keep_alive,
+        # num_ctx must be set: Ollama's default 4096 is smaller than one whole-sheet image, and the
+        # 400 it returns ("exceeds the available context size") is not a model failure.
+        "options": {"temperature": temperature, "num_predict": num_predict, "num_ctx": num_ctx},
+    }
+    if response_format is not None:
+        # Constrained decoding: the answer's *shape* is the product contract (a versioned plan), not a
+        # hint to the model. Without it a 3B model answers a plan-shaped object with the wrong nesting
+        # and the failure reads as "the model cannot plan".
+        payload["format"] = response_format
+    data = json.dumps(payload).encode()
+    manifest = {
+        "schema": "drawingto3d.chat-request/1",
+        "endpoint": "/api/chat",
+        "method": "POST",
+        "model": model,
+        "prompt_sha256": _sha256(prompt.encode()),
+        "prompt_chars": len(prompt),
+        "options": dict(payload["options"]),
+        "keep_alive": keep_alive,
+        "response_format": ("json-schema" if isinstance(response_format, dict)
+                            else (response_format or "text")),
+        "images_per_call": len(prepared),
+        "images": entries,
+        "images_layout": images_layout,
+        "messages_layout": layout_record,
+        "request_sha256": _sha256(data),
+        "request_bytes": len(data),
+        "timeout_seconds": timeout,
+    }
+    return data, manifest
+
+
+def _png_size(png: bytes) -> tuple[int, int] | None:
+    """PNG IHDR'den okunan genişlik/yükseklik; PNG olmayan byte'larda None (ölçüm uydurulmaz)."""
+    if len(png) < 24 or not png.startswith(b"\x89PNG\r\n\x1a\n"):
+        return None
+    width, height = struct.unpack(">II", png[16:24])
+    return int(width), int(height)
+
+
+def _resize_image_bytes(png: bytes, max_side: int | None) -> tuple[bytes, dict]:
+    """Apply the declared resize limit. Shrinking only: an upscale invents no detail.
+
+    The policy travels with the request record (`applied`, `from_px`, `to_px`), so "a resize policy is
+    configured" and "a resize happened" are not the same statement.
+    """
+    policy = {"max_side": None if max_side is None else int(max_side), "applied": False,
+              "from_px": None, "to_px": None, "interpolation": None}
+    if max_side is None:
+        return bytes(png), policy
+    import cv2  # noqa: PLC0415 - only a resizing run needs OpenCV; the text path must not require it
+    import numpy as np  # noqa: PLC0415
+
+    image = cv2.imdecode(np.frombuffer(bytes(png), dtype=np.uint8), cv2.IMREAD_UNCHANGED)
+    if image is None:
+        raise ValueError("resize için görsel çözülemedi")
+    height, width = image.shape[:2]
+    policy["from_px"] = [int(width), int(height)]
+    longest = max(width, height)
+    if longest <= int(max_side):
+        policy["to_px"] = [int(width), int(height)]
+        return bytes(png), policy
+    scale = int(max_side) / float(longest)
+    resized = cv2.resize(image, (max(1, int(round(width * scale))), max(1, int(round(height * scale)))),
+                         interpolation=cv2.INTER_AREA)
+    policy.update({"applied": True, "interpolation": "INTER_AREA",
+                   "to_px": [int(resized.shape[1]), int(resized.shape[0])]})
+    ok, encoded = cv2.imencode(".png", resized)
+    if not ok:  # pragma: no cover - cv2 imencode on a decoded array
+        raise ValueError("resize sonrası png kodlanamadı")
+    return encoded.tobytes(), policy
+
+
+def _sha256(data: bytes) -> str:
+    return hashlib.sha256(data).hexdigest()
 
 
 def _short(text: str, limit: int = 300) -> str:
@@ -359,6 +590,8 @@ class ChatSettings:
     image_max_side: int | None = None
     images_per_call: int = 1
     response_format: str | None = None
+    # Multimodal çerçeveleme de çağrının cevabını değiştirebilir: kayıtta adı geçmeli.
+    images_layout: str = "single_message"
 
     def as_dict(self) -> dict:
         return {
@@ -371,6 +604,7 @@ class ChatSettings:
             "image_max_side": self.image_max_side,
             "images_per_call": self.images_per_call,
             "response_format": self.response_format or "text",
+            "images_layout": self.images_layout,
         }
 
 
@@ -394,7 +628,21 @@ class OllamaChat:
         return self.settings.model
 
     def complete(self, prompt: str, image_png: bytes | None = None, num_predict: int | None = None,
-                 response_format: dict | str | None = None, stats: dict | None = None) -> str:
+                 response_format: dict | str | None = None, stats: dict | None = None, *,
+                 images: list[bytes] | None = None, trace: dict | None = None,
+                 raw_response: dict | None = None, image_labels: list[str] | None = None,
+                 images_layout: str | None = None, image_label_prefix: str = "") -> str:
+        """Text, one image (`image_png`) or several (`images`) — never both at once.
+
+        `keep_alive`, `num_ctx`, `num_predict`, `temperature` and `image_max_side` come from the
+        settings this client was built with and are what the request carries: the recorded settings
+        describe the call instead of the installation. `trace`, when given, receives the
+        actual-request record (serialised body hash, image hashes/sizes/order, options).
+        `image_labels` names each sent image so the record says which id was at which position.
+        `images_layout` given here wins; `None` means "the settings' layout" — one rule, no drift.
+        `image_label_prefix` is the neutral identity text the labeled layout writes into each image's
+        own message; it is only read when that layout is in force.
+        """
         return _ollama_chat(
             self.host,
             self.settings.model,
@@ -406,6 +654,14 @@ class OllamaChat:
             num_ctx=self.settings.num_ctx,
             response_format=response_format,
             stats=stats,
+            images=images,
+            keep_alive=self.settings.keep_alive,
+            image_max_side=self.settings.image_max_side,
+            trace=trace,
+            raw_response=raw_response,
+            image_labels=image_labels,
+            images_layout=(self.settings.images_layout if images_layout is None else images_layout),
+            image_label_prefix=image_label_prefix,
         )
 
     def unload(self) -> None:

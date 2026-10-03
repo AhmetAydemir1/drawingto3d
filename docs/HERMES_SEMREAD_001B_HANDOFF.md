@@ -144,3 +144,37 @@ yazılacağını** belirler:
   (`80,00`) `form: none` olarak okunur; PDF metin katmanında boşlukla bölünen sayılar (`1 00,00`)
   tek sayı olarak birleşir. Bunlar referansla karşılaştırıldığında **yanlış** sayılacaktır; D kolu
   olduğundan iyi gösterilmez.
+
+## 6. PLAN.md (P0–P8) DURUMU
+
+`PLAN.md` (kullanıcı eki) sırası: P0 artefakt/kimlik → P1 değerlendirici → P2 kabul kapıları →
+P3 gold → P4 D taban çizgisi → P5 dondurma → P6 V/VE → P7 ölçüm → P8 karar.
+**P6/P7 (gerçek çağrılar) başlatılmadı; bütçe 0/30.**
+
+**P0 — tamamlandı (0 inference):**
+
+| Madde | Durum | Kanıt |
+| --- | --- | --- |
+| P0 değişmez attempt artefaktları | **bitti** | `attempts/<vaka>/attempt-NNNN/`; `new_attempt_dir()` var olanı asla yeniden yazmaz; ilk sürümün düz klasörü tarihsel kayıt olarak okunur |
+| P0 attempt kimlik kaydı | **bitti** | `manifest.json` (`semread-001b-attempt/2`): attempt_id, page_id, arm, **phase**, split, created_at, üretici+değerlendirme kimliği, kaynak+sayfa PNG hash'i, model/digest/runtime/meta veri, `settings`, `request_sha256` |
+| P0 attempt geçmişi | **bitti** | `state.json → attempts[<vaka>]` artık **liste**; `record_attempt()` ekler, üzerine yazmaz (`fcntl` kilidi) |
+| P0 yeniden kullanım/bayat doğrulaması | **bitti** | `reusable_attempt()`: verdict=pass + üretici kimliği + değerlendirme kimliği + digest + `settings` + kaynak hash'i + **sayfa PNG hash'i** + sızıntı kapısı + runtime uyumu; girdi byte'ı değişirse bayat |
+| P0 gerçek runtime kimliği | **bitti** | `runtime_identity()` Ollama `/api/version` + `/api/tags` okur (inference değil); gerçek sürüm **0.32.1** (beklenenle aynı, ölçüldü). Uyuşmazlıkta çağrı **gönderilmez**: `blocking_kind: runtime_mismatch`, `send_state: not_sent_runtime_mismatch`, rezervasyon defterde kalır |
+| P0 üretici/değerlendirici kimliği ayrımı | **bitti** | `producer_identity()` yalnız tahmini etkileyen dosyalar + `settings` + şema + model/digest/runtime + corpus byte'ları; `evaluation_identity()` gold + politika + **`semantic_evaluation.py`/`semread_001b_reference.py` byte'ları**. Test: evaluator dosyası değişince üretici kimliği sabit kalıyor, tersi de öyle |
+| P0 `evaluate` seçilen attempt'i okur | **bitti** | `evaluate()` matrisi kurar ve **hücrenin seçtiği** attempt klasörünü okur; `cells_status` seçilemeyen hücreleri `not_run` olarak yazar; `evaluation.json` artık `matrix`, `cells_status`, `matrix_totals` taşır |
+
+**P1'de kalanlar (sıradaki iş):** predicate-geneli recovery/regression, belirsiz eşleşme politikası
+(şimdiki davranış bir adayı puanlıyor), `localization_match_rate` / `semantic_field_accuracy` /
+`overclaim_rate` / `abstention_rate` ayrımı, `exhaustiveness`'e göre `unscorable_extra_candidate` ↔
+`false_positive` ayrımı, `EKSİK:`/`TODO` yer tutucularının reddi, referans bölge doğrulaması
+(`0<=x0<x1<=1`, NaN/inf, sıfır alan), gözlem kimliği denetiminin fail-closed olması.
+
+**P2:** B05/B06/B07'yi 30 hücreli matris + gerçek kanıt zincirine bağla (B07 şu an boş kayıtla da
+kapanabiliyor). **P3:** 10/10 gold (PDF metin katmanı, raster vision). **P4:** D'nin 10 hücresi
+(4'ü hazır). **P5:** dondurma manifesti.
+
+**Test durumu:** `pytest tests/test_semread_001b_gates.py tests/test_semread_001b.py tests/test_semantic_candidates.py -q`
+→ **71 passed in 230.69s** (20 kapı + 25 + 26). Yeni P0 testleri: değişmez attempt klasörleri,
+attempt geçmişinin üzerine yazılmaması, üretici/değerlendirici kimlik ayrımı, değişen sayfa PNG'siyle
+bayatlayan attempt, yabancı üretici kimliğinden gelen attempt'in reddi, runtime uyuşmazlığında
+gönderimin engellenmesi (rezervasyon defterde kalır).

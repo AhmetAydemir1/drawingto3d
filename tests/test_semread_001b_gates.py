@@ -269,8 +269,10 @@ def test_a_local_preparation_error_is_not_reported_as_a_sent_call(scratch_budget
                                                                   monkeypatch):
     page = {"page_id": "dev-plate-pocket", "split": "dev", "group": "g", "path": str(page_png),
             "type": "raster", "source_sha256": "c" * 64}
-    directory = scratch_budget / "attempts" / "dev-plate-pocket-VE"
-    monkeypatch.setattr(pilot, "attempt_dir", lambda case_id: directory)
+    monkeypatch.setattr(pilot, "ATTEMPT_ROOT", scratch_budget / "attempts")
+    monkeypatch.setattr(pilot, "PAGES_DIR", scratch_budget / "pages")
+    (scratch_budget / "pages").mkdir(parents=True, exist_ok=True)
+    (scratch_budget / "pages" / "dev-plate-pocket.png").write_bytes(b"\x89PNG\r\n\x1a\n" + b"0" * 32)
     monkeypatch.setattr(pilot, "open_source", lambda _path: open_source(page_png))
 
     def broken(*_args, **_kwargs):
@@ -280,6 +282,7 @@ def test_a_local_preparation_error_is_not_reported_as_a_sent_call(scratch_budget
     outcome = pilot.write_live_attempt(page, "VE", phase="final")
 
     assert outcome["verdict"] == "fail" and "overlay" in outcome["local_error"]
+    directory = Path(outcome["directory"])
     recorded = json.loads((directory / "local-error.json").read_text(encoding="utf-8"))
     assert recorded["send_attempted"] is False and recorded["inference_calls"] == 0
     assert pilot.budget_report()["total_used"] == 0, \
@@ -296,3 +299,130 @@ def test_the_matrix_counts_cells_not_frozen_pages_only(scratch_budget):
                for cell in matrix["cells"])
     frozen_cells = [cell for cell in matrix["cells"] if cell["split"] == "frozen"]
     assert len(frozen_cells) == 6 * 3, "frozen hücreleri 6 sayfa × 3 kol olmalı"
+
+
+# ------------------------------------------------------------- P0: değişmez attempt + kimlik
+
+
+def test_attempt_dirs_are_immutable_and_numbered(scratch_budget, monkeypatch):
+    monkeypatch.setattr(pilot, "ATTEMPT_ROOT", scratch_budget / "attempts")
+    first = pilot.new_attempt_dir("page-V")
+    (first / "payload.txt").write_text("ilk", encoding="utf-8")
+    second = pilot.new_attempt_dir("page-V")
+    assert first.name == "attempt-0001" and second.name == "attempt-0002"
+    assert first != second
+    third = pilot.new_attempt_dir("page-V")
+    assert third.name == "attempt-0003"
+    assert (first / "payload.txt").read_text(encoding="utf-8") == "ilk", \
+        "yeni attempt eski attempt klasörünü değiştirmemeli"
+    assert [path.name for path in pilot.attempt_dirs("page-V")] == \
+        ["attempt-0001", "attempt-0002", "attempt-0003"]
+    assert pilot.latest_attempt_dir("page-V") == third
+
+
+def test_attempt_history_is_appended_not_overwritten(scratch_budget, monkeypatch):
+    monkeypatch.setattr(pilot, "ATTEMPT_ROOT", scratch_budget / "attempts")
+    page = {"page_id": "page", "split": "dev", "group": "g", "path": "examples/README.md"}
+    for index in (1, 2):
+        directory = pilot.new_attempt_dir("page-V")
+        pilot.write_json(directory / "manifest.json", {"created_at": f"t{index}",
+                                                       "producer_identity": "p"})
+        pilot.record_attempt(f"page-V/{directory.name}", directory, page, "V", phase="dev",
+                             verdict="pass" if index == 1 else "fail", gates={}, seconds=1.0)
+    history = pilot.load_state()["attempts"]["page-V"]
+    assert [row["attempt_id"] for row in history] == ["page-V/attempt-0001", "page-V/attempt-0002"]
+    assert [row["verdict"] for row in history] == ["pass", "fail"]
+    assert history[1]["producer_identity"] == "p", "attempt kaydı kimlik alanlarını taşımalı"
+
+
+def test_producer_and_evaluator_identities_are_separate(tmp_path, monkeypatch):
+    """Tahmini etkileyen dosya üretici kimliğini, değerlendirici dosyası yalnız onu değiştirir (P0-7)."""
+    root = tmp_path / "root"
+    (root / "src").mkdir(parents=True)
+    producer_file = root / "src" / "reader.py"
+    eval_file = root / "src" / "evaluation.py"
+    producer_file.write_text("v1", encoding="utf-8")
+    eval_file.write_text("v1", encoding="utf-8")
+    monkeypatch.setattr(pilot, "ROOT", root)
+    monkeypatch.setattr(pilot, "PRODUCER_IDENTITY_FILES", ("src/reader.py",))
+    monkeypatch.setattr(pilot, "EVALUATION_IDENTITY_FILES", ("src/evaluation.py",))
+
+    for arm, target in (("producer", producer_file), ("evaluation", eval_file)):
+        before = (pilot.producer_identity(), pilot.evaluation_identity())
+        target.write_text("v2", encoding="utf-8")
+        after = (pilot.producer_identity(), pilot.evaluation_identity())
+        target.write_text("v1", encoding="utf-8")
+        if arm == "producer":
+            assert after[0] != before[0], "üretici dosyası üretici kimliğini değiştirmeli"
+            assert after[1] == before[1], "üretici dosyası değerlendirme kimliğini değiştirmemeli"
+        else:
+            assert after[0] == before[0], \
+                "evaluator/gold düzeltmesi ham tahmini geçersiz kılmamalı"
+            assert after[1] != before[1], "değerlendirici dosyası değerlendirme kimliğini değiştirmeli"
+
+
+def test_a_changed_page_png_makes_the_old_attempt_stale(scratch_budget, monkeypatch):
+    pages = scratch_budget / "pages"
+    pages.mkdir(parents=True, exist_ok=True)
+    png = pages / "page.png"
+    png.write_bytes(b"\x89PNG\r\n\x1a\n" + b"a" * 32)
+    monkeypatch.setattr(pilot, "ATTEMPT_ROOT", scratch_budget / "attempts")
+    monkeypatch.setattr(pilot, "PAGES_DIR", pages)
+    page = {"page_id": "page", "split": "dev", "group": "g", "path": "examples/README.md"}
+
+    directory = pilot.new_attempt_dir("page-V")
+    manifest = pilot._attempt_manifest(page, "V", attempt_id="page-V/attempt-0001", phase="final")
+    pilot.write_json(directory / "manifest.json", manifest)
+    pilot.write_json(directory / "result.json",
+                     {"send_attempted": True, "gates": {"no_leakage": True},
+                      "runtime_matches_expected": True, "arm": "V"})
+    pilot.record_attempt("page-V/attempt-0001", directory, page, "V", phase="final",
+                         verdict="pass", gates={}, seconds=1.0)
+    assert pilot.reusable_attempt("page-V", page) is not None
+
+    png.write_bytes(b"\x89PNG\r\n\x1a\n" + b"b" * 32)      # girdi değişti
+    assert pilot.reusable_attempt("page-V", page) is None, \
+        "girdi byte'ları değişen attempt yeniden kullanılmamalı"
+
+
+def test_an_attempt_from_another_producer_identity_is_not_reused(scratch_budget, monkeypatch):
+    monkeypatch.setattr(pilot, "ATTEMPT_ROOT", scratch_budget / "attempts")
+    monkeypatch.setattr(pilot, "PAGES_DIR", scratch_budget / "pages")
+    (scratch_budget / "pages").mkdir(parents=True, exist_ok=True)
+    page = {"page_id": "page", "split": "dev", "group": "g", "path": "examples/README.md"}
+    directory = pilot.new_attempt_dir("page-V")
+    pilot.write_json(directory / "manifest.json",
+                     {"producer_identity": "eski", "evaluation_identity": "eski",
+                      "expected_digest": pilot.EXPECTED_DIGEST, "settings": pilot.SETTINGS})
+    pilot.write_json(directory / "result.json",
+                     {"send_attempted": True, "gates": {"no_leakage": True},
+                      "runtime_matches_expected": True, "arm": "V"})
+    pilot.record_attempt("page-V/attempt-0001", directory, page, "V", phase="dev",
+                         verdict="pass", gates={}, seconds=1.0)
+    assert pilot.reusable_attempt("page-V", page) is None
+
+
+def test_a_runtime_mismatch_blocks_the_send_but_stays_in_the_ledger(scratch_budget, monkeypatch):
+    monkeypatch.setattr(pilot, "ATTEMPT_ROOT", scratch_budget / "attempts")
+    monkeypatch.setattr(pilot, "PAGES_DIR", scratch_budget / "pages")
+    (scratch_budget / "pages").mkdir(parents=True, exist_ok=True)
+    (scratch_budget / "pages" / "page.png").write_bytes(b"\x89PNG\r\n\x1a\n" + b"c" * 32)
+    monkeypatch.setattr(pilot, "runtime_identity",
+                        lambda: {"version": "0.31.0", "model": {}, "error": None})
+    monkeypatch.setattr(pilot, "open_source", lambda _path: object())
+    monkeypatch.setattr(pilot, "observe", lambda _path: object())
+    monkeypatch.setattr(pilot, "prepare_arm_inputs",
+                        lambda *a, **k: {"images": [], "observations": [], "page_image_id": "image-1",
+                                         "arm": "V"})
+    monkeypatch.setattr(pilot, "candidate_prompt", lambda *a, **k: "görev")
+    page = {"page_id": "page", "split": "frozen", "group": "g", "path": "examples/README.md",
+            "type": "raster", "source_sha256": "d" * 64}
+
+    outcome = pilot.write_live_attempt(page, "V", phase="final")
+    assert outcome["verdict"] == "blocked" and "runtime" in outcome["reason"]
+    result = json.loads((Path(outcome["directory"]) / "result.json").read_text(encoding="utf-8"))
+    assert result["blocking_kind"] == "runtime_mismatch" and result["send_attempted"] is False
+    report = pilot.budget_report()
+    assert report["by_send_state"] == {"not_sent_runtime_mismatch": 1}, \
+        "gönderilmeyen rezervasyon sessizce silinmemeli"
+    assert report["total_used"] == 1

@@ -73,16 +73,26 @@ NUM_PREDICT = 2048
 IMAGE_MAX_SIDE = 1280          # development aşamasında sabitlenir; final koşuya kadar değişmez
 GOLD_SENTINEL = "semread-001b-gold-sentinel-4f21"
 
-# Kaynak kod/test kimliğine giren dosyalar (001B'nin kendi kimliği; 001A'nınki snapshot'ta sabit).
-IDENTITY_FILES = (
-    "eval/semread_001b_pilot.py", "eval/semread_001b_snapshot.py",
-    "eval/semread_001b_corpus_probe.py",
+# Üretici kimliği: **yalnız tahmini değiştirebilecek** dosyalar (P0-7). Değerlendirici kodu burada
+# yoktur: yalnız evaluator/gold düzeltmesi geçerli ham tahmini geçersiz kılmaz.
+PRODUCER_IDENTITY_FILES = (
+    "eval/semread_001b_pilot.py",
     "src/drawingto3d/semantic_candidates.py", "src/drawingto3d/semantic_candidate_reader.py",
-    "src/drawingto3d/semantic_deterministic.py", "src/drawingto3d/semantic_evaluation.py",
-    "tests/test_semantic_candidates.py",
-) + tuple(str(path.relative_to(ROOT)) for path in sorted((ROOT / "src/drawingto3d").glob("*.py"))) \
-  + tuple(str(path.relative_to(ROOT)) for path in sorted((ROOT / "src/drawingto3d_lab").glob("*.py"))) \
-  + ("pyproject.toml",)
+    "src/drawingto3d/semantic_deterministic.py", "src/drawingto3d/semantic_schema.py",
+    "src/drawingto3d/semantic_images.py", "src/drawingto3d/llama.py",
+    "src/drawingto3d/inference_log.py", "src/drawingto3d/observe.py", "src/drawingto3d/bind.py",
+    "src/drawingto3d/meaning.py",
+)
+
+# Değerlendirici kimliği: gold + eşleştirme politikası + değerlendirici **uygulaması** (P0-7).
+EVALUATION_IDENTITY_FILES = ("src/drawingto3d/semantic_evaluation.py",
+                             "eval/semread_001b_reference.py")
+
+# Sabitlenmiş üretim ayarları (P5'te dondurulur; attempt kaydında taşınır).
+SETTINGS = {"num_ctx": 8192, "temperature": 0.0, "top_p": 1.0, "seed": 20261004,
+            "num_predict": NUM_PREDICT, "keep_alive": "5m", "image_max_side": IMAGE_MAX_SIDE,
+            "images_layout": "per_image_message_labeled", "image_label_prefix": "Image ID: ",
+            "input_strategy": "single_full_page"}
 
 # Corpus: 10 sayfa, 10 bağımsız parça grubu, 4 development + 6 frozen. 001A'da incelenmiş örnekler
 # (plate/flange) bilinçli olarak development'a ayrıldı (goal §4).
@@ -141,20 +151,42 @@ def sha256_of(path: Path) -> str:
     return digest.hexdigest()
 
 
-def code_identity() -> str:
-    """Üretici kimliği: 001B'nin ilgili kaynak/test dosyalarının içeriği (dokümanlar hariç)."""
+def _files_identity(relative_paths) -> str:
     digest = hashlib.sha256()
-    for relative in sorted(set(IDENTITY_FILES)):
+    for relative in sorted(set(relative_paths)):
         path = ROOT / relative
         digest.update(f"{relative}\0{sha256_of(path) if path.exists() else 'yok'}\0".encode())
     return digest.hexdigest()
 
 
-def evaluation_identity() -> str:
-    """Değerlendirme kimliği: gold + eşleştirme politikası + şema (tahmin girdilerinden ayrı)."""
+def producer_identity() -> str:
+    """Tahmini değiştirebilecek her şey: şema, görev metni, okuyucu, hazırlama, taşıma, ayar, model."""
     digest = hashlib.sha256()
-    digest.update(json.dumps(MATCH_POLICY, sort_keys=True, ensure_ascii=False).encode())
+    digest.update(_files_identity(PRODUCER_IDENTITY_FILES).encode())
+    digest.update(json.dumps(SETTINGS, sort_keys=True).encode())
     digest.update(json.dumps(candidate_json_schema(), sort_keys=True).encode())
+    digest.update(f"{MODEL}\0{EXPECTED_DIGEST}\0{EXPECTED_RUNTIME}\0".encode())
+    for page in PAGES:  # corpus byte'ları da tahmini belirler
+        source = ROOT / page["path"]
+        digest.update(f"{page['page_id']}\0{sha256_of(source) if source.exists() else 'yok'}\0"
+                      .encode())
+    return digest.hexdigest()
+
+
+def code_identity() -> str:
+    """Geriye dönük ad: üretici kimliği (attempt kayıtlarında `producer_identity`)."""
+    return producer_identity()
+
+
+def evaluation_identity() -> str:
+    """Değerlendirme kimliği: gold + eşleştirme politikası + değerlendirici **kodu** (P0-7).
+
+    Değerlendirici/gold düzeltmesi bu kimliği değiştirir ama `producer_identity()`i değiştirmez;
+    böylece geçerli ham tahmin yeni inference yapılmadan yeniden değerlendirilebilir.
+    """
+    digest = hashlib.sha256()
+    digest.update(_files_identity(EVALUATION_IDENTITY_FILES).encode())
+    digest.update(json.dumps(MATCH_POLICY, sort_keys=True, ensure_ascii=False).encode())
     for page in PAGES:
         reference = GOLD_DIR / f"{page['page_id']}.json"
         digest.update(f"{page['page_id']}\0{sha256_of(reference) if reference.exists() else 'yok'}\0"
@@ -397,30 +429,116 @@ def check_reference(reference: dict, page: dict, observation_ids: list[str]) -> 
 # ------------------------------------------------------------------ attempt yazımı
 
 
-def attempt_dir(case_id: str) -> Path:
+def attempt_root(case_id: str) -> Path:
+    """Bir vakanın attempt kökü; içinde **üzerine yazılmayan** attempt klasörleri durur."""
     return ATTEMPT_ROOT / case_id
 
 
-def _producer_manifest(page: dict, arm: str) -> dict:
+def attempt_dirs(case_id: str) -> list[Path]:
+    """Vakanın tüm attempt klasörleri (ilk sürümün düz klasörü de tarihsel kayıt olarak sayılır)."""
+    root = attempt_root(case_id)
+    dirs = sorted(path for path in root.glob("attempt-*") if path.is_dir())
+    if (root / "result.json").exists() or (root / "response-parsed.json").exists():
+        dirs.insert(0, root)
+    return dirs
+
+
+def latest_attempt_dir(case_id: str) -> Path | None:
+    dirs = attempt_dirs(case_id)
+    return dirs[-1] if dirs else None
+
+
+def attempt_dir(case_id: str) -> Path:
+    """Okuma için: en son attempt klasörü, hiç yoksa vaka kökü (yazma için `new_attempt_dir`)."""
+    return latest_attempt_dir(case_id) or attempt_root(case_id)
+
+
+def new_attempt_dir(case_id: str) -> Path:
+    """Sıradaki **değişmez** attempt klasörü. Var olan bir attempt asla yeniden yazılmaz."""
+    root = attempt_root(case_id)
+    root.mkdir(parents=True, exist_ok=True)
+    numbers = [int(match.group(1)) for path in root.glob("attempt-*")
+               if (match := re.fullmatch(r"attempt-(\d{4,})", path.name))]
+    directory = root / f"attempt-{max(numbers, default=0) + 1:04d}"
+    directory.mkdir()
+    return directory
+
+
+def _attempt_manifest(page: dict, arm: str, *, attempt_id: str, phase: str,
+                      runtime: str | None = None, model_metadata: dict | None = None,
+                      request_sha256: str | None = None) -> dict:
+    """Bir attempt'in değişmez kimlik kaydı (P0: hangi girdi/kod/model ile üretildi)."""
+    page_png = PAGES_DIR / f"{page['page_id']}.png"
+    source = ROOT / page["path"]
     return {
-        "schema": "semread-001b-producer/1", "case_id": f"{page['page_id']}-{arm}", "arm": arm,
-        "page_id": page["page_id"], "split": page["split"], "group": page["group"],
+        "schema": "semread-001b-attempt/2", "attempt_id": attempt_id, "case_id": attempt_id,
+        "page_id": page["page_id"], "arm": arm, "phase": phase, "split": page["split"],
+        "group": page["group"], "created_at": _now(),
+        "producer_identity": producer_identity(), "evaluation_identity": evaluation_identity(),
+        "code_identity": producer_identity(),          # geriye dönük alan adı
         "case_schema": CASE_SCHEMA, "candidate_schema": CANDIDATE_SCHEMA_VERSION,
-        "code_identity": code_identity(), "head": _git("rev-parse", "HEAD"),
-        "model": MODEL, "expected_digest": EXPECTED_DIGEST,
+        "head": _git("rev-parse", "HEAD"),
+        "source": {"path": page["path"], "sha256": sha256_of(source) if source.exists() else None,
+                   "bytes": source.stat().st_size if source.exists() else None},
+        "page_png_sha256": sha256_of(page_png) if page_png.exists() else None,
         "corpus_manifest_sha256": sha256_of(CORPUS_DIR / "manifest.json")
         if (CORPUS_DIR / "manifest.json").exists() else None,
-        "page_png_sha256": sha256_of(PAGES_DIR / f"{page['page_id']}.png")
-        if (PAGES_DIR / f"{page['page_id']}.png").exists() else None,
-        "image_max_side": IMAGE_MAX_SIDE, "num_predict": NUM_PREDICT,
+        "model": MODEL, "expected_digest": EXPECTED_DIGEST, "runtime": runtime,
+        "model_metadata": model_metadata or {},
+        "settings": dict(SETTINGS), "request_sha256": request_sha256,
     }
+
+
+def record_attempt(attempt_id: str, directory: Path, page: dict, arm: str, *, phase: str,
+                   verdict: str, gates: dict, seconds: float, stats: dict | None = None) -> dict:
+    """Attempt geçmişine **ekle** (üzerine yazmaz). state.json artık vaka başına liste tutar (P0)."""
+    manifest = read_json(directory / "manifest.json") or {}
+    record = {"attempt_id": attempt_id, "directory": str(directory), "arm": arm,
+              "page_id": page["page_id"], "split": page["split"], "phase": phase,
+              "verdict": verdict, "gates": gates, "seconds": seconds,
+              "created_at": manifest.get("created_at") or _now(),
+              "producer_identity": manifest.get("producer_identity"),
+              "evaluation_identity": manifest.get("evaluation_identity"),
+              "page_png_sha256": manifest.get("page_png_sha256"),
+              "source_sha256": (manifest.get("source") or {}).get("sha256"),
+              "runtime": manifest.get("runtime"), "stats": stats or {}}
+    REPORT_ROOT.mkdir(parents=True, exist_ok=True)
+    guard = REPORT_ROOT / "state.guard"
+    with guard.open("a+") as handle:
+        fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
+        try:
+            state = load_state()
+            state.setdefault("attempts", {}).setdefault(f"{page['page_id']}-{arm}", []).append(record)
+            save_state(state)
+        finally:
+            fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+    return record
+
+
+def runtime_identity() -> dict:
+    """Gerçek yerel runtime sürümü + kurulu model meta verisi. **Inference değildir** (metadata)."""
+    info: dict = {"endpoint": "http://127.0.0.1:11434", "version": None, "model": {},
+                  "error": None}
+    try:
+        with urllib.request.urlopen("http://127.0.0.1:11434/api/version", timeout=5) as response:
+            info["version"] = json.loads(response.read()).get("version")
+        with urllib.request.urlopen("http://127.0.0.1:11434/api/tags", timeout=5) as response:
+            payload = json.loads(response.read())
+        for row in payload.get("models") or []:
+            if MODEL in (row.get("name"), row.get("model")):
+                info["model"] = {key: row.get(key) for key in
+                                 ("name", "model", "digest", "size", "modified_at",
+                                  "parameter_size", "quantization_level", "family")}
+    except Exception as exc:  # noqa: BLE001 - runtime okunamazsa fail-closed reddedilir
+        info["error"] = f"{type(exc).__name__}: {exc}"
+    return info
 
 
 def write_d_attempt(page: dict, *, observations=None, source=None) -> dict:
     """D kolu: VLM çağrısı yok. Adaylar + deterministic kanıt + kapsam raporu yazılır."""
     case_id = f"{page['page_id']}-D"
-    directory = attempt_dir(case_id)
-    directory.mkdir(parents=True, exist_ok=True)
+    directory = new_attempt_dir(case_id)
+    attempt_id = f"{case_id}/{directory.name}"
     if source is None:
         source = open_source(ROOT / page["path"])
     if observations is None:
@@ -446,16 +564,27 @@ def write_d_attempt(page: dict, *, observations=None, source=None) -> dict:
                 "inference_calls": 0,
                 "rss": {"value_bytes": resource.getrusage(resource.RUSAGE_SELF).ru_maxrss,
                         "scope": "bu sürecin RSS'i; toplam sistem/model RAM'i değildir"}})
-    write_json(directory / "manifest.json", {**_producer_manifest(page, D_ARM),
-                                             "deterministic_evidence": result["evidence"]})
+    write_json(directory / "manifest.json",
+               {**_attempt_manifest(page, D_ARM, attempt_id=attempt_id, phase="deterministic",
+                                    runtime="deterministic",
+                                    model_metadata={"model": "yok",
+                                                    "note": "D kolu model çağırmaz"}),
+                "deterministic_evidence": result["evidence"]})
     verdict = "pass" if references["ok"] else "fail"
     write_json(directory / "result.json",
-               {"schema": "semread-001b-result/1", "case_id": case_id, "arm": D_ARM,
-                "product_verdict": verdict, "evaluation_scope": "candidate-accuracy",
+               {"schema": "semread-001b-result/1", "case_id": case_id, "attempt_id": attempt_id,
+                "arm": D_ARM, "product_verdict": verdict,
+                "evaluation_scope": "candidate-accuracy",
                 "semantic_evaluation": "provisional-reference",
                 "cad_evaluation": "not_evaluated",
                 "candidates": len(response.items), "references": references,
-                "inference_calls": 0, "seconds": seconds})
+                "inference_calls": 0, "seconds": seconds,
+                "timing_note": ("seconds yalnız adapter süresidir: observe()/OCR dışarıda; uçtan uca "
+                                "okuma gecikmesi olarak kullanılmaz")})
+    record_attempt(attempt_id, directory, page, D_ARM, phase="deterministic", verdict=verdict,
+                   gates={"references_ok": bool(references.get("ok")),
+                          "coverage_exact": bool((references.get("coverage") or {}).get("exact"))},
+                   seconds=seconds)
     write_json(directory / "artifact-index.json", artifact_index(directory))
     return {"case_id": case_id, "directory": str(directory), "verdict": verdict,
             "candidates": len(response.items), "seconds": seconds,
@@ -469,8 +598,8 @@ def write_live_attempt(page: dict, arm: str, *, phase: str, observations=None, s
     hatası gerçek gönderim gibi raporlanmaz (`send_state: local_error`, `send_attempted: false`).
     """
     case_id = f"{page['page_id']}-{arm}"
-    directory = attempt_dir(case_id)
-    directory.mkdir(parents=True, exist_ok=True)
+    directory = new_attempt_dir(case_id)
+    attempt_id = f"{case_id}/{directory.name}"
     if source is None:
         source = open_source(ROOT / page["path"])
     if observations is None:
@@ -522,6 +651,22 @@ def write_live_attempt(page: dict, arm: str, *, phase: str, observations=None, s
         return {"case_id": case_id, "verdict": "fail", "directory": str(directory),
                 "reason": "model digest uyuşmuyor"}
 
+    runtime = runtime_identity()
+    if runtime.get("version") != EXPECTED_RUNTIME:
+        mark_send_state(case_id, phase=phase, state_name="not_sent_runtime_mismatch",
+                        detail=f"görülen {runtime.get('version')!r}")
+        write_json(directory / "result.json",
+                   {"schema": "semread-001b-result/1", "case_id": case_id, "attempt_id": attempt_id,
+                    "arm": arm, "phase": phase, "split": page["split"],
+                    "product_verdict": "blocked", "blocking_kind": "runtime_mismatch",
+                    "blocking_reason": (f"gerçek runtime {runtime.get('version')!r} != beklenen "
+                                        f"{EXPECTED_RUNTIME!r} (hata: {runtime.get('error')!r})"),
+                    "runtime": runtime.get("version"), "send_attempted": False,
+                    "inference_calls": 0})
+        write_json(directory / "runtime-identity.json", runtime)
+        return {"case_id": case_id, "verdict": "blocked", "directory": str(directory),
+                "reason": "runtime sürümü sözleşmeyle uyuşmuyor"}
+
     settings = ChatSettings(model=MODEL, num_ctx=8192, temperature=0.0, num_predict=NUM_PREDICT,
                             keep_alive="5m", timeout=float(MODEL_TIMEOUT_SECONDS),
                             images_layout="per_image_message_labeled", image_max_side=IMAGE_MAX_SIDE)
@@ -559,7 +704,19 @@ def write_live_attempt(page: dict, arm: str, *, phase: str, observations=None, s
                 "inference_calls": 1, "stats": stats,
                 "rss": {"value_bytes": resource.getrusage(resource.RUSAGE_SELF).ru_maxrss,
                         "scope": "bu sürecin RSS'i; toplam sistem/model RAM'i değildir"}})
-    write_json(directory / "manifest.json", _producer_manifest(page, arm))
+    write_json(directory / "runtime-identity.json", runtime)
+    write_json(directory / "manifest.json",
+               _attempt_manifest(page, arm, attempt_id=attempt_id, phase=phase,
+                                 runtime=runtime.get("version"),
+                                 model_metadata={**runtime.get("model", {}),
+                                                 "installed_digest": installed.digest,
+                                                 "runtime_version_seen": runtime.get("version"),
+                                                 "runtime_matches_expected":
+                                                     runtime.get("version") == EXPECTED_RUNTIME,
+                                                 "runtime_error": runtime.get("error")},
+                                 request_sha256=hashlib.sha256(json.dumps(
+                                     outcome.get("request") or {}, sort_keys=True).encode()
+                                 ).hexdigest()))
 
     gates = {
         "answered": outcome.get("outcome") == "answered",
@@ -572,21 +729,20 @@ def write_live_attempt(page: dict, arm: str, *, phase: str, observations=None, s
     }
     verdict = "pass" if all(gates.values()) else "fail"
     write_json(directory / "result.json",
-               {"schema": "semread-001b-result/1", "case_id": case_id, "arm": arm,
-                "phase": phase, "split": page["split"],
+               {"schema": "semread-001b-result/1", "case_id": case_id, "attempt_id": attempt_id,
+                "arm": arm, "phase": phase, "split": page["split"],
+                "runtime": runtime.get("version"),
+                "runtime_matches_expected": runtime.get("version") == EXPECTED_RUNTIME,
                 "product_verdict": verdict, "evaluation_scope": "candidate-accuracy",
                 "semantic_evaluation": "provisional-reference", "cad_evaluation": "not_evaluated",
                 "gates": gates, "inference_calls": 1, "send_attempted": True, "seconds": seconds,
                 "reserved_at": reservation["record"]["started_at"]})
     write_json(directory / "artifact-index.json", artifact_index(directory))
 
-    state = load_state()
-    state.setdefault("attempts", {})[case_id] = {
-        "directory": str(directory), "arm": arm, "page_id": page["page_id"],
-        "split": page["split"], "phase": phase, "verdict": verdict, "gates": gates,
-        "seconds": seconds, "code_identity": code_identity(),
-        "stats": {key: stats.get(key) for key in ("done_reason", "eval_count", "prompt_eval_count")}}
-    save_state(state)
+    record_attempt(attempt_id, directory, page, arm, phase=phase, verdict=verdict, gates=gates,
+                   seconds=seconds,
+                   stats={key: stats.get(key) for key in
+                          ("done_reason", "eval_count", "prompt_eval_count")})
     return {"case_id": case_id, "directory": str(directory), "verdict": verdict, "gates": gates,
             "seconds": seconds, "outcome": outcome}
 
@@ -609,13 +765,17 @@ def _forbidden_terms(page: dict) -> list[str]:
 # ------------------------------------------------------------------ değerlendirme
 
 
-def _arm_candidates(case_id: str) -> dict | None:
-    payload = read_json(attempt_dir(case_id) / "response-parsed.json")
+def _arm_candidates(directory) -> dict | None:
+    """Yalnız **matris hücresinin seçtiği** attempt klasörünü okur (varlık taraması yapmaz)."""
+    payload = read_json(Path(directory) / "response-parsed.json")
     return payload
 
 
 def evaluate(write_report: bool = True) -> dict:
     manifest = read_json(CORPUS_DIR / "manifest.json") or corpus_manifest()
+    matrix_cells = final_matrix().get("cells") or []
+    matrix = {f"{cell['page_id']}-{cell['arm']}": cell for cell in matrix_cells}
+    cells_status: list[dict] = []
     per_page: dict[str, dict] = {}
     reference_status: dict[str, dict] = {}
     pages_rows: list[dict] = []
@@ -638,8 +798,16 @@ def evaluate(write_report: bool = True) -> dict:
                                                                        observation_ids)}
         arms: dict[str, dict] = {}
         for arm in (D_ARM, V_ARM, VE_ARM):
-            candidates = _arm_candidates(f"{page_id}-{arm}")
+            cell = matrix.get(f"{page_id}-{arm}") or {}
+            if not cell.get("attempt"):
+                cells_status.append({"page_id": page_id, "arm": arm, "cell": "not_run",
+                                     "reason": "matris hücresi bir attempt seçmedi"})
+                continue
+            candidates = _arm_candidates(cell["attempt"])
             if candidates is None:
+                cells_status.append({"page_id": page_id, "arm": arm,
+                                     "cell": cell.get("cell") or "selected",
+                                     "reason": "seçilen attempt klasöründe parsed çıktı yok"})
                 continue
             arms[arm] = evaluate_page(reference, {"response": candidates})
         per_page[page_id] = arms
@@ -667,6 +835,8 @@ def evaluate(write_report: bool = True) -> dict:
         "evaluation_identity": evaluation_identity(), "code_identity": code_identity(),
         "budget": budget_report(),
         "pages": pages_rows, "aggregates": aggregates, "comparison": comparison,
+        "matrix": matrix_cells, "cells_status": cells_status,
+        "matrix_totals": (final_matrix().get("totals") if matrix_cells else {}),
     }
     write_json(REPORT_ROOT / "evaluation.json", payload)
     if write_report:
@@ -878,28 +1048,41 @@ def reusable_attempt(case_id: str, page: dict) -> dict | None:
     değildir; başarısız/failed bir attempt final hücresini kapatmaz, çağrı olarak sayılır.
     """
     state = load_state()
-    record = (state.get("attempts") or {}).get(case_id)
-    if not record or record.get("verdict") != "pass":
-        return None
-    if record.get("code_identity") != code_identity():
-        return None
-    directory = Path(record.get("directory") or "")
-    if not directory.exists():
-        return None
-    result = read_json(directory / "result.json") or {}
-    if result.get("blocking_kind") or result.get("send_attempted") is False:
-        return None
-    if (result.get("gates") or {}).get("no_leakage") is not True:
-        return None
-    manifest = read_json(directory / "manifest.json") or {}
-    if manifest.get("expected_digest") != EXPECTED_DIGEST:
-        return None
-    if manifest.get("code_identity") != code_identity():
-        return None
-    if page.get("source_sha256") and manifest.get("page_id") != page["page_id"]:
-        return None
-    return {"directory": str(directory), "phase": record.get("phase"),
-            "verdict": record.get("verdict"), "gates": record.get("gates")}
+    records = (state.get("attempts") or {}).get(case_id) or []
+    if isinstance(records, dict):          # eski tek-kayıt biçimi
+        records = [records]
+    page_png = PAGES_DIR / f"{page['page_id']}.png"
+    source = ROOT / page["path"]
+    for record in reversed(records):       # en yeni geçerli attempt
+        if record.get("verdict") != "pass":
+            continue
+        directory = Path(record.get("directory") or "")
+        if not directory.exists():
+            continue
+        manifest = read_json(directory / "manifest.json") or {}
+        result = read_json(directory / "result.json") or {}
+        if manifest.get("producer_identity") != producer_identity():
+            continue                       # üretici kimliği değişti → bayat attempt
+        if manifest.get("evaluation_identity") != evaluation_identity():
+            continue
+        if manifest.get("expected_digest") != EXPECTED_DIGEST:
+            continue
+        if (manifest.get("settings") or {}) != SETTINGS:
+            continue
+        if source.exists() and (manifest.get("source") or {}).get("sha256") != sha256_of(source):
+            continue                       # girdi byte'ları aynı mı
+        if page_png.exists() and manifest.get("page_png_sha256") != sha256_of(page_png):
+            continue
+        if result.get("blocking_kind") or result.get("send_attempted") is False:
+            continue
+        if (result.get("gates") or {}).get("no_leakage") is not True:
+            continue
+        if result.get("runtime_matches_expected") is not True and result.get("arm") != D_ARM:
+            continue
+        return {"directory": str(directory), "phase": record.get("phase"),
+                "verdict": record.get("verdict"), "gates": record.get("gates"),
+                "attempt_id": record.get("attempt_id")}
+    return None
 
 
 def final_matrix(reuse: bool = True) -> dict:
@@ -909,8 +1092,8 @@ def final_matrix(reuse: bool = True) -> dict:
         for arm in (D_ARM, V_ARM, VE_ARM):
             case_id = f"{page['page_id']}-{arm}"
             if arm == D_ARM:
-                directory = attempt_dir(case_id)
-                present = (directory / "response-parsed.json").exists()
+                directory = latest_attempt_dir(case_id)
+                present = bool(directory and (directory / "response-parsed.json").exists())
                 cells.append({"page_id": page["page_id"], "split": page["split"], "arm": arm,
                               "cell": "ready" if present else "not_run",
                               "attempt": str(directory) if present else None,

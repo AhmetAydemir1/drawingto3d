@@ -272,13 +272,45 @@ sürümleniyor → test; 14. bu iş için V/VE inference harcanmadı → `--budg
 "prediction input contract" dondurulacak maddeler arasında). Bu, eski 4 D attempt'ini bayatlatır:
 matris `stale_detected: true` ile `to_run` gösterir; D yeniden koşar, **inference harcamaz**.
 
-**P1'de kalanlar (sıradaki iş):** predicate-geneli recovery/regression, belirsiz eşleşme politikası
-(şimdiki davranış bir adayı puanlıyor), `localization_match_rate` / `semantic_field_accuracy` /
-`overclaim_rate` / `abstention_rate` ayrımı, `exhaustiveness`'e göre `unscorable_extra_candidate` ↔
-`false_positive` ayrımı, `EKSİK:`/`TODO` yer tutucularının reddi, referans bölge doğrulaması
-(`0<=x0<x1<=1`, NaN/inf, sıfır alan), gözlem kimliği denetiminin fail-closed olması, raster gold için
-vision zorlaması.
+**P1'de kalanlar:** yok — §9–§17 uygulandı (§6f).
 
 **P2:** B05/B06/B07'yi 30 hücreli matris + gerçek kanıt zincirine bağla (B07 şu an boş kayıtla da
 kapanabiliyor). **P3:** 10/10 gold (PDF metin katmanı, raster vision). **P4:** D'nin 10 hücresi
 (4'ü hazır). **P5:** dondurma manifesti.
+
+### 6f. PLAN-5 P1 (§9–§17) — **UYGULANDI** (§17 kod değişikliği gerektirmedi)
+
+Politika **`semread-001b-match/1` → `/2`**: final tahminler görülmeden sabitlendi. Politika
+değişikliği **değerlendirici kimliğine** girer (`semantic_evaluation.py`), üretici kimliğine
+girmez: eski değerlendirme koşulu (`59ff99ee…`) dokunulmadan duruyor, yeni koşu (`290aab30…`)
+ayrı klasöre yazıldı; ham tahminler yeniden üretilebilir kalır.
+
+| § | İş | Kanıt |
+| --- | --- | --- |
+| 9 | Karşılaştırma **yüklem bazında** | `compare_arms()["vs_d"][arm]["predicate_rows"]`: her alan için `scorable_target_count`, `recovered_count`, `regressed_wrong_count`, `regressed_abstention_count`, `net_correct_gain` + örnekler; toplamlar satırların toplamı; "recovery > regression" karar kuralı kaldırıldı (not olarak yazılı) |
+| 10 | Belirsiz eşleşme **dışlanır** | `close_scores` (margin içinde ikinci aday) ve `candidate_contested` (aday iki kalemin de en iyi adayı) → kalem `pairs`e girmez, `not_scored` olur, `ambiguous_claims`/`ambiguous_claim_count` ile sayılır; seçim aday sırasına bağlı değil |
+| 11 | Yerelleştirme ↔ semantik ayrımı | `localization_match_rate`, `semantic_field_accuracy`, `target_binding_accuracy`, `candidate_overclaim_rate`, `candidate_abstention_rate`, `candidate_wrong_rate`; `candidate_precision`/`claim_recall` uyum için duruyor + `metric_note` |
+| 12 | Kapsam-duyarlı fazla adaylar | `exhaustive_scope()`: `full_page`/`regions`/`predicates`; beyan yok ya da yer tutucu → **hiçbir** aday cezalanmaz; kapsam içi `false_positive`, kapsam dışı `unscorable_extra_candidate`; `evaluate_page()["extras"]` |
+| 13 | Yer tutucu gold reddi | `placeholder_text()` (`EKSİK`/`TODO`/`TBD`/`PLACEHOLDER`, önek tabanlı) `scope`/`exhaustiveness`/`evidence`/`source_evidence` alanlarında reddeder; B02 yer tutucuyla kapanamaz |
+| 14 | Bölge doğrulaması (hedef **ve** callout) | `region_problem()`: 4 sonlu sayı, `0<=x0<x1<=1`, `0<=y0<y1<=1`; sıfır alan, ters, aralık dışı, NaN/inf, eksik alan ve yanlış tip reddedilir; `exhaustiveness.regions` de denetlenir |
+| 15 | Gözlem kimliği fail-closed | `check_reference(..., extraction_ok=False)` ya da boş gözlem listesi + gold `observation_id` → referans **geçersiz** (sessizce geçmez) |
+| 16 | Raster gold görsel onay ister | raster sayfada `vision_checked=true` ve claim başına `source_evidence` içinde `vision` zorunlu; PDF sayfada bu şart yok |
+| 17 | Anlamsal ayrıştırma korundu | Kod değişikliği gerekmedi: `score_pair()` `representation`/`physical`/`form` için ayrı kararlar üretir, `_categorical_verdict` fiziksel `overclaim`i ayrı sayar, D adapteri fiziksel yorumu `unknown` bırakır (mevcut test) |
+
+Doğrulama: `tests/test_semread_001b.py` (yüklem/belirsizlik/metrik/kapsam) +
+`tests/test_semread_001b_reference.py` (22 test: §13–§16) — odaklı tam koşu **124 geçti, 0 fail**.
+`--evaluate` gerçek lab kökünde çalıştırıldı: yeni koşu klasörü + `final/pointer.json`, eski koşu
+dokunulmadan; inference bütçesi harcanmadı (0/30).
+
+Karar kaydı: belirsiz kalem **tamamen dışlanır** (puanlamak yerine sayılır), çünkü aday sırasına
+bağlı alan puanı üretmek §10'un yasakladığı keyfî seçimdir; kopya aday bulunan yerde kalem artık
+`ambiguous_claim_count`ta görünür, sessizce "seçilmiş" sayılmaz. Bunun bedeli: iki özdeş adayın
+olduğu yerde kalem artık doğruluk paydasına girmiyor — bu, `matches_by_order` yerine
+`ambiguous`u raporlamanın kabul edilen maliyetidir.
+
+**P2'de sıradaki iş:** §18 B05'i gerçek 30 hücreli matrise bağla (her hücre
+`valid_result`/`valid_reuse`/`failed_attempt`/`blocked`; `not_run`/`to_run` kalırsa B05 açık),
+§19 B06'nın rapor içeriğini şart koşması (yüklem metrikleri, D/V/VE karşılaştırması, belirsizlik ve
+kapsam-dışı sayaçları, taşıma/parse hataları, referans niteliği, gerçek hata örnekleri), §20 B07
+kanıt zinciri (attempt geçmişi → artifact hash → üretici/girdi/model/runtime kimliği → HTTP istek
+hash'i → bütçe kaydı → matris seçimi → değerlendirme kimliği).

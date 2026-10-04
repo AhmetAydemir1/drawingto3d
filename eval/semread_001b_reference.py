@@ -10,6 +10,17 @@ Her claim iki kanıt alanı taşır:
 * `source_evidence` : `pdf-text-layer` (çizimin **kendi** metni), `vision` (görsel inceleme) ya da
   `tesseract+vision` (rasterda önce OCR, sonra görsel doğrulama). Rasterlarda OCR tek başına
   referans kaynağı sayılmaz: `vision` alanı zorunludur, aksi hâlde claim `unverified` işaretlenir.
+
+Doğrulama **burada yapılmaz**: kapı `eval/semread_001b_pilot.py` içindeki `check_reference()`tir
+(PLAN-5 §13–§16) ve şunları reddeder — yer tutucu metin (`EKSİK`/`TODO`/`TBD`/`PLACEHOLDER`)
+`scope`/`exhaustiveness`/`evidence`/`source_evidence` alanlarında, geçersiz bölge (sıfır alan,
+ters, aralık dışı, NaN/inf, eksik alan), gözlem çıkarımı yokken `observation_id`, ve raster
+sayfada `vision_checked=true` ya da claim başına `vision` kanıtı yokluğu.
+
+`exhaustiveness` **yapılı** olmalıdır: `{"scope": "full_page"}` ya da
+`{"scope": "regions", "regions": [[x0,y0,x1,y1], ...]}` ya da
+`{"scope": "predicates", "predicates": ["size", ...]}`. Eksik bırakılırsa yer tutucu yazılır ve
+referans doğrulamadan geçmez (B02 böyle bir içerikle kapanamaz).
 """
 
 from __future__ import annotations

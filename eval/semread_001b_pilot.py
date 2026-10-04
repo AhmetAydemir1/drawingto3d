@@ -21,6 +21,7 @@ import dataclasses
 import fcntl
 import hashlib
 import json
+import math
 import os
 import re
 import resource
@@ -42,8 +43,8 @@ from drawingto3d.semantic_candidates import (CANDIDATE_SCHEMA_VERSION,  # noqa: 
                                              candidate_json_schema, candidate_prompt,
                                              check_candidate_references, parse_candidate_json)
 from drawingto3d.semantic_deterministic import D_ARM, deterministic_candidates  # noqa: E402
-from drawingto3d.semantic_evaluation import (MATCH_POLICY, aggregate, compare_arms,  # noqa: E402
-                                             evaluate_page)
+from drawingto3d.semantic_evaluation import (EXHAUSTIVENESS_SCOPES, FIELDS, MATCH_POLICY,  # noqa: E402
+                                             aggregate, compare_arms, evaluate_page)
 from drawingto3d.semantic_images import open_source  # noqa: E402
 from drawingto3d.inference_log import RecordedChat, Recorder  # noqa: E402
 from drawingto3d.semantic_run_contract import (CASE_SCHEMA, CONTRACT_VERSION,  # noqa: E402
@@ -628,20 +629,94 @@ def load_reference(page_id: str) -> dict | None:
     return read_json(GOLD_DIR / f"{page_id}.json")
 
 
-def check_reference(reference: dict, page: dict, observation_ids: list[str]) -> dict:
-    """Referansı denetle: nitelik, kapsam, kapalı kümeler, bölge sınırları, gözlem kimlikleri."""
+# Referans (gold) doğrulaması: yer tutucu metinler ve bölge sınırları (PLAN-5 §13–§16).
+PLACEHOLDER_MARKERS = ("EKSİK", "TODO", "TBD", "PLACEHOLDER")
+
+
+def placeholder_text(value) -> str | None:
+    """Yer tutucu mu? Boş ya da bilinen yer tutucu **önekiyle** başlıyorsa metni döndürür (§13)."""
+    text = str(value if value is not None else "").strip()
+    if not text:
+        return "boş"
+    upper = text.upper()
+    for marker in PLACEHOLDER_MARKERS:
+        if upper.startswith(marker):
+            return text
+    return None
+
+
+def region_problem(value) -> str | None:
+    """Bölge doğrulaması (§14): 4 sonlu sayı, `0<=x0<x1<=1`, `0<=y0<y1<=1`, sıfır alan/ters yok."""
+    if isinstance(value, (list, tuple)):
+        if len(value) != 4:
+            return f"bölge 4 değer olmalı ({len(value)} verildi)"
+        box = dict(zip(("x0", "y0", "x1", "y1"), value))
+    elif isinstance(value, dict):
+        missing = [key for key in ("x0", "y0", "x1", "y1") if key not in value]
+        if missing:
+            return f"bölgede eksik alan: {missing}"
+        box = value
+    else:
+        return "bölge sözlük ya da 4'lü liste değil"
+    try:
+        x0, y0, x1, y1 = (float(box[key]) for key in ("x0", "y0", "x1", "y1"))
+    except (TypeError, ValueError):
+        return "bölge değerleri sayıya çevrilemedi"
+    if not all(math.isfinite(item) for item in (x0, y0, x1, y1)):
+        return "bölgede NaN/inf var"
+    if not (0.0 <= x0 < x1 <= 1.0 and 0.0 <= y0 < y1 <= 1.0):
+        return f"bölge sınırları geçersiz (sıfır alan/ters/aralık dışı): {[x0, y0, x1, y1]}"
+    return None
+
+
+def check_reference(reference: dict, page: dict, observation_ids: list[str],
+                    *, extraction_ok: bool = True) -> dict:
+    """Referansı denetle: nitelik, kapsam, kapalı kümeler, yer tutucular, bölgeler, gözlem kimliği.
+
+    Dört sertleştirme (PLAN-5 §13–§16):
+
+    * §13 yer tutucular (`EKSİK`, `TODO`, `TBD`, `PLACEHOLDER`) kapsam/kanıt/source_evidence
+      alanlarında **reddedilir**: B02 yer tutucu içerikle kapanamaz.
+    * §14 hedef **ve** callout bölgesi doğrulanır (sonlu, 0..1, sıralı, sıfır alansız).
+    * §15 gözlem kimliği doğrulaması **fail-closed**: gold'da `observation_id` var ama gözlem
+      çıkarımı yapılamadıysa referans geçersizdir (sessizce geçilmez).
+    * §16 raster gold görsel onay ister: `vision_checked` + claim'de `vision` kanıtı yoksa hata.
+    """
     problems: list[str] = []
     if reference.get("annotator") != "agent":
         problems.append("annotator=agent yazılmamış")
     if reference.get("review_status") != "provisional":
         problems.append("review_status=provisional değil (insan onayı yok)")
-    if not reference.get("scope"):
-        problems.append("kapsam yazılmamış")
-    if not reference.get("exhaustiveness"):
-        problems.append("exhaustiveness (hangi bölgeler annotate edildi) yazılmamış")
+    for field, label in (("scope", "kapsam"), ("exhaustiveness", "exhaustiveness")):
+        if placeholder_text(reference.get(field)) is not None:
+            problems.append(f"{label} yazılmamış ya da yer tutucu: "
+                            f"{reference.get(field)!r} (§13)")
+    scope = reference.get("exhaustiveness")
+    if not isinstance(scope, dict) or scope.get("scope") not in EXHAUSTIVENESS_SCOPES:
+        problems.append(f"exhaustiveness beyanı eksik/geçersiz: {scope!r} "
+                        f"(beklenen kapsam: {EXHAUSTIVENESS_SCOPES})")
+    else:
+        if scope["scope"] == "regions":
+            boxes = scope.get("regions") or []
+            if not boxes:
+                problems.append("exhaustiveness=regions ama bölge listesi boş")
+            for index, box in enumerate(boxes):
+                problem = region_problem(box)
+                if problem:
+                    problems.append(f"exhaustiveness bölgesi #{index}: {problem}")
+        if scope["scope"] == "predicates":
+            unknown = [name for name in (scope.get("predicates") or [])
+                       if name not in FIELDS]
+            if not scope.get("predicates"):
+                problems.append("exhaustiveness=predicates ama yüklem listesi boş")
+            elif unknown:
+                problems.append(f"exhaustiveness bilinmeyen yüklem: {unknown}")
     claims = reference.get("claims") or []
     if not claims:
         problems.append("hiç claim yok")
+    raster = page.get("type") == "raster"
+    if raster and not reference.get("vision_checked"):
+        problems.append("raster sayfa: vision_checked=true değil (OCR tek başına gold değildir, §16)")
     seen: set[str] = set()
     for claim in claims:
         claim_id = claim.get("claim_id")
@@ -652,17 +727,34 @@ def check_reference(reference: dict, page: dict, observation_ids: list[str]) -> 
         seen.add(claim_id)
         if claim.get("state") not in ("determinate_present", "determinate_absent", "underdetermined"):
             problems.append(f"{claim_id}: state kapalı kümede değil")
-        region = (claim.get("target") or {}).get("region")
-        if region is None:
+        target = claim.get("target") or {}
+        if "region" not in target:
             problems.append(f"{claim_id}: hedef bölgesi yok")
-        if not claim.get("evidence"):
-            problems.append(f"{claim_id}: kaynak kanıtı (evidence) yok")
-        observation_id = (claim.get("target") or {}).get("observation_id")
-        if observation_id is not None and observation_ids and observation_id not in observation_ids:
-            problems.append(f"{claim_id}: bilinmeyen gözlem kimliği {observation_id}")
-        if not claim.get("source_evidence"):
-            problems.append(f"{claim_id}: okunabilir metin/geometri kaynağı yazılmamış")
+        else:
+            problem = region_problem(target.get("region"))
+            if problem:
+                problems.append(f"{claim_id}: hedef bölgesi geçersiz — {problem}")
+        callout = claim.get("callout") or {}
+        if callout and "region" in callout:
+            problem = region_problem(callout.get("region"))
+            if problem:
+                problems.append(f"{claim_id}: callout bölgesi geçersiz — {problem}")
+        for field, label in (("evidence", "kaynak kanıtı (evidence)"),
+                             ("source_evidence", "okunabilir metin/geometri kaynağı")):
+            if placeholder_text(claim.get(field)) is not None:
+                problems.append(f"{claim_id}: {label} yok ya da yer tutucu: "
+                                f"{claim.get(field)!r} (§13)")
+        observation_id = target.get("observation_id")
+        if observation_id is not None:
+            if not extraction_ok or not observation_ids:
+                problems.append(f"{claim_id}: gözlem kimliği {observation_id} doğrulanamıyor "
+                                f"(gözlem çıkarımı yok/başarısız) — fail-closed (§15)")
+            elif observation_id not in observation_ids:
+                problems.append(f"{claim_id}: bilinmeyen gözlem kimliği {observation_id}")
+        if raster and "vision" not in str(claim.get("source_evidence") or "").lower():
+            problems.append(f"{claim_id}: raster claim'de görsel doğrulama kanıtı yok (§16)")
     return {"ok": not problems, "problems": problems, "claims": len(claims),
+            "raster_vision_required": raster, "observation_extraction_ok": extraction_ok,
             "reference_sha256": sha256_of(GOLD_DIR / f"{page['page_id']}.json")
             if (GOLD_DIR / f"{page['page_id']}.json").exists() else None}
 
@@ -1234,13 +1326,18 @@ def evaluate(write_report: bool = True) -> dict:
                                "reference": "yok", "arms": {}})
             continue
         # Gözlem kimlikleri yalnız referans varsa denetlenir (evaluate ucuz kalmalı: OCR koşmaz).
+        # Çıkarım başarısızsa doğrulama **fail-closed**tır: gold'da observation_id varsa referans
+        # geçersiz sayılır (PLAN-5 §15).
         observation_ids: list[str] = []
+        extraction_ok = True
         try:
             observation_ids = [row["id"] for row in _observation_rows(ROOT / page["path"])]
         except Exception:  # noqa: BLE001 - gözlem kimlikleri denetimi yan iştir
             observation_ids = []
-        reference_status[page_id] = {"present": True, **check_reference(reference, page,
-                                                                       observation_ids)}
+            extraction_ok = False
+        reference_status[page_id] = {"present": True,
+                                     **check_reference(reference, page, observation_ids,
+                                                       extraction_ok=extraction_ok)}
         arms: dict[str, dict] = {}
         for arm in (D_ARM, V_ARM, VE_ARM):
             cell = matrix.get(f"{page_id}-{arm}") or {}

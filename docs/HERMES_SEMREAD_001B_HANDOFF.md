@@ -1260,3 +1260,37 @@ P3 kapanışı).
 
 **Sıradaki (PLAN-11 §25–§29):** V/VE preflight (P5 kapalı ✓, D valid_reuse 10 ✓, V/VE to_run 20,
 bütçe 0/30, orphan 0) → V/VE final matrisi (≤20 çağrı) → final rapor + failure taxonomy.
+
+### 6y. PLAN-11 §25–§30 — V/VE final matrisi: 20/20 çağrı harcandı, sonuç dürüst (V 10/10 parse, VE 9 parse + 1 transport) + SEMREAD yeniden koşusu 179/179
+
+**Preflight (§25–§28 ✓):** P5 kapalı; gold 10/10; D valid_reuse 10; V/VE to_run 20; bütçe 0/30;
+orphan 0. Model `qwen3-vl:8b-instruct` + digest `0533d74300e4…` ✓; runtime `0.32.1` ✓; sunucu
+canlı. Dry-run: 20 iş planlı, `over_budget= false`. İlk 20 iş tek koşuda bloklandı — "20 iş pilot
+sınırını aşıyor (10)" (`initial_development_parts`, `settings.json` kararı; 0 gönderim, 0 harcama)
+→ parti bölündü: **kol başına 10 iş**.
+
+**V partisi (10 çağrı, hepsi `sent`; ~50–290 sn/çağrı):** sonuç **10/10 `parse_error`**; kök neden
+on sayfada aynı: model `target.region`'u **piksel koordinatı** döndürdü (ör. `x0=65…x1=489`),
+şema 0..1 normalized istiyor ("bölge 0..1 dışında"). Ham JSON geçerliydi — sorun biçim/arayüz
+uyuşmazlığı: V promptu (1.7 KB) koordinat konvansiyonunu öğretmiyor, şema yalnız "number" diyor.
+§30 gereği retry YOK; failed attempt'ler geçmişte kalır.
+
+**VE partisi (10 çağrı, hepsi gönderildi):** sonuç **9 `parse_error` + 1 `transport_http_error`**
+(dev-drawing-2-VE: "çağrı yapılmadı"; sayaç politikası gereği bütçede). Ayrışan iki imza:
+8'i **kesik JSON** (~5–6K karakterde; donmuş `num_predict = 2048` sınırına dayanma — VE'nin gözlem
+tablosu modeli daha uzun/dolu yanıta itiyor), 1'i **şema ihlali** (frozen-exercise-51-VE: yazılı
+olmayan derinlik yazılmış — no-guess kuralı), 1'i HTTP. VE promptu normalizasyonu öğretiyor
+("region(x0,y0,x1,y1 normalized)" + örnek satırlar; 9.8 KB) — piksel hatası VE'de görülmedi.
+
+**Bütçe (final):** `final_used 20/20`, `total_used 20/30`, by_arm {V:10, VE:10};
+`sent 19 + transport_http_error 1`; `over_budget false`. Defter: 36 deneme = 15 `pass` (D'nin
+deterministik geçişleri) + 10 parse (V) + 9 parse (VE) + 1 http + 1 `blocked_runtime_mismatch`;
+orphan 0, kopya 0, kanıtı silinmiş kayıt 0.
+
+**SEMREAD yeniden koşusu (6x notu kapandı):** `179 passed in 3073.48s (0:51:13)` — freeze-bağlama
+kod değişikliği (`041d525`) sonrası alt küme yine tam.
+
+**Dürüst okuma:** V ve VE final matriste **sıfır geçerli aday** üretti; kök sınıflar hedef
+yerelleştirme/çıktı biçimi (V) ve üretim sınırı (VE-2048). Bilimsel karşılaştırma (Q1–Q5) ve
+taxonomy, final değerlendirme raporuyla (bir sonraki not) yazılacak; iyileştirme kararı ölçümden
+sonra — §24 mevcut freeze'i korur, gerekirse invalid → düzelt → yeniden dondurma.

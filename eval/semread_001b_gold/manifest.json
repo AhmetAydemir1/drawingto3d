@@ -1,6 +1,6 @@
 {
   "schema": "semread-001b-gold-manifest/1",
-  "gold_content_identity": "351ad8e5fcdf62b12e917ed682792746b14af2bcb5267ed7d63a8e3c44ef0f05",
+  "gold_content_identity": "ae30ce6f1b1d8d5666bd5e749414883b67a7971ba7233f96cb0a41b01ce9a277",
   "note": "izlenen kanonik gold spec'leri ve üretilmiş referans hash'leri; P5 dondurma `gold_content_identity`ye bağlanır — dosya hash'ine değil (PLAN-9 §14–§15). Manifest zaman damgası taşımaz: aynı içerik yeniden yazılınca bayt bayt aynıdır; `--check` / `--freeze` ile doğrulanır.",
   "pages": [
     {
@@ -146,6 +146,22 @@
       "review_status": "provisional",
       "vision_checked": true,
       "exhaustiveness": "regions"
+    },
+    {
+      "page_id": "frozen-views-exercise",
+      "split": "frozen",
+      "page_type": "raster",
+      "source": "examples/Teknik Resim Görünüş Çıkarma Örnekleri 1 - Makine Eğitimi.jpg",
+      "source_sha256": "48422670180f32afa49c1fe540ce3f560eac0eab062bbf08415d14be16c76e74",
+      "spec": "eval/semread_001b_gold/specs/frozen-views-exercise.json",
+      "spec_sha256": "01bdee7c4ae81fd6803a31695171eb03bb8d98d37ba951991dff269da1d6ecd4",
+      "reference": "out/lab/semread-001b/corpus/gold/frozen-views-exercise.json",
+      "reference_sha256": "1b35cec4eb33f74002e06f2a58a7bdb6e1d34cb68798a017a7f51543b7bd9650",
+      "claim_count": 8,
+      "annotator": "agent",
+      "review_status": "provisional",
+      "vision_checked": true,
+      "exhaustiveness": "predicates"
     }
   ]
 }

@@ -1,0 +1,263 @@
+{
+  "page_type": "raster",
+  "split": "frozen",
+  "vision_checked": true,
+  "scope": "Yalnız Ø/R çağrıları (8 adet): üst görünüşte Ø80 (dış kontur dairesi), Ø94 (yuva merkezleri dairesi, kesikli), R15 (yuva yayı), Ø40 (göbek dairesi); sol kesitte Ø10 (merkez delik) ve R5 ×2 (flanş sağ uç köşe yuvarlatmaları); sağ kesitte Ø8 (göbek yan yüzü yan deliği). Doğrusal ölçüler (sol kesit: 40, 20, 25; sağ kesit: 30) kapsam dışıdır: ex13/ex17 ile tutarlı olarak gold yalnız Ø/R çağrılarını kapsar; doğrusal ölçüler yalnız ölçek kökü/çapraz doğrulama olarak kullanılır. C4 pah notu kapsam dışıdır (pah, Ø/R değil). İki ISO render boyutsuz; başlık bloğu ve çerçeve kapsam dışı. 'SCALE' notu px/mm vermez.",
+  "annotation_method": "Ölçülmüş ilke: her hedef kutu, pafta pikselinde satır/kolon koyu-koşu taramasıyla ve ızgaralı büyütülmüş kırpmalarda görsel okumayla ölçüldü; çağrı metinleri harf harf ve döndürülmüş 16–20x büyütmelerle görsel okundu; leader/ölçü çizgisi yolları koridor (corridor) taramasıyla izlendi; daire ve yaylar en küçük kareler (Kasa) fiti ve yarıçap rafinesiyle doğrulandı; OCR kullanılmadı.",
+  "measurement_reason": "Raster sayfada çağrılar küçük ve döndürülmüş; hedefler gözlem kimliği yerine görselden ölçülen kutu olarak yazıldı (ex13/ex17 ile aynı yöntem). Her kutu çizilmiş geometriden piksel cinsinden ölçüldü ve ızgaralı kırpmayla görsel olarak doğrulandı; her çağrının leader/ölçü çizgisi yolu ve ok ucu ayrıca izlendi.",
+  "exhaustiveness": {
+    "scope": "predicates",
+    "predicates": [
+      "representation",
+      "physical",
+      "form",
+      "size",
+      "termination",
+      "depth"
+    ]
+  },
+  "notes": [
+    "Pafta: 736x1041 piksel (kitap taraması). Düzen: sol üstte üst görünüş (altı yuvalı yıldız topuz; merkez ≈(229,5, 482,0) px), alt solda ön kesit, alt sağda yan kesit, sağ üstte iki ISO render (boyutsuz), sağ altta başlık bloğu ('Modeling Practice Drawings 50'), sol üstte 'STUDY CADCAM' bandı.",
+    "Ölçek kökü: bağımsız 30,00 mm dikey doğrusal ölçü (sağ kesit; flanş alt yüzü y≈856 → Ø8 yatay ekseni y≈772; 84 px) → 2,800 px/mm. Çapraz doğrulama: 40,00 (744→856 = 112 px → 2,800), 20,00 (800→856 = 56 px → 2,800), 25,00 (744→813,5 ≈ 69,7 px → 2,79). Hiçbir claim ne kendi ne başka bir Ø/R claim'inin yazılı değerine dayanır.",
+    "Üst görünüş daireleri (rafine, merkez ≈(229,5, 482,0)): kontur r≈112,3 px (d≈224,6 px ≈ 80,2 mm), kesikli yuva-merkez dairesi r≈131,7 px (d≈263,4 px ≈ 94,1 mm), göbek r≈56,0 px (d≈111,9 px ≈ 39,98 mm), göbek üst yüzü r≈44,8 px (d≈89,6 px ≈ 32,0 mm = 40 − 2×4), merkez delik r≈14,0 px (d≈27,9 px ≈ 9,98 mm).",
+    "Yuva yayı fitleri (Kasa): 330° yuvası c≈(341,2, 416,8) r≈39,8 px; 30° yuvası c≈(343,4, 547,4) r≈41,8 px (merkez uzaklığı ≈131,4 px ≈ Ø94/2); yuva en derin noktası ≈89,5 px = 32,0 mm = Ø94/2 − R15 ile tutarlı. R15 çağrısının yarıçap çizgisi y≈416,3 px'te yuva merkezinden yaya uzanır.",
+    "Doğrusal ölçülerin ölçülen karşılıkları (yalnız denetim izi): 40 = göbek üstü→flanş altı (743,5→856 = 112 px); 20 = flanş kalınlığı (800→856 = 56 px); 25 = Ø10 silindirik derinlik (744→813,5 ≈ 69,7 px; omuz ≈y 816, V ucu ≈828,5); 30 = Ø8 ekseni→flanş altı (772→856 = 84 px).",
+    "Bu paftada çağrılar ondalıksız yazılıdır (Ø80, Ø94, Ø40, Ø10, Ø8, R15, R5 ×2); numeric 'size' alanları yazılı değerin mm karşılığıdır.",
+    "C4 pah notu göbek üst köşe pahına işaret eder (çizilen pah ≈8–9 px ≈ 3 mm); Ø/R çağrısı olmadığından kapsam dışıdır."
+  ],
+  "claims": [
+    {
+      "claim_id": "frozen-views-exercise-01",
+      "name": "Ø80 dış kontur dairesi (üst görünüş)",
+      "target_box_norm": [
+        0.158967,
+        0.354947,
+        0.464674,
+        0.571085
+      ],
+      "target_reason": "Üst görünüş dış konturu: merkez ≈(229,5, 482,0) px, plato yaylarında yarıçap ≈112,3 px; kutu kontur dairesinin sınır bölgesidir (x 117–342 px, y 369,5–594,5 px). Ölçüm: satır/kolon koşu taraması + yarıçap rafinesi; ızgaralı kırpmalarla görsel doğrulama. Ölçüm piksel koşu taramasıyla alındı.",
+      "representation": "other",
+      "physical": "not_hole",
+      "form": "diameter",
+      "size": 80.0,
+      "unit": "mm",
+      "count_printed": null,
+      "termination": "unknown",
+      "depth": null,
+      "depth_state": "not_stated",
+      "state": "determinate_present",
+      "evidence": "Üst görünüşte 'Ø80' çağrısı (etiket ≈ x 330–356, y 314–327 px; metin alta kısa yatay rafla bağlı, raf y≈330, x 319–356); leader raf sol ucundan ≈122° eğimle iner, kesikli Ø94 dairesini keser ve ok ucu ≈(281, 389) px'te dış kontur bandına dokunur. Ölçülen kontur çapı ≈224,6 px ≈ 80,2 mm; yazılı Ø80 ile uyumlu.",
+      "source_evidence": "vision + piksel taraması: ızgaralı büyütülmüş kırpmalar (o80tip_16x, ld80_a) leader yolunu ve ok ucunun kontur bandına inişini gösterdi; yarıçap rafinesi r≈112,3 px'i doğruladı (vision + piksel taraması).",
+      "corroboration": {
+        "kind": "independent_scale",
+        "basis": "bağımsız 30,00 mm dikey doğrusal ölçü (sağ kesit; flanş alt yüzü y≈856 → Ø8 ekseni y≈772; 84 px) → 2,800 px/mm; çapraz: 40,00 (744→856 = 112 px → 2,800), 20,00 (800→856 = 56 px → 2,800), 25,00 (744→813,5 ≈ 69,7 px → 2,79)",
+        "basis_value": 30.0,
+        "scale_px_per_mm": 2.8
+      }
+    },
+    {
+      "claim_id": "frozen-views-exercise-02",
+      "name": "Ø94 yuva merkezleri dairesi (üst görünüş, kesikli)",
+      "target_box_norm": [
+        0.13288,
+        0.336503,
+        0.490761,
+        0.589529
+      ],
+      "target_reason": "Üst görünüşte kesikli (ince) yuva-merkez dairesi: merkez ≈(229,5, 482,0) px, yarıçap ≈131,7 px; kutu bu dairenin sınır bölgesidir (x 97,8–361,2 px, y 350,3–613,7 px). Altı yuva yayının merkezleri bu daire üzerindedir (330° ve 30° yuvası fitleriyle çaprazlandı). Ölçüm piksel koşu taramasıyla alındı.",
+      "representation": "other",
+      "physical": "not_hole",
+      "form": "diameter",
+      "size": 94.0,
+      "unit": "mm",
+      "count_printed": null,
+      "termination": "unknown",
+      "depth": null,
+      "depth_state": "not_stated",
+      "state": "determinate_present",
+      "evidence": "Üst görünüşte 'Ø94' çağrısı (etiket ≈ x 390–440, y 495–520 px); çağrı merkezden geçen ≈11,4° eğimli çap ölçüsü olarak çizilmiş: ölçü çizgisi parça merkezinden (229,5, 482,0) geçer (sapma <0,5 px) ve kesikli daireyi iki yanda keser; oklar ≈(103–106, 456–457) ve ≈(352–356, 505–506) px'te kesikli daireye dokunur. Ölçülen kesikli daire çapı ≈263,4 px ≈ 94,1 mm; yazılı Ø94 ile uyumlu.",
+      "source_evidence": "vision + piksel taraması: ızgaralı büyütülmüş kırpmalar (d94_6x, o94tip_16x, o94left_14x) ölçü çizgisini ve iki ok ucunu gösterdi; koridor taraması ölçü çizgisinin merkezden geçişini ve kesikli daire kesişimlerini sayısal olarak doğruladı (vision + piksel taraması).",
+      "corroboration": {
+        "kind": "independent_scale",
+        "basis": "bağımsız 30,00 mm dikey doğrusal ölçü (sağ kesit; flanş alt yüzü y≈856 → Ø8 ekseni y≈772; 84 px) → 2,800 px/mm; çapraz: 40,00 (744→856 = 112 px → 2,800), 20,00 (800→856 = 56 px → 2,800), 25,00 (744→813,5 ≈ 69,7 px → 2,79)",
+        "basis_value": 30.0,
+        "scale_px_per_mm": 2.8
+      }
+    },
+    {
+      "claim_id": "frozen-views-exercise-03",
+      "name": "R15 yuva yayı (üst görünüş)",
+      "target_box_norm": [
+        0.40625,
+        0.366955,
+        0.440217,
+        0.435159
+      ],
+      "target_reason": "Üst görünüşte 330° yuvasının çizilmiş yayı: merkez ≈(343,5, 416,2) px, ölçülen yay yarıçapı ≈41,8 px (30° yuvası fiti); kutu yayın çizilmiş bölgesidir (x 299–324 px, y 382–453 px). R15 çağrısının yarıçap çizgisi y≈416,3 px'te yuva merkezinden bu yaya uzanır. Ölçüm piksel koşu taramasıyla alındı.",
+      "representation": "other",
+      "physical": "not_hole",
+      "form": "radius",
+      "size": 15.0,
+      "unit": "mm",
+      "count_printed": null,
+      "termination": "unknown",
+      "depth": null,
+      "depth_state": "not_stated",
+      "state": "determinate_present",
+      "evidence": "Üst görünüşte 'R15' çağrısı (etiket ≈ x 310–335, y 400–414 px); yarıçap ölçü çizgisi y≈416,3 px'te yataydır, yuva yayı merkezinden (≈343,5, 416,2) sola uzanır ve ok ucu ≈(302,3, 416,3) px'te yay üzerine iner. Yay fiti r≈41,8 px ≈ 14,9 mm (yazılı R15 ile uyumlu); yuva en derin noktası ≈89,5 px = 32,0 mm = 47,0 − 15,0 ilişkisiyle tutarlı (Ø94/2 − R15).",
+      "source_evidence": "vision + piksel taraması: ızgaralı büyütülmüş kırpmalar (r15_txt_12x, r15_txt_20x döndürülmüş okuma 'R15' harf harf) metni ve ölçü çizgisini gösterdi; Kasa yay fitleri (330° ve 30° yuvası) yarıçapı ve merkez konumunu doğruladı (vision + piksel taraması).",
+      "corroboration": {
+        "kind": "independent_scale",
+        "basis": "bağımsız 30,00 mm dikey doğrusal ölçü (sağ kesit; flanş alt yüzü y≈856 → Ø8 ekseni y≈772; 84 px) → 2,800 px/mm; çapraz: 40,00 (744→856 = 112 px → 2,800), 20,00 (800→856 = 56 px → 2,800), 25,00 (744→813,5 ≈ 69,7 px → 2,79)",
+        "basis_value": 30.0,
+        "scale_px_per_mm": 2.8
+      }
+    },
+    {
+      "claim_id": "frozen-views-exercise-04",
+      "name": "Ø40 göbek dairesi (üst görünüş)",
+      "target_box_norm": [
+        0.235734,
+        0.409222,
+        0.387908,
+        0.51729
+      ],
+      "target_reason": "Üst görünüşte göbek dairesi: merkez ≈(229,5, 482,2) px, yarıçap ≈56,0 px; kutu dairenin sınır bölgesidir (x 173,5–285,5 px, y 426–538,5 px). Ölçüm: yarıçap rafinesi + koşu taraması; ızgaralı kırpmalarla görsel doğrulama. Ölçüm piksel koşu taramasıyla alındı.",
+      "representation": "other",
+      "physical": "not_hole",
+      "form": "diameter",
+      "size": 40.0,
+      "unit": "mm",
+      "count_printed": null,
+      "termination": "unknown",
+      "depth": null,
+      "depth_state": "not_stated",
+      "state": "determinate_present",
+      "evidence": "Üst görünüşte 'Ø40' çağrısı (etiket ≈ x 101–120, y 584–610 px, döndürülmüş); leader ≈44° eğimle yukarı-sağa gider; koridor taraması ok ucunun ≈(186, 517,5) px'te göbek dairesine indiğini gösterdi. Ölçülen göbek çapı ≈111,9 px ≈ 39,98 mm; yazılı Ø40 ile uyumlu. Göbek üst yüz dairesi ≈89,6 px = 32,0 mm = 40 − 2×4 (C4) ile tutarlı.",
+      "source_evidence": "vision + piksel taraması: ızgaralı büyütülmüş kırpma (o40path_6x) leader yolunu gösterdi; koridor taraması ok ucunu ve göbek çemberi geçişini sayısal olarak doğruladı; yarıçap rafinesi r≈56,0 px (vision + piksel taraması).",
+      "corroboration": {
+        "kind": "independent_scale",
+        "basis": "bağımsız 30,00 mm dikey doğrusal ölçü (sağ kesit; flanş alt yüzü y≈856 → Ø8 ekseni y≈772; 84 px) → 2,800 px/mm; çapraz: 40,00 (744→856 = 112 px → 2,800), 20,00 (800→856 = 56 px → 2,800), 25,00 (744→813,5 ≈ 69,7 px → 2,79)",
+        "basis_value": 30.0,
+        "scale_px_per_mm": 2.8
+      }
+    },
+    {
+      "claim_id": "frozen-views-exercise-05",
+      "name": "Ø10 merkez delik (sol kesit)",
+      "target_box_norm": [
+        0.29212,
+        0.712776,
+        0.33288,
+        0.79731
+      ],
+      "target_reason": "Sol kesitte merkez delik: ağız y≈743 px, V ucu ≈828,5 px; kenarlar x ≈ 216 ve 243,5 px; kutu deliğin çizilmiş sınır bölgesidir (x 215–245 px, y 742–830 px). Üst görünüşte aynı delik r≈14,0 px daire olarak doğrulanır. Ölçüm piksel koşu taramasıyla alındı.",
+      "representation": "other",
+      "physical": "hole",
+      "form": "diameter",
+      "size": 10.0,
+      "unit": "mm",
+      "count_printed": null,
+      "termination": "unknown",
+      "depth": null,
+      "depth_state": "not_stated",
+      "state": "determinate_present",
+      "evidence": "Sol kesitte 'Ø10' çağrısı (etiket ≈ x 217–245, y 690–701 px); ölçü çizgisi y≈705,5 px'te, uzatma çizgileri delik ağzı kenarlarına (x≈216 ve 243,5) iner. Delik kesitte ağızdan (y≈743) V ucuna (≈828,5) kadar çizilidir; ölçülen genişlik ≈27 px ≈ 9,6–10,0 mm; üst görünüşte aynı delik d≈27,9 px (≈9,98 mm) ile uyumlu; 25 doğrusal ölçüsü silindirik derinlikle hizalıdır (744→813,5).",
+      "source_evidence": "vision + piksel taraması: ızgaralı büyütülmüş kırpma (botleft_4x) deliği, ölçü çizgisini ve V ucunu gösterdi; kolon/kolon koşu taramaları kenarları (x≈216, 243) ve V ucunu (y≈828,5) doğruladı (vision + piksel taraması).",
+      "corroboration": {
+        "kind": "independent_scale",
+        "basis": "bağımsız 30,00 mm dikey doğrusal ölçü (sağ kesit; flanş alt yüzü y≈856 → Ø8 ekseni y≈772; 84 px) → 2,800 px/mm; çapraz: 40,00 (744→856 = 112 px → 2,800), 20,00 (800→856 = 56 px → 2,800), 25,00 (744→813,5 ≈ 69,7 px → 2,79)",
+        "basis_value": 30.0,
+        "scale_px_per_mm": 2.8
+      }
+    },
+    {
+      "claim_id": "frozen-views-exercise-06",
+      "name": "Ø8 yan delik (sağ kesit, göbek yan yüzü)",
+      "target_box_norm": [
+        0.730978,
+        0.730067,
+        0.804348,
+        0.754083
+      ],
+      "target_reason": "Sağ kesitte göbek yan yüzünden merkeze açılan delik: üst/alt kenarlar y ≈ 761 ve 783,5 px, ağız x ≈ 540,5 px, yuvarlak uç ≈590 px; kutu deliğin çizilmiş sınır bölgesidir (x 538–592 px, y 760–785 px). Ölçüm piksel koşu taramasıyla alındı.",
+      "representation": "other",
+      "physical": "hole",
+      "form": "diameter",
+      "size": 8.0,
+      "unit": "mm",
+      "count_printed": null,
+      "termination": "unknown",
+      "depth": null,
+      "depth_state": "not_stated",
+      "state": "determinate_present",
+      "evidence": "Sağ kesitte 'Ø8' çağrısı (etiket ≈ x 492–502, y 731–747 px, döndürülmüş; küçük dikey ölçü, uzatma çizgileri y≈761 ve 783,5 px'te delik ağız kenarlarına iner, oklar dıştan). Delik kesitte göbek sol yüzünden (x≈540,5) yuvarlak uçla ≈590 px'e kadar çizilidir; ölçülen genişlik ≈22 px ≈ 7,9–8,0 mm; yazılı Ø8 ile uyumlu; 30 doğrusal ölçüsü delik eksenini (y≈772) flanş alt yüzüne bağlar.",
+      "source_evidence": "vision + piksel taraması: ızgaralı büyütülmüş kırpma (rightview_6x) deliği, ölçü yapısını ve yuvarlak ucu gösterdi; satır/kolon koşu taramaları kenarları (y≈761, 783,5; x≈540,5–590) doğruladı (vision + piksel taraması).",
+      "corroboration": {
+        "kind": "independent_scale",
+        "basis": "bağımsız 30,00 mm dikey doğrusal ölçü (sağ kesit; flanş alt yüzü y≈856 → Ø8 ekseni y≈772; 84 px) → 2,800 px/mm; çapraz: 40,00 (744→856 = 112 px → 2,800), 20,00 (800→856 = 56 px → 2,800), 25,00 (744→813,5 ≈ 69,7 px → 2,79)",
+        "basis_value": 30.0,
+        "scale_px_per_mm": 2.8
+      }
+    },
+    {
+      "claim_id": "frozen-views-exercise-07",
+      "name": "R5 flanş sağ uç üst köşe yuvarlatması (sol kesit)",
+      "target_box_norm": [
+        0.445652,
+        0.76561,
+        0.470109,
+        0.779059
+      ],
+      "target_reason": "Sol kesitte flanşın sağ uç profilinin üst köşe yuvarlatması: üst kenar (y≈800) ile uç yüzü (x≈341) arasındaki köşe yayı; kutu köşe bölgesidir (x 328–346 px, y 797–811 px). Çizilen köşe yayı ≈5–7 px (≈2 mm) olarak ölçüldü — değer yazılı çağrıdan alınır; çizimde yay sadeleştirilmiştir. Ölçüm piksel koşu taramasıyla alındı.",
+      "representation": "other",
+      "physical": "not_hole",
+      "form": "radius",
+      "size": 5.0,
+      "unit": "mm",
+      "count_printed": null,
+      "termination": "unknown",
+      "depth": null,
+      "depth_state": "not_stated",
+      "state": "determinate_present",
+      "evidence": "Sol kesitte 'R5' çağrısı (etiket ≈ x 360–390, y 756–780 px; leader boyunca döndürülmüş; döndürülmüş 18x okumada harf harf 'R5' doğrulandı); leader sol-aşağı iner, ok ucu ≈(341, 801–806) px'te flanş sağ ucunun üst köşe yuvarlatmasına dokunur. Değer yazılı çağrıdan alındı (5,00 mm); çizilen köşe yayı ≈5–7 px ile sadeleştirilmiş çizim olarak kaydedildi.",
+      "source_evidence": "vision + piksel taraması: ızgaralı büyütülmüş kırpmalar (r5_top_8x, r5a_txt_20x -> döndürülmüş r5a_rot) leader'ı ve ok ucunu gösterdi; köşe bölgesinin satır profili (y 799–806) köşe yayını sayısal olarak verdi (vision + piksel taraması).",
+      "corroboration": {
+        "kind": "independent_scale",
+        "basis": "bağımsız 30,00 mm dikey doğrusal ölçü (sağ kesit; flanş alt yüzü y≈856 → Ø8 ekseni y≈772; 84 px) → 2,800 px/mm; çapraz: 40,00 (744→856 = 112 px → 2,800), 20,00 (800→856 = 56 px → 2,800), 25,00 (744→813,5 ≈ 69,7 px → 2,79)",
+        "basis_value": 30.0,
+        "scale_px_per_mm": 2.8
+      }
+    },
+    {
+      "claim_id": "frozen-views-exercise-08",
+      "name": "R5 flanş sağ uç alt köşe yuvarlatması (sol kesit)",
+      "target_box_norm": [
+        0.445652,
+        0.81268,
+        0.470109,
+        0.826129
+      ],
+      "target_reason": "Sol kesitte flanşın sağ uç profilinin alt köşe yuvarlatması: alt kenar (y≈855,5) ile uç yüzü (x≈341) arasındaki köşe yayı; kutu köşe bölgesidir (x 328–346 px, y 846–860 px). Çizilen köşe yayı ≈5–7 px (≈2 mm) olarak ölçüldü — değer yazılı çağrıdan alınır. Ölçüm piksel koşu taramasıyla alındı.",
+      "representation": "other",
+      "physical": "not_hole",
+      "form": "radius",
+      "size": 5.0,
+      "unit": "mm",
+      "count_printed": null,
+      "termination": "unknown",
+      "depth": null,
+      "depth_state": "not_stated",
+      "state": "determinate_present",
+      "evidence": "Sol kesitte ikinci 'R5' çağrısı (etiket ≈ x 357–375, y 866–884 px; döndürülmüş 16x okumada harf harf 'R5' doğrulandı); leader sağ-yukarı doğrulur ve ok ucu ≈(337,5, 855,5) px'te flanş sağ ucunun alt köşe yuvarlatmasına dokunur. Değer yazılı çağrıdan alındı (5,00 mm); çizilen köşe yayı ≈5–7 px ile sadeleştirilmiş çizim olarak kaydedildi.",
+      "source_evidence": "vision + piksel taraması: ızgaralı büyütülmüş kırpmalar (r5_bot_8x, r5b_txt_20x -> döndürülmüş r5b_rot70) leader'ı ve ok ucunu gösterdi; köşe bölgesinin satır profili (y 849–856) köşe yayını sayısal olarak verdi (vision + piksel taraması).",
+      "corroboration": {
+        "kind": "independent_scale",
+        "basis": "bağımsız 30,00 mm dikey doğrusal ölçü (sağ kesit; flanş alt yüzü y≈856 → Ø8 ekseni y≈772; 84 px) → 2,800 px/mm; çapraz: 40,00 (744→856 = 112 px → 2,800), 20,00 (800→856 = 56 px → 2,800), 25,00 (744→813,5 ≈ 69,7 px → 2,79)",
+        "basis_value": 30.0,
+        "scale_px_per_mm": 2.8
+      }
+    }
+  ],
+  "reconstruction_note": "PLAN-11 §9.8: frozen-views-exercise kanıtı bağımsız doğrusal datuma köklendi — sekiz claim'in ölçek dayanağı da sağ kesitteki 30,00 mm doğrusal ölçüsüdür (çapraz: 40,00 / 20,00 / 25,00); hiçbir claim ne kendi ne başka bir Ø/R claim'inin yazılı değerine dayanır (§6). Hedefler ölçülmüş kutulardır; px/mm çıkarılamasa bile ölçülmüş kutu geçerli olurdu (§7 sonu)."
+}

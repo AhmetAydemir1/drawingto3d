@@ -123,9 +123,13 @@ def test_gold_generation_consumes_the_tracked_spec() -> None:
     assert source == "izlenen kanonik"
     explicit, source = regions.resolve_spec("frozen-enclosure", str(path))
     assert explicit == path and source == "açık yol"
+    # 10/10 sonrası: frozen-views-exercise de izlenen kanonik spec'e kavuştu (§48).
+    tracked, source = regions.resolve_spec("frozen-views-exercise", None)
+    assert tracked == ROOT / "eval/semread_001b_gold/specs/frozen-views-exercise.json"
+    assert source == "izlenen kanonik"
     with pytest.raises(SystemExit):
-        # henüz hiçbir yerde spec'i olmayan sayfa (§24 madde 5+): ne izlenen ne yerel kopya
-        regions.resolve_spec("frozen-views-exercise", None)
+        # hiçbir yerde spec'i olmayan sayfa (§24 madde 5+): ne izlenen ne yerel kopya
+        regions.resolve_spec("korpus-disi-sayfa", None)
 
 
 # ------------------------------------------------------------------------------- dondurma kapısı

@@ -386,19 +386,47 @@ sıfır inference). **P5:** dondurma manifesti + 20 frozen V/VE çağrısı (ger
 `target_observation`/`callout_texts` alanlarından piksel kutularını üretir, eksik `evidence`/
 `source_evidence`/raster-vision şartlarını **yazmadan önce** uyarır (`--write` olmadan kuru çalışır).
 
-#### D kolunun dev koşusu (bu pencerede)
+#### D kolunun dev koşusu — **tamamlandı** (4/4 geçti) ve ilk gerçek (dev) ölçüm
 
-`--d --split dev` arka planda çalışıyor (`proc_fe3fd82419aa`, **sıfır inference**). İlk matris
-görüntüsü (koşu 1. sayfayı bitirdiğinde): `deterministic:valid_reuse 1`, `deterministic:to_run 9`,
-`vlm:to_run 20`. Koşu sürerken `src/drawingto3d/semantic_evaluation.py` düzenlendi: **aynı koşu
-içinde farklı değerlendirme kimliği** taşıyan attempt'ler oluşabilir (o an yazılan kayıt o anki
-kimliği taşır). Bu yüzden koşu bitince, **kod düzenlemesi yapılmadan** bir `--d --split dev`
-daha koşulmalı; ancak ondan sonra `--matrix`/`--evaluate` "her hücre nihai" demeyi hak eder.
-Ders: koşu sürerken kod dosyalarına (özellikle `EVALUATION_IDENTITY_FILES`) dokunulmaz.
+`--d --split dev` (sıfır inference) dört dev sayfanın hepsini bitirdi: `dev-plate-pocket-D` 7 aday,
+`dev-flange-book-D` 12, `dev-flange-elbow-D` 17, `dev-drawing-2-D` 17; dördü de `verdict=pass`.
+Yaşam döngüsü `ok=true` (orphan/çift kayıt yok), matris: `deterministic:valid_reuse 4`,
+`stale_d_cells 0`. Frozen D hücreleri (6) henüz koşulmadı → B05 açık.
+
+İlk gerçek değerlendirme (yalnız `dev-plate-pocket` gold'u varken, D kolu — PLAN-5 §11 metrikleriyle):
+
+| yüklem | doğru | yanlış | çekimser | doğruluk |
+| --- | --- | --- | --- | --- |
+| representation | 2 | 0 | 0 | 1,00 |
+| physical | 0 | 0 | **2** | — (çekimser) |
+| form | 2 | 0 | 0 | 1,00 |
+| size | 2 | 0 | 0 | 1,00 |
+| count_printed | 1 | 0 | 0 | 1,00 |
+| termination | 1 | 0 | 1 | 0,50 |
+| depth | 0 | 0 | **1** | — (çekimser) |
+| target_binding | 2 | 0 | 0 | 1,00 |
+
+Sayfa düzeyi: `matched 2/2`, `localization_match_rate 1.0`, `semantic_field_accuracy 0.6667`,
+`candidate_overclaim_rate 0`, `candidate_abstention_rate 0.3333`, `false_positive 0`,
+`unscorable_extra 5` (sayfa genelindeki çağrı olmayan metinler). **Okuma:** D kolu bağlama/çap/sayı
+yüklemlerinde tam, yorum gerektiren `physical` ve `depth` yüklemlerinde **yanlış değil çekimser** —
+planın ölçmek istediği "V/VE gerçekten ne katıyor" sorusunun dev cevabı bu sütunlarda görünecek.
+
+**Açık kalan tek kanıt halkası:** ilk koşu sürerken `semantic_evaluation.py` düzenlendiği için bir
+attempt eski değerlendirme kimliği taşıyor (`evidence_chain` 4 hücreden 1'inde
+`evaluation_identity` kopuk; B07 bu yüzden açık). Kod **donduruldu** ve temiz `--d --split dev`
+koşusu başlatıldı (`proc_8e5dba9b7381`); o koşu bitince dört attempt de güncel kimliği taşıyacak.
+Ders: koşu sürerken `EVALUATION_IDENTITY_FILES` içindeki dosyalara dokunulmaz.
+
+**§19 sıkılaştırması (bu pencerede):** B06 artık "boş olmayan `comparison`" ile kapanmıyor; en az
+bir **puanlanmış** kol (yüklem satırlarının scorable toplamı > 0) + rapor işaretleri şart
+(`f691564`). Dev ölçümü geldiği için B06'nın rapor-içeriği koşulu sağlanıyor, ama V/VE kolları
+henüz puanlanmadığından karşılaştırma tarafı boş: kapı, "karşılaştırma gerçekten ölçüldü" diyene
+kadar açık kalır.
 
 Tam suite notu: arka planda başlatılan `pytest -q` (değişikliklerin ortasında başlamıştı)
 **1098 geçti, 0 fail** ile bitti; bu pencerenin kendi doğrulaması ise `pytest -k "semread or
-semantic"` **320 geçti** + `test_semread_001b_acceptance.py` (15) + `test_semread_001b_reference.py`
+semantic"` **321 geçti** + `test_semread_001b_acceptance.py` (17) + `test_semread_001b_reference.py`
 (22) koşularıdır.
 
 Not: `EVALUATION_IDENTITY_FILES` içinde `eval/semread_001b_pilot.py` var — pilot/dosya

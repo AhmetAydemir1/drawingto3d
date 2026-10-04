@@ -212,7 +212,7 @@ kapanabiliyor). **P3:** 10/10 gold (PDF metin katmanı, raster vision). **P4:** 
 ### 6d. Test durumu (tek güncel blok — PLAN-4 §31)
 
 `pytest tests/test_semread_001b_gates.py tests/test_semread_001b.py tests/test_semantic_candidates.py tests/test_semantic_reader_probe.py -q`
-→ son doğrulanan tam koşu: **139 geçti, 0 fail** (32 kapı + 25 + 26 + 56). PLAN-4 §7/§8 değişikliklerinden
+→ son doğrulanan tam koşu: **141 geçti, 0 fail** (34 kapı + 25 + 26 + 56, 222.12s). PLAN-4 §7/§8 değişikliklerinden
 sonraki koşu bu satırın yanında güncellenir; eski "71 passed" bloğu kaldırıldı (bayat durum iki kez yazılmaz).
 Kapsanan yeni testler: değişmez attempt klasörleri, attempt geçmişinin üzerine yazılmaması,
 üretici/değerlendirici kimlik ayrımı, değişen sayfa PNG'siyle bayatlayan attempt, yabancı üretici

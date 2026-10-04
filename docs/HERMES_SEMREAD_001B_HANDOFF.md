@@ -521,3 +521,37 @@ Yöntem (kalan sayfalar için de geçerli): gözlem tablosu dökümü → ölç�
 
 Kabul kapılarının bu koşudaki durumu (`2cd5f310…`): **B01, B03, B04 kapalı; B02, B05, B06, B07
 açık** (B07 nedeni yukarıda; B02 gold 2/10; B05 20 VLM hücresi `to_run`; B06 karşılaştırma ölçülmedi).
+
+### 6j. Raster dev sayfaları — keşif (P3'ün sıradaki adımı)
+
+Gözlem dökümleri hazır: `out/lab/semread-001b/corpus/observations/{dev-flange-book,dev-flange-elbow}.json`.
+
+| sayfa | kaynak | sayfa px | gözlem | OCR'ın okuduğu |
+| --- | --- | --- | --- | --- |
+| dev-flange-book | `examples/pdf with steps/8/Flange.PNG` | **3300×2550** (A3/300 dpi) | 644 (385 çizgi, 2 daire, 228 yay, 9 linear, 20 metin) | `6x D 6.40 V 15.00` (= 6x Ø6,40 ↧15,00), `20.00`, `60.00`, `90.00`, `2 11.00 V 3.90`, başlık bloğu (SECTION A-A, SCALE 1:2, Plain Carbon Steel) |
+| dev-flange-elbow | `examples/flange-elbow-90.png` | **871×1024** (A4 200 dpi **değil**) | 333 (173 çizgi, 2 daire, 131 yay, 11 linear, 16 metin) | kısmen sayılar (`50/150/260/360`, `4x2-030`, `4x2-960`, `C10`), gerisi gürültü (`oe`, `a8 a 7 rH`, `CuSLATHA`) |
+
+**Vision okuması (bu pencerede yapıldı, `dev-flange-elbow`):** sayfa 90° dirsek + iki kare flanş.
+Çağrılar ve işaret ettikleri: `4-R20` kare plakanın köşe yarıçapı (iki görünüşte de), `R110` flanş-boru
+birleşim yayı, `4x2-Ø60` + `4x2-Ø30` flanş cıvata deliği deseni (Ø30 geçen + Ø60 havşa; iki flanş ×
+4 delik), `Ø210` + `Ø290` dirsek borusunun iç/dış çapı (kesit), `R260` boru ekseninin büküm yarıçapı,
+`C10` pah. Doğrusal: 360/260/150/50/10.
+
+**Yöntem kararları (sıradaki pencere için):**
+
+* Raster gold §16 gereği `vision_checked=true` + claim başına `vision` kanıtı ister; `size`
+  doğrulaması **görsel okumaya** dayanır ve `evidence` bunu yazmalı.
+* Raster sayfalarda **px/mm bilinmiyor** (871×1024 ve 3300×2550, 200 dpi A4 değil) → PDF'teki gibi
+  "ölçülen çap = basılı değer" doğrulaması yapılamaz; hedef bölge Hough primitifinden seçilir,
+  eşleşme görsel olarak doğrulanır.
+* Aynı özellik birden çok görünüşte çizili (elbow'da her flanş iki görünüşte): **tek özellik = tek
+  claim**; hedef, özelliğin en net çizildiği görünüşün primitifi, diğeri gold notunda anılır.
+* `dev-flange-book`'un görsel okuması ve spec'i sıradaki adımdır (döküm hazır; OCR üç çağrıyı zaten
+  okumuş durumda).
+* **Açık karar (sıradaki pencere):** raster gold'da hedef bölgeyi Hough primitifi mi (gürültülü,
+  131–228 yay) yoksa görselden ölçülen normalize kutu mu taşıyacak? `gold_regions` şu an yalnız
+  gözlem kimliği kabul ediyor; ölçülen kutu gerekirse araç küçük bir ekleme ister (`target_box_norm`)
+  ve gerekçesi gold notunda yazılmalı. Karar verilmeden raster spec yazılmamalı.
+
+Sıra (değişmedi): raster dev gold'ları → 6 frozen gold → **tek `--d` koşusu** → `--evaluate`
+(B07 yeniden kapanır, B02 10/10 olur); P5 dondurma; P6 (gerçek V/VE) kullanıcı onayı ister.

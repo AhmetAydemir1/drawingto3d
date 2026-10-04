@@ -1592,6 +1592,13 @@ def acceptance_rows(payload: dict) -> dict:
     if not dispositions:
         dispositions = matrix_dispositions(final_matrix()["cells"])
     chain = payload.get("evidence_chain") or evidence_chain_report(final_matrix()["cells"])
+    # §19: "boş olmayan comparison" yetmez. `vs_d` her kol için satır taşır ama ölçüm yoksa
+    # sayılar sıfırdır; en az bir kolun gerçekten puanlanmış bir yüklemi olmalı.
+    comparison_rows = payload.get("comparison", {}).get("vs_d") or {}
+    measured_arms = sorted(
+        arm for arm, value in comparison_rows.items()
+        if sum(row.get("scorable_target_count", 0)
+               for row in (value.get("predicate_rows") or [])) > 0)
     rows = {
         "B01": {"status": "closed" if (REPORT_ROOT / "snapshot").exists() else "open",
                 "evidence": [str(REPORT_ROOT / "snapshot")],
@@ -1616,7 +1623,7 @@ def acceptance_rows(payload: dict) -> dict:
                               if dispositions.get("open_cells") else "")
                            + f". Başarısız/bloklu hücreler sonucun parçasıdır; frozen V/VE "
                              f"denemesi: {len(final_live)}")},
-        "B06": {"status": "closed" if (arms and payload.get("comparison", {}).get("vs_d")
+        "B06": {"status": "closed" if (arms and measured_arms
                                        and (payload.get("report_checks") or {}).get("complete"))
                 else "open",
                 "evidence": [str(REPORT_ROOT / "final/report.md")],
@@ -1624,6 +1631,7 @@ def acceptance_rows(payload: dict) -> dict:
                                                 if (checks := payload.get("report_checks") or {})
                                                 and checks.get("missing")
                                                 else "tüm şartlar yazılı")
+                           + f"; puanlanmış kol: {measured_arms or 'yok'}"
                            + f"; match policy {payload['match_policy'].get('version')}")},
         "B07": {"status": "closed" if (chain.get("complete") and payload["lifecycle"].get("ok")
                                        and not payload.get("evaluation_stale_cells")

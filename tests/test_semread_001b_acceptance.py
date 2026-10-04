@@ -160,14 +160,16 @@ def test_a_comparison_without_the_required_report_content_cannot_close_b06():
 
 
 def test_the_report_carries_every_required_section_on_the_real_payload():
-    """Gerçek rapor §19'un bütün işaretlerini taşır; ölçüm yokken B06 yine açık kalır."""
+    """Gerçek rapor §19'un bütün işaretlerini taşır; kapı yalnız ölçüm varsa kapanır."""
     payload = pilot.evaluate(write_report=False)
     text = pilot.render_report(payload)
     checks = pilot.report_evidence(text, payload)
     assert checks["missing"] == []
     assert "yüklem bazında" in text and "Matris hücreleri" in text
-    assert checks["measured"] is False and checks["complete"] is False, (
-        "gerçek lab'da henüz ölçülecek tahmin/referans yok: B06 kapanmamalı")
+    # Ölçüm varlığı lab durumuna bağlıdır (dev D koşusu yapıldıysa vardır); kapı bu ölçüme
+    # bağlı olmalı: işaretler tam olduğu için `complete` yalnız `measured`a eşittir.
+    assert checks["complete"] is checks["measured"]
+    assert checks["measured"] == bool(payload["aggregates"])
     # Ölçüm geldiğinde aynı rapor metni kapıyı geçer (tahmin uydurulmaz, koşul simüle edilir).
     assert pilot.report_evidence(text, {"aggregates": {"D": {}},
                                         "comparison": {"vs_d": {"V": {}}}})["complete"] is True
@@ -270,6 +272,28 @@ def test_b05_and_b07_stay_open_without_selected_attempts(lab):
     assert acceptance["B05"]["status"] == "open"
     assert acceptance["B07"]["status"] == "open"
     assert "açık hücreler" in acceptance["B05"]["detail"]
+
+
+def test_b06_requires_a_scored_arm_not_just_a_key():
+    """§19: `vs_d` satırları boş da olabilir; puanlanmış kol yoksa B06 açık kalır."""
+    empty = {"aggregates": {"D": {"localization_match_rate": 1.0}},
+             "comparison": {"vs_d": {"V": {"predicate_rows": [
+                 {"predicate": "size", "scorable_target_count": 0, "recovered_count": 0,
+                  "regressed_wrong_count": 0, "regressed_abstention_count": 0,
+                  "net_correct_gain": 0, "examples": []}]}}},
+             "report_checks": {"complete": True}, "budget": {"by_arm": {}},
+             "lifecycle": {"ok": True}, "match_policy": {"version": "x"},
+             "reference_status": {}, "matrix_dispositions": {"complete": True},
+             "evaluation_stale_cells": [], "evidence_chain": {"complete": True}}
+    assert pilot.acceptance_rows(empty)["B06"]["status"] == "open", "ölçümsüz kol kapıyı açmaz"
+
+    measured = {**empty, "comparison": {"vs_d": {"V": {"predicate_rows": [
+        {"predicate": "size", "scorable_target_count": 2, "recovered_count": 1,
+         "regressed_wrong_count": 0, "regressed_abstention_count": 1, "net_correct_gain": 0,
+         "examples": []}]}}}}
+    acceptance = pilot.acceptance_rows(measured)
+    assert acceptance["B06"]["status"] == "closed"
+    assert "V" in acceptance["B06"]["detail"]
 
 
 def test_the_handoff_document_exists_and_names_the_acceptance_gates():

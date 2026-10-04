@@ -159,8 +159,14 @@ def test_a_comparison_without_the_required_report_content_cannot_close_b06():
     assert set(checks["missing"]) == {name for name, _ in pilot.REPORT_MARKERS}
 
 
-def test_the_report_carries_every_required_section_on_the_real_payload():
-    """Gerçek rapor §19'un bütün işaretlerini taşır; kapı yalnız ölçüm varsa kapanır."""
+def test_the_report_carries_every_required_section_on_the_real_payload(monkeypatch):
+    """Gerçek rapor §19'un bütün işaretlerini taşır; kapı yalnız ölçüm varsa kapanır.
+
+    Test **lab'ı yazmaz**: `evaluate()` normalde `evaluations/<run_id>/` klasörü açar; burada o
+    yazım etkisizleştirilir (kanıt klasörleri yalnız gerçek koşularda oluşmalı).
+    """
+    monkeypatch.setattr(pilot, "write_evaluation_artifacts",
+                        lambda *args, **kwargs: {"skipped": "test"})
     payload = pilot.evaluate(write_report=False)
     text = pilot.render_report(payload)
     checks = pilot.report_evidence(text, payload)
@@ -265,8 +271,10 @@ def test_an_empty_chain_is_not_complete(lab):
     assert chain["complete"] is False
 
 
-def test_b05_and_b07_stay_open_without_selected_attempts(lab):
+def test_b05_and_b07_stay_open_without_selected_attempts(lab, monkeypatch):
     """Gerçek lab durumu: hücreler koşulmamışken B05 ve B07 açık kalır (uydurma kanıt yok)."""
+    monkeypatch.setattr(pilot, "write_evaluation_artifacts",
+                        lambda *args, **kwargs: {"skipped": "test"})
     payload = pilot.evaluate(write_report=False)
     acceptance = pilot.acceptance_rows(payload)
     assert acceptance["B05"]["status"] == "open"

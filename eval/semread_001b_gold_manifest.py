@@ -47,6 +47,7 @@ import hashlib
 import importlib.util
 import json
 import math
+import subprocess
 import sys
 from pathlib import Path
 
@@ -531,13 +532,109 @@ def freeze(*, manifest_path: Path | None = None, gold_directory: Path | None = N
             "artifact": str(artifact) if artifact else None}
 
 
+def _git(*args: str) -> str | None:
+    """Salt-okur git sorgusu; git yoksa/başarısızsa None (dondurma yine yazılır)."""
+    try:
+        result = subprocess.run(["git", *args], cwd=ROOT, capture_output=True, text=True,
+                                check=False)
+    except OSError:
+        return None
+    return result.stdout.strip() or None
+
+
+def _jsonable(value):
+    """JSON'a çevrilebilir sığ kopya; çevrilemezse `str`e düşer — bağlama dayanıklı kalır."""
+    try:
+        return json.loads(json.dumps(value, ensure_ascii=False))
+    except (TypeError, ValueError):
+        return str(value)
+
+
+def _safe(bindings: dict, key: str, producer) -> None:
+    """§22 alanını dayanıklı topla: hata alanı düşürmez, `None` yazar."""
+    try:
+        bindings[key] = _jsonable(producer())
+    except Exception:  # noqa: BLE001 - bağlama toplama dondurmayı düşürmemeli
+        bindings[key] = None
+
+
+def _freeze_bindings() -> dict:
+    """PLAN-11 §22: FREEZE.json'un tam bağlama listesi (PLAN-9 §31 madde 14).
+
+    Git HEAD; üretici/değerlendirme/kod/kirli-öncesi (preprocessing) kimlikleri; aday şeması +
+    eşleştirme politikası + koşu sözleşmesi sürümü; model adı/digest'i/runtime'ı ve üretim
+    ayarları; D kanıtı (seçili attempt kimlikleri + manifest/result hash'leri + değerlendirme
+    koşu kimliği) ve bütçe/yaşam döngüsü/matris anlık görüntüleri. Her alan dayanıklı toplanır
+    (pilot yoksa `None`); zaman damgası eklenmez (§22: üstveri semantik kimliğe girmez).
+    """
+    bindings: dict = {}
+    _safe(bindings, "git_head", lambda: _git("rev-parse", "HEAD"))
+    pilot = None
+    try:
+        spec = importlib.util.spec_from_file_location(
+            "semread_001b_pilot_freeze", ROOT / "eval" / "semread_001b_pilot.py")
+        if spec is not None and spec.loader is not None:
+            pilot = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(pilot)
+    except Exception:  # noqa: BLE001 - pilot yüklenemezse alanlar None kalır
+        pilot = None
+    if pilot is None:
+        bindings["note"] = "pilot bağlamaları toplanamadı (modül yüklenemedi)"
+        return bindings
+    _safe(bindings, "producer_identity", pilot.producer_identity)
+    _safe(bindings, "evaluation_identity", pilot.evaluation_identity)
+    _safe(bindings, "code_identity", pilot.code_identity)
+    _safe(bindings, "preprocessing_identity", pilot.preprocessing_identity)
+    _safe(bindings, "candidate_schema", lambda: pilot.CASE_SCHEMA)
+    _safe(bindings, "match_policy", lambda: pilot.MATCH_POLICY)
+    _safe(bindings, "contract_version", lambda: pilot.CONTRACT_VERSION)
+    _safe(bindings, "model", lambda: pilot.MODEL)
+    _safe(bindings, "expected_model_digest", lambda: pilot.EXPECTED_DIGEST)
+    _safe(bindings, "runtime", lambda: pilot.EXPECTED_RUNTIME)
+    _safe(bindings, "generation_settings",
+          lambda: {"num_predict": pilot.NUM_PREDICT, "settings": pilot.SETTINGS})
+    try:
+        matrix = pilot.final_matrix()
+    except Exception:  # noqa: BLE001 - lab durumu okunamazsa D kanıtı None kalır
+        matrix = None
+    if matrix is None:
+        bindings["note"] = "lab durumu (matris/bütçe/yaşam döngüsü) okunamadı"
+        return bindings
+    cells = matrix.get("cells") or []
+    d_cells = [cell for cell in cells
+               if cell.get("arm") == pilot.D_ARM and cell.get("attempt")]
+    _safe(bindings, "matrix", lambda: {"totals": matrix.get("totals"),
+                                       "dispositions": matrix.get("dispositions"),
+                                       "reuse_policy": matrix.get("reuse_policy")})
+    _safe(bindings, "budget", pilot.budget_report)
+    _safe(bindings, "lifecycle", pilot.attempt_lifecycle_report)
+    run_id = None
+    try:
+        run_id = pilot.evaluation_run_id([cell["attempt"] for cell in d_cells])
+    except Exception:  # noqa: BLE001 - kimlik hesaplanamazsa None
+        run_id = None
+    _safe(bindings, "d_evaluation_run_id", lambda: run_id)
+    selected = None
+    if run_id is not None:
+        try:
+            selected = pilot.selected_attempts_payload(d_cells, run_id)
+        except Exception:  # noqa: BLE001
+            selected = None
+    _safe(bindings, "d_selected_attempts",
+          lambda: [{"page_id": row["page_id"], "attempt_id": row["attempt_id"],
+                    "manifest_sha256": row["manifest_sha256"],
+                    "result_sha256": row["result_sha256"]}
+                   for row in (selected or {}).get("attempts", [])])
+    return bindings
+
+
 def _write_freeze_artifact(manifest_file: Path, entries: list[dict], identity: str,
                            coverage: str) -> Path:
     """Dondurma kaydı (§17 adım 8) — manifest dosyasının yanına yazılır.
 
-    Alanlar şimdilik gold tarafıyla sınırlı; §22'nin tam bağlama listesi (HEAD, model tag/digest,
-    MATCH_POLICY, değerlendirme uygulaması, prompt, koşu sözleşmesi …) P5 dondurma tamamlanırken
-    eklenir (PLAN-9 §31 madde 14).
+    `bindings` PLAN-11 §22'nin tam bağlama listesini taşır (git HEAD, kimlikler, model/digest/
+    runtime, koşu sözleşmesi, D kanıtı, bütçe/yaşam döngüsü/matris anlık görüntüleri); alanlar
+    dayanıklı toplanır ve kimlik/zaman üstverisi taşımaz.
     """
     artifact = {
         "schema": FREEZE_SCHEMA,
@@ -549,14 +646,18 @@ def _write_freeze_artifact(manifest_file: Path, entries: list[dict], identity: s
                            "source_sha256", "spec_sha256", "reference_sha256")}
             for entry in entries
         ],
+        "bindings": _freeze_bindings(),
         "declarations": {
             "gold_annotator": "agent",
             "review_status": "provisional",
             "corpus": "küçük / bağımsız holdout değil",
             "inference": "0/30 — V/VE bu dondurmadan sonra ölçülür (PLAN-9 §24–§26)",
         },
-        "note": ("PLAN-9 §17: atomik `--freeze` doğrulamasının kaydı. gold_content_identity "
-                 "deterministiktir; §22'nin tam bağlama listesi P5 tamamlanırken genişletilir."),
+        "note": ("PLAN-11 §22 (PLAN-9 §17): atomik `--freeze` doğrulamasının kaydı; `bindings` "
+                 "git HEAD'i, üretici/değerlendirme/kirli-öncesi kimliklerini, model/digest/"
+                 "runtime'ı, koşu sözleşmesini ve D kanıtıyla bütçe/yaşam döngüsü/matris anlık "
+                 "görüntülerini taşır. gold_content_identity deterministiktir; zaman damgası "
+                 "kimliğe girmez."),
     }
     path = manifest_file.parent / "FREEZE.json"
     path.write_text(json.dumps(artifact, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

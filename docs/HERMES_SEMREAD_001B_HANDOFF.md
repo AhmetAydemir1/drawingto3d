@@ -1169,3 +1169,35 @@ R5 ×2; `target_box_norm` sekiz claim'de; bağımsız ölçek datum'u 30,00 mm (
 **Sıradaki (PLAN-11 §11):** D reuse değerlendirmesi (§18/§19; yeniden inference yok) → acceptance
 snapshot (§20) → temiz klon (§21) → `FREEZE.json` bağlamaları (§22) → atomik P5 (`--freeze`, §23) →
 ancak ondan sonra V/VE.
+
+### 6v. PLAN-11 §21 — temiz klon birebir üretti: 10/10 yeniden üretim, kimlik aynı
+
+**Ne yapıldı (PLAN-11 §21):**
+* Temiz klon: `git clone` (HEAD `8ae9df5`) ayrı dizine — yalnız izlenen ağaç; `examples/` kaynakları
+  (4,9 MB) dahil. Klonda `out/` **yoktu**: zincir sıfırdan üretti. Dört çekirdek araç da
+  `ROOT = __file__.parents[1]` göreli — mutlak geliştirici yolu bağımlılığı yok.
+* Sıra (§21 listesi): (1) `--corpus` → 10 sayfa (4 dev / 6 frozen; split ihlali yok) örnek
+  dosyalardan hazırlandı; (2) `gold_regions --write` ×10 (5 sayfada ölçülen kutu uyarısı exit=1 —
+  bilinçli/bilgilendirici); (3) `reference --all` → 10 referans yazıldı; (4) `--check` →
+  **"manifest: 10/10 sayfa izleniyor — TAMAM"**, kimlik **ae30ce6f1b1d8d56…** (orijinalle aynı);
+  (5) `--verify` → **10/10 "referans TAMAM … gold-src aynı"**, `VERIFY_EXIT=0`.
+* **Yeniden üretilen 10 hash = manifest 10 hash:** f3be4c268aaf / ecf13221bc67 / 2d9138a75418 /
+  48671f502d19 / be3e56542f2b / bf5d3f7e931d / 8dab4daa975b / c4bcca71c66f / 27cdcb6a0ad6 /
+  **1b35cec4eb33** (frozen-views-exercise). Kriter (§21): 10/10 eşleşme + `gold_content_identity`
+  aynı ✓.
+
+**§22 durumu (bu arada kodda):** `FREEZE.json` tam bağlamaları `_freeze_bindings()` ile eklendi
+(commit `041d525`): git HEAD; üretici/değerlendirme/kod/kirli-öncesi kimlikleri; aday şeması
+(`semread-001b-case/1`); eşleştirme politikası; koşu sözleşmesi (`semread-001b-run-contract/3`);
+model (`qwen3-vl:8b-instruct`) + digest (`0533d743…`) + runtime (`0.32.1`); üretim ayarları; D
+seçili 10 attempt (manifest/result sha256'larıyla); değerlendirme koşu kimliği; bütçe/yaşam
+döngüsü/matris anlık görüntüleri. Her alan dayanıklı toplanır (`None` düşürmez); manifest testleri
+33 geçti. Gerçek `--freeze` kaydı atomik kapıda yazılacak.
+
+**Dürüst sınır:** temiz klon anlık görüntüsü `8ae9df5`tadır (freeze-bağlama commit'inden bir önce);
+altın içerik o commit'lerle değişmediği için klon yeniden koşulmadı — nihai yeniden-üretim kanıtı
+zaten `--freeze`'in kendi içinde 10/10 koşacaktır. "Ölçülen kutu" uyarıları bilgilendiricidir
+(ex13/ex17 ile aynı davranış; gerekçeler spec `notes`/`target_reason` alanlarındadır).
+
+**Sıradaki (PLAN-11 §11):** D reuse değerlendirmesi (§18/§19 — koşuluyor) → acceptance snapshot
+(§20) → atomik `--freeze` (§23) → V/VE.

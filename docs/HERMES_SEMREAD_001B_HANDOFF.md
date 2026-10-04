@@ -483,3 +483,41 @@ bd01c22, f691564) ve §8'in 19 maddelik çıkış kapısı ölçülen raporlarla
 `tests/test_semread_001b_{lifecycle,identity,acceptance,reference,gates}.py`). Kapılar değişmedi:
 **B01, B03, B04, B07 kapalı; B02, B05, B06 açık** — üçü de gold + V/VE ölçümüne bağlı. Sıradaki
 gerçek iş P3'ün kalan 9 sayfası, sonra P5 dondurma; P6 (gerçek V/VE) kullanıcı onayı ister.
+
+### 6i. P3 ilerlemesi — `dev-drawing-2` gold'u yazıldı (**2/10**) + yeni araç
+
+Yöntem (kalan sayfalar için de geçerli): gözlem tablosu dökümü → ölçülen primitif geometri ile
+çağrı→özellik eşleşmesi → spec → `gold_regions` → `check_reference`.
+
+* Yeni araç: `eval/semread_001b_gold_inspect.py` — sayfanın gözlem tablosunu
+  `out/lab/semread-001b/corpus/observations/<page>.json` olarak döker ve çağrı benzeri satırları
+  (`text`/`linear`/`diameter`/`radius`, değer + birim) listeler. **Ders:** çağrı metinleri tabloda
+  `text` türüyle değil çoğunlukla `linear`/`diameter`/`radius` türüyle gelir; yalnız `text`e bakan
+  filtre `dev-drawing-2`'de altı çağrının hiçbirini göstermiyordu.
+* Spec: `out/lab/semread-001b/corpus/gold-specs/dev-drawing-2.json` (spec'ler artık kalıcı klasörde).
+  `check_reference`: **ok=true, 6 claim, problem yok** (`reference_sha256 f3be4c26…`).
+* Ölçek/ölçüm: 200 dpi + pafta ölçeği 1:2 → **3,9370 px/mm**. Ölçülen özellikler: Ø50 = 196,6 px
+  (49,93), Ø30 = 117,7 px (29,89), Ø20 = 78,8 px (20,01), Ø25 = 98,4 px (25,00), Ø40 ve R20 =
+  157,3 px (39,96). Bağlama **sayısal** doğrulandı: t61 leader'ı g65 kenarına oturuyor
+  (613,3 → 612,8 px), Ø40 uzantıları 828→986 px, Ø25 858→956 px, Ø20 497→576 px.
+* Karar (gold notlarında yazılı): hedef bölge **özelliğin çizili olduğu primitiftir**; Ø40/Ø25
+  çağrıları üstten görünüşte yazılı olsa da hedef ön görünüşteki daire/yaydır (iki görünüş aynı
+  özelliği gösterir). `termination`: Ø30 = `thru` (ön görünüşte bore çizgileri y 390→695 px,
+  parçanın tam yüksekliği boyunca kesintisiz); Ø25/Ø20 = `unknown` — pafta hiçbir yerde THRU
+  ya da derinlik yazmıyor (çekimserlik uydurmadan doğru okumadır).
+* İlk gerçek D ölçümü (koşu `2cd5f310…`, 2/10 gold): `dev-drawing-2` için **matched 0/6**. D'nin 17
+  adayının çoğu doğrusal ölçü (kapsam dışı → `unscorable_extra 14`) ve bağlamalar sistematik
+  yanlış (ör. "R20" → g125, "37" → g133, "57" → g122; hedef kutuları çağrı boyunca uzadığı için
+  IoU tutmuyor) → `ambiguous_pairs 6`. Toplam D: `matched 2/8`, `candidate_precision 0,0833`,
+  `claim_recall 0,25`. Bu bir uydurma değil ölçüm: D çok görünüşlü paftada zayıf — V/VE'nin ne
+  katacağı sorusunun dev cevabı bu.
+* **B07 yeniden açıldı ve nedeni biliniyor:** gold dosyası `evaluation_identity`'ye girer; kimlik
+  `2e1bab5c…` → `b64b11df…` oldu, 10 D attempt'i kayıtlı eski kimliği taşıyor (üretici kimliği ve
+  ham adaylar **geçerli**, bayat olan yalnız değerlendirme halkası). Doğru sıra:
+  **10/10 gold → tek `--d` koşusu (0 inference) → `--evaluate`**; o zaman zincir yine tam olur.
+  Bu yüzden gold yazımı bitmeden D'yi yeniden koşmak zaman kaybıdır.
+* Kalan 8 sayfa: `dev-flange-book`, `dev-flange-elbow` (raster → §16: `vision_checked` + claim
+  başına `vision` kanıtı) + 6 frozen sayfa.
+
+Kabul kapılarının bu koşudaki durumu (`2cd5f310…`): **B01, B03, B04 kapalı; B02, B05, B06, B07
+açık** (B07 nedeni yukarıda; B02 gold 2/10; B05 20 VLM hücresi `to_run`; B06 karşılaştırma ölçülmedi).

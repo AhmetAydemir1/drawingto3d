@@ -1,0 +1,232 @@
+{
+  "page_type": "raster",
+  "split": "frozen",
+  "vision_checked": true,
+  "scope": "Yalnız Ø/R çağrıları (7 adet): Ø25.00 (üst görünüş, sol delik), R25.00 (üst görünüş, sağ uç yuvarlatması), R30.00 (ön görünüş, sol üst köşe yayı), Ø60.00 (göbek deliği), R50.00 (göbek dış yayı), Ø25.00 (ön görünüş, alt delik), R10.00 (yuva/fileto yayı). Doğrusal ölçüler (üst: 30.00, 50.00; ön/alt: 170.00, 42.00, 60.00 ×2, 30.00, 25.00, 240.00; sol yan: 60.00; sağ yan: 10.00, 50.00) kapsam dışıdır: ex17 ile tutarlı olarak gold yalnız Ø/R çağrılarını kapsar; doğrusal ölçüler yalnız ölçek kökü/çapraz doğrulama olarak kullanılır (PLAN-9 §5). Başlık bloğu (Exercise 13, A3, SCALE 1:5, MAT AISI 304), malzeme notu ve izometrik görünüş boyut çağrısı değildir.",
+  "annotation_method": "Ölçülmüş ilke: her hedef kutu, pafta pikselinde satır/kolon koşu taramasıyla (renk sınıflı: siyah = parça kenarı, gri = ölçü/leader, zeytin = iki vurgulu ölçü) ve ızgaralı büyütülmüş kırpmalarda görsel okumayla ölçüldü; çağrı metinleri harf harf görsel okundu (OCR bu rasterda Ø/R çağrı satırlarını yakalamıyor: gözlem tablosunda çağrı metni yok).",
+  "measurement_reason": "Raster sayfada OCR Ø/R çağrılarını düşürüyor; hedefler gözlem kimliği yerine ölçülmüş kutu olarak yazıldı (ex17 ile aynı yöntem). Her kutu çizilmiş geometriden (halka/yay bölgesi) piksel cinsinden ölçüldü ve ızgaralı kırpmayla görsel olarak doğrulandı; çağrı oku (leader) yolları da izlendi.",
+  "exhaustiveness": {
+    "scope": "predicates",
+    "predicates": [
+      "representation",
+      "physical",
+      "form",
+      "size",
+      "termination",
+      "depth"
+    ]
+  },
+  "notes": [
+    "Pafta: 3300x2550 piksel. Başlık bloğu görsel okuması: TITLE 'Exercise 13', kâğıt A3, SCALE 1:5, MAT AISI 304. Yalnız 'SCALE 1:5' notu px/mm vermez (PLAN-9 §8); px/mm bağımsız doğrusal datuma dayandırıldı (PLAN-9 §5).",
+    "Ölçek kökü: alt ölçü şeridindeki 240,00 mm (uç yuvarlatma teğetleri arası, 709,1 px) → 2,9546 px/mm. Çapraz doğrulama: 170,00 → 502 px (2,953), 50,00 → 148 px (2,960), 42,00 → 124,2 px (2,957), 30,00 → 88,7 px (2,957), 25,00 → 74 px (2,960), 10,00 → 29,5 px (2,95); yayılım ≈ %0,3 (2,95–2,96 px/mm).",
+    "Çağrılar leader biçimindedir (uzatma çizgili ölçü değil): kutu, leader oku ucunun bağlandığı çizilmiş geometrinin (halka ya da yay) sınır bölgesidir.",
+    "Göbek merkezi (ön görünüş) ≈ (1548,5, 1570,8) px; üst delik merkezli köşe yayının merkezi ≈ (1282,5, 1571,5) px (dash-dot eksen çizgisiyle doğrulandı); alt delik merkezi aynı dikey eksende ≈ (1282,5, 1695,5) px — iki delik arası ≈ 124 px = 42,0 mm.",
+    "Kapsam dışı doğrusal ölçülerin ölçülen karşılıkları (yalnız denetim izi): 30,00 = üst görünüşte sol uç → sol delik merkezi (88,7 px); 240,00 = uç yuvarlatma teğetleri arası (709,1 px); 25,00 = sol köşe teğeti → sol fileto teğeti (74 px); 50,00 (sağ yan) = orta web genişliği (148 px); 10,00 (sağ yan) = göbek taşması (29 px); 60,00 ×2 (ön) = göbek merkezi ↔ fileto teğet seviyesi (177 px); 30,00 (ön) = taban kalınlığı (89 px)."
+  ],
+  "claims": [
+    {
+      "claim_id": "frozen-exercise-13-01",
+      "name": "Ø60.00 göbek deliği (ön görünüş)",
+      "target_box_norm": [
+        0.442424,
+        0.581294,
+        0.496061,
+        0.650706
+      ],
+      "target_reason": "Ön görünüşteki göbek merkezi (≈1548,5, 1570,8 px) çevresindeki iç halka; kutunun sınırları halka çapının uçlarıdır (x 1460,0–1637,0 px, y 1482,3–1659,3 px). Ölçüm: satır/kolon koşu taraması — halka yarıçapı ≈ 88,5 px → çap ≈ 177 px = 59,9 mm (2,955 px/mm); ızgaralı kırpma ile görsel doğrulama. Ölçüm piksel koşu taramasıyla alındı.",
+      "representation": "other",
+      "physical": "hole",
+      "form": "diameter",
+      "size": 60.0,
+      "unit": "mm",
+      "count_printed": null,
+      "termination": "unknown",
+      "depth": null,
+      "depth_state": "not_stated",
+      "state": "determinate_present",
+      "evidence": "Ön görünüşte 'Ø60.00' çağrısı (etiket ≈ x 1617–1749, y 1147–1351 px); leader 45° eğimle göbek merkezinden geçer ve ok ucu halkaya (≈1630, 1487 px) dokunur. Ölçülen halka çapı ≈177 px = 59,9 mm; yazılı 60,00 mm ile sapma ≈ %0,2.",
+      "source_evidence": "vision + piksel taraması: satır/kolon siyah koşu analizi + ızgaralı büyütülmüş kırpma — göbek bölgesi kırpmaları (ex13_arrowzoom/ex13_boss_right) halka kenarını ve ok ucunu gösterdi; ex13_label_q ile komşu '50.00' etiketi harf harf doğrulandı.",
+      "corroboration": {
+        "kind": "independent_scale",
+        "basis": "bağımsız 240,00 mm doğrusal ölçü (alt ölçü şeridi; uç yuvarlatma teğet çizgileri arası 1090,5→1799,6 px = 709,1 px) → 2,955 px/mm; çapraz: 170,00 (502 px → 2,953), 50,00 (148 px → 2,960), 42,00 (124,2 px → 2,957), 30,00 (88,7 px → 2,957), 25,00 (74 px → 2,960), 10,00 (29,5 px → 2,95)",
+        "basis_value": 240.0,
+        "scale_px_per_mm": 2.955
+      }
+    },
+    {
+      "claim_id": "frozen-exercise-13-02",
+      "name": "Ø25.00 alt delik (ön görünüş)",
+      "target_box_norm": [
+        0.377455,
+        0.650431,
+        0.399818,
+        0.679373
+      ],
+      "target_reason": "Ön görünüşte alt delik halkası: merkez ≈ (1282,5, 1695,5) px, yarıçap ≈ 36,9 px; kutu halka sınırlarıdır (x 1245,6–1319,4 px, y 1658,6–1732,4 px). Delik merkezinin dikey dash-dot ekseni x=1282,5 px kolonunda ölçüldü.",
+      "representation": "other",
+      "physical": "hole",
+      "form": "diameter",
+      "size": 25.0,
+      "unit": "mm",
+      "count_printed": null,
+      "termination": "unknown",
+      "depth": null,
+      "depth_state": "not_stated",
+      "state": "determinate_present",
+      "evidence": "Ön görünüşte 'Ø25.00' çağrısı (etiket ≈ x 1683–1815, y 1938–2014 px), leader yukarı-sola alt deliğe iner. Ölçülen halka çapı ≈ 74 px = 25,0 mm; üst delikle dikey aralığı ≈ 124 px = 42,0 mm (42,00 doğrusal ölçüsüyle uyumlu).",
+      "source_evidence": "vision + piksel taraması: satır/kolon siyah koşu analizi + ızgaralı büyütülmüş kırpma — ön görünüş alt bölge kırpmaları (ex13_labels_bottom) leader'ı ve halkayı gösterdi; eksen dash-dot deseni x=1282,5 px kolonunda sayısal olarak doğrulandı (vision + piksel taraması).",
+      "corroboration": {
+        "kind": "independent_scale",
+        "basis": "bağımsız 240,00 mm doğrusal ölçü (alt ölçü şeridi; uç yuvarlatma teğet çizgileri arası 1090,5→1799,6 px = 709,1 px) → 2,955 px/mm; çapraz: 170,00 (502 px → 2,953), 50,00 (148 px → 2,960), 42,00 (124,2 px → 2,957), 30,00 (88,7 px → 2,957), 25,00 (74 px → 2,960), 10,00 (29,5 px → 2,95)",
+        "basis_value": 240.0,
+        "scale_px_per_mm": 2.955
+      }
+    },
+    {
+      "claim_id": "frozen-exercise-13-03",
+      "name": "Ø25.00 sol delik (üst görünüş)",
+      "target_box_norm": [
+        0.32397,
+        0.18502,
+        0.346333,
+        0.213961
+      ],
+      "target_reason": "Üst görünüşte sol uçtaki delik halkası: çember fiti merkez ≈ (1106,0, 508,7) px, yarıçap ≈ 36–37 px; kutu halka sınırlarıdır (x 1069,1–1142,9 px, y 471,8–545,6 px). Ölçüm piksel koşu taramasıyla alındı.",
+      "representation": "other",
+      "physical": "hole",
+      "form": "diameter",
+      "size": 25.0,
+      "unit": "mm",
+      "count_printed": null,
+      "termination": "unknown",
+      "depth": null,
+      "depth_state": "not_stated",
+      "state": "determinate_present",
+      "evidence": "Üst görünüşte 'Ø25.00' çağrısı (etiket ≈ x 792–1023, y 178–306 px); leader sola, delik halkasına. Ölçülen çap ≈ 73–74 px = 24,7–25,0 mm; delik merkezinin sol uca uzaklığı ≈ 88,7 px = 30,0 mm (zeytin renkli 30,00 doğrusal ölçüsüyle uyumlu).",
+      "source_evidence": "vision + piksel taraması: satır/kolon siyah koşu analizi + ızgaralı büyütülmüş kırpma — üst görünüş sol uç kırpmaları (ex13_top_leftend) halkayı ve leader'ı gösterdi; çember fiti ile merkez (1106,0, 508,7) px doğrulandı (vision + piksel taraması).",
+      "corroboration": {
+        "kind": "independent_scale",
+        "basis": "bağımsız 240,00 mm doğrusal ölçü (alt ölçü şeridi; uç yuvarlatma teğet çizgileri arası 1090,5→1799,6 px = 709,1 px) → 2,955 px/mm; çapraz: 170,00 (502 px → 2,953), 50,00 (148 px → 2,960), 42,00 (124,2 px → 2,957), 30,00 (88,7 px → 2,957), 25,00 (74 px → 2,960), 10,00 (29,5 px → 2,95)",
+        "basis_value": 240.0,
+        "scale_px_per_mm": 2.955
+      }
+    },
+    {
+      "claim_id": "frozen-exercise-13-04",
+      "name": "R50.00 göbek dış yayı (ön görünüş)",
+      "target_box_norm": [
+        0.424485,
+        0.558078,
+        0.514,
+        0.673922
+      ],
+      "target_reason": "Ön görünüşte göbek dış halkası: merkez ≈ (1548,5, 1570,8) px, yarıçap ≈ 147,7 px; kutu halkanın sınır bölgesidir (x 1400,8–1696,2 px, y 1423,1–1718,5 px). Ölçüm: satır/kolon koşu taraması + ızgaralı kırpma görsel doğrulaması. Ölçüm piksel koşu taramasıyla alındı.",
+      "representation": "other",
+      "physical": "not_hole",
+      "form": "radius",
+      "size": 50.0,
+      "unit": "mm",
+      "count_printed": null,
+      "termination": "unknown",
+      "depth": null,
+      "depth_state": "not_stated",
+      "state": "determinate_present",
+      "evidence": "Ön görünüşte 'R50.00' çağrısı (etiket ≈ x 1815–1980, y 1249–1300 px); leader ≈30° eğimle göbek merkezinden geçer ve ok ucu dış yaya (≈1677,7, 1497,8 px) dokunur. Ölçülen yarıçap ≈ 147,7 px = 50,0 mm.",
+      "source_evidence": "vision + piksel taraması: satır/kolon siyah koşu analizi + ızgaralı büyütülmüş kırpma — göbek kırpmaları (ex13_hubzoom, ex13_arrowzoom) dış yayı ve iki leader okunu gösterdi (vision + piksel taraması).",
+      "corroboration": {
+        "kind": "independent_scale",
+        "basis": "bağımsız 240,00 mm doğrusal ölçü (alt ölçü şeridi; uç yuvarlatma teğet çizgileri arası 1090,5→1799,6 px = 709,1 px) → 2,955 px/mm; çapraz: 170,00 (502 px → 2,953), 50,00 (148 px → 2,960), 42,00 (124,2 px → 2,957), 30,00 (88,7 px → 2,957), 25,00 (74 px → 2,960), 10,00 (29,5 px → 2,95)",
+        "basis_value": 240.0,
+        "scale_px_per_mm": 2.955
+      }
+    },
+    {
+      "claim_id": "frozen-exercise-13-05",
+      "name": "R30.00 sol üst köşe yayı (ön görünüş)",
+      "target_box_norm": [
+        0.361758,
+        0.58149,
+        0.388636,
+        0.616275
+      ],
+      "target_reason": "Ön görünüşte üst delik merkezli (≈1282,5, 1571,5 px) köşe yayı: yarıçap ≈ 88,6 px; çizilen çeyrek yayın bölgesi (x 1193,8–1282,5 px, y 1482,8–1571,5 px). Yay sol ucu plaka sol yüzüne (x ≈ 1194,5 px) teğettir; üst ucu üst kenara (y ≈ 1482,5 px) teğettir. Ölçüm piksel koşu taramasıyla alındı.",
+      "representation": "other",
+      "physical": "not_hole",
+      "form": "radius",
+      "size": 30.0,
+      "unit": "mm",
+      "count_printed": null,
+      "termination": "unknown",
+      "depth": null,
+      "depth_state": "not_stated",
+      "state": "determinate_present",
+      "evidence": "Ön görünüşte 'R30.00' çağrısı (etiket ≈ x 957–1155, y 1224–1326 px); leader sol üst köşe yayına iner. Ölçülen yarıçap ≈ 88,6 px = 30,0 mm; teğet noktaları (≈1193,9, 1571,5) ve (≈1282,5, 1482,9) px koşu taramasıyla doğrulandı.",
+      "source_evidence": "vision + piksel taraması: satır/kolon siyah koşu analizi + ızgaralı büyütülmüş kırpma — ön görünüş sol üst köşe kırpmaları (ex13_blcorner karşılığı bölge) yayı ve leader'ı gösterdi; x=1194,5 px kolon koşusu yayın dikey teğetini doğruladı (vision + piksel taraması).",
+      "corroboration": {
+        "kind": "independent_scale",
+        "basis": "bağımsız 240,00 mm doğrusal ölçü (alt ölçü şeridi; uç yuvarlatma teğet çizgileri arası 1090,5→1799,6 px = 709,1 px) → 2,955 px/mm; çapraz: 170,00 (502 px → 2,953), 50,00 (148 px → 2,960), 42,00 (124,2 px → 2,957), 30,00 (88,7 px → 2,957), 25,00 (74 px → 2,960), 10,00 (29,5 px → 2,95)",
+        "basis_value": 240.0,
+        "scale_px_per_mm": 2.955
+      }
+    },
+    {
+      "claim_id": "frozen-exercise-13-06",
+      "name": "R25.00 sağ uç yuvarlatması (üst görünüş)",
+      "target_box_norm": [
+        0.545333,
+        0.228078,
+        0.567727,
+        0.257059
+      ],
+      "target_reason": "Üst görünüşte sağ ucun alt köşe yayı: çember fiti ≈ 69 px (R25 sınıfı, ±4 px); kutu yayın çeyrek bölgesidir (x 1799,6–1873,5 px, y 581,6–655,5 px). Teğet konumu x ≈ 1799,6 px = 1873,5 − 73,9 px (R25) ile tutarlı. Ölçüm piksel koşu taramasıyla alındı.",
+      "representation": "other",
+      "physical": "not_hole",
+      "form": "radius",
+      "size": 25.0,
+      "unit": "mm",
+      "count_printed": null,
+      "termination": "unknown",
+      "depth": null,
+      "depth_state": "not_stated",
+      "state": "determinate_present",
+      "evidence": "Üst görünüşte 'R25.00' çağrısı (etiket ≈ x 1914–2046, y 663–714 px); leader sola köşe yayına uzanır. Ölçüm: köşe yayı fiti ≈ 69 px ±4 (R25 = 73,9 px); 240,00 doğrusal ölçüsünün teğetleri (1090,5 ve 1799,6 px) aynı yuvarlatmayı çaprazlar (290,0 mm toplam = 240,00 + 2 × 25,00).",
+      "source_evidence": "vision + piksel taraması: satır/kolon siyah koşu analizi + ızgaralı büyütülmüş kırpma — üst görünüş sağ uç kırpma/koşu verileri köşe yayını ve teğet uçlarını gösterdi; sağ görünüşte x=2609,5/2757,5 px dikey koşuları 25 mm teğet yapısını doğruladı (vision + piksel taraması).",
+      "corroboration": {
+        "kind": "independent_scale",
+        "basis": "bağımsız 240,00 mm doğrusal ölçü (alt ölçü şeridi; uç yuvarlatma teğet çizgileri arası 1090,5→1799,6 px = 709,1 px) → 2,955 px/mm; çapraz: 170,00 (502 px → 2,953), 50,00 (148 px → 2,960), 42,00 (124,2 px → 2,957), 30,00 (88,7 px → 2,957), 25,00 (74 px → 2,960), 10,00 (29,5 px → 2,95)",
+        "basis_value": 240.0,
+        "scale_px_per_mm": 2.955
+      }
+    },
+    {
+      "claim_id": "frozen-exercise-13-07",
+      "name": "R10.00 fileto yayı (ön görünüş, plaka/taban birleşimi)",
+      "target_box_norm": [
+        0.353,
+        0.685451,
+        0.36197,
+        0.697059
+      ],
+      "target_reason": "Ön görünüşte plaka sol yüzü ile taban üstü birleşimindeki iç fileto yayı: yarıçap ≈ 29,6 px; çeyrek yayın bölgesi (x 1164,9–1194,5 px, y 1747,9–1777,5 px). Teğetler: yatay teğet y ≈ 1777,5 px (taban üstü), dikey teğet x ≈ 1194,5 px (plaka sol yüzü). Ölçüm piksel koşu taramasıyla alındı.",
+      "representation": "other",
+      "physical": "not_hole",
+      "form": "radius",
+      "size": 10.0,
+      "unit": "mm",
+      "count_printed": null,
+      "termination": "unknown",
+      "depth": null,
+      "depth_state": "not_stated",
+      "state": "determinate_present",
+      "evidence": "Ön görünüşte 'R10.00' çağrısı (45° döndürülmüş etiket ≈ x 1452–1584, y 1989–2091 px); leader sol-yukarı uzanır ve ok ucu ≈ (1196, 1771) px'te fileto yayına dokunur. Ölçülen yarıçap ≈ 29,6 px = 10,0 mm; fileto teğet seviyesi (y ≈ 1747,9 px) ayrıca iki 60,00 ölçüsünün alt uzatma seviyesidir (göbek merkezinden 60,0 mm).",
+      "source_evidence": "vision + piksel taraması: satır/kolon siyah koşu analizi + ızgaralı büyütülmüş kırpma — alt şerit kırpması (ex13_bottomstrip) R10.00 etiketini ve leader çizgisini gösterdi; sol köşe kırpması (ex13_front_blcorner) fileto yayını görsel olarak doğruladı (vision + piksel taraması).",
+      "corroboration": {
+        "kind": "independent_scale",
+        "basis": "bağımsız 240,00 mm doğrusal ölçü (alt ölçü şeridi; uç yuvarlatma teğet çizgileri arası 1090,5→1799,6 px = 709,1 px) → 2,955 px/mm; çapraz: 170,00 (502 px → 2,953), 50,00 (148 px → 2,960), 42,00 (124,2 px → 2,957), 30,00 (88,7 px → 2,957), 25,00 (74 px → 2,960), 10,00 (29,5 px → 2,95)",
+        "basis_value": 240.0,
+        "scale_px_per_mm": 2.955
+      }
+    }
+  ],
+  "reconstruction_note": "PLAN-9 §5: frozen-exercise-13 kanıtı bağımsız doğrusal datuma köklendi — yedi claim'in ölçek dayanağı da alt ölçü şeridindeki 240,00 mm doğrusal ölçüsüdür (çapraz: 170,00 / 50,00 / 42,00 / 30,00 / 25,00 / 10,00); hiçbir claim ne kendi ne başka bir Ø/R claim'inin yazılı değerine dayanır (§6). Hedefler ölçülmüş kutulardır; px/mm çıkarılamasa bile ölçülmüş kutu geçerli olurdu (§7 sonu)."
+}

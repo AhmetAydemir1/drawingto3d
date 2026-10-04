@@ -931,3 +931,38 @@ px geometrisi yalnız kanıt).
 tümü → 11) mevcut D denemelerini değerlendir (yeniden koşma yok, §21) → 12) B02/B07 durumu →
 13) temiz klon denetimi (§18) → 14) `FREEZE.json`u §22 alanlarıyla tamamla → 15) V/VE (ancak ondan
 sonra, §24–§26).
+
+### 6r. PLAN-10 §42 — ex13 kanonik gold izlendi: px/mm bağımsız 240,00 mm datasından (7/10)
+
+**Ne yapıldı (§6p "sıradaki adımlar" 1–3 ve §6q sıradaki 5; PLAN-9 §31/5):**
+- `eval/semread_001b_gold/specs/frozen-exercise-13.json` yazıldı — **7 Ø/R claim**: Ø25.00 (üst
+  görünüş, sol delik), R25.00 (üst görünüş, sağ uç yuvarlatması), R30.00 (ön görünüş, üst delik
+  merkezli sol üst köşe yayı), Ø60.00 (göbek deliği), R50.00 (göbek dış yayı), Ø25.00 (ön
+  görünüş, alt delik), R10.00 (plaka/taban filetosu). Doğrusal ölçüler kapsam dışı (ex17 ile aynı
+  kural; PLAN-9 §5).
+- **Ölçek kökü bağımsız doğrusal datum (§7):** alt ölçü şeridinde 240,00 mm (uç yuvarlatma
+  teğetleri arası, 1090,5→1799,6 px = 709,1 px) → **2,955 px/mm**; çapraz: 170,00 (502 px →
+  2,953), 50,00 (148 px → 2,960), 42,00 (124,2 px → 2,957), 30,00 (88,7 px → 2,957), 25,00
+  (74 px → 2,960), 10,00 (29,5 px → 2,95); yayılım ≈ %0,3. Hiçbir claim kendi ya da başka bir
+  Ø/R claim'inin değerine dayanmıyor (§6).
+- Ana ölçüm bulguları: göbek merkezi (1548,5, 1570,8) px; üst/alt delik düşey ekseni x=1282,5 px
+  (dash-dot deseni sayısal doğrulandı), iki delik arası 42,00 (124,2 px); taban kalınlığı 30,00
+  (ön ölçüsü x=1780,5 px, oklar 1777,5↔1866,5 px); iki 60,00 (ön) = göbek merkezi ↔ fileto teğet
+  seviyesi (y≈1747,9 px); R25 uç yuvarlatmaları: 290,00 = 240,00 + 2 × 25,00 (teğetler x1090,5 /
+  1799,6 px; yan görünüşlerde 25/75 dikeyleri teğetleri çaprazlar); 170,00 = plaka sol yüzü ↔
+  göbek sağ teğet düzlemi (1194,5 ↔ 1696,5 px); Ø60.00 leader'ı göbek merkezinden 45° geçer.
+
+**Kanıt (bu turda koşuldu):**
+- Zincir: `gold_regions --write` → `reference --page frozen-exercise-13` → `gold_manifest
+  --write/--verify/--check`.
+- `--verify --page frozen-exercise-13`: **"referans TAMAM (yeniden üretilen 8dab4daa975b… /
+  manifest 8dab4daa975b…); gold-src aynı; 7 claim"** — izlenen spec'ten birebir yeniden üretim.
+- `--check`: **"manifest: 7/10 sayfa izleniyor — TAMAM"** (`gold_content_identity: 40a95691…`;
+  önceki 6/10 kimliği 21bf1195… idi).
+- Test: SEMREAD alt kümesi (`tests/test_semread_001b*.py`) — bkz. commit mesajı.
+- Not: `gold_regions.py` ölçülen kutu claim'lerinde bilgilendirici "gerekçe `notes`ta olmalı"
+  uyarısı verir (exit 1); gerekçeler spec `notes` + `measurement_reason` + her claim
+  `target_reason` alanındadır — mevcut akışta engel değil (ex17 ile aynı davranış).
+
+**Sıradaki (PLAN-9 §31):** 6) `dev-flange-book` → 7) `frozen-exercise-51` → 8)
+`frozen-views-exercise` → 9) 10/10 → 10) `--verify` tümü → 11) D denemelerini değerlendir…

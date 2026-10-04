@@ -25,6 +25,7 @@ from drawingto3d.semantic_candidates import (CANDIDATE_READER_VERSION, Candidate
                                              parse_candidate_json)
 from drawingto3d.semantic_images import (PreparedImage, SourcePage, overlay_from_observations,
                                          prepare_full_page)
+from drawingto3d.semantic_run_contract import IMAGES_LAYOUT, IMAGE_LABEL_PREFIX
 
 V_ARM = "V"
 VE_ARM = "VE"
@@ -116,8 +117,8 @@ def read_page(chat, bundle: dict, *, forbidden: list[str], num_predict: int | No
         answer = chat.complete(prompt, images=images, num_predict=num_predict,
                               response_format=schema, stats=stats, trace=trace,
                               raw_response=raw_body, image_labels=labels,
-                              images_layout="per_image_message_labeled",
-                              image_label_prefix="Image ID: ")
+                              images_layout=IMAGES_LAYOUT,
+                              image_label_prefix=IMAGE_LABEL_PREFIX)
     except Exception as exc:  # noqa: BLE001 - taşıma hatası kayda geçer, yutulmaz
         outcome.update({"failure_kind": getattr(exc, "transport_kind", "unreachable"),
                         "detail": f"{type(exc).__name__}: {exc}", "request": trace,

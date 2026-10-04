@@ -180,6 +180,25 @@ P0 tam kapanmamıştı; P0R maddeleri uygulandı (hepsi 0 inference):
 
 Not: kontrat modülü eklendiği için **eski** (bu değişiklikten önceki) attempt'ler üretici kimliği bakımından bayat sayılır — D hücreleri yeniden koşacak (0 inference), V/VE hücreleri zaten hiç çağrı yapmadı.
 
+## 6c. PLAN-3 (P0R-FINAL) DURUMU — **IN PROGRESS** (kısmi, 0 inference)
+
+PLAN-3 sırası: P0R-FINAL → P1 → … → P8; final V/VE harcaması P0R–P5 kapanmadan yok.
+
+| # | Madde | Durum | Not |
+| --- | --- | --- | --- |
+| 1 | Donmuş ayar = gerçek istek (`top_p`/`seed`) | **bitti (alternatif yol)** | taşıma (`ChatSettings` → `_chat_request`) bu iki seçeneği `options`'a koymuyor; PLAN-3 §4'ün izin verdiği alternatifle **kontrattan çıkarıldı** (`CONTRACT_VERSION` → `/2`) |
+| 2 | Desteklenmeyen donmuş ayar gönderimi durdurur | **bitti** | `write_live_attempt()` gönderimden önce kesiyor: `blocking_kind=unsupported_frozen_setting`, `send_attempted=false`, `mark_send_state(not_sent_unsupported_setting)`, geçmişte `blocked_unsupported_setting`; rezervasyon defterde görünür kalır |
+| 3 | Yaşam döngüsünün tamamı kayıtlanır (`finalize_attempt`) | **yapılmadı** | `open_source`/`observe`/`installed_models`/`find_model` için ortak `finalize_attempt` + states listesi bekliyor |
+| 4 | `prediction_input_identity` (gerçek hazırlanan girdi) | **yapılmadı** | `prepare_arm_inputs` sonrası prompt sha + görüntü id/sha/byte + gözlem tablosu sha + hazırlama kimliği; V/VE ayrı kimlik, ham `image-1` byte'ı aynı olmalı |
+| 5 | Okuyucu literalleri kontrattan | **bitti** | `IMAGES_LAYOUT` / `IMAGE_LABEL_PREFIX` kontratta; `read_page()` bunları kullanır, kopya literal yok |
+| 6 | Kanonik model meta verisi tek yol | **bitti** | `runtime_identity()` elle `/api/tags` ayrıştırmıyor: tek yol `installed_models()` → `find_model()` → `as_dict()`; dönen alanlar `model`, `model_canonical`, `parser`, `endpoint`, `version`, `error` |
+| 7 | Liste tabanlı `state.attempts` için kabul kodu | **bitti** | `all_attempt_records(state)` (eski dict / yeni liste / karışık / boş) + `acceptance_rows()` ondan besleniyor; `--evaluate` liste geçmişiyle çalıştı, `evaluation_run_id` + `evaluation_stale_cells` üretiyor |
+| 8 | Odaklı 0-inference testler | **kısmi** | §1/§2/§5/§6/§7/§9 için 6 test eklendi; tam takım **139 geçti, 0 fail** (32 kapı + 25 + 26 + 56). Kalan: input identity ve yaşam döngüsü testleri madde 3/4 ile gelecek |
+
+Gerçek runtime kanıtı: `runtime_identity()` yerel Ollama'dan **0.32.1** okuyor, kanonik ayrıştırıcı `installed_models/find_model/as_dict`, digest beklenenle aynı — ölçüldü, varsayılmadı.
+
+Karar kaydı: §4'ün "tercih edilen" yolu (top_p/seed'i taşıma katmanına ekleyip gövdeye koymak) yerine **alternatif** seçildi — taşıma katmanının istek gövdesini değiştirmek dondurulmuş 001A kanıtlarını da etkilerdi; alternatif sözleşmeyi gerçeğe uydurur ve hiçbir ayarı sessizce düşürmez.
+
 **P1'de kalanlar (sıradaki iş):** predicate-geneli recovery/regression, belirsiz eşleşme politikası
 (şimdiki davranış bir adayı puanlıyor), `localization_match_rate` / `semantic_field_accuracy` /
 `overclaim_rate` / `abstention_rate` ayrımı, `exhaustiveness`'e göre `unscorable_extra_candidate` ↔

@@ -11,7 +11,7 @@ Böylece yalnız evaluator/gold düzeltmesi geçerli ham tahmini yeniden üretme
 
 from __future__ import annotations
 
-CONTRACT_VERSION = "semread-001b-run-contract/1"
+CONTRACT_VERSION = "semread-001b-run-contract/2"
 
 MODEL = "qwen3-vl:8b-instruct"
 EXPECTED_DIGEST = "0533d74300e4f9bc367d675d4e64ffd073d50ff16a2b4096cc2e8a1cf8c96319"
@@ -21,13 +21,22 @@ PAGE_IMAGE_ID = "image-1"
 GOLD_SENTINEL = "semread-001b-gold-sentinel-4f21"
 CASE_SCHEMA = "semread-001b-case/1"
 
+# Çerçeveleme: okuyucu (semantic_candidate_reader) bu değerleri buradan alır — kopya literal yok.
+IMAGES_LAYOUT = "per_image_message_labeled"
+IMAGE_LABEL_PREFIX = "Image ID: "
+
 IMAGE_MAX_SIDE = 1280          # development'ta sabitlenir; final koşuya kadar değişmez
 NUM_PREDICT = 2048
 
 # Üretim ayarları: taşıma katmanı bu değerlerden kurulur (kopyası tutulmaz).
-SETTINGS = {"num_ctx": 8192, "temperature": 0.0, "top_p": 1.0, "seed": 20261004,
+#
+# `top_p` ve `seed` **bilerek yoktur** (PLAN-3 §4 alternatifi): taşıma katmanı (`ChatSettings` →
+# `_chat_request`) bu iki seçeneği Ollama `options` gövdesine koymuyor. Donmuş sözleşmeye yazıp
+# göndermemek, kaydetmenin gerçeği anlatması kuralını çiğnerdi. Desteklenmeyen bir donmuş ayar
+# eklenirse `write_live_attempt()` gönderimi durdurur (`blocking_kind=unsupported_frozen_setting`).
+SETTINGS = {"num_ctx": 8192, "temperature": 0.0,
             "num_predict": NUM_PREDICT, "keep_alive": "5m", "image_max_side": IMAGE_MAX_SIDE,
-            "images_layout": "per_image_message_labeled", "image_label_prefix": "Image ID: ",
+            "images_layout": IMAGES_LAYOUT, "image_label_prefix": IMAGE_LABEL_PREFIX,
             "input_strategy": "single_full_page"}
 
 # Görüntü hazırlama sözleşmesi (preprocessing identity): hazırlama kodu bu dosyalarda yaşar.

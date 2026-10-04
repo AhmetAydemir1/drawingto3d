@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import hashlib
 import importlib.util
+import dataclasses
 import json
 import threading
 from pathlib import Path
@@ -551,3 +552,112 @@ def test_a_stale_deterministic_attempt_is_not_matrix_ready(scratch_budget, monke
     cell = next(cell for cell in pilot.final_matrix()["cells"]
                 if cell["page_id"] == "dev-plate-pocket" and cell["arm"] == "D")
     assert cell["cell"] == "to_run" and cell["stale_detected"] is True
+
+
+# ------------------------------------------------- P0R-FINAL: donmuş sözleşme == gerçek istek
+
+
+def test_every_frozen_setting_is_actually_sendable(scratch_budget):
+    """PLAN-3 §4/§12: donmuş sözleşme, taşımanın gerçekten gönderebildiği ayarlardan oluşmalı."""
+    supported = {field.name for field in dataclasses.fields(pilot.ChatSettings)}
+    # `input_strategy` sözleşme-üstü kavram; `image_label_prefix` taşımaya ayrı kwarg olarak
+    # gider (aşağıda okuyucu testi onu bağlar).
+    sendable = set(pilot.SETTINGS) - {"input_strategy", "image_label_prefix"}
+    assert sendable <= supported, f"taşımada karşılığı olmayan donmuş ayar: {sendable - supported}"
+    assert "top_p" not in pilot.SETTINGS and "seed" not in pilot.SETTINGS, \
+        "gönderilmeyen seçenek donmuş sözleşmede yer almamalı (PLAN-3 §4 alternatifi)"
+    assert pilot.SETTINGS["images_layout"] == pilot.IMAGES_LAYOUT
+    assert pilot.SETTINGS["image_label_prefix"] == pilot.IMAGE_LABEL_PREFIX
+
+
+def test_reader_literals_come_from_the_run_contract(scratch_budget):
+    """PLAN-3 §7: okuyucuda kopya literal kalmamalı."""
+    source = (pilot.ROOT / "src/drawingto3d/semantic_candidate_reader.py").read_text(encoding="utf-8")
+    assert "per_image_message_labeled" not in source.split("def read_page", 1)[1]
+    assert '"Image ID: "' not in source
+    assert "IMAGES_LAYOUT" in source and "IMAGE_LABEL_PREFIX" in source
+    assert pilot.SETTINGS["images_layout"] == "per_image_message_labeled"
+
+
+def test_an_unsupported_frozen_setting_blocks_the_send(scratch_budget, monkeypatch):
+    monkeypatch.setattr(pilot, "ATTEMPT_ROOT", scratch_budget / "attempts_fs")
+    monkeypatch.setattr(pilot, "PAGES_DIR", scratch_budget / "pages_fs")
+    (scratch_budget / "pages_fs").mkdir(parents=True, exist_ok=True)
+    (scratch_budget / "pages_fs" / "page.png").write_bytes(b"\x89PNG\r\n\x1a\n" + b"a" * 32)
+    monkeypatch.setitem(pilot.SETTINGS, "top_k", 7)              # taşımada olmayan donmuş ayar
+    sent = {"calls": 0}
+
+    monkeypatch.setattr(pilot, "open_source", lambda _path: object())
+    monkeypatch.setattr(pilot, "observe", lambda _path: object())
+    monkeypatch.setattr(pilot, "prepare_arm_inputs",
+                        lambda *a, **k: {"arm": "V", "images": [], "image_ids": [],
+                                         "page_image_id": "image-1", "observations": []})
+
+    def must_not_send(*_args, **_kwargs):
+        sent["calls"] += 1
+        raise AssertionError("desteklenmeyen donmuş ayarla gönderim yapılmamalı")
+
+    monkeypatch.setattr(pilot, "read_page", must_not_send)
+    page = {"page_id": "page", "split": "dev", "group": "g", "path": "examples/README.md",
+            "type": "raster", "source_sha256": "8" * 64}
+    outcome = pilot.write_live_attempt(page, "V", phase="dev")
+    monkeypatch.delitem(pilot.SETTINGS, "top_k")
+    assert outcome["verdict"] == "blocked" and sent["calls"] == 0
+    result = json.loads((Path(outcome["directory"]) / "result.json").read_text(encoding="utf-8"))
+    assert result["blocking_kind"] == "unsupported_frozen_setting"
+    assert result["send_attempted"] is False and result["inference_calls"] == 0
+    history = pilot.load_state()["attempts"]["page-V"]
+    assert history[-1]["state"] == "blocked_unsupported_setting"
+    ledger = pilot.budget_report()
+    # Rezervasyon gönderimden önce yapılır; gönderilmemiş istek defterde **görünür** kalır
+    # (runtime uyuşmazlığıyla aynı politika), sessizce silinmez.
+    assert ledger["total_used"] == 1
+    assert ledger["by_send_state"].get("not_sent_unsupported_setting") == 1
+    assert ledger["by_send_state"].get("sent", 0) == 0
+
+
+# ------------------------------------------- P0R-FINAL: kanonik meta veri + liste kabul kodu
+
+
+def test_model_metadata_has_one_parser(scratch_budget):
+    """PLAN-3 §8: elle /api/tags ayrıştırması kalmamalı."""
+    source = (pilot.ROOT / "eval/semread_001b_pilot.py").read_text(encoding="utf-8")
+    assert "/api/tags" not in source, "ikinci model meta verisi yolu kalmamalı"
+    assert "as_dict()" in source and "find_model(" in source and "installed_models(" in source
+    info = pilot.runtime_identity()
+    assert info["parser"] == "installed_models/find_model/as_dict"
+    if info["error"] is None:                     # yerel Ollama ayakta
+        assert info["version"] == pilot.EXPECTED_RUNTIME
+        assert (info["model_canonical"] or {}).get("digest") == pilot.EXPECTED_DIGEST
+        assert info["model"] == info["model_canonical"]
+    else:                                          # runtime yoksa da biçim aynı olmalı
+        assert info["model"] == {} and info["model_canonical"] is None
+
+
+def test_attempt_records_flattening_survives_every_state_shape(scratch_budget):
+    """PLAN-3 §9: eski dict, yeni liste, karışık ve boş durum."""
+    old = {"attempts": {"a-V": {"attempt_id": "a-V/attempt-0001", "verdict": "pass"}}}
+    new = {"attempts": {"a-V": [{"attempt_id": "a-V/attempt-0001", "verdict": "fail"},
+                                {"attempt_id": "a-V/attempt-0002", "verdict": "pass"}]}}
+    mixed = {"attempts": {"a-V": {"attempt_id": "a-V/attempt-0001", "verdict": "pass"},
+                          "b-V": [{"attempt_id": "b-V/attempt-0001", "verdict": "pass"}]}}
+    assert [r["verdict"] for r in pilot.all_attempt_records(old)] == ["pass"]
+    assert [r["verdict"] for r in pilot.all_attempt_records(new)] == ["fail", "pass"]
+    assert sorted(r["attempt_id"] for r in pilot.all_attempt_records(mixed)) == \
+        ["a-V/attempt-0001", "b-V/attempt-0001"]
+    assert pilot.all_attempt_records({}) == []
+    assert pilot.all_attempt_records(None) == []
+    assert pilot.all_attempt_records({"attempts": {}}) == []
+
+
+def test_acceptance_rows_consumes_flattened_records(scratch_budget, monkeypatch):
+    """PLAN-3 §9: kabul üretimi dört geçmiş biçiminde de çalışmalı."""
+    payload = pilot.evaluate(write_report=False)
+    shapes = [{"attempts": {"a-V": {"verdict": "pass", "arm": "V", "split": "frozen"}}},
+              {"attempts": {"a-V": [{"verdict": "fail", "arm": "V", "split": "dev"},
+                                    {"verdict": "pass", "arm": "V", "split": "frozen"}]}},
+              {"attempts": {}}, {}]
+    for state in shapes:
+        monkeypatch.setattr(pilot, "read_json", lambda _path, _s=state: _s)
+        rows = pilot.acceptance_rows(payload)
+        assert isinstance(rows, dict) and rows

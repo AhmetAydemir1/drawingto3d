@@ -47,6 +47,7 @@ from drawingto3d.semantic_evaluation import (MATCH_POLICY, aggregate, compare_ar
 from drawingto3d.semantic_images import open_source  # noqa: E402
 from drawingto3d.inference_log import RecordedChat, Recorder  # noqa: E402
 from drawingto3d.semantic_run_contract import (CASE_SCHEMA, CONTRACT_VERSION,  # noqa: E402
+                                                IMAGES_LAYOUT, IMAGE_LABEL_PREFIX,
                                                 D_SOURCE_FILES, EXPECTED_DIGEST,
                                                 EXPECTED_RUNTIME, GOLD_SENTINEL, IMAGE_MAX_SIDE,
                                                 MODEL, NUM_PREDICT, PAGE_IMAGE_ID,
@@ -545,20 +546,22 @@ def record_attempt(attempt_id: str, directory: Path, page: dict, arm: str, *, ph
 
 
 def runtime_identity() -> dict:
-    """Gerçek yerel runtime sürümü + kurulu model meta verisi. **Inference değildir** (metadata)."""
+    """Gerçek yerel runtime sürümü + **kanonik** model meta verisi. Inference değildir (metadata).
+
+    Model meta verisi tek ayrıştırıcıdan gelir: `installed_models()` → `find_model()` →
+    `ModelInfo.as_dict()` (PLAN-3 §8). İkinci bir etiket-listesi ayrıştırması yoktur.
+    """
     info: dict = {"endpoint": "http://127.0.0.1:11434", "version": None, "model": {},
+                  "model_canonical": None, "parser": "installed_models/find_model/as_dict",
                   "error": None}
     try:
-        with urllib.request.urlopen("http://127.0.0.1:11434/api/version", timeout=5) as response:
+        from urllib.request import urlopen                     # modül içi tek kullanım yeri
+        with urlopen("http://127.0.0.1:11434/api/version", timeout=5) as response:
             info["version"] = json.loads(response.read()).get("version")
-        with urllib.request.urlopen("http://127.0.0.1:11434/api/tags", timeout=5) as response:
-            payload = json.loads(response.read())
-        for row in payload.get("models") or []:
-            if MODEL in (row.get("name"), row.get("model")):
-                info["model"] = {key: row.get(key) for key in
-                                 ("name", "model", "digest", "size", "modified_at",
-                                  "parameter_size", "quantization_level", "family")}
-    except Exception as exc:  # noqa: BLE001 - runtime okunamazsa fail-closed reddedilir
+        installed = find_model(installed_models(), MODEL)
+        info["model_canonical"] = installed.as_dict() if installed else None
+        info["model"] = info["model_canonical"] or {}
+    except Exception as exc:  # noqa: BLE001 - kimlik okunamazsa çağrı zaten durdurulur
         info["error"] = f"{type(exc).__name__}: {exc}"
     return info
 
@@ -717,15 +720,27 @@ def write_live_attempt(page: dict, arm: str, *, phase: str, observations=None, s
         return {"case_id": case_id, "verdict": "blocked", "directory": str(directory),
                 "reason": "runtime sürümü sözleşmeyle uyuşmuyor"}
 
-    wanted = {"model": MODEL, "num_ctx": SETTINGS["num_ctx"], "temperature": SETTINGS["temperature"],
-              "top_p": SETTINGS["top_p"], "seed": SETTINGS["seed"],
-              "num_predict": SETTINGS["num_predict"], "keep_alive": SETTINGS["keep_alive"],
-              "timeout": float(MODEL_TIMEOUT_SECONDS),
-              "images_layout": SETTINGS["images_layout"],
-              "image_max_side": SETTINGS["image_max_side"]}
+    wanted = {"model": MODEL, **{key: value for key, value in SETTINGS.items()
+                                 if key not in ("input_strategy",)},
+              "timeout": float(MODEL_TIMEOUT_SECONDS)}
     supported = {field.name for field in dataclasses.fields(ChatSettings)}
-    settings = ChatSettings(**{key: value for key, value in wanted.items() if key in supported})
     unsupported_settings = sorted(set(wanted) - supported)
+    if unsupported_settings:
+        # PLAN-3 §4 sert kuralı: donmuş bir ayar taşımada yoksa **gönderim yok**.
+        write_json(directory / "result.json",
+                   {"schema": "semread-001b-result/1", "case_id": case_id, "attempt_id": attempt_id,
+                    "arm": arm, "phase": phase, "split": page["split"],
+                    "product_verdict": "blocked", "blocking_kind": "unsupported_frozen_setting",
+                    "unsupported_settings": unsupported_settings, "send_attempted": False,
+                    "inference_calls": 0})
+        mark_send_state(case_id, phase=phase, state_name="not_sent_unsupported_setting",
+                        detail="donmuş ayar taşımada desteklenmiyor")
+        record_attempt(attempt_id, directory, page, arm, phase=phase, verdict="blocked",
+                       gates={}, seconds=0.0, state="blocked_unsupported_setting",
+                       stats={"unsupported_settings": unsupported_settings})
+        return {"case_id": case_id, "verdict": "blocked", "directory": str(directory),
+                "reason": "donmuş ayar taşımada desteklenmiyor", "unsupported": unsupported_settings}
+    settings = ChatSettings(**{key: value for key, value in wanted.items() if key in supported})
     recorder = Recorder(directory / "inference-log.json", label=f"semread-001b {case_id}")
     chat = RecordedChat(MODEL, settings=settings, recorder=recorder)
     forbidden = _forbidden_terms(page)
@@ -924,6 +939,18 @@ def _observation_rows(path: Path) -> list[dict]:
 # ------------------------------------------------------------------ kabul ve rapor
 
 
+def all_attempt_records(state: dict | None) -> list[dict]:
+    """`state["attempts"]`i **tek** biçimden okur (PLAN-3 §9).
+
+    Eski kayıt tek sözlüktü; yenisi liste. Karışık/boş durum da bozulmaz.
+    """
+    records: list[dict] = []
+    for value in ((state or {}).get("attempts") or {}).values():
+        rows = value if isinstance(value, list) else [value]
+        records.extend(row for row in rows if isinstance(row, dict))
+    return records
+
+
 def acceptance_rows(payload: dict) -> dict:
     reference_rows = payload["reference_status"]
     present = [page_id for page_id, row in reference_rows.items() if row.get("present")]
@@ -932,7 +959,7 @@ def acceptance_rows(payload: dict) -> dict:
     arms = payload["aggregates"]
     final_pages = {"frozen": [page["page_id"] for page in PAGES if page["split"] == "frozen"]}
     attempts = read_json(state_path()) or {}
-    live_attempts = [row for row in (attempts.get("attempts") or {}).values()
+    live_attempts = [row for row in all_attempt_records(attempts)
                      if row.get("arm") in (V_ARM, VE_ARM)]
     final_live = [row for row in live_attempts if row.get("split") == "frozen"]
     rows = {

@@ -1,0 +1,69 @@
+{
+  "page_type": "pdf",
+  "split": "dev",
+  "vision_checked": true,
+  "scope": "çap/yarıçap çağrıları (Ø/R), THRU/derinlik ve baskı sayısı; doğrusal ölçüler (100/80/60/15) bu paftanın kapsamı dışında",
+  "annotation_method": "PDF metin katmanı (paftanın kendi vektör metni) + sayfa PNG'sinde görsel doğrulama; hedef bölgeleri gözlem tablosundaki geometriden",
+  "exhaustiveness": {
+    "scope": "predicates",
+    "predicates": [
+      "representation",
+      "physical",
+      "form",
+      "size",
+      "count_printed",
+      "termination",
+      "depth"
+    ]
+  },
+  "notes": [
+    "Köşe delikleri tek çağrı bloğuyla veriliyor: '4 x Ø6,80 THRU ALL' (pilot matkap) ve 'M8 - 6H THRU ALL' (diş). Şema diş biçimini ifade edemiyor: aynı dört delik **tek** claim olarak yazıldı, diş bilgisi bu notta duruyor. Bir VLM aynı delikler için dişi ikinci aday olarak üretirse bu yanlış pozitif değil, alan kararıdır (size/form).",
+    "Ø50,00 cebin derinliği SECTION B-B'deki 8,00 ölçüsüdür; çağrının kendisi derinlik yazmıyor, değer pafta genelinden bağlandı.",
+    "Doğrusal ölçüler (1 00,00 / 80,00 / 60,00 / 15,00 / 8,00) çağrı değil ölçü çizgisidir; kapsam dışı bırakıldı ve `scope` alanında yazılı."
+  ],
+  "reconstruction_note": "PLAN-8 §24: spec dosyası saklanmamıştı; gold-src'den yeniden kuruldu. Hedefler gözlem kimliğiyle (g12/g8), çağrı kutuları gözlem tablosundaki metin satırlarıyla (t3+t4+t5 ve t6) aynen yazıldı; truth değiştirilmedi.",
+  "claims": [
+    {
+      "claim_id": "dev-plate-pocket-01",
+      "name": "köşe delikleri (4 x Ø6,80 THRU ALL)",
+      "target_observation": "g12",
+      "callout_texts": [
+        "t3",
+        "t4",
+        "t5"
+      ],
+      "representation": "circle",
+      "physical": "hole",
+      "form": "diameter",
+      "size": 6.8,
+      "unit": "mm",
+      "count_printed": 4,
+      "termination": "thru",
+      "depth": null,
+      "depth_state": "not_stated",
+      "state": "determinate_present",
+      "evidence": "Çağrı bloğu '4 x' + 'Ø6,80 THRU ALL' okunuyor; leader sol alt köşe deliğine gidiyor, dört delik de aynı çapta ve pafta yüzeyini boydan boya geçiyor (THRU ALL). Sayı çağrıda yazılı.",
+      "source_evidence": "pdf-text-layer + vision"
+    },
+    {
+      "claim_id": "dev-plate-pocket-02",
+      "name": "Ø50,00 cep",
+      "target_observation": "g8",
+      "callout_texts": [
+        "t6"
+      ],
+      "representation": "circle",
+      "physical": "pocket",
+      "form": "diameter",
+      "size": 50.0,
+      "unit": "mm",
+      "count_printed": null,
+      "termination": "finite",
+      "depth": 8.0,
+      "depth_state": "stated",
+      "state": "determinate_present",
+      "evidence": "Ön görünüşteki büyük daire 'Ø50,00' leader'ıyla ölçülendirilmiş. SECTION B-B profili derinliğin 8,00 olduğunu gösteriyor ve malzeme altta kaldığı için delik değil **cep** (THRU değil). Çağrıda sayı yazmıyor.",
+      "source_evidence": "pdf-text-layer + vision"
+    }
+  ]
+}

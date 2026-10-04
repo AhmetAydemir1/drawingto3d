@@ -7,8 +7,13 @@ geometriden, çağrı kutusunu da çağrı metinlerinin birleşiminden üretir.
 
 Kullanım:
 
-    .venv/bin/python eval/semread_001b_gold_regions.py --page dev-plate-pocket --spec /tmp/x.json
-    .venv/bin/python eval/semread_001b_gold_regions.py --page dev-plate-pocket --spec /tmp/x.json --write
+    .venv/bin/python eval/semread_001b_gold_regions.py --page dev-plate-pocket
+    .venv/bin/python eval/semread_001b_gold_regions.py --page dev-plate-pocket --write
+
+Spec kaynağı: `--spec` verilmezse **izlenen kanonik** `eval/semread_001b_gold/specs/<page>.json`
+aranır (PLAN-8 §3); yoksa eski yerel kopya (`out/lab/.../corpus/gold-specs/`) kullanılır ve bu
+durum çıktıda "yerel (out/ altı — izlenmiyor)" olarak yazılır. Kanonik gerçek git'te izlenen
+spec'tir; `out/` altındaki üretilmiş dosyalar yeniden üretilebilir çalışma çıktısıdır.
 
 Spec (JSON) alanları:
 
@@ -78,10 +83,20 @@ def page_source(page_id: str) -> dict:
 
 def build(page_id: str, spec: dict) -> tuple[dict, list[str]]:
     page = page_source(page_id)
-    rows = observation_table(observe(ROOT / page["path"]))
-    by_id = {row["id"]: row for row in rows}
     width, height = _png_size(CORPUS / "pages" / f"{page_id}.png")
     warnings: list[str] = []
+    # Gözlem tablosu **tembel** yüklenir (PLAN-8 §3): hedefi `target_box_norm` olan spec'ler
+    # OCR/Hough çalıştırmadan üretilebilir, böylece kanonik spec'ten yeniden üretim hızlı ve
+    # deterministiktir; gözlem kimliği kullanan claim'ler için çıkarım yine zorunludur.
+    table: dict[str, dict] = {}
+
+    def observation(name: str) -> dict:
+        if not table:
+            for row in observation_table(observe(ROOT / page["path"])):
+                table[row["id"]] = row
+        if name not in table:
+            raise SystemExit(f"{page_id}: bilinmeyen gözlem kimliği {name}")
+        return table[name]
 
     def px(region: list[float]) -> list[float]:
         x0, y0, x1, y1 = (float(value) for value in region)
@@ -89,11 +104,7 @@ def build(page_id: str, spec: dict) -> tuple[dict, list[str]]:
                 round((x1 - x0) * width, 1), round((y1 - y0) * height, 1)]
 
     def union(ids: list[str]) -> list[float]:
-        boxes = []
-        for name in ids:
-            if name not in by_id:
-                raise SystemExit(f"{page_id}: bilinmeyen gözlem kimliği {name}")
-            boxes.append(by_id[name]["region"])
+        boxes = [observation(name)["region"] for name in ids]
         return [min(box[0] for box in boxes), min(box[1] for box in boxes),
                 max(box[2] for box in boxes), max(box[3] for box in boxes)]
 
@@ -119,7 +130,7 @@ def build(page_id: str, spec: dict) -> tuple[dict, list[str]]:
             observation_id = target
             warnings.append(f"claim #{index}: hedef bölge ölçülen kutu — gerekçe `notes`ta olmalı")
         else:
-            target_bbox = px(by_id[target]["region"])
+            target_bbox = px(observation(target)["region"])
             observation_id = target
         claim = {
             "claim_id": raw.get("claim_id") or f"{page_id}-{index:02d}",
@@ -169,13 +180,40 @@ def build(page_id: str, spec: dict) -> tuple[dict, list[str]]:
     return document, warnings
 
 
+TRACKED_SPECS = ROOT / "eval" / "semread_001b_gold" / "specs"
+LEGACY_SPECS = CORPUS / "gold-specs"
+
+
+def resolve_spec(page_id: str, explicit: str | None) -> tuple[Path, str]:
+    """Spec kaynağını çözer: açık yol → izlenen kanonik dizin → eski (out/ altındaki) dizin.
+
+    Kanonik gerçek `eval/semread_001b_gold/specs/` altındadır (PLAN-8 §3): `out/` gitignored
+    olduğu için oradaki kopyalar yalnız yerel çalışma kopyasıdır.
+    """
+    if explicit:
+        path = Path(explicit)
+        if not path.exists():
+            raise SystemExit(f"spec yok: {path}")
+        return path, "açık yol"
+    tracked = TRACKED_SPECS / f"{page_id}.json"
+    if tracked.exists():
+        return tracked, "izlenen kanonik"
+    legacy = LEGACY_SPECS / f"{page_id}.json"
+    if legacy.exists():
+        return legacy, "yerel (out/ altı — izlenmiyor)"
+    raise SystemExit(f"{page_id}: spec bulunamadı ({tracked} ya da {legacy}) — "
+                     f"`--spec` ile yol ver")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="gold-src bölge çevirici")
     parser.add_argument("--page", required=True)
-    parser.add_argument("--spec", required=True, help="spec JSON yolu")
+    parser.add_argument("--spec", help="spec JSON yolu (verilmezse izlenen kanonik spec aranır)")
     parser.add_argument("--write", action="store_true", help="gold-src dosyasını yaz")
     args = parser.parse_args()
-    spec = json.loads(Path(args.spec).read_text(encoding="utf-8"))
+    spec_file, source = resolve_spec(args.page, args.spec)
+    print(f"spec kaynağı: {spec_file} ({source})")
+    spec = json.loads(spec_file.read_text(encoding="utf-8"))
     document, warnings = build(args.page, spec)
     for claim in document["claims"]:
         print(f"{claim['claim_id']}: hedef px {claim['target_bbox_px']} "

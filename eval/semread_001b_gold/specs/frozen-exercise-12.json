@@ -1,0 +1,173 @@
+{
+  "page_type": "pdf",
+  "split": "frozen",
+  "vision_checked": true,
+  "scope": "Ø/R çağrıları (önekli): Ø270, Ø220 (iki çağrı), Ø158, Ø140, Ø120, Ø92, Ø76 (iki çağrı), Ø18 (üç çağrı), R10, R8. Doğrusal ölçüler (112,00 / 88,00 / 180,00 / 170,00 / 54,00 / 20,00 / 19,00 / 10,00 / 6,00) kapsam dışı. Bağlanamayan çağrılar (Ø180,00 ve iki Ø116,00 ile iki R25,00) gerekçeleriyle kapsam dışı bırakıldı — `notes`a bakınız.",
+  "annotation_method": "PDF metin katmanı (çağrı metinleri) + gözlem tablosu ölçümü (daire/yay bbox → mm) + ızgaralı görsel okuma (leader uçları, section A-A)",
+  "exhaustiveness": {
+    "scope": "predicates",
+    "predicates": ["representation", "physical", "form", "size", "termination", "depth"]
+  },
+  "notes": [
+    "Ölçek zinciri: pafta 200 dpi (2200×1700 px = 11×8,5 in), title block `SCALE 1:5` → 200/25,4/5 = 1,5748 px/mm. Bağımsız doğrulamalar (ölçülen/çağrı): 425,2 px/1,5748 = 269,94 ≈ Ø270; 249,0 px = 158,09 ≈ Ø158; 220,4 px = 139,94 ≈ Ø140; 189,0 px = 120,00 = Ø120; 144,8 px = 91,95 ≈ Ø92; 119,7 px = 76,00 = Ø76; 346,5 px = 220,02 ≈ Ø220 (iki görünüşte aynı); 28,4 px = 18,02 ≈ Ø18 (her görünüşte); 20 mm bbox yayı = 2×R10; 16 mm bbox yayı = 2×R8.",
+    "Bağlanamayan çağrılar (kapsam dışı, gözlem tablosunda karşılığı yok): `Ø180,00` — sayfada Ø180 dairesi/yayı yok (eşmerkezli küme 270/158/140/124/120/118,3/92/76; ön görünüşteki uzatma çizgileri gözlem satırı üretmiyor). `Ø116,00` (iki çağrı) — 182,7 px'lik ilkel yok: çağrı, boru profilinin iki düz çizgisi arasını ölçüyor (gizli/çizgi geometrisi). `R25,00` (iki çağrı) — leader uçları ≈(0,777; 0,777) ve ≈(0,798; 0,816); o bölgedeki ayrık yaylar g68/g69 (bbox 19,8/20,0 mm = 2×R10), R25 yayı ayrı ilkel olarak yok (kapalı poligon içinde kalmış).",
+    "Üst-orta görünüş ile alt-sağ görünüş aynı küçük flanşı iki farklı görünüşte gösterir; Ø220 ve Ø76 çağrıları iki kez yazıldığı için her yazılı çağrı ayrı claim'dir (PLAN-5 §13: çağrı başına bir kalem).",
+    "Üst-sol görünüş, alt-sağ görünüşün tersine, büyük flanşın yüzüdür; iç içe daireler (158/140/120/92/76) bu yüzden görünür."
+  ],
+  "claims": [
+    {
+      "claim_id": "frozen-exercise-12-01",
+      "name": "Ø270,00 büyük flanş dış çapı",
+      "target_observation": "g50",
+      "callout_texts": ["t0"],
+      "representation": "circle", "physical": "not_hole", "form": "diameter", "size": 270.0, "unit": "mm",
+      "count_printed": null, "termination": "unknown", "depth": null, "depth_state": "not_stated",
+      "state": "determinate_present",
+      "evidence": "Çağrı `Ø270.00` ön görünüşte yazılı; flanş plakasının iki dikey kenarı ölçüldü: x 134→559 px = 425 px / 1,5748 = 269,94 mm ✓. Hedef, üst-sol görünüşteki dış daire (g50, bbox 425,2 px = 269,94 mm) — flanşın çizili dairesi oradadır.",
+      "source_evidence": "pdf-text-layer (`Ø270.00`) + piksel ölçümü (daire bbox'ı)"
+    },
+    {
+      "claim_id": "frozen-exercise-12-02",
+      "name": "Ø220,00 küçük flanş dış çapı (üst-orta görünüş)",
+      "target_observation": "g178",
+      "callout_texts": ["t5"],
+      "representation": "circle", "physical": "not_hole", "form": "diameter", "size": 220.0, "unit": "mm",
+      "count_printed": null, "termination": "unknown", "depth": null, "depth_state": "not_stated",
+      "state": "determinate_present",
+      "evidence": "Çağrı `Ø220.00` ön görünüşün altında; hedef üst-orta görünüşteki 346,5 px'lik daire (346,5/1,5748 = 220,02 mm ✓). Aynı çap alt-sağ görünüşte de çizili (bkz. -03); yazılı çağrı ön görünüşte olduğu için hedef, çağrının bulunduğu kolonun görünüşüdür.",
+      "source_evidence": "pdf-text-layer (`Ø220.00`) + piksel ölçümü"
+    },
+    {
+      "claim_id": "frozen-exercise-12-03",
+      "name": "Ø220,00 küçük flanş dış çapı (alt-sağ görünüş)",
+      "target_observation": "g79",
+      "callout_texts": ["t9"],
+      "representation": "circle", "physical": "not_hole", "form": "diameter", "size": 220.0, "unit": "mm",
+      "count_printed": null, "termination": "unknown", "depth": null, "depth_state": "not_stated",
+      "state": "determinate_present",
+      "evidence": "İkinci `Ø220.00` dikey yazılmış (SECTION A-A'nın solunda) ve alt-sağ görünüşteki 346,5 px'lik daireyle (220,02 mm) örtüşür.",
+      "source_evidence": "pdf-text-layer (`Ø220.00`) + piksel ölçümü"
+    },
+    {
+      "claim_id": "frozen-exercise-12-04",
+      "name": "Ø158,00 göbek dış çapı",
+      "target_observation": "g43",
+      "callout_texts": ["t30"],
+      "representation": "circle", "physical": "not_hole", "form": "diameter", "size": 158.0, "unit": "mm",
+      "count_printed": null, "termination": "unknown", "depth": null, "depth_state": "not_stated",
+      "state": "determinate_present",
+      "evidence": "Çağrı SECTION A-A'nın üstünde `Ø158.00`; hedef üst-sol görünüşteki eşmerkezli daire: 249,0 px / 1,5748 = 158,09 mm ✓ (ön görünüşteki göbek bandı da ≈158 mm).",
+      "source_evidence": "pdf-text-layer (`Ø158.00`) + piksel ölçümü"
+    },
+    {
+      "claim_id": "frozen-exercise-12-05",
+      "name": "Ø140,00 basamak dış çapı",
+      "target_observation": "g51",
+      "callout_texts": ["t28"],
+      "representation": "circle", "physical": "not_hole", "form": "diameter", "size": 140.0, "unit": "mm",
+      "count_printed": null, "termination": "unknown", "depth": null, "depth_state": "not_stated",
+      "state": "determinate_present",
+      "evidence": "Çağrı SECTION A-A'nın üstünde `Ø140.00`; hedef üst-sol görünüşteki eşmerkezli daire: 220,4 px / 1,5748 = 139,94 mm ✓.",
+      "source_evidence": "pdf-text-layer (`Ø140.00`) + piksel ölçümü"
+    },
+    {
+      "claim_id": "frozen-exercise-12-06",
+      "name": "Ø120,00 iç basamak çapı",
+      "target_observation": "g58",
+      "callout_texts": ["t29"],
+      "representation": "circle", "physical": "hole", "form": "diameter", "size": 120.0, "unit": "mm",
+      "count_printed": null, "termination": "unknown", "depth": null, "depth_state": "not_stated",
+      "state": "determinate_present",
+      "evidence": "Çağrı SECTION A-A'nın üstünde `Ø120.00`; hedef üst-sol görünüşteki eşmerkezli daire: 189,0 px / 1,5748 = 120,00 mm. Kesitte bu çapın içi boş (boru boşluğuna açılan basamak) → `hole`.",
+      "source_evidence": "pdf-text-layer (`Ø120.00`) + piksel ölçümü + kesit gözlemi"
+    },
+    {
+      "claim_id": "frozen-exercise-12-07",
+      "name": "Ø92,00 iç boşluk çapı",
+      "target_observation": "g59",
+      "callout_texts": ["t24"],
+      "representation": "circle", "physical": "hole", "form": "diameter", "size": 92.0, "unit": "mm",
+      "count_printed": null, "termination": "unknown", "depth": null, "depth_state": "not_stated",
+      "state": "determinate_present",
+      "evidence": "Çağrı SECTION A-A'nın alt-solunda `Ø92.00`; hedef üst-sol görünüşteki eşmerkezli daire: 144,8 px / 1,5748 = 91,95 mm ✓. Kesitte iç duvarı kesintisiz boşluk → `hole`.",
+      "source_evidence": "pdf-text-layer (`Ø92.00`) + piksel ölçümü + kesit gözlemi"
+    },
+    {
+      "claim_id": "frozen-exercise-12-08",
+      "name": "Ø76,00 iç boşluk çapı (üst-sol görünüş)",
+      "target_observation": "g60",
+      "callout_texts": ["t25"],
+      "representation": "circle", "physical": "hole", "form": "diameter", "size": 76.0, "unit": "mm",
+      "count_printed": null, "termination": "unknown", "depth": null, "depth_state": "not_stated",
+      "state": "determinate_present",
+      "evidence": "Çağrı SECTION A-A'nın altında `Ø76.00`; hedef üst-sol görünüşteki en iç daire: 119,7 px / 1,5748 = 76,00 mm ✓.",
+      "source_evidence": "pdf-text-layer (`Ø76.00`) + piksel ölçümü"
+    },
+    {
+      "claim_id": "frozen-exercise-12-09",
+      "name": "Ø76,00 iç boşluk çapı (alt-sağ görünüş)",
+      "target_observation": "g72",
+      "callout_texts": ["t20"],
+      "representation": "circle", "physical": "hole", "form": "diameter", "size": 76.0, "unit": "mm",
+      "count_printed": null, "termination": "unknown", "depth": null, "depth_state": "not_stated",
+      "state": "determinate_present",
+      "evidence": "Alt-sağ görünüşte `Ø76.00` yazılı ve leader'ı iç daireye iniyor: 119,7 px / 1,5748 = 76,00 mm ✓ (aynı çapın ikinci yazımı).",
+      "source_evidence": "pdf-text-layer (`Ø76.00`) + piksel ölçümü"
+    },
+    {
+      "claim_id": "frozen-exercise-12-10",
+      "name": "Ø18,00 cıvata deliği (büyük flanş, üst-sol görünüş)",
+      "target_observation": "g49",
+      "callout_texts": ["t14"],
+      "representation": "circle", "physical": "hole", "form": "diameter", "size": 18.0, "unit": "mm",
+      "count_printed": null, "termination": "unknown", "depth": null, "depth_state": "not_stated",
+      "state": "determinate_present",
+      "evidence": "`Ø18.00` leader'ı üst-sol görünüşte etiketin hemen sol-üstündeki deliğe iniyor (ızgara okuması; g49, merkez (499,7; 467,9) px). Delik ölçüsü: 28,4 px / 1,5748 = 18,02 mm ✓. Delikler Ø224 bölme dairesinde (g225-g230, 224,0 mm) 6 adet; çağrıda sayı yazılı olmadığı için `count_printed` null.",
+      "source_evidence": "pdf-text-layer (`Ø18.00`) + piksel ölçümü + ızgara okuması (leader ucu)"
+    },
+    {
+      "claim_id": "frozen-exercise-12-11",
+      "name": "Ø18,00 cıvata deliği (üst-orta görünüş)",
+      "target_observation": "g179",
+      "callout_texts": ["t34"],
+      "representation": "circle", "physical": "hole", "form": "diameter", "size": 18.0, "unit": "mm",
+      "count_printed": null, "termination": "unknown", "depth": null, "depth_state": "not_stated",
+      "state": "determinate_present",
+      "evidence": "`Ø18.00` çağrısı üst-orta görünüşün altında; leader oku alttaki deliğe (g179, merkez (1086,0; 518,2)) iniyor (ızgaralı kırpma ile doğrulandı). Delik 28,4 px = 18,02 mm ✓; bu görünüşte delikler Ø176 bölme dairesinde (88,00 mm yarıçap yazılı).",
+      "source_evidence": "pdf-text-layer (`Ø18.00`) + piksel ölçümü + ızgara okuması"
+    },
+    {
+      "claim_id": "frozen-exercise-12-12",
+      "name": "Ø18,00 cıvata deliği (alt-sağ görünüş)",
+      "target_observation": "g75",
+      "callout_texts": ["t21"],
+      "representation": "circle", "physical": "hole", "form": "diameter", "size": 18.0, "unit": "mm",
+      "count_printed": null, "termination": "unknown", "depth": null, "depth_state": "not_stated",
+      "state": "determinate_present",
+      "evidence": "`Ø18.00` çağrısı alt-sağ görünüşün sağında; leader oku sol-üstteki deliğe (g75, merkez (1877,2; 1121,2)) iniyor. Delik 28,4 px = 18,02 mm ✓; bölme dairesi Ø172 (g231-g236, `86.00` yarıçap yazılı).",
+      "source_evidence": "pdf-text-layer (`Ø18.00`) + piksel ölçümü"
+    },
+    {
+      "claim_id": "frozen-exercise-12-13",
+      "name": "R10,00 flanş–plaka birleşim filetosu (alt-sağ görünüş)",
+      "target_observation": "g69",
+      "callout_texts": ["t18"],
+      "representation": "arc", "physical": "not_hole", "form": "R", "size": 10.0, "unit": "mm",
+      "count_printed": null, "termination": "unknown", "depth": null, "depth_state": "not_stated",
+      "state": "determinate_present",
+      "evidence": "`R10.00` leader'ı alt-sağ görünüşte Ø220 dairesinin plaka bandına oturduğu sağ köşeye iner; o köşedeki yay g69: bbox 31,5 px / 1,5748 = 20,0 mm = 2×R10,00 ✓. Aynı birleşimin sol köşesinde eş yay g68 (19,8 mm) var.",
+      "source_evidence": "pdf-text-layer (`R10.00`) + piksel ölçümü (yay bbox'ı) + ızgara okuması"
+    },
+    {
+      "claim_id": "frozen-exercise-12-14",
+      "name": "R8,00 iç boşluk–flanş filetosu (SECTION A-A)",
+      "target_observation": "g128",
+      "callout_texts": ["t26"],
+      "representation": "arc", "physical": "not_hole", "form": "R", "size": 8.0, "unit": "mm",
+      "count_printed": null, "termination": "unknown", "depth": null, "depth_state": "not_stated",
+      "state": "determinate_present",
+      "evidence": "`R8.00` çağrısı SECTION A-A'nın sağında; leader oku iç boşluğun alt flanşa geçtiği sağ köşedeki yaya iniyor (g128, bbox (1148,0; 1218,2)-(1172,2; 1242,5)). Ölçüm 24,2 px = 15,37 mm; 2×R8,00 = 16,0 mm (%4 sapma, yay uçları düz kesilmiş). Eş yay sol köşede g148 (16,07 mm).",
+      "source_evidence": "pdf-text-layer (`R8.00`) + piksel ölçümü + ızgara okuması (leader ucu)"
+    }
+  ]
+}

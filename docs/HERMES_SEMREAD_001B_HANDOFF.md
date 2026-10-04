@@ -746,3 +746,54 @@ Bu pencerede başlandı, ölçüm/okuma durumu aşağıda; **spec yazılmadı**,
   `Ø20` ile çelişir). A, yazılı `Ø20` ile uyuşuyor; doğrulamak için ön görünüşteki genişlik çifti
   (Ø22/Ø20 arası) veya socket derinliği `10.00` (t3) pikselle ölçülmeli. Bu ölçüm yapılmadan
   claim yazılmamalı.
+
+### 6n. PLAN-8 geldi — izlenen kanonik gold + manifest kuruldu (§24 madde 1–4, §25 testleri)
+
+**Sorun (§3):** gold spec'leri yalnız `out/lab/.../corpus/gold-specs/` altındaydı; `out/` gitignored
+olduğu için temiz klon gerçeği kuramıyordu. Ayrıca `dev-plate-pocket`ın spec dosyası hiç
+saklanmamıştı.
+
+**Yapılan (commit `PLAN8-1`):**
+
+* `eval/semread_001b_gold/` — **izlenen kanonik dizin**: `specs/<page>.json` (5 sayfa),
+  `manifest.json`, `README.md` (zincir + kurallar).
+* `manifest.json`: sayfa başına `source`/`source_sha256`, `spec`/`spec_sha256`,
+  `reference`/`reference_sha256`, `claim_count`, `annotator`, `review_status`, `vision_checked`,
+  `exhaustiveness` (§4).
+* `eval/semread_001b_gold_manifest.py` — `--write` (spec'lerden manifest), `--check` (hash/claim/
+  nitelik), `--freeze` (P5: 10/10 sayfa + tüm hash'ler), `--verify` (izlenen spec'ten referansı
+  yeniden üret, manifest hash'iyle karşılaştır). Doğrulama: ölçülen kutu (§10), raster
+  `vision_checked` + claim başına `vision` kanıtı (§16), **döngüsel ölçek kanıtı reddi** (§11).
+* `eval/semread_001b_gold_regions.py`: `--spec` verilmezse **izlenen** spec aranır (yerel kopya
+  yedeğe düştü ve çıktıda "yerel (out/ altı — izlenmiyor)" yazar); gözlem tablosu artık
+  **tembel** yüklenir → ölçülen kutulu spec'ler OCR/Hough çalıştırmadan üretilir (§24 madde 4).
+* `dev-plate-pocket` spec'i **sadık biçimde yeniden kuruldu**: hedefler gözlem kimliğiyle
+  (`g12`, `g8`), çağrı kutuları gözlem tablosundaki metin satırlarıyla (`t3`+`t4`+`t5` =
+  "4 x"+"6,80 THRU ALL"+"M8 - 6H THRU ALL", `t6` = "50,00"); truth değişmedi —
+  üretilen gold-src **ve** gold eski dosyalarla **bayt bayt aynı** çıktı.
+
+**Kanıt (bu turda koşuldu):**
+
+| Sayfa | `--verify` |
+| --- | --- |
+| `dev-plate-pocket` (pdf) | TAMAM `48671f50…` (2 claim) |
+| `dev-drawing-2` (pdf) | TAMAM `f3be4c26…` (6 claim) |
+| `dev-flange-elbow` (raster) | TAMAM `2d9138a7…` (7 claim) |
+| `frozen-enclosure` (raster) | TAMAM `be3e5654…` (1 claim) |
+| `frozen-exercise-12` (raster) | TAMAM `bf5d3f7e…` (14 claim) |
+
+Yani **5/5 izlenen sayfa** kendi spec'inden yeniden üretilebiliyor (§17 çekirdeği; temiz klon
+denetiminin yerel kanıtı). `--check`: "5/10 sayfa izleniyor — TAMAM". `--freeze`: **AÇIK**,
+eksik sayfalar: `dev-flange-book`, `frozen-exercise-13`, `frozen-exercise-17`,
+`frozen-exercise-51`, `frozen-views-exercise` (§13 kapısı doğru davranıyor).
+
+**Test:** `tests/test_semread_001b_gold_manifest.py` — **22 test** (manifest↔disk, temiz üretim,
+eksik spec / izlenmeyen gold / kaynak-spec-referans hash uyuşmazlıkları, `require_all` kapısı,
+raster vision kuralları, ölçülen kutu doğrulaması, §11 döngüsel kanıt reddi + ölçeksiz kutunun
+geçerliliği, spec kaynağı çözümlemesi).
+
+**Sıradaki (PLAN-8 §24):** 5) `frozen-exercise-17` gold'u (§11 kuralı: ölçek bağımsız dayanak
+gerektirir; bağımsız dayanak yoksa `corroboration.kind = none` ve mm değeri yalnız yazılı çağrıdan)
+→ 6) `dev-flange-book` → 7–9) `frozen-exercise-51`, `-13`, `views-exercise` → 10) 10/10 gold →
+11–12) tek değerlendirme (`B02`+`B07` kapalı, `B05`/`B06` açık kalır) → 13) temiz klon denetimi →
+14) P5 dondurma → 15) ancak ondan sonra V/VE.

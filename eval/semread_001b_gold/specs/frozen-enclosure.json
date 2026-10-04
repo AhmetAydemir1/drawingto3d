@@ -1,0 +1,37 @@
+{
+  "page_type": "pdf",
+  "split": "frozen",
+  "vision_checked": true,
+  "scope": "Ø/R çağrıları: sayfada tek R çağrısı var (R8,00 kenar filetosu). Diğer ölçüler (120,00 / 60,00 / 46,00 / 25,00 / 18,00 / 10,00 / 10,00 / 4,80 / 4,00 / 4,00 / 3,00 / 1,50 / 1,50) Ø/R işareti taşımayan düz ölçülerdir; exhaustive beyanı bu yüzden `regions` ve yalnız R8 yayının çevresini kapsar.",
+  "annotation_method": "PDF metin katmanı (çağrı metni + px/mm ölçeği) + ızgaralı görsel okuma (leader ucu) + gözlem tablosu ölçümü",
+  "exhaustiveness": {
+    "scope": "regions",
+    "regions": [[0.37, 0.34, 0.45, 0.41]]
+  },
+  "notes": [
+    "Ölçek zinciri: pafta A4 200 dpi (1654×2339 px), title block `SCALE:1:2` → 200/25,4/2 = 3,9370 px/mm. Bağımsız doğrulamalar: R8 yayı bbox 62,9 px = 16,0 mm = 2×R8,00; üst görünüşteki montaj deliği daireleri 4,78 / 3,99 / 2,97 mm (çağrılar 4,80 / 4,00 / 3,00); yuva genişliği 10,03 mm (çağrı 10,00).",
+    "Leader ucu: `R8.00` etiketi (gözlem t2, x 0,283–0,333 / y 0,269–0,304) eğik leader ile üst yüzey çizgisinin bittiği noktaya (≈0,386; 0,355) iniyor; hemen orada yüzey dikey duvara yayla bağlanıyor → hedef, gözlem tablosundaki g8 yayı (bbox 0,3916–0,4296 / 0,3588–0,3857).",
+    "Montaj delikleri ve pedleri ölçülendirilmiş ama çağrılarında Ø işareti yok (metin katmanında `linear` türü): bu yüzden exhaustive beyanı `regions` (yalnız R8 bölgesi). Kapsam dışı bir aday `false_positive` değil `unscorable_extra_candidate` sayılır (PLAN-7 §11); ölçüm gücü düşer ama karşılaştırma tüm kollar için aynı kalır.",
+    "İki izometrik görünüş çağrı taşımaz; sol ortadaki küçük kesit görünüşünde de Ø/R çağrısı yoktur."
+  ],
+  "claims": [
+    {
+      "claim_id": "frozen-enclosure-01",
+      "name": "R8,00 kenar filetosu (üst yüzey → yan duvar geçişi)",
+      "target_observation": "g8",
+      "callout_texts": ["t2"],
+      "representation": "arc",
+      "physical": "not_hole",
+      "form": "R",
+      "size": 8.0,
+      "unit": "mm",
+      "count_printed": null,
+      "termination": "unknown",
+      "depth": null,
+      "depth_state": "not_stated",
+      "state": "determinate_present",
+      "evidence": "`R8.00` etiketi kenar görünüşünün sol ucunu gösteriyor; leader'ın oku üst yüzey çizgisinin bittiği yere (≈0,386; 0,355) iniyor ve oradaki yay dikey duvara geçişi yuvarlatıyor (ızgaralı kırpma, 0,01 adım). Ölçüm: yay bbox'ı 62,9 px ÷ 3,9370 px/mm = 16,0 mm = 2×R8,00 ✓.",
+      "source_evidence": "vision (ızgara okuması) + piksel ölçümü (yay bbox'ı) + pdf-text-layer (`R8.00`)"
+    }
+  ]
+}

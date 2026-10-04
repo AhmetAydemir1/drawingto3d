@@ -1,0 +1,146 @@
+{
+  "page_type": "pdf",
+  "vision_checked": true,
+  "scope": "Ø/R çağrıları (altı adet: Ø50, Ø30, Ø20, Ø40, Ø25, R20) ve bunların bağlandığı silindir yüzeyleri/delikler; doğrusal ölçüler (80/60/57/37/20/35/26/6/10/40/20) bu paftanın kapsamı dışında",
+  "exhaustiveness": {
+    "scope": "predicates",
+    "predicates": [
+      "representation",
+      "physical",
+      "form",
+      "size",
+      "termination",
+      "depth"
+    ]
+  },
+  "annotation_method": "pdf vektör metni (paftanın kendi ölçüleri) + ölçülen primitif geometri (leader ve uzantı çizgilerinin px/mm eşleşmesi) + sayfa PNG'sinde görsel doğrulama",
+  "notes": [
+    "Sayfa iki görünüşlüdür: üstte ön görünüş (parça 80 mm yüksek), altta üstten görünüş. Ø50/Ø30 çağrıları üstten görünüşte kendi dairelerine bağlanır; R20, Ø20, Ø40 ve Ø25'in özellikleri ön görünüşte daire/yay olarak çizilidir ve hedef bölge o ön görünüş geometrisidir (her özellik iki görünüşte birden görünür; hedef, özelliğin çizili olduğu ölçülmüş primitiftir).",
+    "Pafta hiçbir çağrıda THRU/derinlik yazmaz. Ø30 için `thru`: ön görünüşte bore çizgileri (120 px ≈ 30,5 mm) parçanın üst kenarından alt kenarına kesintisiz iniyor (ölçüldü); Ø25 ve Ø20 için aynı kanıt yok → `unknown` (çekimserlik doğru okumadır, uydurma değil).",
+    "Ölçü birimi mm'dir (title block: DIMENSIONS ARE IN MILLIMETERS); pafta ölçeği 1:2 (SCALE:1:2) → 200 dpi sayfa PNG'sinde 3,9370 px/mm. Doğrulama: Ø50 = 196,6 px, Ø30 = 117,7 px, Ø20 = 78,8 px, Ø25 = 98,4 px, Ø40/R20 = 157,3 px.",
+    "Doğrusal ölçüler (80/60/57/37/20/35/26/6/10/40/20) çağrı değil ölçü çizgisidir; kapsam dışı bırakıldı ve `scope` alanında yazılı.",
+    "Ø40 ve Ø25 çağrıları üstten görünüşteki bloğun üzerine yazılıdır (ölçülen açıklıklar 158 px = 40,1 mm ve 98 px = 24,9 mm); aynı silindir ön görünüşte Ø40 dış yayı ve Ø25 deliği olarak çizilidir — hedef bölge ön görünüşteki daire, çağrı metni üstten görünüşteki yazıdır."
+  ],
+  "claims": [
+    {
+      "claim_id": "dev-drawing-2-01",
+      "name": "Ø50 dış silindir yüzeyi (üstten görünüş)",
+      "target_observation": "g65",
+      "callout_texts": [
+        "t61"
+      ],
+      "representation": "circle",
+      "physical": "not_hole",
+      "form": "diameter",
+      "size": 50.0,
+      "unit": "mm",
+      "count_printed": null,
+      "termination": "unknown",
+      "depth": null,
+      "depth_state": "not_stated",
+      "state": "determinate_present",
+      "evidence": "Üstten görünüşte Ø50 leader'ı (g240) dairenin dış kenarına oturuyor: leader ucu (613,3, 1172,1) px, dairenin o noktadaki kenarı (612,8, 1172,1) px. Ölçülen çap 196,6 px = 49,93 mm. Daire, dikey silindirin dış yüzeyidir (içindeki Ø30 ayrı ölçülendirilmiş) — delik değil.",
+      "source_evidence": "pdf-text-layer + vision"
+    },
+    {
+      "claim_id": "dev-drawing-2-02",
+      "name": "Ø30 dikey bore (üstten görünüş iç daire)",
+      "target_observation": "g68",
+      "callout_texts": [
+        "t59"
+      ],
+      "representation": "circle",
+      "physical": "hole",
+      "form": "diameter",
+      "size": 30.0,
+      "unit": "mm",
+      "count_printed": null,
+      "termination": "thru",
+      "depth": null,
+      "depth_state": "not_stated",
+      "state": "determinate_present",
+      "evidence": "Üstten görünüşte Ø30 leader'ı iç daireye gidiyor; ölçülen çap 117,7 px = 29,89 mm (dış Ø50 ile eş merkezli). Ön görünüşte aynı bore'un iki düşey çizgisi (120 px ≈ 30,5 mm) parçanın üst kenarından (y≈390 px) alt kenarına (y≈695 px) kesintisiz iniyor → boydan boya geçen delik; paftanın 3B görünüşünde de üst açıklık görünüyor.",
+      "source_evidence": "pdf-text-layer + vision"
+    },
+    {
+      "claim_id": "dev-drawing-2-03",
+      "name": "Ø20 dil (tongue) deliği — ön görünüş",
+      "target_observation": "g133",
+      "callout_texts": [
+        "t57"
+      ],
+      "representation": "circle",
+      "physical": "hole",
+      "form": "diameter",
+      "size": 20.0,
+      "unit": "mm",
+      "count_printed": null,
+      "termination": "unknown",
+      "depth": null,
+      "depth_state": "not_stated",
+      "state": "determinate_present",
+      "evidence": "Ön görünüşte R20 uçlu dilin içindeki daire: ölçülen çap 78,8 px = 20,01 mm ve paftadaki tek Ø20 çağrısı budur; üstten görünüşteki Ø20 ölçüsünün uzantı çizgileri (g210 x=497 px, karşı kenar x=576 px) 79 px = 20,07 mm aralık veriyor — aynı özelliğin iki görünüşteki izi. Delik, yayın içinde eş merkezli.",
+      "source_evidence": "pdf-text-layer + vision"
+    },
+    {
+      "claim_id": "dev-drawing-2-04",
+      "name": "R20 dil ucu yayı (dış yüzey) — ön görünüş",
+      "target_observation": "g134",
+      "callout_texts": [
+        "t53"
+      ],
+      "representation": "arc",
+      "physical": "not_hole",
+      "form": "R",
+      "size": 20.0,
+      "unit": "mm",
+      "count_printed": null,
+      "termination": "unknown",
+      "depth": null,
+      "depth_state": "not_stated",
+      "state": "determinate_present",
+      "evidence": "R20 leader'ı (g184 → g185) yayın dış kenarına oturuyor: leader ucu (537,0, 471,0) px, yayın o yöndeki dış noktası (536,6±, 470,5−157,3/2). Ölçülen yay çapı 157,3 px = 39,96 mm → R20,0. Dilin dış yüzeyidir (delik değil); Ø20 delik aynı merkezde.",
+      "source_evidence": "pdf-text-layer + vision"
+    },
+    {
+      "claim_id": "dev-drawing-2-05",
+      "name": "Ø40 yatay silindir dış yüzeyi (blok)",
+      "target_observation": "g125",
+      "callout_texts": [
+        "t62"
+      ],
+      "representation": "circle",
+      "physical": "not_hole",
+      "form": "diameter",
+      "size": 40.0,
+      "unit": "mm",
+      "count_printed": null,
+      "termination": "unknown",
+      "depth": null,
+      "depth_state": "not_stated",
+      "state": "determinate_present",
+      "evidence": "Üstten görünüşte Ø40 ölçüsünün uzantı çizgileri (g207 x=828 px, g203 x=986 px) bloğun iki kenarına oturuyor: 158 px = 40,1 mm. Ön görünüşte aynı silindirin dış yayı 157,3 px = 39,96 mm (g125). Dış yüzey — delik değil; Ø25 delik aynı merkezde.",
+      "source_evidence": "pdf-text-layer + vision"
+    },
+    {
+      "claim_id": "dev-drawing-2-06",
+      "name": "Ø25 yatay silindir deliği (blok)",
+      "target_observation": "g122",
+      "callout_texts": [
+        "t60"
+      ],
+      "representation": "circle",
+      "physical": "hole",
+      "form": "diameter",
+      "size": 25.0,
+      "unit": "mm",
+      "count_printed": null,
+      "termination": "unknown",
+      "depth": null,
+      "depth_state": "not_stated",
+      "state": "determinate_present",
+      "evidence": "Üstten görünüşte Ø25 uzantı çizgileri (g228 x=956 px, karşı kenar x=858 px) 98 px = 24,9 mm; ön görünüşte aynı deliğin dairesi 98,4 px = 25,00 mm (g122), Ø40 dış yayıyla eş merkezli. Boydan boya olup olmadığı paftada yazılı değil → termination `unknown`.",
+      "source_evidence": "pdf-text-layer + vision"
+    }
+  ]
+}

@@ -449,3 +449,37 @@ Not: `EVALUATION_IDENTITY_FILES` içinde `eval/semread_001b_pilot.py` var — pi
 düzenlemeleri değerlendirme kimliğini değiştirir ve seçili attempt'leri "bayat" yapar. Bu yüzden
 sıra: **kod düzenlemeleri bitince D koşusu**, sonra doküman düzenlemeleri (dokümanlar kimliğe
 girmez). D kolu şüphede yeniden koşar (inference maliyeti yok); V/VE'de bu bedel gerçek çağrıdır.
+
+### 6h. P4 — D kolunun frozen hücreleri koşuldu: **D 10/10** (0 inference)
+
+`--d --split frozen` (log: `/tmp/semread-001b-d-frozen.log`, `EXIT=0`) altı frozen sayfayı bitirdi;
+altısı da `verdict=pass`. D kolunun 10 hücresinin tamamı artık geçerli (`reused_d_cells 10`).
+
+| frozen sayfa | aday | adapter sn | verdict |
+| --- | --- | --- | --- |
+| frozen-exercise-51 (PNG) | 13 | 714.97 | pass |
+| frozen-exercise-12 (pdf) | 30 | 9.38 | pass |
+| frozen-exercise-17 (PNG) | 1 | 1006.51 | pass |
+| frozen-exercise-13 (PNG) | 8 | 748.43 | pass |
+| frozen-enclosure (pdf) | 14 | 5.13 | pass |
+| frozen-views-exercise (jpg) | 7 | 103.61 | pass |
+
+Süreler **adapter süresidir**; `observe()` (OCR/Hough) dışarıda — uçtan uca okuma süresi olarak
+kullanılmaz (PLAN §22). `frozen-exercise-17`'nin 1 adayı çekimserliğin gerçek örneğidir, hata değil.
+
+Koşu sonrası ölçülen durum (`--matrix`, `--lifecycle`, `--budget`):
+
+```text
+matris: 30 hücre → deterministic:valid_reuse 10, vlm:to_run 20, stale_d_cells 0, complete=false
+yaşam döngüsü: 15 attempt klasörü / 15 geçmiş satırı (+1 eski test kaydı) — orphan yok, çift yok, ok=true
+inference bütçesi: 0/30 (dev 0/10, final 0/20)
+```
+
+**PLAN-6 notu (bu pencere):** `PLAN-6.md` incelemesi `5e6512a` (origin/main) HEAD'ine bakar; yerel
+HEAD bunun **12 commit önünde** (`3952b9c`) ve push edilmemiş. Bu yüzden planın "hâlâ açık" dediği
+§4–§7 (A–D) ile §9–§20 (P1/P2) maddeleri yerelde **uygulanmıştır** (dd5c9fc, cb02a1e, 63961df,
+bd01c22, f691564) ve §8'in 19 maddelik çıkış kapısı ölçülen raporlarla karşılanmıştır
+(`--lifecycle ok=true`, `--budget 0/30`, `--matrix` nihai durumlar, §30 test listesi
+`tests/test_semread_001b_{lifecycle,identity,acceptance,reference,gates}.py`). Kapılar değişmedi:
+**B01, B03, B04, B07 kapalı; B02, B05, B06 açık** — üçü de gold + V/VE ölçümüne bağlı. Sıradaki
+gerçek iş P3'ün kalan 9 sayfası, sonra P5 dondurma; P6 (gerçek V/VE) kullanıcı onayı ister.

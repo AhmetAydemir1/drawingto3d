@@ -1201,3 +1201,31 @@ zaten `--freeze`'in kendi içinde 10/10 koşacaktır. "Ölçülen kutu" uyarıla
 
 **Sıradaki (PLAN-11 §11):** D reuse değerlendirmesi (§18/§19 — koşuluyor) → acceptance snapshot
 (§20) → atomik `--freeze` (§23) → V/VE.
+
+### 6w. PLAN-11 §18–§20 — D reuse değerlendirmesi + acceptance snapshot (0 çağrı)
+
+**§18 D reuse:** matris D hücreleri **valid_reuse = 10/10** (`stale_d_cells=0`, yeniden D koşusu 0).
+Attempt defteri: 16 kayıt (15 `pass` + 1 `blocked_runtime_mismatch` — kayıtlı, silinmez);
+`orphan_attempts=[]`, kopya kimlik yok, kanıtı silinmiş kayıt yok; yeniden inference **yok**
+(bütçe 0/30 sabit kaldı).
+
+**§19 D değerlendirmesi (yalnız evaluator; tahmin üretimi tekrarlanmadı):**
+Koşu: `evaluations/944071ab22e3061ef132212f070728eb/` (acceptance.json + evaluation.json +
+report.md + selected-attempts.json; `final/` işaretçisi güncel koşuya döndü). 10/10 referans
+`check_reference ok=true`.
+D kolu: **126 aday / 6 eşleşen**; yerelleştirme 0.0923; alan doğruluğu 0.5; **binding 1.0**;
+**overclaim 0.0**; çekimser 0.375; belirsiz kalem 17; kapsam-dışı fazla aday 98 (cezalanmaz);
+yanlış pozitif 22; atlama 59. Sayfa: dev-plate-pocket 2/2; frozen-exercise-12 4/14; diğer 8
+sayfa 0/N.
+Dürüst okuma: `candidate_precision` düşük görünür ama payda çoğu **kapsam-dışı** adaydır
+(gold yalnız Ø/R; 98 `unscorable_extra` cezalanmaz) ve D eşleştiğinde **binding 1.0, overclaim 0**
+— sonuç olduğu gibi kaydedildi (§19: negatif çıkarsa negatif yazılır).
+
+**§20 acceptance snapshot (beklenen tabloyla birebir):** gold **10/10**; D valid_reuse = 10;
+V to_run = 10; VE to_run = 10; bütçe **0/30**; **orphan = 0**; B01–B04 kapalı; **B02 ✓ kapalı**
+(referans niteliği + hash'ler 10/10), **B07 ✓ kapalı** (kanıt zinciri: 10 hücre, 0 kopuk; yaşam
+döngüsü ok=True; koşu 944071ab… ok=True); **B05 + B06 beklenen şekilde AÇIK** ("5/7 kapandı;
+açık: B05, B06") — §20 gereği V/VE ölçümü öncesi açık kalır.
+
+**Sıradaki (PLAN-11 §23):** atomik `--freeze` (P5 kapısı) → `FREEZE.json` (tam bağlamalarla) →
+ondan sonra V/VE.

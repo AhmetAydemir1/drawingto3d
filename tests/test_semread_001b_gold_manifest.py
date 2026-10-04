@@ -9,7 +9,13 @@ Kapsam:
 * raster kuralları: `vision_checked` + claim başına görsel doğrulama kanıtı (§16);
 * ölçülen hedef kutusu doğrulaması (§10);
 * §11 döngüsel ölçek kanıtının reddi ve ölçek çıkarılamayan sayfada ölçülmüş kutunun geçerli
-  olması (frozen-exercise-17 dersi).
+  olması (frozen-exercise-17 dersi);
+* §6 grafik düzeyi döngüsellik: karşılıklı (A→B, B→A) ya da claim seti içinde köklenen ölçek
+  kanıtı reddedilir; setin dışındaki doğrusal datum kökü kabul edilir (PLAN-9 §4–§6);
+* §15 kararlı `gold_content_identity`: üstveri (created_at) değişse de kimlik sabit; aynı içerik
+  yeniden üretilince manifest bayt bayt aynı;
+* §16–§17 atomik `--freeze`: kapsam + hash'ler + TÜM sayfaların yeniden üretim kanıtı + kimlik;
+  saklanan referans geçerli olsa bile yeniden üretim sapıyorsa kapı kapanır.
 
 Testler gerçek lab köküne yazmaz; sentetik senaryolar `tmp_path` altında kurulur.
 """
@@ -310,3 +316,185 @@ def test_unknown_corroboration_kind_is_rejected() -> None:
     spec["claims"][0]["corroboration"] = {"kind": "self_reference"}
     problems = tool.validate_spec(page, spec)
     assert any("kapalı kümede değil" in problem for problem in problems)
+
+
+# ------------------------------------------- §6 grafik düzeyi döngüsel kanıt (PLAN-9 §4–§6)
+
+
+def _two_claim_spec() -> dict:
+    """A (Ø20) dayanağı B (Ø22), B dayanağı A — ex17'de bulunan karşılıklı döngü deseni (§4)."""
+    return {
+        "page_type": "raster",
+        "vision_checked": True,
+        "scope": "test kapsamı",
+        "exhaustiveness": {"scope": "test", "predicates": ["size"]},
+        "claims": [
+            {"claim_id": "mutual-a", "name": "Ø20 boru", "target_box_norm": [0.1, 0.1, 0.2, 0.2],
+             "form": "diameter", "size": 20.0, "unit": "mm", "evidence": "ölçüldü",
+             "source_evidence": "vision",
+             "corroboration": {"kind": "independent_scale", "basis": "Ø22,00 kolon bandı",
+                               "basis_value": 22.0, "scale_px_per_mm": 17.7}},
+            {"claim_id": "mutual-b", "name": "Ø22 kolon", "target_box_norm": [0.2, 0.1, 0.3, 0.2],
+             "form": "diameter", "size": 22.0, "unit": "mm", "evidence": "ölçüldü",
+             "source_evidence": "vision",
+             "corroboration": {"kind": "independent_scale", "basis": "Ø20,00 boru bandı",
+                               "basis_value": 20.0, "scale_px_per_mm": 17.7}},
+        ],
+    }
+
+
+def test_mutual_corroboration_is_rejected() -> None:
+    """§32: A dayanağı B, B dayanağı A → iki claim de reddedilir (mutual circularity)."""
+    page = _page("frozen-exercise-13")
+    problems = tool.validate_spec(page, _two_claim_spec())
+    graph = [problem for problem in problems if "döngüsel kanıt (grafik)" in problem]
+    owners = [problem.split(":", 1)[0] for problem in graph]
+    assert "frozen-exercise-13/mutual-a" in owners, graph
+    assert "frozen-exercise-13/mutual-b" in owners, graph
+    assert any("mutual-b = 22" in problem for problem in graph), graph
+    assert any("mutual-a = 20" in problem for problem in graph), graph
+
+
+def test_corroboration_claim_cannot_be_the_only_root() -> None:
+    """§32: değerlendirilen Ø/R claim'i tek kök olamaz — B'nin bağımsız kökü olmasa da A→B reddedilir."""
+    page = _page("frozen-exercise-13")
+    spec = _two_claim_spec()
+    spec["claims"][1]["corroboration"] = {"kind": "none"}
+    problems = tool.validate_spec(page, spec)
+    graph = [problem for problem in problems if "döngüsel kanıt (grafik)" in problem]
+    assert len(graph) == 1, problems
+    assert graph[0].startswith("frozen-exercise-13/mutual-a:")
+    assert "mutual-b = 22" in graph[0]
+
+
+def test_linear_dimension_basis_is_accepted_by_graph_rule() -> None:
+    """§32: 10,00 mm doğrusal datum (claim seti dışı) kökü kabul edilir — iki claim aynı köke dayanabilir."""
+    page = _page("frozen-exercise-13")
+    spec = _two_claim_spec()
+    for claim in spec["claims"]:
+        claim["corroboration"] = {
+            "kind": "independent_scale",
+            "basis": "10,00 mm doğrusal ölçü (kolonlar arası boy; ≈177 px) → ≈17,7 px/mm",
+            "basis_value": 10.0, "scale_px_per_mm": 17.7,
+        }
+    assert tool.validate_spec(page, spec) == []
+
+
+def test_tracked_exercise_17_corroboration_roots_outside_claims() -> None:
+    """PLAN-9 §5: ex17'nin üç Ø claim'i karşı çapa değil bağımsız doğrusal datuma dayanır."""
+    page = _page("frozen-exercise-17")
+    spec = tool.load_spec("frozen-exercise-17")
+    assert spec is not None
+    assert len(spec["claims"]) == 3
+    sizes = [(claim["claim_id"], float(claim["size"])) for claim in spec["claims"]]
+    for claim in spec["claims"]:
+        corroboration = claim.get("corroboration") or {}
+        assert corroboration.get("kind") == "independent_scale", claim["claim_id"]
+        basis = float(corroboration["basis_value"])
+        assert "doğrusal" in str(corroboration.get("basis")), claim["claim_id"]
+        for other_id, other_size in sizes:
+            assert abs(basis - other_size) > 1e-9, \
+                f"{claim['claim_id']}: dayanak ({basis}) {other_id} değerine çözülüyor"
+    problems = tool.validate_spec(page, spec, tool._frame_px("frozen-exercise-17"))
+    assert problems == [], problems
+
+
+# ------------------------------------------------- §15 kararlı gold kimliği (PLAN-9 §14–§15)
+
+
+def test_gold_content_identity_is_stable_across_rebuilds() -> None:
+    """§32: aynı içerikle tekrar üretim → aynı kimlik (ve created_at'sız tam bayt kararlılığı)."""
+    first = tool.build_manifest()
+    second = tool.build_manifest()
+    assert first["gold_content_identity"] == second["gold_content_identity"]
+    assert first == second  # zaman damgası yok: aynı içerik → aynı manifest (§14)
+
+
+def test_gold_content_identity_ignores_metadata() -> None:
+    entries = [dict(entry) for entry in tool.build_manifest()["pages"]]
+    baseline = tool.gold_content_identity(entries)
+    assert baseline == tool.gold_content_identity(list(reversed(entries)))  # sayfa sırası kanonik
+    enriched = [dict(entry, created_at="2026-01-01T00:00:00+00:00", written_at="dün",
+                     local_path="/Users/x/out") for entry in entries]
+    assert tool.gold_content_identity(enriched) == baseline  # üstveri kimliğe girmez (§15)
+    mutated = [dict(entries[0], reference_sha256="0" * 64), *entries[1:]]
+    assert tool.gold_content_identity(mutated) != baseline   # gerçek değişince kimlik değişir
+
+
+def test_stored_manifest_matches_a_fresh_build() -> None:
+    """İzlenen manifest, taze üretimle bayt bayt aynı olmalı (§14 — `--write` sonrası commit)."""
+    stored_text = tool.MANIFEST.read_text(encoding="utf-8")
+    fresh = tool.build_manifest()
+    assert stored_text == json.dumps(fresh, ensure_ascii=False, indent=2) + "\n"
+
+
+# ---------------------------------------------------- §16–§17 atomik dondurma (PLAN-9 §31/4)
+
+
+def _freeze_fixture(tmp_path: Path, monkeypatch) -> Path:
+    """Tek gerçek sayfayla (ex17) temiz bir dondurma senaryosu kurar; lab köküne yazmaz."""
+    page = _page("frozen-exercise-17")
+    monkeypatch.setattr(tool, "pages", lambda: [page])
+    document = tool.build_manifest()
+    manifest_path = tmp_path / "manifest.json"
+    manifest_path.write_text(json.dumps(document, ensure_ascii=False), encoding="utf-8")
+    return manifest_path
+
+
+def test_freeze_runs_regeneration_proof(tmp_path: Path, monkeypatch) -> None:
+    """§17: freeze tek başına TÜM sayfaların yeniden üretim kanıtını koşar ve kaydı yazar."""
+    manifest_path = _freeze_fixture(tmp_path, monkeypatch)
+    outcome = tool.freeze(manifest_path=manifest_path)
+    assert outcome["ok"], outcome["problems"]
+    assert outcome["regenerated"] == 1
+    stored = json.loads(manifest_path.read_text(encoding="utf-8"))
+    assert outcome["identity"] == stored["gold_content_identity"]
+    artifact = json.loads((tmp_path / "FREEZE.json").read_text(encoding="utf-8"))
+    assert artifact["schema"] == tool.FREEZE_SCHEMA
+    assert artifact["gold_content_identity"] == stored["gold_content_identity"]
+    assert [row["page_id"] for row in artifact["pages"]] == ["frozen-exercise-17"]
+
+
+def test_freeze_fails_when_regeneration_diverges(tmp_path: Path, monkeypatch) -> None:
+    """§16: saklanan referans geçerli olsa bile mevcut üretim sapıyorsa kapı kapanır."""
+    manifest_path = _freeze_fixture(tmp_path, monkeypatch)
+
+    def diverging(page_id: str) -> dict:
+        result = tool.regenerate(page_id)
+        result["reference"] = dict(result["reference"], notes=["sapma"])
+        return result
+
+    outcome = tool.freeze(manifest_path=manifest_path, regenerate_fn=diverging)
+    assert not outcome["ok"]
+    assert any("yeniden üretim manifestten sapıyor" in problem for problem in outcome["problems"])
+    assert not (tmp_path / "FREEZE.json").exists()  # başarısız dondurma kayıt yazmaz
+
+
+def test_freeze_fails_without_identity(tmp_path: Path, monkeypatch) -> None:
+    page = _page("frozen-exercise-17")
+    monkeypatch.setattr(tool, "pages", lambda: [page])
+    document = tool.build_manifest()
+    document.pop("gold_content_identity")
+    manifest_path = tmp_path / "manifest.json"
+    manifest_path.write_text(json.dumps(document, ensure_ascii=False), encoding="utf-8")
+    outcome = tool.freeze(manifest_path=manifest_path, regenerate_fn=lambda page_id: {
+        "reference": json.loads((tool.gold_dir() / f"{page_id}.json").read_text(encoding="utf-8"))})
+    assert not outcome["ok"]
+    assert any("gold_content_identity" in problem for problem in outcome["problems"])
+    assert not (tmp_path / "FREEZE.json").exists()
+
+
+def test_freeze_requires_full_coverage(tmp_path: Path, monkeypatch) -> None:
+    """İzlenen spec'i olmayan sayfa varken dondurma kapalı kalır (PLAN-8 §13)."""
+    ex17, enclosure = _page("frozen-exercise-17"), _page("frozen-enclosure")
+    monkeypatch.setattr(tool, "pages", lambda: [ex17, enclosure])
+    document = tool.build_manifest()
+    document["pages"] = [row for row in document["pages"]
+                         if row["page_id"] == "frozen-exercise-17"]
+    document["gold_content_identity"] = tool.gold_content_identity(document["pages"])
+    manifest_path = tmp_path / "manifest.json"
+    manifest_path.write_text(json.dumps(document, ensure_ascii=False), encoding="utf-8")
+    outcome = tool.freeze(manifest_path=manifest_path)
+    assert not outcome["ok"]
+    assert any("izlenen spec yok" in problem for problem in outcome["problems"])
+    assert not (tmp_path / "FREEZE.json").exists()

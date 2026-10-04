@@ -1,4 +1,4 @@
-"""SEMREAD-001B — izlenen (git'te) kanonik gold spec'ler ve manifest (PLAN-8 §3–§4, §13).
+"""SEMREAD-001B — izlenen (git'te) kanonik gold spec'ler ve manifest (PLAN-8 §3–§4, §13; PLAN-9 §6, §14–§17).
 
 Neden var: benchmark'ın **gerçeği** artık `eval/semread_001b_gold/` altında izlenir. Daha önce
 spec dosyaları yalnız `out/lab/semread-001b/corpus/gold-specs/` altındaydı ve `out/` gitignored
@@ -15,22 +15,29 @@ Zincir:
 
 Komutlar:
 
-    --write    izlenen spec'lerden manifesti üret/güncelle (hash'leri hesaplar)
-    --check    manifesti doğrula: spec/kaynak/referans hash'leri, claim sayısı, nitelikler
-    --freeze   P5 kapısı: TÜM korpus sayfaları izlenen spec'e sahip olmalı ve her şey tutmalı
-               (kaynak hash'i, spec hash'i, referans hash'i) — dondurma buna bakacak
+    --write    izlenen spec'lerden manifesti üret/güncelle (hash'ler + kararlı gold kimliği)
+    --check    manifesti doğrula: spec/kaynak/referans hash'leri, claim sayısı, nitelikler,
+               gold_content_identity
+    --freeze   P5 kapısı (atomik, PLAN-9 §16–§17): 10/10 kapsam + tüm hash'ler + TÜM sayfaların
+               izlenen spec'ten **yeniden üretim kanıtı** + gold_content_identity; başarıda
+               dondurma kaydını (FREEZE.json) yazar — ayrıca `--verify` çalıştırmak gerekmez
     --verify   izlenen spec'ten referansı yeniden üret (gözlem çıkarımı dahil) ve manifestteki
                referans hash'iyle karşılaştır; `--page` ile sayfa seçilebilir
 
-Doğrulama kuralları (PLAN-8 §10, §11, §25):
+Doğrulama kuralları (PLAN-8 §10, §11, §25; PLAN-9 §6, §15):
 
 * ölçülen hedef kutusu: dört sonlu değer, `0<=x0<x1<=1`, `0<=y0<y1<=1`, pafta sınırları içinde ve
   gerekçesi yazılı (`target_reason` / `measurement_reason` ya da kanıt metninde ölçüm ifadesi);
 * raster sayfa: `vision_checked=true` **ve** her claim'in `source_evidence`ı `vision` içermeli;
-* döngüsel ölçek kanıtı yasak (§11): bir claim `corroboration.independent_scale` beyan ediyorsa
-  dayandığı ölçü değeri claim'in **kendi** yazılı değeri olamaz.
+* döngüsel ölçek kanıtı yasak (§11 + §6): bir claim `corroboration.independent_scale` beyan
+  ediyorsa dayanak değer **ne kendi** yazılı değeri **ne de başka bir değerlendirilen Ø/R
+  claim'inin** yazılı değeri olabilir — kök, claim setinin dışındaki bağımsız bir datuma
+  çözülmelidir (A→B, B→A geçemez);
+* `gold_content_identity` (§15): manifest zaman damgası **taşımaz**; dondurmanın bağlandığı
+  kimlik yalnız gerçeği etkileyen alanların kanonik sha256'sıdır — aynı içerik her koşuda aynı
+  kimliği ve aynı manifest baytlarını verir.
 
-Bu araç hiç model çağırmaz; `--verify` dışında OCR/render de çalıştırmaz.
+Bu araç hiç model çağırmaz; `--verify` / `--freeze` dışında OCR/render de çalıştırmaz.
 """
 
 from __future__ import annotations
@@ -41,7 +48,6 @@ import importlib.util
 import json
 import math
 import sys
-from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -51,6 +57,11 @@ TRACKED = ROOT / "eval" / "semread_001b_gold"
 SPECS = TRACKED / "specs"
 MANIFEST = TRACKED / "manifest.json"
 MANIFEST_SCHEMA = "semread-001b-gold-manifest/1"
+FREEZE_SCHEMA = "semread-001b-freeze/1"
+
+# §15: kararlı gold kimliğine giren alanlar — zaman/yol gibi üstveri kimliğe girmez.
+IDENTITY_FIELDS = ("page_id", "source_sha256", "spec_sha256", "reference_sha256",
+                   "claim_count", "vision_checked", "exhaustiveness")
 
 # Ölçüm gerekçesi ararken kabul edilen ifadeler (Türkçe/İngilizce ölçüm sözcükleri).
 _MEASURE_WORDS = ("ölç", "measure", "piksel", "pixel")
@@ -134,6 +145,24 @@ def _box_problem(box, frame: tuple[int, int] | None) -> str | None:
     return None
 
 
+def _evaluated_size_claims(claims: list[dict]) -> list[tuple[str, float]]:
+    """Değerlendirilen Ø/R claim seti (§6): yazılı sayısal `size` taşıyan çap/yarıçap claim'leri.
+
+    Bir ölçek dayanağı bu setin **içindeki** bir değere çözülüyorsa kanıt bağımsız sayılmaz
+    (karşılıklı döngüsellik dâhil: A→B, B→A); kök setin dışındaki bir datum olmalıdır (doğrusal
+    ölçü, bilinen referans, güvenilir kalibrasyon …).
+    """
+    rows: list[tuple[str, float]] = []
+    for index, claim in enumerate(claims, start=1):
+        form = str(claim.get("form") or "").strip().lower()
+        size = claim.get("size")
+        if form not in ("diameter", "radius", "r") or isinstance(size, bool) \
+                or not isinstance(size, (int, float)):
+            continue
+        rows.append((str(claim.get("claim_id") or f"#{index}"), float(size)))
+    return rows
+
+
 def validate_spec(page: dict, spec: dict, frame: tuple[int, int] | None = None) -> list[str]:
     """İzlenen spec'in yapısal + kanıt kurallarını denetler. Boş liste = sorun yok."""
     problems: list[str] = []
@@ -149,6 +178,7 @@ def validate_spec(page: dict, spec: dict, frame: tuple[int, int] | None = None) 
     claims = spec.get("claims") or []
     if not claims:
         problems.append(f"{page_id}: hiç claim yok")
+    evaluated = _evaluated_size_claims(claims)
     seen: set[str] = set()
     for index, claim in enumerate(claims, start=1):
         claim_id = claim.get("claim_id") or f"#{index}"
@@ -172,12 +202,19 @@ def validate_spec(page: dict, spec: dict, frame: tuple[int, int] | None = None) 
             problems.append(f"{page_id}/{claim_id}: raster claim'de görsel doğrulama kanıtı yok (§16)")
         corroboration = claim.get("corroboration")
         if corroboration:
-            problems.extend(_corroboration_problem(page_id, claim_id, claim, corroboration))
+            problems.extend(_corroboration_problem(page_id, claim_id, claim, corroboration,
+                                                   evaluated))
     return problems
 
 
-def _corroboration_problem(page_id: str, claim_id: str, claim: dict, corroboration) -> list[str]:
-    """§11: döngüsel ölçek kanıtını reddet — kanıt, claim'in kendi yazılı değerine dayanamaz."""
+def _corroboration_problem(page_id: str, claim_id: str, claim: dict, corroboration,
+                           evaluated: list[tuple[str, float]]) -> list[str]:
+    """§11 + §6: döngüsel ölçek kanıtını reddet.
+
+    Kanıt ne claim'in **kendi** yazılı değerine (yerel döngüsellik) ne de **başka bir
+    değerlendirilen Ø/R claim'inin** yazılı değerine (grafik döngüsellik: A→B, B→A) dayanabilir;
+    kök, claim setinin dışındaki bağımsız bir datuma çözülmelidir.
+    """
     problems: list[str] = []
     if not isinstance(corroboration, dict):
         return [f"{page_id}/{claim_id}: corroboration sözlük olmalı"]
@@ -201,6 +238,17 @@ def _corroboration_problem(page_id: str, claim_id: str, claim: dict, corroborati
             if size is not None and abs(basis - float(size)) <= 1e-9:
                 problems.append(f"{page_id}/{claim_id}: döngüsel kanıt — ölçek, claim'in kendi "
                                 f"yazılı değerine dayanıyor ({basis}) (§11)")
+            else:
+                for other_id, other_size in evaluated:
+                    if other_id == claim_id:
+                        continue
+                    if abs(basis - other_size) <= 1e-9:
+                        problems.append(
+                            f"{page_id}/{claim_id}: döngüsel kanıt (grafik) — ölçek dayanağı "
+                            f"başka bir değerlendirilen Ø/R claim'inin yazılı değerine çözülüyor: "
+                            f"{other_id} = {other_size:g} (§6); kök, claim setinin dışındaki "
+                            f"bağımsız bir datum olmalı")
+                        break
     scale = corroboration.get("scale_px_per_mm")
     if scale is not None:
         try:
@@ -211,11 +259,29 @@ def _corroboration_problem(page_id: str, claim_id: str, claim: dict, corroborati
     return problems
 
 
+# ------------------------------------------------------------------- kararlı gold kimliği (§15)
+
+
+def gold_content_identity(entries: list[dict]) -> str:
+    """PLAN-9 §15: dondurmanın bağlanacağı **kararlı** gold kimliği.
+
+    Yalnız gerçeği etkileyen alanlar girer (`IDENTITY_FIELDS`): sayfa kimliği, kaynak/spec/
+    referans hash'leri, claim sayısı, `vision_checked`, `exhaustiveness`. Zaman damgası, mutlak
+    yol ve makineye özgü üstveri **dışarıda** kalır; sayfa sırası kanoniktir (page_id'ye göre).
+    """
+    canonical = [
+        {field: entry.get(field) for field in IDENTITY_FIELDS}
+        for entry in sorted(entries, key=lambda entry: str(entry.get("page_id")))
+    ]
+    text = json.dumps(canonical, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
+    return _sha256_text(text)
+
+
 # ------------------------------------------------------------------------------- manifest
 
 
 def build_manifest() -> dict:
-    """İzlenen spec'lerden manifest üretir (hash'ler diskten okunur). Bkz. PLAN-8 §4."""
+    """İzlenen spec'lerden manifest üretir (hash'ler diskten okunur). Bkz. PLAN-8 §4, PLAN-9 §14."""
     directory = gold_dir()
     entries: list[dict] = []
     for page in pages():
@@ -246,9 +312,11 @@ def build_manifest() -> dict:
         })
     return {
         "schema": MANIFEST_SCHEMA,
-        "created_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-        "note": ("izlenen kanonik gold spec'leri ve üretilmiş referans hash'leri; P5 dondurma bu "
-                 "manifestin hash'ine bağlanır (PLAN-8 §4, §16). `--check`/`--freeze` ile doğrulanır."),
+        "gold_content_identity": gold_content_identity(entries),
+        "note": ("izlenen kanonik gold spec'leri ve üretilmiş referans hash'leri; P5 dondurma "
+                 "`gold_content_identity`ye bağlanır — dosya hash'ine değil (PLAN-9 §14–§15). "
+                 "Manifest zaman damgası taşımaz: aynı içerik yeniden yazılınca bayt bayt "
+                 "aynıdır; `--check` / `--freeze` ile doğrulanır."),
         "pages": entries,
     }
 
@@ -310,6 +378,16 @@ def check_manifest(*, require_all: bool = False, manifest_path: Path | None = No
         if generated.get("annotator") != entry.get("annotator") or \
                 generated.get("review_status") != entry.get("review_status"):
             problems.append(f"{page_id}: annotator/review_status manifestle uyuşmuyor")
+    # §15: dondurmanın bağlanacağı kararlı kimlik — üstveri değişse de sabit kalır; değer
+    # satırlarla uyuşmuyorsa manifest elden geçmiş/bozulmuş demektir (dondurma bunu şart koşar).
+    stored_identity = manifest.get("gold_content_identity")
+    computed_identity = gold_content_identity(entries)
+    if stored_identity is None:
+        warnings.append("manifestte gold_content_identity yok — `--write` ile üret (§15); "
+                        "atomik `--freeze` bunu şart koşar")
+    elif stored_identity != computed_identity:
+        problems.append(f"gold_content_identity manifestteki sayfa satırlarıyla uyuşmuyor "
+                        f"({str(stored_identity)[:12]}… != {computed_identity[:12]}…) (§15)")
     # izlenmeyen ama üretilmiş gold = dondurma açısından hata (§3: izlenen spec zorunlu)
     untracked_gold = sorted(page_id for page_id in page_table
                             if page_id not in listed and (directory / f"{page_id}.json").exists())
@@ -322,7 +400,8 @@ def check_manifest(*, require_all: bool = False, manifest_path: Path | None = No
         problems.append(f"izlenen spec yok: {untracked_specs} — P5 dondurulamaz (PLAN-8 §13)")
     coverage = f"{len(entries)}/{len(page_table)}"
     return {"ok": not problems, "problems": problems, "warnings": warnings,
-            "coverage": coverage, "pages": len(entries), "total": len(page_table)}
+            "coverage": coverage, "pages": len(entries), "total": len(page_table),
+            "identity": computed_identity}
 
 
 def _frame_px(page_id: str) -> tuple[int, int] | None:
@@ -393,12 +472,103 @@ def verify_pages(page_ids: list[str]) -> int:
     return 1 if failures else 0
 
 
+# --------------------------------------------------------------------- --freeze (§16–§17 atomik)
+
+
+def _regeneration_problems(entries: list[dict], regenerate_fn) -> list[str]:
+    """§16–§17 çekirdeği: her sayfa izlenen spec'ten yeniden üretilip manifest hash'iyle
+    karşılaştırılır — saklanan dosya geçerli olsa bile **mevcut kod** yeniden üretemiyorsa
+    dondurma kapısı kapanır."""
+    problems: list[str] = []
+    for entry in entries:
+        page_id = entry.get("page_id")
+        try:
+            outcome = regenerate_fn(page_id)
+        except SystemExit as error:
+            problems.append(f"{page_id}: yeniden üretilemedi — {error}")
+            continue
+        except Exception as error:  # noqa: BLE001 — dondurma kapısı her hatada kapanmalı
+            problems.append(f"{page_id}: yeniden üretilemedi — {error!r}")
+            continue
+        text = json.dumps(outcome["reference"], ensure_ascii=False, indent=2)
+        digest = _sha256_text(text)
+        expected = entry.get("reference_sha256")
+        if digest != expected:
+            problems.append(f"{page_id}: yeniden üretim manifestten sapıyor "
+                            f"(üretilen {digest[:12]}… != kayıtlı {str(expected)[:12]}…) (§17)")
+    return problems
+
+
+def freeze(*, manifest_path: Path | None = None, gold_directory: Path | None = None,
+           regenerate_fn=None) -> dict:
+    """PLAN-9 §17: atomik P5 kapısı — tek komut yeter.
+
+    Sıra: (1) kapsam 10/10 + `check_manifest(require_all=True)` — kaynak/spec/referans
+    hash'leri, spec kuralları, §6 döngüsellik; (2) **TÜM** sayfaların izlenen spec'ten yeniden
+    üretim kanıtı (§16: saklanan dosyanın geçerli olması yetmez); (3) kararlı
+    `gold_content_identity` (§15). Başarıda dondurma kaydı (FREEZE.json) yazılır.
+    """
+    manifest_file = manifest_path or MANIFEST
+    result = check_manifest(require_all=True, manifest_path=manifest_file,
+                            gold_directory=gold_directory)
+    problems = list(result["problems"])
+    manifest = (json.loads(manifest_file.read_text(encoding="utf-8"))
+                if manifest_file.exists() else {"pages": []})
+    entries = manifest.get("pages") or []
+    problems.extend(_regeneration_problems(entries, regenerate_fn or regenerate))
+    identity = gold_content_identity(entries)
+    stored = manifest.get("gold_content_identity")
+    if stored is None:
+        problems.append("gold_content_identity yok — önce `--write` (§15); kimliksiz dondurma yok")
+    elif stored != identity:
+        problems.append(f"gold_content_identity uyuşmuyor ({str(stored)[:12]}… != "
+                        f"{identity[:12]}…) (§15)")
+    artifact = None
+    if not problems:
+        artifact = _write_freeze_artifact(manifest_file, entries, identity, result["coverage"])
+    return {"ok": not problems, "problems": problems, "coverage": result["coverage"],
+            "identity": identity, "regenerated": len(entries),
+            "artifact": str(artifact) if artifact else None}
+
+
+def _write_freeze_artifact(manifest_file: Path, entries: list[dict], identity: str,
+                           coverage: str) -> Path:
+    """Dondurma kaydı (§17 adım 8) — manifest dosyasının yanına yazılır.
+
+    Alanlar şimdilik gold tarafıyla sınırlı; §22'nin tam bağlama listesi (HEAD, model tag/digest,
+    MATCH_POLICY, değerlendirme uygulaması, prompt, koşu sözleşmesi …) P5 dondurma tamamlanırken
+    eklenir (PLAN-9 §31 madde 14).
+    """
+    artifact = {
+        "schema": FREEZE_SCHEMA,
+        "gold_content_identity": identity,
+        "coverage": coverage,
+        "pages": [
+            {field: entry.get(field)
+             for field in ("page_id", "split", "claim_count",
+                           "source_sha256", "spec_sha256", "reference_sha256")}
+            for entry in entries
+        ],
+        "declarations": {
+            "gold_annotator": "agent",
+            "review_status": "provisional",
+            "corpus": "küçük / bağımsız holdout değil",
+            "inference": "0/30 — V/VE bu dondurmadan sonra ölçülür (PLAN-9 §24–§26)",
+        },
+        "note": ("PLAN-9 §17: atomik `--freeze` doğrulamasının kaydı. gold_content_identity "
+                 "deterministiktir; §22'nin tam bağlama listesi P5 tamamlanırken genişletilir."),
+    }
+    path = manifest_file.parent / "FREEZE.json"
+    path.write_text(json.dumps(artifact, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    return path
+
+
 def main() -> int:
-    parser = argparse.ArgumentParser(description="izlenen gold spec'ler + manifest (PLAN-8 §3–§4)")
+    parser = argparse.ArgumentParser(description="izlenen gold spec'ler + manifest (PLAN-8 §3–§4; PLAN-9 §14–§17)")
     parser.add_argument("--write", action="store_true", help="manifesti izlenen spec'lerden üret")
     parser.add_argument("--check", action="store_true", help="manifesti + zinciri doğrula")
     parser.add_argument("--freeze", action="store_true",
-                        help="P5 kapısı: tüm sayfalar izlenmeli ve hash'ler tutmalı")
+                        help="P5 kapısı (atomik): 10/10 + tüm hash'ler + tam yeniden üretim kanıtı")
     parser.add_argument("--verify", action="store_true",
                         help="izlenen spec'ten referansı yeniden üret ve hash karşılaştır")
     parser.add_argument("--page", action="append", help="--verify için sayfa kimliği (tekrarlanabilir)")
@@ -408,21 +578,27 @@ def main() -> int:
         MANIFEST.parent.mkdir(parents=True, exist_ok=True)
         MANIFEST.write_text(json.dumps(document, ensure_ascii=False, indent=2) + "\n",
                             encoding="utf-8")
-        print(f"yazıldı: {MANIFEST} ({len(document['pages'])} sayfa)")
+        print(f"yazıldı: {MANIFEST} ({len(document['pages'])} sayfa; gold_content_identity "
+              f"{document['gold_content_identity'][:16]}…)")
         if not (args.check or args.freeze or args.verify):
             return 0
     if args.verify:
         return verify_pages(args.page or [])
     if args.freeze:
-        result = check_manifest(require_all=True)
-        print(f"P5 kapısı: kapsam {result['coverage']} — {'TAMAM' if result['ok'] else 'AÇIK'}")
-        for problem in result["problems"]:
+        outcome = freeze()
+        print(f"P5 kapısı: kapsam {outcome['coverage']} — {'TAMAM' if outcome['ok'] else 'AÇIK'}")
+        print(f"  gold_content_identity: {outcome['identity'][:16]}…")
+        print(f"  yeniden üretim kanıtı: {outcome['regenerated']} sayfa koşuldu (§17)")
+        if outcome["artifact"]:
+            print("  dondurma kaydı yazıldı:", outcome["artifact"])
+        for problem in outcome["problems"]:
             print("  SORUN:", problem)
-        return 0 if result["ok"] else 1
+        return 0 if outcome["ok"] else 1
     if args.check:
         result = check_manifest(require_all=False)
         print(f"manifest: {result['coverage']} sayfa izleniyor — "
               f"{'TAMAM' if result['ok'] else 'SORUNLU'}")
+        print(f"  gold_content_identity: {result['identity'][:16]}…")
         for problem in result["problems"]:
             print("  SORUN:", problem)
         for warning in result["warnings"]:

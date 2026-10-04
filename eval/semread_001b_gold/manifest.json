@@ -1,7 +1,7 @@
 {
   "schema": "semread-001b-gold-manifest/1",
-  "created_at": "2026-10-04T14:06:09+00:00",
-  "note": "izlenen kanonik gold spec'leri ve üretilmiş referans hash'leri; P5 dondurma bu manifestin hash'ine bağlanır (PLAN-8 §4, §16). `--check`/`--freeze` ile doğrulanır.",
+  "gold_content_identity": "21bf11951d901d38197ba9d1b4e1f7300f1e2aba4948cc8a7521b77ef1021c4e",
+  "note": "izlenen kanonik gold spec'leri ve üretilmiş referans hash'leri; P5 dondurma `gold_content_identity`ye bağlanır — dosya hash'ine değil (PLAN-9 §14–§15). Manifest zaman damgası taşımaz: aynı içerik yeniden yazılınca bayt bayt aynıdır; `--check` / `--freeze` ile doğrulanır.",
   "pages": [
     {
       "page_id": "dev-plate-pocket",
@@ -74,9 +74,9 @@
       "source": "examples/pdf with steps/3/Exercise 17.PNG",
       "source_sha256": "5c926b6dc7e881204fbb60945eb435a0184250a907a32910166ea41cd4e0b2f5",
       "spec": "eval/semread_001b_gold/specs/frozen-exercise-17.json",
-      "spec_sha256": "8a030c770ed975ac2463f6e8dc9580b5072908fc6c762e09537107928082919a",
+      "spec_sha256": "5c8f270bf9041d13ddd8f1481c94017379c8dec9c72cb3f37eecc45227268ba7",
       "reference": "out/lab/semread-001b/corpus/gold/frozen-exercise-17.json",
-      "reference_sha256": "a5ebee5c803a20a2f860f85fb124cc9ccec061a7cb39c8b0b522aaaf99717f10",
+      "reference_sha256": "c4bcca71c66f54999dd4398cb02fcb079d194e536104d6dd42cc5a67d1c5564a",
       "claim_count": 3,
       "annotator": "agent",
       "review_status": "provisional",

@@ -872,3 +872,62 @@ girmedi; yalnız yatay/dikey yazılar için kullan). Scratch dizini: `~/.hermes/
 `gold_regions --write` → `reference --page` → `gold_check` → `gold_manifest --write/--check/--verify`;
 4) `frozen-exercise-51` ve `frozen-views-exercise` (736x1041 px — düşük çözünürlük, en zor sayfa)
 aynı yöntemle; 5) 10/10 → tek değerlendirme → temiz klon denetimi → P5 dondurma.
+
+> **Düzeltme (PLAN-9 §7–§8, aşağıda §6q):** ex13 için yukarıdaki "önce iki bağımsız yazılı çapı
+> ölçüp px/mm'i sabitle" yaklaşımı **geçersiz** — Ø60 ile Ø25 birbirine dayandırılamaz. Yeni
+> yöntem: **bağımsız doğrusal ölçü** (170 / 60 / 30 / 25 / 240 / 50 / 10 adayları) ya da
+> güvenilir span yoksa `corroboration.kind = none` (§8: yalnız `SCALE 1:5` notu px/mm vermez).
+
+### 6q. P5 öncesi — PLAN-9 §31/1–4: ex17 kanıt kökü, §6 grafik denetim, kararlı kimlik, atomik `--freeze`
+
+**Ne düzeltildi (PLAN-9 §4–§6):** `frozen-exercise-17` kanıtı karşılıklı döngüseldi — Ø22 claim'inin
+ölçek dayanağı Ø20 claim'i, Ø20'ninki Ø22'ydi (validator yalnız **kendi** değerine dayanmayı
+reddediyordu; A→B, B→A geçiyordu). Şimdi üç claim'in de kökü **bağımsız 10,00 mm doğrusal
+ölçüsü** (kolonlar arası boru boyu ≈177 px → ≈17,7 px/mm); çapraz doğrulama diğer doğrusal
+ölçülerle: 14,00 → 248 px (17,71), 5,00 → 89 px (17,80), 4,00 → 71 px (17,75) — yayılım ≈%0,6.
+Spec metinleri (target_reason / evidence / notes / reconstruction_note) 17,7 px/mm'e göre
+güncellendi; **hedef kutular ve mm değerleri değişmedi** (yazılı çağrılar tek gerçek kaynak,
+px geometrisi yalnız kanıt).
+
+**Kod (`eval/semread_001b_gold_manifest.py`):**
+
+* **§6 grafik düzeyi döngüsellik:** `independent_scale` dayanağı, spec içindeki **başka bir
+  değerlendirilen Ø/R claim'inin** yazılı değerine çözülüyorsa reddedilir ("döngüsel kanıt
+  (grafik) — … {claim_id} = {değer}", §6); doğrusal datum kökü (claim setinin dışı) kabul.
+* **§15 `gold_content_identity`:** manifest artık `created_at` taşımıyor; kimlik yalnız gerçeği
+  etkileyen yedi alanın (sayfa, kaynak/spec/referans hash'i, claim sayısı, `vision_checked`,
+  `exhaustiveness`) kanonik sha256'sı. Aynı içerik → **bayt bayt aynı manifest** (iki ardışık
+  `--write` ile doğrulandı; güncel manifest sha `584b54ed457f…`, kimlik `21bf11951d901d38…` (6/10)).
+* **§16–§17 atomik `--freeze`:** kapsam + `check_manifest(require_all=True)` + **TÜM sayfaların
+  izlenen spec'ten yeniden üretim kanıtı** + kimlik; başarıda `eval/semread_001b_gold/FREEZE.json`
+  yazar (şimdilik gold tarafı; §22 tam bağlama listesi madde 14'te). Ayrıca `--verify`
+  çalıştırmayı hatırlamak gerekmez.
+
+**Kanıt (bu turda koşuldu):**
+
+* **Kapı gerçek bir sapmayı yakaladı:** spec metni değişince (gold-src henüz yenilenmeden)
+  `--freeze`/`--verify` "frozen-exercise-17: yeniden üretim manifestten sapıyor
+  (c4bcca71… != a5ebee5c…)" verdi — saklanan referans geçerliydi ama üretim sapmıştı (§16'nın
+  varlık nedeni). Zincir izlenen spec'ten yeniden üretildi (`gold_regions --write` →
+  `reference --page` → `gold_manifest --write`), ardından tüm kapılar yeşil.
+* `--verify` (6/6 sayfa): hepsi **TAMAM**, gold-src aynı — `dev-drawing-2` `f3be4c26…`,
+  `dev-flange-elbow` `2d9138a7…`, `dev-plate-pocket` `48671f50…`, `frozen-enclosure`
+  `be3e5654…`, `frozen-exercise-12` `bf5d3f7e…`, `frozen-exercise-17` `c4bcca71…`.
+* `--check`: "6/10 sayfa izleniyor — TAMAM" (`gold_content_identity: 21bf1195…`);
+  `--freeze`: **AÇIK** — tek sorun kalan 4 spec (`dev-flange-book`, `frozen-exercise-13`,
+  `frozen-exercise-51`, `frozen-views-exercise`); 6 sayfanın yeniden üretim kanıtı kapının
+  içinde koştu ("6 sayfa koşuldu (§17)").
+* **Test:** `tests/test_semread_001b_gold_manifest.py` — **33 test** (22 mevcut + 11 yeni:
+  karşılıklı döngüsellik reddi, tek-kök reddi, doğrusal datum kabulü, ex17 kök regresyonu, kimlik
+  kararlılığı/üstveri ayrımı, manifest↔taze üretim bayt eşitliği, freeze yeniden üretim kanıtı +
+  sapma/kimliksizlik/eksik kapsam kapıları). SEMREAD alt kümesi (`tests/test_semread_001b*.py`):
+  **179 geçti** (16:49; en yavaş üç test kabul testleri ~335 sn). **Tam pytest: 1188 geçti**
+  (41:06).
+* README (`eval/semread_001b_gold/README.md`) komutlar + kurallar §6/§15/§16–§17'ye göre güncellendi.
+
+**Sıradaki (PLAN-9 §31):** 5) `frozen-exercise-13` — px/mm **bağımsız doğrusal ölçüden** (§7) ya da
+`corroboration.kind = none`; 6) `dev-flange-book` → 7) `frozen-exercise-51` → 8)
+`frozen-views-exercise` (§12: çözülemeyen leader → gold dışı + gerekçe) → 9) 10/10 → 10) `--verify`
+tümü → 11) mevcut D denemelerini değerlendir (yeniden koşma yok, §21) → 12) B02/B07 durumu →
+13) temiz klon denetimi (§18) → 14) `FREEZE.json`u §22 alanlarıyla tamamla → 15) V/VE (ancak ondan
+sonra, §24–§26).

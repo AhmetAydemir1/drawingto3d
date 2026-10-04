@@ -286,11 +286,13 @@ def exhaustive_scope(reference: dict) -> dict:
         boxes = [region for region in (_region(box) for box in (raw.get("regions") or []))
                  if region is not None]
     elif scope == "predicates":
+        # §12: "predicates" = "şu yüklemler için eksiksizim". Kapsam, gold'un claim'lerinin
+        # bölgeleridir (o özellikler için yüklemler tek tek yazıldı); başka bölgedeki fazla aday
+        # cezalanmaz. Yüklem adları `FIELDS`ten gelir ve rapora aynen yazılır.
         for claim in reference.get("claims") or []:
-            if claim.get("representation") in (raw.get("predicates") or []):
-                box = claim_region(claim)
-                if box is not None:
-                    boxes.append(box)
+            box = claim_region(claim)
+            if box is not None:
+                boxes.append(box)
     return {"scope": scope, "full_page": scope == "full_page", "regions": boxes,
             "predicates": list(raw.get("predicates") or []), "note": None}
 

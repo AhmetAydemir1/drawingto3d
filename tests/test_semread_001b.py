@@ -375,6 +375,24 @@ def test_extras_inside_the_claimed_scope_are_false_positives_and_outside_are_uns
     assert regions["extras"][0]["kind"] == "false_positive"
     assert regions["summary"]["unscorable_extra_candidates"] == 0
 
+    # §12: "predicates" = "şu yüklemler için eksiksizim" → kapsam gold claim'lerinin kendisidir.
+    # Gold'un feature'ına oturan fazla aday yanlış pozitiftir; uzaktaki aday cezalanmaz.
+    predicates = evaluate_page({**reference(),
+                                "exhaustiveness": {"scope": "predicates",
+                                                   "predicates": ["size", "termination"]}},
+                               {"response": {"items": [candidate(), far]}})
+    assert predicates["exhaustiveness"]["predicates"] == ["size", "termination"]
+    assert predicates["extras"][0]["kind"] == "unscorable_extra_candidate"
+    duplicate = candidate(candidate_id="c10")
+    on_feature = evaluate_page({**reference(),
+                                "exhaustiveness": {"scope": "predicates",
+                                                   "predicates": ["size"]}},
+                               {"response": {"items": [candidate(), duplicate]}})
+    # İki aday aynı feature'a oturursa kalem belirsizdir (§10: puanlanmaz) ve gold'un kapsadığı
+    # bölgede **iki** fazla aday vardır: ikisi de yanlış pozitiftir, ikisi de sayıdan düşmez.
+    assert sorted(row["kind"] for row in on_feature["extras"]) == ["false_positive", "false_positive"]
+    assert on_feature["summary"]["ambiguous_claims"] == 1
+
 
 def test_a_placeholder_exhaustiveness_never_penalizes_extras():
     far = candidate(candidate_id="c9", target={"region": {"x0": 0.80, "y0": 0.80, "x1": 0.84,

@@ -412,11 +412,27 @@ Sayfa düzeyi: `matched 2/2`, `localization_match_rate 1.0`, `semantic_field_acc
 yüklemlerinde tam, yorum gerektiren `physical` ve `depth` yüklemlerinde **yanlış değil çekimser** —
 planın ölçmek istediği "V/VE gerçekten ne katıyor" sorusunun dev cevabı bu sütunlarda görünecek.
 
-**Açık kalan tek kanıt halkası:** ilk koşu sürerken `semantic_evaluation.py` düzenlendiği için bir
-attempt eski değerlendirme kimliği taşıyor (`evidence_chain` 4 hücreden 1'inde
-`evaluation_identity` kopuk; B07 bu yüzden açık). Kod **donduruldu** ve temiz `--d --split dev`
-koşusu başlatıldı (`proc_8e5dba9b7381`); o koşu bitince dört attempt de güncel kimliği taşıyacak.
-Ders: koşu sürerken `EVALUATION_IDENTITY_FILES` içindeki dosyalara dokunulmaz.
+**Açık kalan tek kanıt halkası — ÇÖZÜLDÜ:** ilk koşu sürerken `semantic_evaluation.py` düzenlendiği
+için bir attempt eski değerlendirme kimliği taşıyordu (`evidence_chain` 4 hücreden 1'inde
+`evaluation_identity` kopuk; B07 açıktı). Kod dondurulup temiz `--d --split dev` koşusu koşuldu
+(dört sayfa yine `pass`): yeni koşuda `stale_d_cells 0`, `valid_reuse 4` ve **kanıt zinciri 4 hücre,
+0 kopuk** → B07 kapandı. Ders: koşu sürerken `EVALUATION_IDENTITY_FILES` içindeki dosyalara
+dokunulmaz; dokunulduysa koşuyu tekrarlamak gerekir.
+
+**Kabul kapılarının ŞU ANKİ durumu** (en yeni koşu `ac91597b…`): **B01, B03, B04, B07 kapalı;
+B02, B05, B06 açık.**
+
+| kapı | durum | neden |
+| --- | --- | --- |
+| B02 | açık | gold 1/10 sayfa (`dev-plate-pocket`) — kalan 9 sayfa yazılmalı |
+| B05 | açık | 30 hücre: `valid_reuse 4` (dev D), `to_run 20` (V/VE), `not_run 6` (frozen D) |
+| B06 | açık | rapor içeriği tam, ama **puanlanmış kol yok**: V/VE henüz ölçülmedi |
+
+**Testler artık lab'a yazmıyor** (`f861eff`): `evaluate()` testte `write_evaluation_artifacts`
+stub'ıyla çağrılıyor; önce/sonra `evaluations/` sayısı 12 → 12. Daha önce koşan testler 4 klasör
+bırakmış (`5c6e1839…`, `70f72cbf…`, `d73bb523…`, `fd9ffd67…`, `acceptance.json` yok) — kanıt
+değildir, silinmedi (tarih bozulmasın), raporda "test kaydı" olarak anılmalı. `state.json` ve
+`live-calls.guard` testlerde **hiç** değişmiyor (bütçe/attempt kaydı yazılmıyor).
 
 **§19 sıkılaştırması (bu pencerede):** B06 artık "boş olmayan `comparison`" ile kapanmıyor; en az
 bir **puanlanmış** kol (yüklem satırlarının scorable toplamı > 0) + rapor işaretleri şart

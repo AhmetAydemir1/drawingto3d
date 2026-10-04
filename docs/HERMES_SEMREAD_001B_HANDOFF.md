@@ -1037,3 +1037,74 @@ başına yukarıdaki px koordinatlarıyla yazıldı; bağımsız ölçek datum'u
 frozen split — tuning verisi değil; annotation turu) → sonra `frozen-views-exercise` → 10/10 →
 tüm sayfalar `--verify` → D denemelerini değerlendir (yeniden koşma yok, PLAN-10 §14) → temiz klon
 denetimi (§16) → `FREEZE.json` bağlamalarını §17 alanlarıyla tamamla → ancak ondan sonra V/VE.
+
+### 6t. PLAN-10 §9 (AŞAMA B) — `frozen-exercise-51` kanonik gold izlendi: 10 Ø/R claim, ölçek kökü bağımsız 150,00 mm (9/10)
+
+**Ne yapıldı (PLAN-10 §9; PLAN-9 §31/7):**
+`eval/semread_001b_gold/specs/frozen-exercise-51.json` yazıldı — **10 Ø/R claim**: `Ø100.00` (parça dış
+çemberi), `Ø50.00` (eş merkezli iç çember), `R60.00` (kolun iç boşluğunun sol uç yayı), `R10.00` (aynı
+yuvanın sağ uç yayı), `Ø15.00` (sol alt delik), `Ø18.00` (sağ uç deliği), `R15.00` (sağ uç göbeği),
+`R15.00` (sol alt göbek), `R16.00` ve `Ø12.00` (alt ön görünüşteki göbek ve deliği).
+Doğrusal/açısal ölçüler kapsam dışı: üst görünüşte `70.00`, `32.00`, `80.00`, `15.00` (×2), `30°`,
+`150.00`, `10.00`; alt görünüşte `15.00`, `30.00`, `60.00`. Sayfada **adet öneki ve THRU/derinlik notu
+yoktur** → `termination=unknown`, `depth=null` (hiçbir alan uydurulmadı, §8.2).
+
+**Ölçek kökü (bağımsız doğrusal datum, §4.6–§4.7):** üst görünüşteki **150,00 mm** yatay ölçüsü —
+uzatma çizgileri x=772,5 ve x=1362,5 px → 590 px → **3,9333 px/mm**. Çapraz: Ø100 → 393,5 px (3,935);
+Ø50 → 197 px (3,94); Ø18 → 71 px (3,94); Ø15 → 59 px (3,93); R15 göbek → 119 px (3,93); alt görünüş
+R16 göbek → 123 px (3,90); Ø12 → 47 px (3,92); alt görünüşteki 60,00 → 237 px (3,95); yayılım ≈ ±%0,7.
+Başlıktaki `SCALE 1:5` px/mm kaynağı yapılmadı (§4.7); doğrusal datum değerlendirilen Ø/R setinin
+dışında olduğu için döngüsellik yok (§4.6).
+
+**Ölçüm bulguları (piksel):** ön (üst) görünüş merkezi (774,5; 851,5) → Ø100 r=196,75 (kapsama 0,95),
+Ø50 r=98,50 (0,99); sol üst delik (532,5; 714,5) → Ø15 r=29,5 (1,00) + çağrısız göbek r≈59; sol alt
+delik (535,5; 990,5) → Ø15 r=29,5 (0,99) + göbek r≈59; sağ uç (1362,5; 852,5) → Ø18 r=35,5 (1,00) +
+göbek r=59,5 (0,81); alt ön görünüş (517,5; 1833,5) → göbek r=61,5, delik r≈23,0-24,5.
+Kolun dış kenarları **düz teğet çizgidir** (x 820→1340 arası doğrusallık sapması <1,2 px) — yay değil.
+Kolun iç boşluğunun (yuvanın) sol ucu satır bazında izlendi ve yaya daire fiti uygulandı: merkez
+(762,0; 852,2), **yarıçap 246,2 px (artık std 0,34 px)**; yay parça merkezinden ölçülürse 233,5 px =
+**59,4 mm → R60.00** ✓. Yuvanın sağ uç yüksekliği x=1280 px'te 81 px = 20,6 mm = 2 × **R10.00** ✓.
+
+**Leader bağlama (ok ucu → hedef; 5×5 erode ile dolu üçgen tespiti + ok ekseninde yürüyüp ilk siyah
+pikseli bulma):** Ø100.00 → (886, 1028) Ø100 çemberi; Ø50.00 → (842, 774) Ø50 çemberi (leader Ø100
+çemberini keser); R60.00 → (984, 733) yuvanın sol ucu; R10.00 → (1297, 887) yuvanın sağ ucu;
+Ø15.00 → (543, 1027) sol alt delik çemberi; R15.00 → (497, 1044) sol alt göbek çemberi;
+R15.00 (sağ üst etiket) → (1406, 809) sağ uç göbeği; Ø18.00 → (1402, 852) sağ uç deliği (yatay
+leader göbeğin dış çemberini kesip geçer, ok ucu delik kenarında durur); R16.00 → (470, 1784) alt
+görünüş göbeği; Ø12.00 → (530, 1803) alt görünüş deliği.
+
+**Kanıt (bu turda koşuldu):**
+* Zincir (§8.8): `gold_regions --page frozen-exercise-51 --write` (10 claim, ölçülen kutu uyarıları —
+  ex13/ex17 ile aynı bilgilendirici davranış, exit 1) → `reference --page frozen-exercise-51` →
+  `check_reference` (**ok=true, problems=[]**) → `gold_manifest --write` (**9 sayfa**;
+  `gold_content_identity 351ad8e5fcdf62b1…`) → `--verify --page frozen-exercise-51`
+  (**"referans TAMAM (yeniden üretilen 27cdcb6a0ad6… / manifest 27cdcb6a0ad6…); gold-src aynı; 10 claim"**)
+  → `--check` (**"manifest: 9/10 sayfa izleniyor — TAMAM"**).
+* Spec yapısal + kanıt denetimi (`validate_spec`) ve 10 hedef kutunun geri-hesabı birebir doğrulandı.
+* **Ara test koşusu (8/10 commit'i):** `tests/test_semread_001b*.py` → **177 passed, 2 failed**
+  (`gold_manifest::test_manifest_entries_match_a_fresh_build`, `::test_stored_manifest_matches_a_fresh_build`).
+  **Kök neden:** ex51 spec dosyası, manifestin 9/10'a güncellenmesinden *önce* ağaca düştüğü için taze
+  üretim 9 sayfa, izlenen manifest 8 sayfa buluyordu (taze kimlik `81fa9c2a…` vs izlenen `9b8aa3aa…`;
+  taze-only = `frozen-exercise-51`). Zincir koşulup manifest yazıldıktan sonra izlenen manifest taze
+  üretimle bayt bayt aynıdır; bu kayıt 9/10 koşusuna aittir.
+* **Bu turun test kaydı (9/10, zincir sonrası):** `tests/test_semread_001b*.py` → **179 geçti, 0 kırık**
+  (45:57; aynı koşu `--collect-only` ile de 179 test topluyor: 32+26+34+33+15+17+22). Ara koşudaki iki
+  kırmızı yukarıdaki kök nedenle kapandı.
+* **Kayıt düzeltmesi:** §6r'de yazılı "183 geçti" sayısı commit'li takımla yeniden üretilemiyor —
+  `tests/` b092acc'ten beri değişmedi (`git diff --stat b092acc HEAD -- tests/` boş) ve aynı yedi dosya
+  179 test topluyor. Fark, o koşuda çalışma ağacında bulunan commit'lenmemiş fazladan bir test
+  dosyasından kaynaklanmış görünüyor; test kaybı/regresyon yok (tüm test dosyaları aynı ve hepsi geçti).
+
+**Teslim raporu (PLAN-10 §41):** page frame 3300×2550; scorable claim **10**; basılı çağrılar
+Ø100.00, Ø50.00, R60.00, R10.00, Ø15.00, Ø18.00, R15.00 ×2, R16.00, Ø12.00; kapsam dışı bırakılan
+belirsiz çağrı **yok** (on çağrının onu ok ucu iziyle hedefe bağlandı); `target_box_norm` claim başına
+yazıldı; bağımsız ölçek datum'u 150,00 mm (590 px) → 3,9333 px/mm; `corroboration.kind =
+independent_scale` (döngüsellik yok); `vision` izi on claim'in `source_evidence`ında; exhaustiveness
+`predicates`; referans hash `27cdcb6a0ad6…`; manifest kimliği `351ad8e5fcdf62b1…`; kapsam **9/10**;
+bütçe **0/30** (model çağrısı yok).
+
+**Sıradaki (PLAN-10 §10 = PLAN-9 §31/7):** `frozen-views-exercise`
+(`examples/Teknik Resim Görünüş Çıkarma Örnekleri 1 - Makine Eğitimi.jpg`, ~736×1041 — düşük
+çözünürlük; §10.1 gereği amaç maksimum claim değil güvenilir scorable gold; çözülemeyen leader
+dışlanır ve not yazılır) → sonra **10/10** → tüm sayfalar `--verify` → tam `pytest` (milestone) →
+D reuse → acceptance snapshot → clean-clone → freeze.

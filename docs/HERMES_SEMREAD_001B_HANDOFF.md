@@ -714,3 +714,13 @@ okumak ve ilkel bbox'ını px→mm çevirip çağrıyla karşılaştırmak. Kull
 `~/.hermes/cache/scratch/{grid_crop.py,overlay.py,gold_check.py}` (scratch 24 saat sonra
 temizlenir; `gold_check.py PAGE_ID --arms` tam `--evaluate` koşmadan tek sayfanın
 `check_reference`ını ve kol puanlarını verir — yeni gold yazarken hızlı kapı kontrolü).
+
+**Yeni değerlendirme koşusu** (`--evaluate`, iki gold yazıldıktan sonra): koşu
+`2b77eafb044a410ac4b3b872340126f7`, değerlendirme kimliği `c104af7f7f61…`; kanıt zinciri 10 hücre
+0 kopuk, `lifecycle.ok=true`, D hücreleri `valid_reuse` 10/10 (yeniden koşu gerekmedi), sapma
+kayıtları yalnız bilgilendirici (PLAN-7 §3). **B02 `5/10`** (plate-pocket 2 · drawing-2 6 ·
+flange-elbow 7 · enclosure 1 · exercise-12 14 = 30 claim). Açık kapılar: B02 (5 sayfa kaldı),
+B05 (20 VLM hücresi `to_run`), **B06** (V/VE hiç koşmadığı için `puanlanmış kol: yok` — önceki
+koşularda da aynı durumdaydı, bu değişiklikten bağımsız). B01/B03/B04/B07 kapalı.
+**Sırada:** `dev-flange-book` + kalan 4 raster frozen sayfa → 10/10 → B02 kapanır; B06/P6 için
+gerçek V/VE çağrıları kullanıcı onayı ister.

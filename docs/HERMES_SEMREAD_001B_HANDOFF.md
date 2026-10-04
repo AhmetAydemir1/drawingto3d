@@ -959,7 +959,7 @@ sonra, §24–§26).
   manifest 8dab4daa975b…); gold-src aynı; 7 claim"** — izlenen spec'ten birebir yeniden üretim.
 - `--check`: **"manifest: 7/10 sayfa izleniyor — TAMAM"** (`gold_content_identity: 40a95691…`;
   önceki 6/10 kimliği 21bf1195… idi).
-- Test: SEMREAD alt kümesi (`tests/test_semread_001b*.py`) — bkz. commit mesajı.
+- Test: SEMREAD alt kümesi (`tests/test_semread_001b*.py`): **183 geçti** (25:30; en yavaşlar kabul testleri) — ex13 spec'i dahil, kırılma yok.
 - Not: `gold_regions.py` ölçülen kutu claim'lerinde bilgilendirici "gerekçe `notes`ta olmalı"
   uyarısı verir (exit 1); gerekçeler spec `notes` + `measurement_reason` + her claim
   `target_reason` alanındadır — mevcut akışta engel değil (ex17 ile aynı davranış).

@@ -1,0 +1,102 @@
+{
+  "page_type": "raster",
+  "split": "frozen",
+  "vision_checked": true,
+  "scope": "Ø önekli çağrılar: Ø22.00 (bir çağrı — ön görünüşte dikey ölçü) ve Ø20.00 (iki çağrı — ön görünüşte dikey ölçü + yan görünüşte yatay ölçü). Doğrusal ölçüler (14.00, 10.00, 5.00, 4.00, 3.00) kapsam dışıdır: bu sayfanın gold'u frozen-exercise-12 ile tutarlı olarak yalnız Ø/R çağrılarını kapsar. Başlık bloğu, malzeme notu (AISI 304) ve izometrik görünüş boyut çağrısı değildir.",
+  "annotation_method": "Ölçülmüş ilke: her hedef kutu, pafta pikselinde satır/kolon taraması (siyah koşu analizi) + ızgaralı büyütülmüş kırpma ile görsel okumadan ölçüldü; çağrı metinleri harf harf görsel okundu (bu rasterda OCR çağrı satırlarını yakalamıyor: gözlem tablosunda Ø metin satırı yok).",
+  "measurement_reason": "Raster sayfada OCR çağrıları düşürüyor (Ø glifi kayboluyor); hedefler bu yüzden gözlem kimliği yerine ölçülmüş kutu olarak yazıldı. Her kutu, resmin çizilmiş kenarlarından (dikey/yatay siyah koşuların uçları) piksel cinsinden ölçüldü ve ızgaralı kırpmayla görsel olarak doğrulandı.",
+  "exhaustiveness": {
+    "scope": "predicates",
+    "predicates": [
+      "representation",
+      "physical",
+      "form",
+      "size",
+      "termination",
+      "depth"
+    ]
+  },
+  "notes": [
+    "Pafta: 3300x2550 piksel (Letter@300dpi varsayımı), ölçek alanı başlık bloğunda okunamadı; px/mm **bağımsız olarak** iki yazılı çaptan çıkarıldı ve dört doğrusal ölçüyle çapraz doğrulandı:",
+    "Ø22.00 → ön görünüşte kolon bandı yüksekliği 392 px → 17.82 px/mm; Ø20.00 → boru bandı yüksekliği 354 px → 17.70 px/mm; ortalama ≈ 17.76 px/mm.",
+    "Çapraz doğrulama (aynı px/mm ile): 14.00 → 248 px (bend merkezi–soket yüzü, üstten görünüş), 10.00 → 177 px (kolonlar arası boru boyu), 5.00 → 89 px (ön görünüş sol kolon boyu), 4.00 → 71 px (üstten görünüş sağ kolon boyu) — hepsi ±%0,5 içinde tutarlı.",
+    "Yan görünüşte iki eşmerkezli daire var: dış 390 px (= Ø22,00 kolon uç yüzü) ve iç 285 px (= 16,0 mm — yazılı çağrısı olmayan boru deliği, kapsam dışı). Borunun Ø20,00'si bu sayfada daire olarak çizilmemiş (kolonun arkasında kaldığı için bant olarak görünüyor).",
+    "D kolunun bu sayfadaki tek adayı '4' etiketidir (doğrusal ölçü) — Ø/R çağrıları bu rasterda OCR'a düşmediği için deterministik kol onlara ulaşamıyor; gold yalnız yazılı çağrıları kapsadığı için kapsam dışı bırakıldı.",
+    "Döngüsel kanıt yok (PLAN-8 §11): hiçbir claim'in ölçek dayanağı kendi yazılı değeri değil; her claim karşı çapın ölçümüne dayanıyor."
+  ],
+  "claims": [
+    {
+      "claim_id": "frozen-exercise-17-01",
+      "name": "Ø22.00 soket kolon dış çapı (ön görünüş dikey ölçü)",
+      "target_box_norm": [0.240758, 0.479804, 0.267727, 0.632745],
+      "target_reason": "Ön görünüşte Ø22.00 ölçüsünün uzatma çizgileri bu bandın üst (y=1223,5 px) ve alt (y=1613,5 px) kenarına bağlı; bant sol/sağ kenarları x=794,5 ve x=883,5 px (89 px = 5,00 mm kolon boyu). Ölçüm: satır/kolon siyah koşu taraması + ızgaralı kırpma (5x) görsel doğrulaması. Bandın yüksekliği 390 px → 22,0 mm (px/mm 17,76).",
+      "representation": "other",
+      "physical": "not_hole",
+      "form": "diameter",
+      "size": 22.0,
+      "unit": "mm",
+      "count_printed": null,
+      "termination": "unknown",
+      "depth": null,
+      "depth_state": "not_stated",
+      "state": "determinate_present",
+      "evidence": "Ön görünüşte dikey 'Ø22.00' ölçüsü (etiket x≈0,234-0,258, y≈0,705-0,780; ölçü çizgisi x≈0,2555): oklar uzatma çizgilerinin dışından içe bakar, ölçülen aralık bant yüksekliğidir (1223,5→1613,5 px). Aynı çap yan görünüşte dış daire olarak da çizili (390 px) ve üstten görünüşte kolon bandı 392 px; üçü de ≈22,0 mm verir.",
+      "source_evidence": "vision + piksel taraması: izgara kırpma ex17_front.png / ex17_lbl_front.png (6x) 'Ø22.00' yazısını harf harf doğruladı; lines_report.py ile ön görünüş bandı kenarları (x=794,5/883,5; y=1223,5/1613,5 px) ölçüldü.",
+      "corroboration": {
+        "kind": "independent_scale",
+        "basis": "Ø20.00 boru bandı yüksekliği (ön görünüş, 354 px)",
+        "basis_value": 20.0,
+        "scale_px_per_mm": 17.76
+      }
+    },
+    {
+      "claim_id": "frozen-exercise-17-02",
+      "name": "Ø20.00 boru dış çapı (ön görünüş dikey ölçü)",
+      "target_box_norm": [0.267727, 0.486863, 0.321364, 0.625686],
+      "target_reason": "Ön görünüşte zeytin renkli 'Ø20.00' ölçüsünün uzatma çizgileri boru bandının üst (y=1241,5 px) ve alt (y=1595,5 px) kenarına bağlı; bandın sol/sağ kenarları x=883,5 ve x=1060,5 px (177 px = 10,00 mm boru boyu). Ölçüm: siyah koşu taraması + ızgaralı kırpma (4x/6x) görsel doğrulaması. Yükseklik 354 px → 20,0 mm (px/mm 17,76).",
+      "representation": "other",
+      "physical": "not_hole",
+      "form": "diameter",
+      "size": 20.0,
+      "unit": "mm",
+      "count_printed": null,
+      "termination": "unknown",
+      "depth": null,
+      "depth_state": "not_stated",
+      "state": "determinate_present",
+      "evidence": "Ön görünüşte dikey 'Ø20.00' ölçüsü (etiket x≈0,276-0,296, y≈0,751-0,826; ölçü çizgisi x≈0,2995): oklar dıştan içe, ölçülen aralık 1241,5→1595,5 px = 354 px = 20,0 mm. Boru çapı üstten görünüşte de aynı genişlikte (354 px) bant olarak çizili; yan görünüşte kolonun arkasında kaldığı için daire olarak görünmüyor.",
+      "source_evidence": "vision + piksel taraması: ex17_lbl_front.png (4x) 'Ø20.00' yazısını ve ölçü çizgisini doğruladı; lines_report.py ile boru bandı kenarları (x=883,5/1060,5; y=1241,5/1595,5 px) ölçüldü.",
+      "corroboration": {
+        "kind": "independent_scale",
+        "basis": "Ø22.00 kolon bandı yüksekliği (ön görünüş, 392 px)",
+        "basis_value": 22.0,
+        "scale_px_per_mm": 17.76
+      }
+    },
+    {
+      "claim_id": "frozen-exercise-17-03",
+      "name": "Ø20.00 boru dış çapı (yan görünüş yatay ölçü)",
+      "target_box_norm": [0.521061, 0.688431, 0.628333, 0.757843],
+      "target_reason": "Yan görünüşün alt yarısında zeytin renkli 'Ø20.00' ölçüsü (etiket x≈0,44-0,50, y≈0,713-0,732) yatay ölçü çizgisi y=1876,6 px üzerindedir ve okları boru bandının dikey kenarlarına (x=1719,5 ve x=2073,5 px) bakar; bandın üst/alt kenarları y=1755,5 ve y=1932,5 px (177 px = 10,00 mm kolonlar arası boy). Ölçüm: satır/kolon taraması + ASCII yoğunluk haritası + ızgara kırpma. Genişlik 354 px → 20,0 mm (px/mm 17,76).",
+      "representation": "other",
+      "physical": "not_hole",
+      "form": "diameter",
+      "size": 20.0,
+      "unit": "mm",
+      "count_printed": null,
+      "termination": "unknown",
+      "depth": null,
+      "depth_state": "not_stated",
+      "state": "determinate_present",
+      "evidence": "Yan görünüşte 'Ø20.00' (zeytin katman) ölçü çizgisi her iki ucunda içe bakan oklarla 1719,5→2073,5 px arasını ölçer = 354 px = 20,0 mm; ölçü çizgisi bandın tam ortasındadır (y=1876,6 px). Aynı bant üstten görünüşte ve ön görünüşte de 354 px genişliğinde çizili.",
+      "source_evidence": "vision + piksel taraması: ex17_side.png (ızgara) ve ex17_lbl_side.png (5x) 'Ø20.00' yazısını harf harf doğruladı; ascii_map.py ile alt yarı yapısı, lines_report.py ile bant kenarları (x=1719,5/2073,5; y=1755,5/1932,5 px) ölçüldü.",
+      "corroboration": {
+        "kind": "independent_scale",
+        "basis": "Ø22.00 kolon bandı yüksekliği (ön görünüş, 392 px)",
+        "basis_value": 22.0,
+        "scale_px_per_mm": 17.76
+      }
+    }
+  ],
+  "reconstruction_note": "PLAN-8 §24 madde 5: frozen-exercise-17 gold'u §11 kuralına göre yazıldı — ölçek, hiçbir claim'in kendi yazılı değerinden türetilmedi; her claim karşı çapın ölçümüne dayanıyor ve hedefler ölçülmüş kutulardır (px/mm çıkarılamasa bile ölçülmüş kutu geçerlidir)."
+}

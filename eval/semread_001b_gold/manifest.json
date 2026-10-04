@@ -1,6 +1,6 @@
 {
   "schema": "semread-001b-gold-manifest/1",
-  "created_at": "2026-10-04T13:53:37+00:00",
+  "created_at": "2026-10-04T14:06:09+00:00",
   "note": "izlenen kanonik gold spec'leri ve üretilmiş referans hash'leri; P5 dondurma bu manifestin hash'ine bağlanır (PLAN-8 §4, §16). `--check`/`--freeze` ile doğrulanır.",
   "pages": [
     {
@@ -62,6 +62,22 @@
       "reference": "out/lab/semread-001b/corpus/gold/frozen-exercise-12.json",
       "reference_sha256": "bf5d3f7e931d7220dbda98a60e3be7ba54c95e72e6b80d2512ccf5dbc8663261",
       "claim_count": 14,
+      "annotator": "agent",
+      "review_status": "provisional",
+      "vision_checked": true,
+      "exhaustiveness": "predicates"
+    },
+    {
+      "page_id": "frozen-exercise-17",
+      "split": "frozen",
+      "page_type": "raster",
+      "source": "examples/pdf with steps/3/Exercise 17.PNG",
+      "source_sha256": "5c926b6dc7e881204fbb60945eb435a0184250a907a32910166ea41cd4e0b2f5",
+      "spec": "eval/semread_001b_gold/specs/frozen-exercise-17.json",
+      "spec_sha256": "8a030c770ed975ac2463f6e8dc9580b5072908fc6c762e09537107928082919a",
+      "reference": "out/lab/semread-001b/corpus/gold/frozen-exercise-17.json",
+      "reference_sha256": "a5ebee5c803a20a2f860f85fb124cc9ccec061a7cb39c8b0b522aaaf99717f10",
+      "claim_count": 3,
       "annotator": "agent",
       "review_status": "provisional",
       "vision_checked": true,

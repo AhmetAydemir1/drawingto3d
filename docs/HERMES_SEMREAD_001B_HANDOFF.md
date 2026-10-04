@@ -797,3 +797,38 @@ gerektirir; bağımsız dayanak yoksa `corroboration.kind = none` ve mm değeri 
 → 6) `dev-flange-book` → 7–9) `frozen-exercise-51`, `-13`, `views-exercise` → 10) 10/10 gold →
 11–12) tek değerlendirme (`B02`+`B07` kapalı, `B05`/`B06` açık kalır) → 13) temiz klon denetimi →
 14) P5 dondurma → 15) ancak ondan sonra V/VE.
+
+### 6o. P3 — `frozen-exercise-17` gold'u (PLAN-8 §24 madde 5; §11 kuralına uygun) → izlenen 6/10
+
+**Sayfa:** Letter@300dpi varsayımı, 3300x2550 px; OCR bu rasterda Ø çağrılarını düşürüyor
+(gözlem tablosunda çağrı metin satırı **yok**) → hedefler **ölçülmüş kutu**, kanıt **vision +
+piksel taraması** (§10/§16).
+
+**Ölçek (döngüsel değil, §11):** px/mm ≈ **17,76** iki yazılı çaptan bağımsız olarak çıkarıldı —
+Ø22.00 → ön görünüşte kolon bandı 392 px (17,82), Ø20.00 → boru bandı 354 px (17,70) — ve dört
+doğrusal ölçüyle çapraz doğrulandı: 14.00 → 248 px, 10.00 → 177 px, 5.00 → 89 px, 4.00 → 71 px
+(hepsi ±%0,5). Başlık bloğundaki SCALE değeri kırpmada bulunamadı; notlarda açıkça yazılı.
+
+**Yazılan 3 claim** (hepsi `target_box_norm` + `target_reason` + `corroboration=independent_scale`,
+dayanak **karşı çap**):
+
+| claim | çağrı | hedef (px) | ölçüm |
+| --- | --- | --- | --- |
+| `-01` | Ø22.00 (ön görünüş dikey) | [794,5 · 1223,5 · 89 · 390] | 390 px → 22,0 mm |
+| `-02` | Ø20.00 (ön görünüş dikey) | [883,5 · 1241,5 · 177 · 354] | 354 px → 20,0 mm |
+| `-03` | Ø20.00 (yan görünüş yatay) | [1719,5 · 1755,5 · 354 · 177] | 354 px → 20,0 mm |
+
+Kapsam dışı (gerekçeli): doğrusal ölçüler (14.00/10.00/5.00/4.00/3.00) — ex12 ile tutarlı olarak
+gold yalnız Ø/R çağrılarını kapsıyor; yan görünüşteki iç daire (285 px ≈ 16,0 mm, yazılı çağrısı
+yok) da kapsam dışı. D kolunun tek adayı "4" (doğrusal) → `unscorable_extra_candidates: 1`,
+yanlış-pozitif değil.
+
+**Sonuçlar:** `check_reference` **ok: true**, sha `a5ebee5c803a…`; `gold_check` — D: 3 claim'in
+3'ü eşleşmedi (0/3), V/VE hücresi yok. Manifest **6/10**, `--check` TAMAM,
+`--verify --page frozen-exercise-17` TAMAM (ölçülmüş kutulu olduğu için OCR'sız, saniyeler içinde).
+`--freeze` hâlâ AÇIK: kalan 4 sayfa `dev-flange-book`, `frozen-exercise-13`, `frozen-exercise-51`,
+`frozen-views-exercise`.
+
+**Sıradaki:** `frozen-exercise-13` veya `-51` gold'u (aynı yöntem: ızgara kırpma + satır/kolon
+taraması + ASCII harita; gerekirse `callout_texts` ile gözlem kimliği) → 10/10 → tek değerlendirme
+→ temiz klon denetimi (`--verify` tüm sayfalar) → P5 dondurma.

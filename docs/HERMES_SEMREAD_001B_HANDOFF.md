@@ -532,18 +532,24 @@ Gözlem dökümleri hazır: `out/lab/semread-001b/corpus/observations/{dev-flang
 | dev-flange-elbow | `examples/flange-elbow-90.png` | **871×1024** (A4 200 dpi **değil**) | 333 (173 çizgi, 2 daire, 131 yay, 11 linear, 16 metin) | kısmen sayılar (`50/150/260/360`, `4x2-030`, `4x2-960`, `C10`), gerisi gürültü (`oe`, `a8 a 7 rH`, `CuSLATHA`) |
 
 **Vision okuması (bu pencerede yapıldı, `dev-flange-elbow`):** sayfa 90° dirsek + iki kare flanş.
-Çağrılar ve işaret ettikleri: `4-R20` kare plakanın köşe yarıçapı (iki görünüşte de), `R110` flanş-boru
-birleşim yayı, `4x2-Ø60` + `4x2-Ø30` flanş cıvata deliği deseni (Ø30 geçen + Ø60 havşa; iki flanş ×
-4 delik), `Ø210` + `Ø290` dirsek borusunun iç/dış çapı (kesit), `R260` boru ekseninin büküm yarıçapı,
+Çağrılar ve işaret ettikleri: `4-R20` kare plakanın köşe yarıçapı (iki görünüşte de), **`R10`** boru
+yüzeyi ile flanş plakası yüzünün birleştiği iç köşedeki fileto (etiket iki görünüşte de zoom ile harf
+harf okundu; bu notun önceki sürümündeki `R110` okuması **yanlıştı** — düzeltildi), `4x2-Ø60` +
+`4x2-Ø30` flanş cıvata deliği deseni (Ø30 geçen delik + Ø60 havşa; iki flanş × 4 delik = 8),
+`Ø210` + `Ø290` dirsek borusunun iç/dış çapı (kesit), `R260` boru ekseninin büküm yarıçapı,
 `C10` pah. Doğrusal: 360/260/150/50/10.
 
 **Yöntem kararları (sıradaki pencere için):**
 
 * Raster gold §16 gereği `vision_checked=true` + claim başına `vision` kanıtı ister; `size`
   doğrulaması **görsel okumaya** dayanır ve `evidence` bunu yazmalı.
-* Raster sayfalarda **px/mm bilinmiyor** (871×1024 ve 3300×2550, 200 dpi A4 değil) → PDF'teki gibi
-  "ölçülen çap = basılı değer" doğrulaması yapılamaz; hedef bölge Hough primitifinden seçilir,
-  eşleşme görsel olarak doğrulanır.
+* Raster sayfalarda **px/mm baştan yazılı değil** (871×1024 ve 3300×2550, A4 200 dpi değil) ama
+  **sayfanın kendi ölçü zincirinden türetilebilir**: elbow'da plaka kenarları (597,5→787 px = 360 mm)
+  → 0,5264 px/mm, ve bu ölçek boru duvarlarıyla bağımsız doğrulandı (dış 153 px = 290,6 mm, iç
+  111 px = 210,9 mm → çağrı değerleriyle birebir). Yani "ölçülen = basılı değer" doğrulaması rasterda
+  da yapılabilir; yapılamadığı sayfada `size` görsel okumaya dayanır ve `evidence` bunu yazmalı.
+* Hedef bölge için kaynak seçimi: ölçülebilir bir ölçü zinciri varsa **piksel koşu ölçümü** (tercih),
+  yoksa Hough primitifi, o da güvenilmezse ızgaralı görsel okuma (§6j-1'de karar verildi).
 * Aynı özellik birden çok görünüşte çizili (elbow'da her flanş iki görünüşte): **tek özellik = tek
   claim**; hedef, özelliğin en net çizildiği görünüşün primitifi, diğeri gold notunda anılır.
 * `dev-flange-book`'un görsel okuması ve spec'i sıradaki adımdır (döküm hazır; OCR üç çağrıyı zaten
@@ -572,13 +578,93 @@ Sıra (değişmedi): raster dev gold'ları → 6 frozen gold → **tek `--d` ko�
   (sağ-alt flanş, x 0,40–1,00 / y 0,44–1,00) — scratch 24 saatte silindiği için gerekirse
   tek komutla yeniden üretilir.
 * `dev-flange-elbow` hedef adayları (kutuları okunacak): Ø210 + Ø290 → kesitteki boru ağzı
-  (dikey flanş yüzü x≈0,49–0,51), R260 → kesitteki kesikli eksen yayı, C10 → pah kenarı,
-  4-R20 → kare plakanın köşe yayı, `4x2-Ø60` + `4x2-Ø30` → cıvata deliği deseni, R110 → flanş-boru
-  birleşim yayı.
+  (dikey flanş yüzü x≈0,49–0,51), R260 → kesitteki kesikli eksen yayı, 4-R20 → kare plakanın köşe
+  yayı, `4x2-Ø60` + `4x2-Ø30` → cıvata deliği deseni, `R10` → flanş-boru birleşim filetosu.
+  (C10 pahı şemada karşılığı olmadığı için kapsam dışı.)
 * **Çözüldü (zoom, 0,01 ızgara):** iki çağrı birebir `4x2-Ø60` ve `4x2-Ø30` (kutuları ≈ x 0,76–0,85;
   üstteki y 0,485–0,507, alttaki y 0,530–0,552). Anlamı: kenar (kesit) görünüşünde her cıvata deliği
   iki çaplı çizilmiş — Ø30 geçen delik + Ø60 havşa/spot yüzey; metindeki `4x2` = **iki flanş × 4
   delik = 8**. Bu yüzden `count_printed` iki claim'de de **8** yazılacak ve gerekçe `evidence`ta
   duracak (VLM bu görünüşte 4 delik görecek; "printed" ile "found" ayrımı tam da burada ölçülüyor).
-* **Açık kalan tek soru:** `R110`'un hedefi (flanş-boru birleşim yayı mı, plaka köşesi mi) — zoom
-  ile netleşmeden spec yazılmamalı; netleşmezse claim kapsam dışı bırakılıp `scope`ta anılır.
+* **Çözüldü:** `R110` diye bir çağrı yok — iki görünüşteki eğik etiket de zoom ile harf harf **`R10`**
+  okundu ve iki leader oku da boru yüzeyi ile flanş yüzünün iç köşesine oturuyor (sol üst görünüşte
+  (0,468; 0,437), sağ alt görünüşte (0,868; 0,635)). İlk düşük çözünürlüklü okuma `R110` sanmıştı.
+
+#### 6j-2. `dev-flange-elbow` gold'u yazıldı — gold 3/10
+
+Spec: `out/lab/semread-001b/corpus/gold-specs/dev-flange-elbow.json` → `gold-src/` → `gold/dev-flange-elbow.json`
+(7 claim, `check_reference` yapısıyla birebir: `target.region` normalize, `observation_id: null`,
+`review_status: provisional`). Yedi dış çağrının hepsi claim oldu; doğrusal ölçüler (150/260/360/50/10)
+ve `C10` pahı `scope`ta kapsam dışı yazılı.
+
+**Hedef bölgeler nasıl ölçüldü** (Hough kullanılmadı; ölçüm zinciri `evidence` alanlarında):
+
+| claim | hedef | ölçüm |
+| --- | --- | --- |
+| 01 Ø290 | kesit, flanş ağzı, dış duvar bandı | y 757→910 px = 153 px = 290,6 mm |
+| 02 Ø210 | aynı ağızda iç boşluk | y 778→889 px = 111 px = 210,9 mm |
+| 03 4x2-Ø30 | kenar (kesit) görünüşündeki geçen delik | görsel kutu (0,838–0,878 / 0,596–0,644); çap metinden (≈16 px ölçüm gürültüsünde) |
+| 04 4x2-Ø60 | ön görünüşteki cıvata deliği dairesi | merkez (623,8; 766,3) px — plaka kenarından 50 mm içeride; delik dairesi ±16 px |
+| 05 R260 | kesitteki kesikli eksen yayı bandı | x=174'te duvarlar 749–758/803–809 → eksen ≈780 px; x=278'de 871–874/894–897 → ≈884 px |
+| 06 4-R20 | plakanın sağ üst köşe yayı | plaka kenarları x=787, y=740 px (px koşusuyla) |
+| 07 R10 | birleşim filetosu köşesi | leader oku ≈ (0,468; 0,437) |
+
+**Bilinen sınır (gold notunda da yazılı):** Ø210 ile Ø290 eş merkezli olduğu için hedef kutuları iç
+içe; değerlendirmenin belirsizlik kuralı bu iki claim'i eşleştirmede belirsiz sayabilir. Bu davranış
+iki kolda (D, V/VE) aynı işler, yani karşılaştırmayı bozmaz — ölçüm gücünü azaltır, onu da not düştük.
+
+**Kalan:** `dev-flange-book` + 6 frozen sayfa → 10/10 → `--evaluate` (B02 kapanır) → P5 dondurma.
+
+### 6k. PLAN-7 AUDIT-FIX-1/2 — kimlik koşuya ait, B07 gerçek model girdisini kanıtlar (B07 KAPANDI)
+
+`docs/PLAN-7.md` (§3–§5, §25/§26) uygulandı. Plan metni artık repoda: `docs/PLAN-7.md`.
+
+**AUDIT-FIX-1 — değerlendirme kimliği koşuya aittir.** `evidence_chain_report()`, attempt'in
+yaratılış anındaki `evaluation_identity`siyle güncel kimliği karşılaştırmayı **bıraktı**. Yerine yeni
+`evaluation_context()` koşu seviyesinde şunları denetler: `payload.evaluation_identity` güncel mi,
+`payload.evaluation_run_id` seçili attempt'lerden yeniden hesaplanan koşu kimliğine eşit mi,
+`selected-attempts.json` kimliği + koşu kimliği güncel mi, seçili küme hücrelerle **birebir** örtüşüyor
+mu, aynı koşu klasörü kararlı mı. Hücre bazında yeni `selected_artifact` halkası,
+`selected-attempts.json`da yazılı `attempt_id` + `manifest_sha256` + `result_sha256`'i diskteki
+dosyalarla karşılaştırır (PLAN-7 §5). Attempt'in eski kimliği artık yalnız **bilgilendirici sapma**:
+`attempt_evaluation_identity_drift` + hücre başına `attempt_evaluation_identity_at_creation`; yeniden
+inference gerektirmez ve B07'yi açmaz. Eski `evaluation_stale_cells` alanı kaldırıldı; **B07 artık
+`chain.complete + lifecycle.ok + evaluation_run.ok + bilinmeyen kollu bütçe kaydı yok`** üzerinden
+kapanır.
+
+**AUDIT-FIX-2 — V/VE kanıtı sayfa PNG'si değil gerçek hazırlanmış girdidir.** Gönderilmiş her V/VE
+attempt'inde `prediction-input.json` okunur, `prediction_input_identity()` **yeniden hesaplanır** ve
+manifest/result/geçmiş satırı/seçili-attempt alanlarıyla eşitliği aranır (`prediction_input_artifact`
++ `prediction_input_identity` halkaları); ek olarak `model_identity`, `runtime`, `request_record`
+(istek manifesti **ve** istek hash'i) denetlenir. `page_png_sha256` yalnız meta veri olarak kalır.
+Gönderilmemiş (yerel ret/blok) attempt'te model girdisi **yoktur**: `prediction_input_identity =
+not_applicable` ve kanıt olarak `no_dispatch_evidence` (blocking/error kaydı) aranır — uydurma kanıt
+yazılmaz. D kolunda model girdisi, model kimliği ve runtime `not_applicable`; D'nin girdi bütünlüğü
+kaynak + sayfa PNG + hazırlama sözleşmesidir ve `input_identity` artık manifest alanıyla **eşitlik**
+olarak denetlenir (10 D attempt'inde tutuyor). Manifeste `prediction_input_state` alanı eklendi
+(`recorded` / `not_applicable_no_model_input`).
+
+**Testler.** `tests/test_semread_001b_acceptance.py` **26 passed**: koşu kimliği sapması, koşu
+kimliğinin seçili attempt'leri bağlaması, seçili kümenin hücreleri birebir kapsaması, bozuk
+`prediction-input.json`, bozuk manifest kimliği, eksik prediction-input artefaktı, gönderilmemiş
+attempt'in yerel ret kanıtı, D'de not_applicable, ve **"gold/evaluator değişti → geçerli D tahmini
+hâlâ yeniden kullanılabilir"** (rerun yok). Eski `test_a_stale_evaluation_identity_breaks_the_chain`
+testi silindi (yanlış sözleşmeyi bağlıyordu); yerine bilgilendirici sapma testi geldi.
+
+**Ölçülen durum (bu pencere, gerçek lab, 0 inference):**
+
+```text
+--evidence   : complete=true, 10/10 hücre, kopuk halka 0
+--evaluate   : run 33360aa3604f3107d759230b488924f4, değerlendirme kimliği f2b40123524e…
+               kanıt zinciri 10/10, evaluation_run ok=true, sapma (yalnız bilgi) 10 hücre
+kapılar      : B01, B03, B04, B07 KAPALI; B02 (gold 2/10), B05 (20 VLM hücresi to_run),
+               B06 (karşılaştırma ölçülmedi) AÇIK  → PLAN-7 §15'in beklediği P6 öncesi durum
+bütçe        : 0/30 (değişmedi); D tahminleri **yeniden koşulmadı** (10 attempt aynı kaldı,
+               yalnız yeni değerlendirme koşusu açıldı)
+```
+
+**Sıradaki iş:** PLAN-7 §25'in 1–3. maddeleri (bu bölüm) bitti; P3 gold ilerliyor — `dev-drawing-2`
+(6 claim) ve `dev-flange-elbow` (7 claim) yazıldı, **gold 3/10**. Sırada `dev-flange-book` (döküm
+hazır, OCR üç çağrıyı okumuş) → 6 frozen sayfa → 10/10 → `--evaluate` (**B02 kapanır**; D hücreleri
+PLAN-7'den sonra yalnız bilgilendirici sapma taşıdığı için yeniden koşu gerekmez, yalnız gerçekten
+bayat hücre için tek `--d` koşusu) → P5 dondurma. P6 (gerçek V/VE, ücretli çağrı) kullanıcı onayı ister.

@@ -368,6 +368,39 @@ sıfır inference). **P5:** dondurma manifesti + 20 frozen V/VE çağrısı (ger
    düzeltmesi). Doğrusal ölçüler (1 00,00 / 80,00 / 60,00 / 15,00) kapsam dışı ve `scope` alanında
    yazılı.
 
+#### P3 sıradaki sayfalar — keşif durumu
+
+* `dev-drawing-2` (pdf, iki görünüşlü, "Exercise 1"): çağrı metinleri **çıkarıldı** (gözlem
+  tablosundan; hedef bölgeler henüz belirlenmedi): `R20` (t53), `Ø20` (t57), `Ø30` (t59), `Ø25`
+  (t60), `Ø50` (t61), `Ø40` (t62); derinlik/doğrusal ölçüler: 80 (t49), 60 (t50), 35 (t51), 57
+  (t52), 37 (t54), 20 (t55), 26 (t56), 6 (t58), 20/40 (t63/t64), 10 (t65). Pafta dikey
+  (1653×2339). Yazım için: alt görünüşte sol taraftaki yuvarlak çıkıntı (Ø50 dış) + iç deliği
+  (Ø30), sağ blok (Ø40/20) ve `R20` yayı; her leader'ın hangi özelliğe gittiği **yakınlaştırılarak**
+  doğrulanmalı (gold yazılmadan önce).
+* `dev-flange-book` (raster PNG), `dev-flange-elbow` (raster PNG): §16 gereği `vision_checked=true`
+  + claim başına `vision` kanıtı; OCR metni tek başına gold değildir.
+* 6 frozen sayfa (exercise-51/12/17/13 raster+pdf, enclosure pdf, views-exercise jpg): gold'u
+  **frozen V/VE çağrılarından önce** yazılmalı (P5).
+
+`eval/semread_001b_gold_regions.py` bu işin kalıcı aracıdır: spec JSON'daki
+`target_observation`/`callout_texts` alanlarından piksel kutularını üretir, eksik `evidence`/
+`source_evidence`/raster-vision şartlarını **yazmadan önce** uyarır (`--write` olmadan kuru çalışır).
+
+#### D kolunun dev koşusu (bu pencerede)
+
+`--d --split dev` arka planda çalışıyor (`proc_fe3fd82419aa`, **sıfır inference**). İlk matris
+görüntüsü (koşu 1. sayfayı bitirdiğinde): `deterministic:valid_reuse 1`, `deterministic:to_run 9`,
+`vlm:to_run 20`. Koşu sürerken `src/drawingto3d/semantic_evaluation.py` düzenlendi: **aynı koşu
+içinde farklı değerlendirme kimliği** taşıyan attempt'ler oluşabilir (o an yazılan kayıt o anki
+kimliği taşır). Bu yüzden koşu bitince, **kod düzenlemesi yapılmadan** bir `--d --split dev`
+daha koşulmalı; ancak ondan sonra `--matrix`/`--evaluate` "her hücre nihai" demeyi hak eder.
+Ders: koşu sürerken kod dosyalarına (özellikle `EVALUATION_IDENTITY_FILES`) dokunulmaz.
+
+Tam suite notu: arka planda başlatılan `pytest -q` (değişikliklerin ortasında başlamıştı)
+**1098 geçti, 0 fail** ile bitti; bu pencerenin kendi doğrulaması ise `pytest -k "semread or
+semantic"` **320 geçti** + `test_semread_001b_acceptance.py` (15) + `test_semread_001b_reference.py`
+(22) koşularıdır.
+
 Not: `EVALUATION_IDENTITY_FILES` içinde `eval/semread_001b_pilot.py` var — pilot/dosya
 düzenlemeleri değerlendirme kimliğini değiştirir ve seçili attempt'leri "bayat" yapar. Bu yüzden
 sıra: **kod düzenlemeleri bitince D koşusu**, sonra doküman düzenlemeleri (dokümanlar kimliğe

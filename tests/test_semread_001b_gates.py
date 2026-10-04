@@ -562,7 +562,7 @@ def test_every_frozen_setting_is_actually_sendable(scratch_budget):
     supported = {field.name for field in dataclasses.fields(pilot.ChatSettings)}
     # `input_strategy` sözleşme-üstü kavram; `image_label_prefix` taşımaya ayrı kwarg olarak
     # gider (aşağıda okuyucu testi onu bağlar).
-    sendable = set(pilot.SETTINGS) - {"input_strategy", "image_label_prefix"}
+    sendable = set(pilot.SETTINGS) - {"raw_page_strategy", "image_label_prefix"}
     assert sendable <= supported, f"taşımada karşılığı olmayan donmuş ayar: {sendable - supported}"
     assert "top_p" not in pilot.SETTINGS and "seed" not in pilot.SETTINGS, \
         "gönderilmeyen seçenek donmuş sözleşmede yer almamalı (PLAN-3 §4 alternatifi)"
@@ -661,3 +661,27 @@ def test_acceptance_rows_consumes_flattened_records(scratch_budget, monkeypatch)
         monkeypatch.setattr(pilot, "read_json", lambda _path, _s=state: _s)
         rows = pilot.acceptance_rows(payload)
         assert isinstance(rows, dict) and rows
+
+
+# ------------------------------------------- PLAN-4 §7/§8: tek ayar kaynağı + kanıt modu
+
+
+def test_there_is_exactly_one_settings_source(scratch_budget):
+    """PLAN-4 §7: ikinci bir ayar tanımı kalmamalı."""
+    source = (pilot.ROOT / "src/drawingto3d/semantic_candidate_reader.py").read_text(encoding="utf-8")
+    # Tarihsel notta adı geçebilir; yasak olan **tanım**dır.
+    assert "SHARED_SETTINGS =" not in source and "SHARED_SETTINGS:" not in source
+    assert '"top_p"' not in source and "20261004" not in source
+    assert '"temperature"' not in source and "temperature:" not in source, \
+        "sıcaklık tanımı yalnız sözleşmede yaşamalı"
+
+
+def test_arm_evidence_mode_is_explicit(scratch_budget):
+    """PLAN-4 §8: kanıt modu kola bağlı ve açık bir alan."""
+    assert pilot.SETTINGS["raw_page_strategy"] == "single_full_page"
+    assert "input_strategy" not in pilot.SETTINGS
+    assert pilot.arm_evidence_mode("V") == "none"
+    assert pilot.arm_evidence_mode("VE") == "deterministic_overlay_and_table"
+    source = (pilot.ROOT / "src/drawingto3d/semantic_candidate_reader.py").read_text(encoding="utf-8")
+    assert '"evidence_mode": EVIDENCE_MODES[arm]' in source, "bundle kanıt modunu taşımalı"
+    assert '"arm_input_variant"' in source

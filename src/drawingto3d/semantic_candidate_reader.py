@@ -25,13 +25,16 @@ from drawingto3d.semantic_candidates import (CANDIDATE_READER_VERSION, Candidate
                                              parse_candidate_json)
 from drawingto3d.semantic_images import (PreparedImage, SourcePage, overlay_from_observations,
                                          prepare_full_page)
-from drawingto3d.semantic_run_contract import IMAGES_LAYOUT, IMAGE_LABEL_PREFIX
+from drawingto3d.semantic_run_contract import (EVIDENCE_MODES, IMAGES_LAYOUT,  # noqa: E501
+                                               IMAGE_LABEL_PREFIX)
 
 V_ARM = "V"
 VE_ARM = "VE"
 ARMS = (V_ARM, VE_ARM)
 # Kollar aynı generation ayarlarıyla çalışır: bu üçlü yalnız kayıt için burada durur.
-SHARED_SETTINGS = {"temperature": 0.0, "top_p": 1.0, "seed": 20261004}
+# Not (PLAN-4 §7): burada eskiden bir SHARED_SETTINGS sözlüğü vardı (temperature/top_p/seed).
+# Üretimi etkileyen ayarların **tek** kaynağı `semantic_run_contract.SETTINGS`; ikinci bir tanım
+# gerçek istekle çelişebilirdi. Kaldırıldı.
 OVERLAY_IMAGE_ID = "image-2"          # ham sayfa kimliği image-1'dir; overlay ayrı ama nötr kimlik
 RAW_IMAGE_ID = "image-1"
 
@@ -79,7 +82,8 @@ def prepare_arm_inputs(source: "SourcePage", observations: Observations, *, imag
         images.append(overlay)
         table = observation_table(observations)
     return {"arm": arm, "images": images, "image_ids": [image.image_id for image in images],
-            "page_image_id": image_id, "observations": table}
+            "page_image_id": image_id, "observations": table,
+            "arm_input_variant": arm, "evidence_mode": EVIDENCE_MODES[arm]}
 
 
 def leak_check(text: str, forbidden: list[str]) -> list[str]:
@@ -158,5 +162,5 @@ def read_page(chat, bundle: dict, *, forbidden: list[str], num_predict: int | No
     return outcome
 
 
-__all__ = ["ARMS", "OVERLAY_IMAGE_ID", "RAW_IMAGE_ID", "SHARED_SETTINGS", "V_ARM", "VE_ARM",
+__all__ = ["ARMS", "OVERLAY_IMAGE_ID", "RAW_IMAGE_ID", "EVIDENCE_MODES", "V_ARM", "VE_ARM",
            "leak_check", "observation_table", "prepare_arm_inputs", "read_page"]

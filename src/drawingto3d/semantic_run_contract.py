@@ -21,6 +21,20 @@ PAGE_IMAGE_ID = "image-1"
 GOLD_SENTINEL = "semread-001b-gold-sentinel-4f21"
 CASE_SCHEMA = "semread-001b-case/1"
 
+# Ham sayfa stratejisi ve kola bağlı kanıt modu (PLAN-4 §8): ortak bir "input_strategy" alanı
+# VE'nin fazladan aldığı kanıtı gizleyebilirdi; ikisi ayrı adlarla yazılır.
+RAW_PAGE_STRATEGY = "single_full_page"
+ARM_VARIANTS = {"V": "V", "VE": "VE"}
+EVIDENCE_MODES = {"V": "none", "VE": "deterministic_overlay_and_table"}
+
+
+def arm_evidence_mode(arm: str) -> str:
+    """Kolun kanıt modu: V ham sayfa, VE ham sayfa + nötr overlay + gözlem tablosu."""
+    if arm not in EVIDENCE_MODES:
+        raise ValueError(f"bilinmeyen kol: {arm}")
+    return EVIDENCE_MODES[arm]
+
+
 # Çerçeveleme: okuyucu (semantic_candidate_reader) bu değerleri buradan alır — kopya literal yok.
 IMAGES_LAYOUT = "per_image_message_labeled"
 IMAGE_LABEL_PREFIX = "Image ID: "
@@ -37,7 +51,7 @@ NUM_PREDICT = 2048
 SETTINGS = {"num_ctx": 8192, "temperature": 0.0,
             "num_predict": NUM_PREDICT, "keep_alive": "5m", "image_max_side": IMAGE_MAX_SIDE,
             "images_layout": IMAGES_LAYOUT, "image_label_prefix": IMAGE_LABEL_PREFIX,
-            "input_strategy": "single_full_page"}
+            "raw_page_strategy": RAW_PAGE_STRATEGY}
 
 # Görüntü hazırlama sözleşmesi (preprocessing identity): hazırlama kodu bu dosyalarda yaşar.
 PREPROCESSING_FILES = ("src/drawingto3d/semantic_images.py",

@@ -209,8 +209,14 @@ Karar kaydı: §4'ün "tercih edilen" yolu (top_p/seed'i taşıma katmanına ekl
 kapanabiliyor). **P3:** 10/10 gold (PDF metin katmanı, raster vision). **P4:** D'nin 10 hücresi
 (4'ü hazır). **P5:** dondurma manifesti.
 
-**Test durumu:** `pytest tests/test_semread_001b_gates.py tests/test_semread_001b.py tests/test_semantic_candidates.py -q`
-→ **71 passed in 230.69s** (20 kapı + 25 + 26). Yeni P0 testleri: değişmez attempt klasörleri,
-attempt geçmişinin üzerine yazılmaması, üretici/değerlendirici kimlik ayrımı, değişen sayfa PNG'siyle
-bayatlayan attempt, yabancı üretici kimliğinden gelen attempt'in reddi, runtime uyuşmazlığında
-gönderimin engellenmesi (rezervasyon defterde kalır).
+### 6d. Test durumu (tek güncel blok — PLAN-4 §31)
+
+`pytest tests/test_semread_001b_gates.py tests/test_semread_001b.py tests/test_semantic_candidates.py tests/test_semantic_reader_probe.py -q`
+→ son doğrulanan tam koşu: **139 geçti, 0 fail** (32 kapı + 25 + 26 + 56). PLAN-4 §7/§8 değişikliklerinden
+sonraki koşu bu satırın yanında güncellenir; eski "71 passed" bloğu kaldırıldı (bayat durum iki kez yazılmaz).
+Kapsanan yeni testler: değişmez attempt klasörleri, attempt geçmişinin üzerine yazılmaması,
+üretici/değerlendirici kimlik ayrımı, değişen sayfa PNG'siyle bayatlayan attempt, yabancı üretici
+kimliğinden gelen attempt'in reddi, runtime uyuşmazlığında gönderimin engellenmesi, donmuş ayar
+gönderilebilirliği, desteklenmeyen donmuş ayarın gönderimi durdurması, okuyucu literallerinin
+sözleşmeden gelmesi, kanonik model meta verisi, liste tabanlı geçmiş düzleştirmesi, kabul üretiminin
+dört geçmiş biçiminde çalışması, tek ayar kaynağı, kola bağlı kanıt modu.

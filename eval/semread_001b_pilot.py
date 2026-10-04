@@ -48,6 +48,7 @@ from drawingto3d.semantic_images import open_source  # noqa: E402
 from drawingto3d.inference_log import RecordedChat, Recorder  # noqa: E402
 from drawingto3d.semantic_run_contract import (CASE_SCHEMA, CONTRACT_VERSION,  # noqa: E402
                                                 IMAGES_LAYOUT, IMAGE_LABEL_PREFIX,
+                                                arm_evidence_mode,
                                                 D_SOURCE_FILES, EXPECTED_DIGEST,
                                                 EXPECTED_RUNTIME, GOLD_SENTINEL, IMAGE_MAX_SIDE,
                                                 MODEL, NUM_PREDICT, PAGE_IMAGE_ID,
@@ -183,7 +184,7 @@ def input_identity(page: dict) -> str:
         "page_png_sha256": sha256_of(page_png) if page_png.exists() else None,
         "preprocessing": _files_identity(PREPROCESSING_FILES),
         "image_max_side": SETTINGS["image_max_side"],
-        "input_strategy": SETTINGS["input_strategy"],
+        "raw_page_strategy": SETTINGS["raw_page_strategy"],
     }, sort_keys=True))
 
 
@@ -512,6 +513,7 @@ def _attempt_manifest(page: dict, arm: str, *, attempt_id: str, phase: str,
         if (CORPUS_DIR / "manifest.json").exists() else None,
         "model": MODEL, "expected_digest": EXPECTED_DIGEST, "runtime": runtime,
         "model_metadata": model_metadata or {},
+        "arm_input_variant": arm, "evidence_mode": arm_evidence_mode(arm),
         "settings": dict(SETTINGS),
         **(request_hashes_seen or {"http_request_sha256": None,
                                    "request_manifest_sha256": None}),
@@ -721,7 +723,7 @@ def write_live_attempt(page: dict, arm: str, *, phase: str, observations=None, s
                 "reason": "runtime sürümü sözleşmeyle uyuşmuyor"}
 
     wanted = {"model": MODEL, **{key: value for key, value in SETTINGS.items()
-                                 if key not in ("input_strategy",)},
+                                 if key not in ("raw_page_strategy",)},
               "timeout": float(MODEL_TIMEOUT_SECONDS)}
     supported = {field.name for field in dataclasses.fields(ChatSettings)}
     unsupported_settings = sorted(set(wanted) - supported)

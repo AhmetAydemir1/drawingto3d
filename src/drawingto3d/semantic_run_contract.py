@@ -7,11 +7,16 @@ model etiketi, beklenen digest, beklenen runtime, üretim ayarları, görüntü 
 Kural: buradaki bir değeri değiştirmek ham tahmini geçersiz kılar. Değerlendirme, kabul kapıları,
 rapor üretimi ve referans doğrulaması bu dosyada **yaşamaz** — onlar `evaluation_identity()`ye girer.
 Böylece yalnız evaluator/gold düzeltmesi geçerli ham tahmini yeniden üretmeyi gerektirmez.
+
+Sürüm `/3` (P0R-FINAL-C): tahmin girdisi kimliği artık gerçekten hazırlanan paketten (hazırlanmış
+görüntü byte'ları + gönderilen prompt + VE gözlem tablosu) kurulur; eski sürümdeki sayfa PNG'sine
+dayanan `input_identity` yalnız meta veri olarak kalır. Girdi sözleşmesi değiştiği için bu dosyayı
+hash'leyen attempt'ler bayatlar (yeniden kullanım yok; D yeniden koşar, inference harcamaz).
 """
 
 from __future__ import annotations
 
-CONTRACT_VERSION = "semread-001b-run-contract/2"
+CONTRACT_VERSION = "semread-001b-run-contract/3"
 
 MODEL = "qwen3-vl:8b-instruct"
 EXPECTED_DIGEST = "0533d74300e4f9bc367d675d4e64ffd073d50ff16a2b4096cc2e8a1cf8c96319"

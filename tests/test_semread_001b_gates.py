@@ -140,10 +140,14 @@ def test_concurrent_reservations_cannot_exceed_the_cap(scratch_budget):
 
 def test_send_state_transitions_are_recorded(scratch_budget):
     pilot.reserve_live_call("state-V", phase="dev", arm="V", split="dev",
-                            attempt_dir=scratch_budget / "a")
-    pilot.mark_send_state("state-V", phase="dev", state_name="sent", detail="1.2 sn")
+                            attempt_dir=scratch_budget / "a",
+                            attempt_id="state-V/attempt-0001")
+    pilot.mark_send_state("state-V/attempt-0001", state_name="sending")
+    pilot.mark_send_state("state-V/attempt-0001", state_name="sent", detail="1.2 sn")
     record = pilot.load_state()["live_calls"][0]
     assert record["send_state"] == "sent" and record["send_detail"] == "1.2 sn"
+    assert record["reserved_at"] and record["dispatch_started_at"] and record["sent_at"], \
+        "rezervasyon, gönderim başlangıcı ve gönderim anı ayrı alanlarda yazılmalı"
     assert pilot.budget_report()["by_send_state"] == {"sent": 1}
 
 
@@ -275,6 +279,7 @@ def test_a_local_preparation_error_is_not_reported_as_a_sent_call(scratch_budget
     (scratch_budget / "pages").mkdir(parents=True, exist_ok=True)
     (scratch_budget / "pages" / "dev-plate-pocket.png").write_bytes(b"\x89PNG\r\n\x1a\n" + b"0" * 32)
     monkeypatch.setattr(pilot, "open_source", lambda _path: open_source(page_png))
+    monkeypatch.setattr(pilot, "observe", lambda _path: object())   # bu test OCR'ı ölçmez
 
     def broken(*_args, **_kwargs):
         raise ValueError("overlay kimliği geçersiz")
@@ -364,6 +369,21 @@ def test_producer_and_evaluator_identities_are_separate(tmp_path, monkeypatch):
             assert after[1] != before[1], "değerlendirici dosyası değerlendirme kimliğini değiştirmeli"
 
 
+def _prepared_input_record(page_id: str, marker: str = "probe") -> dict:
+    """Gerçek hazırlanmış girdi kaydı yerine geçen sabit kayıt (bu testler OCR koşmaz)."""
+    return {"schema": pilot.PREDICTION_INPUT_SCHEMA, "contract_version": "probe",
+            "page_id": page_id, "arm": "V", "arm_input_variant": "V", "evidence_mode": "none",
+            "prompt_sha256": marker, "images": [], "observation_table_sha256": None,
+            "preprocessing_identity": "probe"}
+
+
+def _stub_prepared_input(monkeypatch, page_id: str = "page", marker: str = "probe") -> dict:
+    """`prepared_input_record`i sabitle: yeniden kullanım kararı testte deterministik olsun."""
+    record = _prepared_input_record(page_id, marker)
+    monkeypatch.setattr(pilot, "prepared_input_record", lambda page, arm, refresh=False: record)
+    return record
+
+
 def test_a_changed_page_png_makes_the_old_attempt_stale(scratch_budget, monkeypatch):
     pages = scratch_budget / "pages"
     pages.mkdir(parents=True, exist_ok=True)
@@ -371,10 +391,12 @@ def test_a_changed_page_png_makes_the_old_attempt_stale(scratch_budget, monkeypa
     png.write_bytes(b"\x89PNG\r\n\x1a\n" + b"a" * 32)
     monkeypatch.setattr(pilot, "ATTEMPT_ROOT", scratch_budget / "attempts")
     monkeypatch.setattr(pilot, "PAGES_DIR", pages)
+    record = _stub_prepared_input(monkeypatch)
     page = {"page_id": "page", "split": "dev", "group": "g", "path": "examples/README.md"}
 
     directory = pilot.new_attempt_dir("page-V")
-    manifest = pilot._attempt_manifest(page, "V", attempt_id="page-V/attempt-0001", phase="final")
+    manifest = pilot._attempt_manifest(page, "V", attempt_id="page-V/attempt-0001", phase="final",
+                                       prediction_input=record)
     pilot.write_json(directory / "manifest.json", manifest)
     pilot.write_json(directory / "result.json",
                      {"send_attempted": True, "gates": {"no_leakage": True},
@@ -405,7 +427,8 @@ def test_an_attempt_from_another_producer_identity_is_not_reused(scratch_budget,
     assert pilot.reusable_attempt("page-V", page) is None
 
 
-def test_a_runtime_mismatch_blocks_the_send_but_stays_in_the_ledger(scratch_budget, monkeypatch):
+def test_a_runtime_mismatch_blocks_the_send_and_consumes_no_inference_budget(scratch_budget,
+                                                                            monkeypatch):
     monkeypatch.setattr(pilot, "ATTEMPT_ROOT", scratch_budget / "attempts")
     monkeypatch.setattr(pilot, "PAGES_DIR", scratch_budget / "pages")
     (scratch_budget / "pages").mkdir(parents=True, exist_ok=True)
@@ -422,13 +445,15 @@ def test_a_runtime_mismatch_blocks_the_send_but_stays_in_the_ledger(scratch_budg
             "type": "raster", "source_sha256": "d" * 64}
 
     outcome = pilot.write_live_attempt(page, "V", phase="final")
-    assert outcome["verdict"] == "blocked" and "runtime" in outcome["reason"]
+    assert outcome["verdict"] == "blocked" and outcome["state"] == "blocked_runtime_mismatch"
     result = json.loads((Path(outcome["directory"]) / "result.json").read_text(encoding="utf-8"))
     assert result["blocking_kind"] == "runtime_mismatch" and result["send_attempted"] is False
     report = pilot.budget_report()
-    assert report["by_send_state"] == {"not_sent_runtime_mismatch": 1}, \
-        "gönderilmeyen rezervasyon sessizce silinmemeli"
-    assert report["total_used"] == 1
+    assert report["by_send_state"] == {}, "gönderilmeyen istek gönderim durumu almamalı"
+    assert report["total_used"] == 0, "runtime uyuşmazlığı inference bütçesi harcamamalı"
+    history = pilot.load_state()["attempts"]["page-V"]
+    assert history[-1]["state"] == "blocked_runtime_mismatch", \
+        "yerel ret attempt defterine yazılmalı (P0R-FINAL-A/B)"
 
 
 # ------------------------------------------------------------- P0R: kimlik ve bayatlık
@@ -441,11 +466,13 @@ def _valid_attempt(scratch_budget, monkeypatch, tmp_path, *, arm="V", page_id="p
     (pages / f"{page_id}.png").write_bytes(b"\x89PNG\r\n\x1a\n" + b"e" * 32)
     monkeypatch.setattr(pilot, "ATTEMPT_ROOT", scratch_budget / "attempts_ok")
     monkeypatch.setattr(pilot, "PAGES_DIR", pages)
+    record = _stub_prepared_input(monkeypatch, page_id, marker=f"{page_id}-{arm}")
     page = {"page_id": page_id, "split": "dev", "group": "g", "path": "examples/README.md"}
     directory = pilot.new_attempt_dir(f"{page_id}-{arm}")
     attempt_id = f"{page_id}-{arm}/{directory.name}"
     pilot.write_json(directory / "manifest.json",
-                     pilot._attempt_manifest(page, arm, attempt_id=attempt_id, phase="dev"))
+                     pilot._attempt_manifest(page, arm, attempt_id=attempt_id, phase="dev",
+                                             prediction_input=record))
     pilot.write_json(directory / "result.json",
                      {"send_attempted": True, "gates": {"no_leakage": True},
                       "runtime_matches_expected": True, "arm": arm})
@@ -530,7 +557,7 @@ def test_every_created_attempt_directory_has_exactly_one_history_entry(scratch_b
     directories = sorted(path.name for path in pilot.attempt_dirs("page-V"))
     history = pilot.load_state()["attempts"]["page-V"]
     assert len(directories) == len(history) == 3, "her attempt klasörü tek bir geçmiş kaydı olmalı"
-    assert [row["state"] for row in history] == ["local_error", "local_error",
+    assert [row["state"] for row in history] == ["local_error_preparation", "local_error_preparation",
                                                  "blocked_runtime_mismatch"]
     assert all(row["attempt_id"].endswith(path) for row, path in zip(history, directories))
 
@@ -609,11 +636,12 @@ def test_an_unsupported_frozen_setting_blocks_the_send(scratch_budget, monkeypat
     history = pilot.load_state()["attempts"]["page-V"]
     assert history[-1]["state"] == "blocked_unsupported_setting"
     ledger = pilot.budget_report()
-    # Rezervasyon gönderimden önce yapılır; gönderilmemiş istek defterde **görünür** kalır
-    # (runtime uyuşmazlığıyla aynı politika), sessizce silinmez.
-    assert ledger["total_used"] == 1
-    assert ledger["by_send_state"].get("not_sent_unsupported_setting") == 1
-    assert ledger["by_send_state"].get("sent", 0) == 0
+    # P0R-FINAL-B: gönderilmeyeceği **kanıtlanan** bir ret rezervasyon bile almaz; kayıt attempt
+    # defterinde kalır, inference bütçesine dokunmaz.
+    assert ledger["total_used"] == 0
+    assert ledger["by_send_state"] == {}
+    assert ledger["legacy_non_dispatch_records"] == 0
+    assert ledger["attempt_ledger"]["by_state"] == {"blocked_unsupported_setting": 1}
 
 
 # ------------------------------------------- P0R-FINAL: kanonik meta veri + liste kabul kodu

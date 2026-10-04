@@ -180,20 +180,21 @@ P0 tam kapanmamıştı; P0R maddeleri uygulandı (hepsi 0 inference):
 
 Not: kontrat modülü eklendiği için **eski** (bu değişiklikten önceki) attempt'ler üretici kimliği bakımından bayat sayılır — D hücreleri yeniden koşacak (0 inference), V/VE hücreleri zaten hiç çağrı yapmadı.
 
-## 6c. PLAN-3 (P0R-FINAL) DURUMU — **IN PROGRESS** (kısmi, 0 inference)
+## 6c. PLAN-3 (P0R-FINAL) DURUMU — maddeler tamamlandı, PLAN-5 §31 ile kapatıldı (§6e)
 
 PLAN-3 sırası: P0R-FINAL → P1 → … → P8; final V/VE harcaması P0R–P5 kapanmadan yok.
+Aşağıdaki tablo PLAN-3 turunda kalan işi, §6e ise PLAN-5 §31 (A–F) kapanışını ve çıkış kapısını yazar.
 
 | # | Madde | Durum | Not |
 | --- | --- | --- | --- |
 | 1 | Donmuş ayar = gerçek istek (`top_p`/`seed`) | **bitti (alternatif yol)** | taşıma (`ChatSettings` → `_chat_request`) bu iki seçeneği `options`'a koymuyor; PLAN-3 §4'ün izin verdiği alternatifle **kontrattan çıkarıldı** (`CONTRACT_VERSION` → `/2`) |
-| 2 | Desteklenmeyen donmuş ayar gönderimi durdurur | **bitti** | `write_live_attempt()` gönderimden önce kesiyor: `blocking_kind=unsupported_frozen_setting`, `send_attempted=false`, `mark_send_state(not_sent_unsupported_setting)`, geçmişte `blocked_unsupported_setting`; rezervasyon defterde görünür kalır |
-| 3 | Yaşam döngüsünün tamamı kayıtlanır (`finalize_attempt`) | **yapılmadı** | `open_source`/`observe`/`installed_models`/`find_model` için ortak `finalize_attempt` + states listesi bekliyor |
-| 4 | `prediction_input_identity` (gerçek hazırlanan girdi) | **yapılmadı** | `prepare_arm_inputs` sonrası prompt sha + görüntü id/sha/byte + gözlem tablosu sha + hazırlama kimliği; V/VE ayrı kimlik, ham `image-1` byte'ı aynı olmalı |
+| 2 | Desteklenmeyen donmuş ayar gönderimi durdurur | **bitti** | `write_live_attempt()` gönderimden önce kesiyor: `blocking_kind=unsupported_frozen_setting`, `send_attempted=false`, geçmişte `blocked_unsupported_setting`. **P0R-FINAL-B sonrası:** ret rezervasyon bile almaz, inference bütçesine dokunmaz (PLAN-5 §4) |
+| 3 | Yaşam döngüsünün tamamı kayıtlanır (`finalize_attempt`) | **bitti** | ortak `finalize_attempt(...)`: `local-error.json` + `prediction-input.json` + `manifest.json` + **geçmiş kaydı** + `result.json` + `artifact-index.json`; kapalı durum kümesi (`local_error_source/observe/preparation`, `blocked_budget/model_discovery/model_mismatch/runtime_mismatch/unsupported_setting`, `sending`, `transport_error`, `parse_error`, `failed_gates`, `pass`); aynı `attempt_id` ikinci kez sonuçlandırılamaz (`AttemptFinalizedError`); `--lifecycle` + `attempt_lifecycle_report()` (orphan/çift kayıt denetimi) |
+| 4 | `prediction_input_identity` (gerçek hazırlanan girdi) | **bitti** | `prediction_input_record()`: hazırlanmış görüntü byte'ları (sıra + sha256 + boyut), **gönderilen prompt'un hash'i**, VE gözlem tablosu hash'i, `preprocessing_identity` (hazırlama kodu + `image_max_side` + `raw_page_strategy`), `contract_version`; kayıt `prediction-input.json`'a, hash manifest'e yazılır; önbellek üretici kimliğine bağlı (`corpus/prepared-inputs/`); V/VE ham `image-1` eşitliği `v_ve_raw_page_invariant()` ile mekanik denetlenir |
 | 5 | Okuyucu literalleri kontrattan | **bitti** | `IMAGES_LAYOUT` / `IMAGE_LABEL_PREFIX` kontratta; `read_page()` bunları kullanır, kopya literal yok |
 | 6 | Kanonik model meta verisi tek yol | **bitti** | `runtime_identity()` elle `/api/tags` ayrıştırmıyor: tek yol `installed_models()` → `find_model()` → `as_dict()`; dönen alanlar `model`, `model_canonical`, `parser`, `endpoint`, `version`, `error` |
 | 7 | Liste tabanlı `state.attempts` için kabul kodu | **bitti** | `all_attempt_records(state)` (eski dict / yeni liste / karışık / boş) + `acceptance_rows()` ondan besleniyor; `--evaluate` liste geçmişiyle çalıştı, `evaluation_run_id` + `evaluation_stale_cells` üretiyor |
-| 8 | Odaklı 0-inference testler | **kısmi** | §1/§2/§5/§6/§7/§9 için 6 test eklendi; tam takım **139 geçti, 0 fail** (32 kapı + 25 + 26 + 56). Kalan: input identity ve yaşam döngüsü testleri madde 3/4 ile gelecek |
+| 8 | Odaklı 0-inference testler | **bitti** | yeni `tests/test_semread_001b_lifecycle.py` (15) + `tests/test_semread_001b_identity.py` (15); 3 dosyalık SEMREAD koşusu **64 geçti, 0 fail, 2,56 sn** |
 
 Gerçek runtime kanıtı: `runtime_identity()` yerel Ollama'dan **0.32.1** okuyor, kanonik ayrıştırıcı `installed_models/find_model/as_dict`, digest beklenenle aynı — ölçüldü, varsayılmadı.
 
@@ -209,14 +210,75 @@ Karar kaydı: §4'ün "tercih edilen" yolu (top_p/seed'i taşıma katmanına ekl
 kapanabiliyor). **P3:** 10/10 gold (PDF metin katmanı, raster vision). **P4:** D'nin 10 hücresi
 (4'ü hazır). **P5:** dondurma manifesti.
 
-### 6d. Test durumu (tek güncel blok — PLAN-4 §31)
+### 6d. Test durumu (tek güncel blok — PLAN-5 §31)
 
-`pytest tests/test_semread_001b_gates.py tests/test_semread_001b.py tests/test_semantic_candidates.py tests/test_semantic_reader_probe.py -q`
-→ son doğrulanan tam koşu: **141 geçti, 0 fail** (34 kapı + 25 + 26 + 56, 222.12s). PLAN-4 §7/§8 değişikliklerinden
-sonraki koşu bu satırın yanında güncellenir; eski "71 passed" bloğu kaldırıldı (bayat durum iki kez yazılmaz).
-Kapsanan yeni testler: değişmez attempt klasörleri, attempt geçmişinin üzerine yazılmaması,
-üretici/değerlendirici kimlik ayrımı, değişen sayfa PNG'siyle bayatlayan attempt, yabancı üretici
-kimliğinden gelen attempt'in reddi, runtime uyuşmazlığında gönderimin engellenmesi, donmuş ayar
-gönderilebilirliği, desteklenmeyen donmuş ayarın gönderimi durdurması, okuyucu literallerinin
-sözleşmeden gelmesi, kanonik model meta verisi, liste tabanlı geçmiş düzleştirmesi, kabul üretiminin
-dört geçmiş biçiminde çalışması, tek ayar kaynağı, kola bağlı kanıt modu.
+```
+.venv/bin/python -m pytest tests/test_semread_001b_gates.py tests/test_semread_001b_lifecycle.py \
+    tests/test_semread_001b_identity.py -q
+→ 66 geçti, 0 fail (3,27 sn)   # 34 kapı + 17 yaşam döngüsü + 15 kimlik
+```
+Eski 222 sn'lik koşunun yegâne yavaşı `test_a_local_preparation_error_is_not_reported_as_a_sent_call`
+idi: hazırlama hatasını ölçen test gerçek `observe()` (OCR) çağırıyordu; artık `observe` taklit edilir.
+Tam takım (`pytest -q`, 253+) ve `tests/test_semread_001b.py` + `test_semantic_candidates.py` +
+`test_semantic_reader_probe.py` sonuçları bu satırın yanına yazılır.
+
+### 6e. PLAN-5 §31 (A–F) — **UYGULANDI** (0 inference, bütçe 0/30)
+
+Sıra: A yaşam döngüsü → B rezervasyon sırası → C/D girdi kimliği → E koşu sürümü → F testler.
+Hiçbir VLM çağrısı yapılmadı; `--budget` **0/30** (dev 0/10, final 0/20) gösteriyor.
+
+| § | İş | Kanıt |
+| --- | --- | --- |
+| A | `finalize_attempt()` tek kapanış yolu | `eval/semread_001b_pilot.py`; `write_d_attempt`/`write_live_attempt` ondan geçer; kaynak/gözlem/hazırlama/model keşfi/taşıma/parse hataları tam bir geçmiş kaydı üretir; kayıt `result.json`dan **önce** yazılır (orphan riski azalır); `AttemptFinalizedError` ikinci sonuçlandırmayı engeller; `--lifecycle` orphan/çift kaydı gösterir |
+| B | Rezervasyon tüm deterministik preflight'tan **sonra** | sıra: kaynak → gözlem → paket+prompt → donmuş ayar → model keşfi+digest → runtime → girdi kimliği → `reserve_live_call` → gönderim. Gönderilmediği kanıtlanan retler (`local_error_*`, `blocked_model_discovery/model_mismatch/runtime_mismatch/unsupported_setting`) **0 bütçe**; gönderim ve gönderimi belirsiz deneme **1 slot**; `budget_report()` attempt defterini ayrı raporlar (`legacy_non_dispatch_records` dahil) |
+| C | `prediction_input_identity` gerçek hazırlanmış girdiden | `prediction_input_record()`/`prediction_input_identity()`/`preprocessing_identity()`; kayıt `prediction_input.json` + manifest; önbellek `corpus/prepared-inputs/<page>-<arm>.json` (üretici kimliğine bağlı); `v_ve_raw_page_invariant()` V/VE ham `image-1` eşitliğini mekanik denetler |
+| D | `reusable_attempt()` girdi kimliğine bağlı | kayıtlı `prediction_input_identity` != güncel kimlik → yeniden kullanım yok; `page_png_sha256` yalnız meta veri; gönderilmemiş attempt (`send_attempted is not True`) tahmin sayılmaz; girdi kanıtlanamıyorsa **fail-closed** |
+| E | Değerlendirme kanıtı sürümlenir | `out/lab/semread-001b/evaluations/<evaluation_run_id>/{evaluation.json,acceptance.json,report.md,selected-attempts.json}`; `final/pointer.json` yalnız güncel koşuya işaret eder; çakışan kimlik yeni klasör alır, eski koşu **değişmez** (test hash ile doğruluyor) |
+| F | Odaklı 0-inference testler | `tests/test_semread_001b_lifecycle.py` (A/B) + `tests/test_semread_001b_identity.py` (C/D/E) |
+
+**P0R-FINAL çıkış kapısı (PLAN-5 §8) — madde madde:**
+
+1. her attempt klasörü tam bir geçmiş kaydı → `attempt_lifecycle_report()` + testler; 2. her yerel istisna
+yolu sonuçlandırılıyor → 5 hata sınıfı testli; 3. defterler ayrı → `budget_report()`; 4. bilinen
+gönderim-öncesi retler 0 bütçe → parametrik test; 5. rezervasyon gönderimden hemen önce → kod sırası
++ test; 6. kimlik gerçek hazırlanmış girdiden → test; 7. prompt hash'i katılıyor → test; 8. gerçek
+görüntü byte/sıra katılıyor → test; 9. VE gözlem tablosu hash'i katılıyor → test; 10. V/VE ham sayfa
+eşitliği → `v_ve_raw_page_invariant()` + test; 11. `reusable_attempt()` gerçek kimliği kullanıyor →
+test; 12. yalnız evaluator değişikliği ham tahmini koruyor → test; 13. değerlendirme kanıtı
+sürümleniyor → test; 14. bu iş için V/VE inference harcanmadı → `--budget` 0/30.
+
+**Bu turda bulunan üç gerçek kusur (düzeltildi):**
+
+1. **Sıra hatası ortaya çıkardı:** eski kodda desteklenmeyen-donmuş-ayar denetimi runtime
+   doğrulamasından **sonra** duruyordu. Denetim öne alınınca `image_label_prefix`'in `ChatSettings`
+   alanı olmadığı görüldü: ayar `SETTINGS`te var, taşımaya ayrı kwarg olarak gidiyor. Eski sırayla
+   **gerçek bir gönderim** `unsupported_frozen_setting` ile dururdu; artık `raw_page_strategy` gibi
+   taşıma-kwarg'ı sayılıyor ve gönderim yolu açık.
+2. **D kolu manifestte çöküyordu:** ortak `finalize_attempt` yolu `_attempt_manifest()`i D için de
+   çağırıyor; manifest `arm_evidence_mode("D")` diyordu ve sözleşme D'yi tanımadığı için
+   `ValueError: bilinmeyen kol: D` fırlıyordu — yani `write_d_attempt()` **hiçbir** durumda
+   tamamlanamıyordu (D'nin 10 hücresi bu hatayla ölürdü). §3'ün istediği D testi bunu yakaladı;
+   düzeltme: `ARM_VARIANTS`/`EVIDENCE_MODES` üzerinden `.get` + D için açık `none` /
+   `none_no_model_input` adları.
+3. **Gerçek `state.json`'da test artığı:** `out/lab/semread-001b/state.json` içinde eski bir test
+   koşusundan kalmış, `send_state: not_sent_runtime_mismatch` taşıyan 1 kayıt var (yolu `/var/folders/…`).
+   Kanıt silinmedi; yeni anlamla bu kayıt **inference sayılmıyor** (`legacy_non_dispatch_records: 1`) ve
+   `--budget` yeniden **0/30**. Ayrıca `attempt_lifecycle_report()` artık `rows_without_directory`
+   alanını da yazar (bu kayıt gibi kanıtı silinmiş satırlar) — B07 böyle bir satırı kanıt zincirine
+   alamaz (§20). Güncel testler gerçek köke yazmıyor (koşu öncesi/sonrası `state.json` hash'i aynı:
+   `38337c83…`).
+
+**Karar kaydı:** `CONTRACT_VERSION` `/3`'e yükseltildi — girdi kimliği sözleşmesi değişti (PLAN-5 §23
+"prediction input contract" dondurulacak maddeler arasında). Bu, eski 4 D attempt'ini bayatlatır:
+matris `stale_detected: true` ile `to_run` gösterir; D yeniden koşar, **inference harcamaz**.
+
+**P1'de kalanlar (sıradaki iş):** predicate-geneli recovery/regression, belirsiz eşleşme politikası
+(şimdiki davranış bir adayı puanlıyor), `localization_match_rate` / `semantic_field_accuracy` /
+`overclaim_rate` / `abstention_rate` ayrımı, `exhaustiveness`'e göre `unscorable_extra_candidate` ↔
+`false_positive` ayrımı, `EKSİK:`/`TODO` yer tutucularının reddi, referans bölge doğrulaması
+(`0<=x0<x1<=1`, NaN/inf, sıfır alan), gözlem kimliği denetiminin fail-closed olması, raster gold için
+vision zorlaması.
+
+**P2:** B05/B06/B07'yi 30 hücreli matris + gerçek kanıt zincirine bağla (B07 şu an boş kayıtla da
+kapanabiliyor). **P3:** 10/10 gold (PDF metin katmanı, raster vision). **P4:** D'nin 10 hücresi
+(4'ü hazır). **P5:** dondurma manifesti.

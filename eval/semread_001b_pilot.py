@@ -51,7 +51,8 @@ from drawingto3d.semantic_run_contract import (CASE_SCHEMA, CONTRACT_VERSION,  #
                                                 arm_evidence_mode,
                                                 D_SOURCE_FILES, EXPECTED_DIGEST,
                                                 EXPECTED_RUNTIME, GOLD_SENTINEL, IMAGE_MAX_SIDE,
-                                                MODEL, NUM_PREDICT, PAGE_IMAGE_ID,
+                                                EVIDENCE_MODES, ARM_VARIANTS, MODEL, NUM_PREDICT,
+                                                PAGE_IMAGE_ID,
                                                 PREPROCESSING_FILES, PRODUCER_SOURCE_FILES,
                                                 SETTINGS)
 from drawingto3d_lab.runner import Job, LabRunner  # noqa: E402
@@ -62,6 +63,7 @@ CORPUS_DIR = REPORT_ROOT / "corpus"
 GOLD_DIR = CORPUS_DIR / "gold"
 PAGES_DIR = CORPUS_DIR / "pages"
 ATTEMPT_ROOT = REPORT_ROOT / "attempts"
+PREPARED_INPUT_DIR = CORPUS_DIR / "prepared-inputs"   # gerçek hazırlanmış girdi kaydı önbelleği
 
 JOB_PREFIX = "semread-001b-"
 CASE_TIMEOUT_SECONDS = 600
@@ -73,6 +75,29 @@ LIVE_CALL_LIMIT_TOTAL = LIVE_CALL_LIMIT_DEV + LIVE_CALL_LIMIT_FINAL
 PHASES = ("dev", "final")                  # çağrının amacı
 PHASE_LIMITS = {"dev": LIVE_CALL_LIMIT_DEV, "final": LIVE_CALL_LIMIT_FINAL}
 FINAL_VLM_CELLS = 20                       # 10 sayfa × V/VE
+
+# Attempt yaşam döngüsünün kapalı durum kümesi (P0R-FINAL-A). Her attempt klasörü tam olarak bir
+# geçmiş kaydı alır ve o kaydın `state`i bu kümeden biridir.
+FINALIZED_STATES = ("local_error_source", "local_error_observe", "local_error_preparation",
+                    "blocked_budget", "blocked_model_discovery", "blocked_model_mismatch",
+                    "blocked_runtime_mismatch", "blocked_unsupported_setting", "sending",
+                    "transport_error", "parse_error", "failed_gates", "pass")
+
+# Gerçekten gönderilmiş (ya da gönderim durumu belirsiz kalmış) attempt durumları: attempt defterinde
+# "çağrı yapıldı" tarafında sayılanlar.
+DISPATCHED_ATTEMPT_STATES = ("sending", "transport_error", "parse_error", "failed_gates", "pass")
+
+# Eski (P0R-FINAL-B öncesi) sürüm gönderilmeyen bir isteği de **bütçe** defterine yazıyordu. Bu
+# kayıtlar silinmez (kanıt), ama artık inference sayılmaz: yalnız raporlanır.
+NON_DISPATCH_SEND_STATES = ("not_sent_model_mismatch", "not_sent_runtime_mismatch",
+                            "not_sent_unsupported_setting")
+
+PREDICTION_INPUT_SCHEMA = "semread-001b-prediction-input/1"
+
+# D kolu modele görüntü/prompt göndermez. Manifestte kola bağlı iki alan (PLAN-4 §8) D için
+# V/VE adlarıyla karışmasın diye açıkça "yok" yazılır.
+D_INPUT_VARIANT = "none"
+D_EVIDENCE_MODE = "none_no_model_input"
 
 
 # Üretici kimliği (P0R-2): tahmini üreten her şey **semantic_run_contract.py** ve kaynak
@@ -188,6 +213,115 @@ def input_identity(page: dict) -> str:
     }, sort_keys=True))
 
 
+def prediction_input_record(page: dict, arm: str, *, bundle: dict, prompt: str) -> dict:
+    """Modelin **gerçekten gördüğü** girdinin kanonik kaydı (PLAN-5 §5).
+
+    Kayıt hazırlanmış paketten kurulur: görüntü byte'ları (sıra + sha256 + uzunluk), gönderilen
+    prompt'un hash'i, VE'de adreslenebilir gözlem tablosunun hash'i ve hazırlama kimliği. Önbellekteki
+    sayfa PNG'si ya da ona yakın bir temsil bu kaydın yerine geçmez.
+    """
+    table = list(bundle.get("observations") or [])
+    return {
+        "schema": PREDICTION_INPUT_SCHEMA,
+        "contract_version": CONTRACT_VERSION,
+        "page_id": page["page_id"],
+        "arm": arm,
+        "arm_input_variant": bundle.get("arm_input_variant") or arm,
+        "evidence_mode": bundle.get("evidence_mode") or arm_evidence_mode(arm),
+        "prompt_sha256": _sha256_text(prompt),
+        "images": [{"order": index, "image_id": image.image_id,
+                    "sha256": hashlib.sha256(image.png).hexdigest(), "bytes": len(image.png)}
+                   for index, image in enumerate(bundle.get("images") or [])],
+        "observation_table_sha256": (_sha256_text(json.dumps(table, sort_keys=True,
+                                                            ensure_ascii=False))
+                                     if table else None),
+        "preprocessing_identity": preprocessing_identity(),
+    }
+
+
+def prediction_input_identity(record: dict | None) -> str | None:
+    """Kanonik kaydın hash'i; kayıt hangi alanı taşırsa kimlik onu bağlar (prompt, byte, sıra…)."""
+    if not record:
+        return None
+    return _sha256_text(json.dumps(record, sort_keys=True, ensure_ascii=False))
+
+
+def preprocessing_identity() -> str:
+    """Hazırlama kimliği: hazırlama kodu + hazırlamayı belirleyen donmuş ayarlar."""
+    return _sha256_text(json.dumps({"files": _files_identity(PREPROCESSING_FILES),
+                                    "image_max_side": SETTINGS["image_max_side"],
+                                    "raw_page_strategy": SETTINGS["raw_page_strategy"]},
+                                   sort_keys=True))
+
+
+def prediction_input_cache_key(page: dict, arm: str) -> str:
+    """Önbellek anahtarı: üretici kimliği (kod + ayar + corpus) + sayfa + kol."""
+    return _sha256_text(json.dumps({"producer_identity": producer_identity(),
+                                    "page_id": page["page_id"], "arm": arm}, sort_keys=True))
+
+
+def store_prepared_input(page: dict, arm: str, record: dict) -> Path:
+    """Hazırlanmış girdi kaydını önbelleğe yaz (anahtar üretici kimliğine bağlı)."""
+    return write_json(PREPARED_INPUT_DIR / f"{page['page_id']}-{arm}.json",
+                      {"schema": "semread-001b-prepared-input/1",
+                       "key": prediction_input_cache_key(page, arm), "record": record})
+
+
+def prepared_input_record(page: dict, arm: str, *, refresh: bool = False) -> dict | None:
+    """(page, arm) için gerçek hazırlanmış girdinin kaydı: önbellekten ya da yeniden hazırlanarak.
+
+    Önbellek üretici kimliğine bağlıdır: kod/ayar/corpus değişirse anahtar değişir ve kayıt yeniden
+    hazırlanır. Hazırlanamayan girdi için `None` döner — yeniden kullanım kanıtlanamaz (fail-closed).
+    """
+    cache_path = PREPARED_INPUT_DIR / f"{page['page_id']}-{arm}.json"
+    key = prediction_input_cache_key(page, arm)
+    cached = read_json(cache_path)
+    if not refresh and isinstance(cached, dict) and cached.get("key") == key \
+            and isinstance(cached.get("record"), dict):
+        return cached["record"]
+    source_path = ROOT / page["path"]
+    if not source_path.exists():
+        return None
+    try:
+        source = open_source(source_path)
+        observations = observe(source_path)
+        bundle = prepare_arm_inputs(source, observations, image_id=PAGE_IMAGE_ID, arm=arm,
+                                    resize_max_side=IMAGE_MAX_SIDE)
+        prompt = candidate_prompt([PAGE_IMAGE_ID], observations=bundle["observations"] or None)
+    except Exception:  # noqa: BLE001 - hazırlanamayan girdi yeniden kullanım kanıtı üretmez
+        return None
+    record = prediction_input_record(page, arm, bundle=bundle, prompt=prompt)
+    store_prepared_input(page, arm, record)
+    return record
+
+
+def v_ve_raw_page_invariant(page: dict) -> dict:
+    """V ve VE'nin ham sayfası **aynı byte** mı (mekanik denetim, P0R-FINAL-C).
+
+    Tam girdi kimliklerinin farklı olması beklenir (VE overlay + gözlem tablosu ekler); eşit olması
+    gereken şey ham `image-1` byte'ıdır. Hazırlanmış girdi kaydı yoksa `ok: False` döner.
+    """
+    v_record = prepared_input_record(page, V_ARM)
+    ve_record = prepared_input_record(page, VE_ARM)
+    if not v_record or not ve_record:
+        return {"ok": False, "page_id": page["page_id"], "reason": "hazırlanmış girdi kaydı yok",
+                "v_image_1": None, "ve_image_1": None}
+    v_images = v_record.get("images") or []
+    ve_images = ve_record.get("images") or []
+    v_first = v_images[0].get("sha256") if v_images else None
+    ve_first = ve_images[0].get("sha256") if ve_images else None
+    v_identity = prediction_input_identity(v_record)
+    ve_identity = prediction_input_identity(ve_record)
+    return {"ok": bool(v_first) and v_first == ve_first, "page_id": page["page_id"],
+            "v_image_1": v_first, "ve_image_1": ve_first,
+            "v_identity": v_identity, "ve_identity": ve_identity,
+            "identities_differ": v_identity != ve_identity,
+            "v_observation_table": v_record.get("observation_table_sha256"),
+            "ve_observation_table": ve_record.get("observation_table_sha256"),
+            "note": ("V/VE ham image-1 byte'ı aynı olmalı; tam kimlikler farklıdır çünkü VE kanıt "
+                     "ekler")}
+
+
 def model_identity() -> str:
     """Model kimliği: etiket + beklenen digest + beklenen runtime + üretim ayarları."""
     return _sha256_text(json.dumps({"model": MODEL, "digest": EXPECTED_DIGEST,
@@ -274,13 +408,31 @@ def artifact_index(directory: Path) -> dict:
 # ------------------------------------------------------------------ bütçe (ortak kilit altında)
 
 
+def _is_inference_record(call: dict) -> bool:
+    """Bütçeye sayılan kayıt mı (P0R-FINAL-B)?
+
+    Sayılan: gerçekten gönderilmiş ya da gönderim durumu belirsiz kalmış istekler. Sayılmayan:
+    gönderilmediği **kanıtlı** yerel/preflight retleri (eski sürümün `not_sent_*` kayıtları dahil).
+    """
+    return call.get("send_state") not in NON_DISPATCH_SEND_STATES
+
+
+def inference_records(state: dict) -> list[dict]:
+    return [call for call in (state.get("live_calls") or []) if _is_inference_record(call)]
+
+
 def _budget_used(state: dict, phase: str) -> int:
-    return sum(1 for call in state.get("live_calls") or [] if call.get("phase") == phase)
+    return sum(1 for call in inference_records(state) if call.get("phase") == phase)
 
 
 def reserve_live_call(case_id: str, *, phase: str, arm: str, split: str,
-                      attempt_dir: Path) -> dict:
-    """Çağrıdan **önce** kalıcı rezervasyon; üç sınır aynı kilit içinde denetlenir.
+                      attempt_dir: Path, attempt_id: str | None = None) -> dict:
+    """Çağrıdan **hemen önce** kalıpersistent rezervasyon; üç sınır aynı kilit içinde denetlenir.
+
+    Bu fonksiyon yalnızca **gönderim anında** çağrılır (P0R-FINAL-B): yerel hazırlama, donmuş ayar,
+    model keşfi ve runtime doğrulaması gibi gönderimi kanıtlanabilir biçimde engelleyen adımlar
+    buradan sonra değil **önce** koşar. Böylece "30 inference denemesi" gerçek gönderimleri sayar;
+    gönderilmeyen bir yerel hata yalnız attempt defterine yazılır.
 
     `split` veri bölümüdür (dev/frozen), `phase` çağrının amacıdır (dev/final). İkisi ayrıdır:
     development sayfası final fazında da çalışabilir. Faz/kol değerleri doğrulanır; geçersiz değer
@@ -301,72 +453,135 @@ def reserve_live_call(case_id: str, *, phase: str, arm: str, split: str,
         try:
             state = load_state()
             calls = state.setdefault("live_calls", [])
+            counted = inference_records(state)
             used_dev, used_final = _budget_used(state, "dev"), _budget_used(state, "final")
             used = {"dev": used_dev, "final": used_final}
             if used[phase] >= PHASE_LIMITS[phase]:
                 return {"reserved": False,
                         "reason": f"{phase} bütçesi bitti ({used[phase]}/{PHASE_LIMITS[phase]})"}
-            if len(calls) >= LIVE_CALL_LIMIT_TOTAL:
+            if len(counted) >= LIVE_CALL_LIMIT_TOTAL:
                 return {"reserved": False,
-                        "reason": f"toplam bütçe bitti ({len(calls)}/{LIVE_CALL_LIMIT_TOTAL})"}
-            record = {"case_id": case_id, "arm": arm, "phase": phase, "split": split,
-                      "started_at": _now(), "attempt_dir": str(attempt_dir), "pid": os.getpid(),
+                        "reason": f"toplam bütçe bitti ({len(counted)}/{LIVE_CALL_LIMIT_TOTAL})"}
+            record = {"attempt_id": attempt_id or case_id, "case_id": case_id, "arm": arm,
+                      "phase": phase, "split": split, "reserved_at": _now(),
+                      "attempt_dir": str(attempt_dir), "pid": os.getpid(),
                       "reserved_before_send": True, "send_state": "reserved"}
             calls.append(record)
             state.setdefault("budget_history", []).append(
-                {"at": record["started_at"], "phase": phase, "split": split, "case_id": case_id,
-                 "arm": arm, "used_dev": used_dev + (1 if phase == "dev" else 0),
+                {"at": record["reserved_at"], "attempt_id": record["attempt_id"], "phase": phase,
+                 "split": split, "case_id": case_id, "arm": arm,
+                 "used_dev": used_dev + (1 if phase == "dev" else 0),
                  "used_final": used_final + (1 if phase == "final" else 0),
-                 "used_total": len(calls)})
+                 "used_total": len(counted) + 1})
             save_state(state)
             return {"reserved": True, "record": record, "used_dev": used_dev,
-                    "used_final": used_final, "used_total": len(calls)}
+                    "used_final": used_final, "used_total": len(counted) + 1}
         finally:
             fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
 
 
-def mark_send_state(case_id: str, *, phase: str, state_name: str, detail: str | None = None) -> None:
-    """Rezervasyon kaydının gönderim durumunu işaretle (reserved -> sent/unknown/local_error)."""
+def mark_send_state(attempt_id: str, *, state_name: str, detail: str | None = None) -> None:
+    """Rezervasyon kaydının gönderim durumunu işaretle (reserved -> sending -> sent/transport_*).
+
+    Kayıt `attempt_id` ile bulunur: aynı vakada birden çok attempt olabilir ve durum tam olarak
+    rezerve edilen isteğe yazılmalıdır. Gönderim başladıktan sonraki her terminal durum `sent_at`
+    taşır; böylece "gönderildi mi" sorusu defterden okunur, tahmin edilmez.
+    """
     guard = REPORT_ROOT / "live-calls.guard"
     with guard.open("a+") as handle:
         fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
         try:
             state = load_state()
             for call in reversed(state.get("live_calls") or []):
-                if call.get("case_id") == case_id and call.get("phase") == phase:
+                if call.get("attempt_id") == attempt_id or call.get("case_id") == attempt_id:
                     call["send_state"] = state_name
                     if detail:
                         call["send_detail"] = detail
                     call["updated_at"] = _now()
+                    if state_name == "sending":
+                        call["dispatch_started_at"] = call["updated_at"]
+                    else:
+                        call["sent_at"] = call["updated_at"]
                     break
             save_state(state)
         finally:
             fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
 
 
+def attempt_ledger_report(state: dict | None = None) -> dict:
+    """Attempt defteri: her yürütme denemesi (gönderim olmayan retler dahil), durum bazında."""
+    records = all_attempt_records(load_state() if state is None else state)
+    by_state: dict[str, int] = {}
+    for row in records:
+        key = row.get("state") or row.get("verdict") or "?"
+        by_state[key] = by_state.get(key, 0) + 1
+    identifiers = [row.get("attempt_id") for row in records]
+    return {"schema": "semread-001b-attempt-ledger/1", "total": len(records),
+            "by_state": by_state, "unique_attempt_ids": len(set(identifiers)),
+            "dispatched": sum(1 for row in records
+                              if row.get("state") in DISPATCHED_ATTEMPT_STATES),
+            "note": ("attempt defteri her denemeyi sayar; inference bütçesi **ayrı** defterdir ve "
+                     "yalnız gönderilen/belirsiz istekleri sayar (P0R-FINAL-B)")}
+
+
+def attempt_lifecycle_report() -> dict:
+    """Yaşam döngüsü toplam mı (P0R-FINAL-A): her attempt klasörü tam bir geçmiş kaydı mı?"""
+    history = all_attempt_records(load_state())
+    identifiers = [row.get("attempt_id") for row in history]
+    duplicates = sorted(str(value) for value in set(identifiers) if identifiers.count(value) > 1)
+    directories: list[str] = []
+    if ATTEMPT_ROOT.exists():
+        for case_directory in sorted(path for path in ATTEMPT_ROOT.iterdir() if path.is_dir()):
+            for directory in sorted(path for path in case_directory.glob("attempt-*")
+                                    if path.is_dir()):
+                directories.append(f"{case_directory.name}/{directory.name}")
+    known = set(identifiers)
+    orphans = [directory for directory in directories if directory not in known]
+    # Ters yön: kaydı olup kanıt klasörü olmayan attempt. Sözleşme ihlali değildir (klasör
+    # temizlenmiş olabilir) ama kanıt zinciri kurulamaz: B07 böyle bir kaydı kabul etmemeli.
+    missing = sorted(str(row.get("attempt_id")) for row in history
+                     if not row.get("directory")
+                     or not Path(str(row["directory"])).is_dir())
+    return {"schema": "semread-001b-lifecycle/1", "attempt_directories": len(directories),
+            "history_rows": len(history), "unique_attempt_ids": len(known),
+            "orphan_attempts": orphans, "duplicate_attempt_ids": duplicates,
+            "rows_without_directory": missing,
+            "ok": not orphans and not duplicates and len(set(identifiers)) == len(identifiers),
+            "note": ("her attempt klasörü için tam olarak bir geçmiş kaydı olmalı; 0 ya da 2+ "
+                     "kayıt kabul edilmez. `rows_without_directory` kanıtı silinmiş kayıtları "
+                     "gösterir: bunlar kanıt zincirine giremez")}
+
+
 def budget_report() -> dict:
     state = load_state()
+    counted = inference_records(state)
+    legacy = [call for call in (state.get("live_calls") or []) if not _is_inference_record(call)]
     by_arm: dict[str, int] = {}
     by_send_state: dict[str, int] = {}
-    for call in state.get("live_calls") or []:
+    for call in counted:
         by_arm[call.get("arm", "?")] = by_arm.get(call.get("arm", "?"), 0) + 1
         key = call.get("send_state", "?")
         by_send_state[key] = by_send_state.get(key, 0) + 1
-    bad_phase = [call for call in state.get("live_calls") or []
-                 if call.get("phase") not in PHASES]
+    bad_phase = [call for call in counted if call.get("phase") not in PHASES]
     return {"dev_used": _budget_used(state, "dev"), "dev_limit": LIVE_CALL_LIMIT_DEV,
             "final_used": _budget_used(state, "final"), "final_limit": LIVE_CALL_LIMIT_FINAL,
-            "total_used": len(state.get("live_calls") or []), "total_limit": LIVE_CALL_LIMIT_TOTAL,
+            "total_used": len(counted), "total_limit": LIVE_CALL_LIMIT_TOTAL,
             "by_arm": by_arm, "by_send_state": by_send_state,
             "invalid_phase_records": len(bad_phase),
-            "over_budget": (len(state.get("live_calls") or []) > LIVE_CALL_LIMIT_TOTAL
+            "legacy_non_dispatch_records": len(legacy),
+            "attempt_ledger": attempt_ledger_report(state),
+            "over_budget": (len(counted) > LIVE_CALL_LIMIT_TOTAL
                             or _budget_used(state, "dev") > LIVE_CALL_LIMIT_DEV
                             or _budget_used(state, "final") > LIVE_CALL_LIMIT_FINAL),
-            "method": ("state.live_calls; her kayıt çağrıdan önce yazılır; split (veri bölümü) ile "
-                       "phase (çağrı amacı) ayrıdır"),
-            "counting_note": ("timeout, başarısız istek, tanı çağrıları ve gönderilip "
-                              "gönderilmediği belirsiz ('reserved') kayıtlar sayılır; cache hit "
-                              "inference değildir; 001A sayaçları bu sayaca dahil değildir")}
+            "method": ("inference bütçesi = state.live_calls'ta gönderilmiş/belirsiz kayıtlar; her "
+                       "kayıt gönderimden hemen önce yazılır; split (veri bölümü) ile phase (çağrı "
+                       "amacı) ayrıdır; attempt defteri ayrı tutulur"),
+            "counting_note": ("timeout, başarısız istek, tanı çağrıları ve gönderilip gönderilmediği "
+                              "belirsiz ('reserved') kayıtlar sayılır; kaynak/gözlem/hazırlama "
+                              "hatası, bilinen model/digest/runtime uyuşmazlığı, desteklenmeyen "
+                              "donmuş ayar ve bütçe reddi **sayılmaz** (attempt defterine yazılır); "
+                              "cache hit inference değildir; 001A sayaçları bu sayaca dahil değildir")}
+
 
 
 # ------------------------------------------------------------------ corpus
@@ -492,7 +707,8 @@ def new_attempt_dir(case_id: str) -> Path:
 
 def _attempt_manifest(page: dict, arm: str, *, attempt_id: str, phase: str,
                       runtime: str | None = None, model_metadata: dict | None = None,
-                      request_hashes_seen: dict | None = None) -> dict:
+                      request_hashes_seen: dict | None = None,
+                      prediction_input: dict | None = None) -> dict:
     """Bir attempt'in değişmez kimlik kaydı (P0: hangi girdi/kod/model ile üretildi)."""
     page_png = PAGES_DIR / f"{page['page_id']}.png"
     source = ROOT / page["path"]
@@ -503,6 +719,11 @@ def _attempt_manifest(page: dict, arm: str, *, attempt_id: str, phase: str,
         "contract_version": CONTRACT_VERSION,
         "producer_identity": producer_identity(), "evaluation_identity": evaluation_identity(),
         "input_identity": input_identity(page), "model_identity": model_identity(),
+        # P0R-FINAL-C: yeniden kullanım kararı bu kimliğe bakar (gerçek hazırlanmış girdi).
+        "prediction_input_identity": prediction_input_identity(prediction_input),
+        "prediction_input_record": ("prediction-input.json" if prediction_input else None),
+        "page_png_sha256_metadata_note": ("page_png_sha256 yalnız meta veridir; V/VE yeniden "
+                                          "kullanımı prediction_input_identity ile kanıtlanır"),
         "code_identity": producer_identity(),          # geriye dönük alan adı (P0R-7)
         "case_schema": CASE_SCHEMA, "candidate_schema": CANDIDATE_SCHEMA_VERSION,
         "head": _git("rev-parse", "HEAD"),
@@ -513,7 +734,10 @@ def _attempt_manifest(page: dict, arm: str, *, attempt_id: str, phase: str,
         if (CORPUS_DIR / "manifest.json").exists() else None,
         "model": MODEL, "expected_digest": EXPECTED_DIGEST, "runtime": runtime,
         "model_metadata": model_metadata or {},
-        "arm_input_variant": arm, "evidence_mode": arm_evidence_mode(arm),
+        # D kolu modele görüntü/prompt **göndermez**: kanıt modu da model-girdisi değildir.
+        # V/VE adları (PLAN-4 §8) kola bağlı kalır; D için açıkça "yok" yazılır.
+        "arm_input_variant": ARM_VARIANTS.get(arm, D_INPUT_VARIANT),
+        "evidence_mode": EVIDENCE_MODES.get(arm, D_EVIDENCE_MODE),
         "settings": dict(SETTINGS),
         **(request_hashes_seen or {"http_request_sha256": None,
                                    "request_manifest_sha256": None}),
@@ -531,6 +755,7 @@ def record_attempt(attempt_id: str, directory: Path, page: dict, arm: str, *, ph
               "created_at": manifest.get("created_at") or _now(),
               "producer_identity": manifest.get("producer_identity"),
               "evaluation_identity": manifest.get("evaluation_identity"),
+              "prediction_input_identity": manifest.get("prediction_input_identity"),
               "page_png_sha256": manifest.get("page_png_sha256"),
               "source_sha256": (manifest.get("source") or {}).get("sha256"),
               "runtime": manifest.get("runtime"), "stats": stats or {}}
@@ -545,6 +770,72 @@ def record_attempt(attempt_id: str, directory: Path, page: dict, arm: str, *, ph
         finally:
             fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
     return record
+
+
+class AttemptFinalizedError(RuntimeError):
+    """Aynı attempt_id iki kez sonuçlandırılamaz (P0R-FINAL-A)."""
+
+
+def attempt_history(state: dict | None, attempt_id: str) -> list[dict]:
+    """Bir attempt_id'ye düşen geçmiş kayıtları (düzleştirilmiş tüm geçmişten)."""
+    return [row for row in all_attempt_records(state) if row.get("attempt_id") == attempt_id]
+
+
+def finalize_attempt(*, attempt_id: str, directory: Path, page: dict, arm: str, phase: str,
+                     state: str, verdict: str, send_attempted: bool, inference_calls: int,
+                     gates: dict | None = None, error: dict | None = None, seconds: float = 0.0,
+                     runtime: str | None = None, model_metadata: dict | None = None,
+                     stats: dict | None = None, prediction_input: dict | None = None,
+                     request_hashes_seen: dict | None = None, budget: dict | None = None,
+                     result_extra: dict | None = None, manifest_extra: dict | None = None) -> dict:
+    """Bir attempt'in **tek** kapanış yolu (P0R-FINAL-A).
+
+    Şunları yazar: `local-error.json` (varsa), `prediction-input.json` (varsa), `manifest.json`,
+    geçmiş kaydı, `result.json`, `artifact-index.json`. Geçmiş kaydı result.json'dan **önce** yazılır
+    ki süreç arada ölürse klasör kayıtsız (orphan) kalmasın; kaydı olup sonucu olmayan attempt
+    yeniden kullanılamaz (fail-closed).
+
+    Aynı `attempt_id` ikinci kez sonuçlandırılamaz: tekrar çağrı `AttemptFinalizedError` verir.
+    """
+    if state not in FINALIZED_STATES:
+        raise ValueError(f"bilinmeyen attempt durumu: {state!r} (beklenen: {FINALIZED_STATES})")
+    if attempt_history(load_state(), attempt_id):
+        raise AttemptFinalizedError(f"attempt zaten sonuçlandırıldı: {attempt_id}")
+    directory.mkdir(parents=True, exist_ok=True)
+    if error:
+        write_json(directory / "local-error.json",
+                   {"schema": "semread-001b-local-error/1", "arm": arm, "phase": phase,
+                    "state": state, "kind": error.get("kind"), "detail": error.get("detail"),
+                    "send_attempted": send_attempted, "inference_calls": inference_calls})
+    if prediction_input is not None:
+        write_json(directory / "prediction-input.json", prediction_input)
+    write_json(directory / "manifest.json",
+               {**_attempt_manifest(page, arm, attempt_id=attempt_id, phase=phase, runtime=runtime,
+                                    model_metadata=model_metadata,
+                                    request_hashes_seen=request_hashes_seen,
+                                    prediction_input=prediction_input),
+                **(manifest_extra or {})})
+    identity = prediction_input_identity(prediction_input)
+    record_attempt(attempt_id, directory, page, arm, phase=phase, verdict=verdict,
+                   gates=gates or {}, seconds=seconds, state=state, stats=stats)
+    result = {"schema": "semread-001b-result/1", "case_id": attempt_id.split("/")[0],
+              "attempt_id": attempt_id, "arm": arm, "phase": phase, "split": page["split"],
+              "state": state, "product_verdict": verdict, "send_attempted": send_attempted,
+              "inference_calls": inference_calls, "gates": gates or {},
+              "prediction_input_identity": identity, "runtime": runtime, "seconds": seconds,
+              "inference_budget_record": budget, "finalized_at": _now()}
+    if error:
+        result["local_error"] = error.get("detail")
+        result["error_kind"] = error.get("kind")
+    result.update(result_extra or {})
+    write_json(directory / "result.json", result)
+    write_json(directory / "artifact-index.json", artifact_index(directory))
+    return {"case_id": result["case_id"], "directory": str(directory), "attempt_id": attempt_id,
+            "state": state, "verdict": verdict, "gates": result["gates"],
+            "inference_calls": inference_calls, "prediction_input_identity": identity,
+            "local_error": result.get("local_error"),
+            "reason": result.get("blocking_reason") or result.get("local_error"),
+            "result": result}
 
 
 def runtime_identity() -> dict:
@@ -569,27 +860,46 @@ def runtime_identity() -> dict:
 
 
 def write_d_attempt(page: dict, *, observations=None, source=None) -> dict:
-    """D kolu: VLM çağrısı yok. Adaylar + deterministic kanıt + kapsam raporu yazılır."""
-    case_id = f"{page['page_id']}-D"
+    """D kolu: VLM çağrısı yok. Adaylar + deterministic kanıt + kapsam raporu yazılır.
+
+    Tüm yerel adımlar tek kapanış yolundan geçer (P0R-FINAL-A): kaynak/gözlem hatası veya adapter
+    hatası da tam bir geçmiş kaydıyla sonuçlanır.
+    """
+    case_id = f"{page['page_id']}-{D_ARM}"
     directory = new_attempt_dir(case_id)
     attempt_id = f"{case_id}/{directory.name}"
-    if source is None:
-        source = open_source(ROOT / page["path"])
-    if observations is None:
-        observations = observe(ROOT / page["path"])
+
+    def finish(**kwargs) -> dict:
+        kwargs.setdefault("runtime", "deterministic")
+        kwargs.setdefault("model_metadata", {"model": "yok", "note": "D kolu model çağırmaz"})
+        return finalize_attempt(attempt_id=attempt_id, directory=directory, page=page, arm=D_ARM,
+                                phase="deterministic", stats={"inference_calls": 0}, **kwargs)
+
+    try:
+        if source is None:
+            source = open_source(ROOT / page["path"])
+    except Exception as exc:  # noqa: BLE001 - kaynak hatası da kayda geçer
+        return {**finish(state="local_error_source", verdict="fail", send_attempted=False,
+                         inference_calls=0,
+                         error={"kind": "source", "detail": f"{type(exc).__name__}: {exc}"}),
+                "candidates": 0}
+    try:
+        if observations is None:
+            observations = observe(ROOT / page["path"])
+    except Exception as exc:  # noqa: BLE001 - gözlem (OCR) hatası da kayda geçer
+        return {**finish(state="local_error_observe", verdict="fail", send_attempted=False,
+                         inference_calls=0,
+                         error={"kind": "observe", "detail": f"{type(exc).__name__}: {exc}"}),
+                "candidates": 0}
     started = time.perf_counter()
     try:
         result = deterministic_candidates(ROOT / page["path"], image_id=PAGE_IMAGE_ID,
                                           observations=observations)
     except Exception as exc:  # noqa: BLE001 - D hatası da kayda geçer (P0R-5)
-        write_json(directory / "local-error.json",
-                   {"schema": "semread-001b-local-error/1", "arm": D_ARM, "kind": "deterministic",
-                    "detail": f"{type(exc).__name__}: {exc}", "send_attempted": False,
-                    "inference_calls": 0})
-        record_attempt(attempt_id, directory, page, D_ARM, phase="deterministic", verdict="fail",
-                       gates={}, seconds=0.0, state="local_error")
-        return {"case_id": case_id, "directory": str(directory), "verdict": "fail",
-                "candidates": 0, "local_error": str(exc)}
+        return {**finish(state="local_error_preparation", verdict="fail", send_attempted=False,
+                         inference_calls=0,
+                         error={"kind": "deterministic", "detail": f"{type(exc).__name__}: {exc}"}),
+                "candidates": 0}
     seconds = round(time.perf_counter() - started, 3)
     response = result["response"]
     payload = response.model_dump(mode="json")
@@ -608,152 +918,150 @@ def write_d_attempt(page: dict, *, observations=None, source=None) -> dict:
                 "inference_calls": 0,
                 "rss": {"value_bytes": resource.getrusage(resource.RUSAGE_SELF).ru_maxrss,
                         "scope": "bu sürecin RSS'i; toplam sistem/model RAM'i değildir"}})
-    write_json(directory / "manifest.json",
-               {**_attempt_manifest(page, D_ARM, attempt_id=attempt_id, phase="deterministic",
-                                    runtime="deterministic",
-                                    model_metadata={"model": "yok",
-                                                    "note": "D kolu model çağırmaz"}),
-                "deterministic_evidence": result["evidence"]})
+    gates = {"references_ok": bool(references.get("ok")),
+             "coverage_exact": bool((references.get("coverage") or {}).get("exact"))}
     verdict = "pass" if references["ok"] else "fail"
-    write_json(directory / "result.json",
-               {"schema": "semread-001b-result/1", "case_id": case_id, "attempt_id": attempt_id,
-                "arm": D_ARM, "product_verdict": verdict,
-                "evaluation_scope": "candidate-accuracy",
-                "semantic_evaluation": "provisional-reference",
-                "cad_evaluation": "not_evaluated",
-                "candidates": len(response.items), "references": references,
-                "inference_calls": 0, "seconds": seconds,
-                "timing_note": ("seconds yalnız adapter süresidir: observe()/OCR dışarıda; uçtan uca "
-                                "okuma gecikmesi olarak kullanılmaz")})
-    record_attempt(attempt_id, directory, page, D_ARM, phase="deterministic", verdict=verdict,
-                   gates={"references_ok": bool(references.get("ok")),
-                          "coverage_exact": bool((references.get("coverage") or {}).get("exact"))},
-                   seconds=seconds)
-    write_json(directory / "artifact-index.json", artifact_index(directory))
-    return {"case_id": case_id, "directory": str(directory), "verdict": verdict,
-            "candidates": len(response.items), "seconds": seconds,
+    finalized = finish(state="pass" if verdict == "pass" else "failed_gates", verdict=verdict,
+                       send_attempted=False, inference_calls=0, gates=gates, seconds=seconds,
+                       manifest_extra={"deterministic_evidence": result["evidence"]},
+                       result_extra={"evaluation_scope": "candidate-accuracy",
+                                     "semantic_evaluation": "provisional-reference",
+                                     "cad_evaluation": "not_evaluated",
+                                     "candidates": len(response.items), "references": references,
+                                     "timing_note": ("seconds yalnız adapter süresidir: "
+                                                     "observe()/OCR dışarıda; uçtan uca okuma "
+                                                     "gecikmesi olarak kullanılmaz")})
+    return {**finalized, "candidates": len(response.items), "seconds": seconds,
             "evidence": result["evidence"], "response": payload}
 
 
 def write_live_attempt(page: dict, arm: str, *, phase: str, observations=None, source=None) -> dict:
-    """V/VE attempt'i: bütçeyi rezerve et, tek çağrı yap, ham + ayrıştırılmış kanıtı yaz.
+    """V/VE attempt'i: yerel preflight → gönderim rezervasyonu → tek çağrı → kanıt yazımı (P0R-FINAL-B).
 
-    `phase` çağrının amacıdır (`dev`/`final`); `page["split"]` veri bölümüdür. Yerel hazırlama
-    hatası gerçek gönderim gibi raporlanmaz (`send_state: local_error`, `send_attempted: false`).
+    Sıra: attempt klasörü → kaynak → gözlem → paket + prompt → donmuş ayar denetimi → model keşfi ve
+    digest → runtime doğrulaması → **gerçek hazırlanmış girdi kimliği** → rezervasyon → gönderim.
+    Rezervasyon gönderimden hemen önce yapılır (eşzamanlı işçiler tavanı aşamasın); gönderilmeyeceği
+    kanıtlanabilen her yerel ret rezervasyondan **önce** durur ve inference bütçesini harcamaz.
+    Yerel hazırlama/keşif hatası gerçek gönderim gibi raporlanmaz (`send_attempted: false`).
     """
     case_id = f"{page['page_id']}-{arm}"
     directory = new_attempt_dir(case_id)
     attempt_id = f"{case_id}/{directory.name}"
-    if source is None:
-        source = open_source(ROOT / page["path"])
-    if observations is None:
-        observations = observe(ROOT / page["path"])
+
+    def blocked(state: str, *, verdict: str = "blocked", error: dict | None = None,
+                result_extra: dict | None = None, manifest_extra: dict | None = None,
+                runtime: str | None = None, stats: dict | None = None) -> dict:
+        return finalize_attempt(attempt_id=attempt_id, directory=directory, page=page, arm=arm,
+                                phase=phase, state=state, verdict=verdict, send_attempted=False,
+                                inference_calls=0, error=error, runtime=runtime, stats=stats,
+                                result_extra=result_extra, manifest_extra=manifest_extra)
+
+    try:
+        if source is None:
+            source = open_source(ROOT / page["path"])
+    except Exception as exc:  # noqa: BLE001 - kaynak hatası bütçe harcamaz, kayda geçer
+        return blocked("local_error_source", verdict="fail",
+                       error={"kind": "source", "detail": f"{type(exc).__name__}: {exc}"})
+    try:
+        if observations is None:
+            observations = observe(ROOT / page["path"])
+    except Exception as exc:  # noqa: BLE001 - gözlem hatası bütçe harcamaz, kayda geçer
+        return blocked("local_error_observe", verdict="fail",
+                       error={"kind": "observe", "detail": f"{type(exc).__name__}: {exc}"})
     try:
         bundle = prepare_arm_inputs(source, observations, image_id=PAGE_IMAGE_ID, arm=arm,
                                     resize_max_side=IMAGE_MAX_SIDE)
         prompt = candidate_prompt([PAGE_IMAGE_ID], observations=bundle["observations"] or None)
     except Exception as exc:  # noqa: BLE001 - yerel hazırlama hatası bütçe harcamaz, kayda geçer
-        write_json(directory / "local-error.json",
-                   {"schema": "semread-001b-local-error/1", "arm": arm,
-                    "kind": "preparation", "detail": f"{type(exc).__name__}: {exc}",
-                    "send_attempted": False, "inference_calls": 0})
-        record_attempt(attempt_id, directory, page, arm, phase=phase, verdict="fail",
-                       gates={}, seconds=0.0, state="local_error")
-        return {"case_id": case_id, "directory": str(directory), "verdict": "fail",
-                "local_error": str(exc), "inference_calls": 0}
+        return blocked("local_error_preparation", verdict="fail",
+                       error={"kind": "preparation", "detail": f"{type(exc).__name__}: {exc}"})
     (directory / "prompt.txt").write_text(prompt, encoding="utf-8")
     write_json(directory / "response-schema.json", candidate_json_schema())
-    write_json(directory / "input-manifest.json",
-               {"schema": "semread-001b-input/1", "page_id": page["page_id"], "arm": arm,
-                "source": {"path": page["path"], "sha256": page.get("source_sha256"),
-                           "page_index": 0, "type": page["type"]},
-                "images": [{"image_id": image.image_id, "sha256": hashlib.sha256(image.png).hexdigest(),
-                            "bytes": len(image.png)} for image in bundle["images"]],
-                "observation_rows": len(bundle["observations"]),
-                "note": ("VE'nin ham sayfası V'ninkiyle aynı byte'lardır; ek olan yalnız gerçek "
-                         "gözlem overlay'i ve tablosudur" if arm == VE_ARM else
-                         "V yalnız ham sayfayı görür: gözlem tablosu yok")})
 
-    reservation = reserve_live_call(case_id, phase=phase, arm=arm, split=page["split"],
-                                    attempt_dir=directory)
-    if not reservation.get("reserved"):
-        write_json(directory / "result.json",
-                   {"schema": "semread-001b-result/1", "case_id": case_id, "attempt_id": attempt_id,
-                    "arm": arm, "phase": phase, "split": page["split"],
-                    "product_verdict": "blocked", "blocking_kind": "budget",
-                    "blocking_reason": reservation.get("reason"), "send_attempted": False,
-                    "inference_calls": 0})
-        record_attempt(attempt_id, directory, page, arm, phase=phase, verdict="blocked",
-                       gates={}, seconds=0.0, state="blocked_budget")
-        return {"case_id": case_id, "verdict": "blocked", "directory": str(directory),
-                "reason": reservation.get("reason")}
-
-    installed = find_model(installed_models(), MODEL)
-    if installed.digest != EXPECTED_DIGEST:
-        mark_send_state(case_id, phase=phase, state_name="not_sent_model_mismatch",
-                        detail=f"digest {installed.digest[:12]}…")
-        write_json(directory / "result.json",
-                   {"schema": "semread-001b-result/1", "case_id": case_id, "arm": arm,
-                    "phase": phase, "split": page["split"],
-                    "product_verdict": "fail", "blocking_kind": "model_changed",
-                    "blocking_reason": f"digest {installed.digest[:12]}… != {EXPECTED_DIGEST[:12]}…",
-                    "send_attempted": False, "inference_calls": 0})
-        record_attempt(attempt_id, directory, page, arm, phase=phase, verdict="fail",
-                       gates={}, seconds=0.0, state="blocked_model_mismatch")
-        return {"case_id": case_id, "verdict": "fail", "directory": str(directory),
-                "reason": "model digest uyuşmuyor"}
-
-    runtime = runtime_identity()
-    if runtime.get("version") != EXPECTED_RUNTIME:
-        mark_send_state(case_id, phase=phase, state_name="not_sent_runtime_mismatch",
-                        detail=f"görülen {runtime.get('version')!r}")
-        write_json(directory / "result.json",
-                   {"schema": "semread-001b-result/1", "case_id": case_id, "attempt_id": attempt_id,
-                    "arm": arm, "phase": phase, "split": page["split"],
-                    "product_verdict": "blocked", "blocking_kind": "runtime_mismatch",
-                    "blocking_reason": (f"gerçek runtime {runtime.get('version')!r} != beklenen "
-                                        f"{EXPECTED_RUNTIME!r} (hata: {runtime.get('error')!r})"),
-                    "runtime": runtime.get("version"), "send_attempted": False,
-                    "inference_calls": 0})
-        write_json(directory / "runtime-identity.json", runtime)
-        record_attempt(attempt_id, directory, page, arm, phase=phase, verdict="blocked",
-                       gates={}, seconds=0.0, state="blocked_runtime_mismatch",
-                       stats={"runtime_seen": runtime.get("version")})
-        return {"case_id": case_id, "verdict": "blocked", "directory": str(directory),
-                "reason": "runtime sürümü sözleşmeyle uyuşmuyor"}
-
+    # Donmuş ayar denetimi: taşımanın gerçekten gönderebildiği ayarlar (PLAN-3 §4).
+    # `raw_page_strategy` sözleşme-üstü bir kavramdır; `image_label_prefix` ise `ChatSettings` alanı
+    # değildir — okuyucu onu taşımaya **ayrı kwarg** olarak verir (`read_page`), yani istek gövdesine
+    # girer ama ayar nesnesinde yaşamaz. İkisi de "gönderilemeyen ayar" sanılmamalı.
+    transport_kwargs = ("raw_page_strategy", "image_label_prefix")
     wanted = {"model": MODEL, **{key: value for key, value in SETTINGS.items()
-                                 if key not in ("raw_page_strategy",)},
+                                 if key not in transport_kwargs},
               "timeout": float(MODEL_TIMEOUT_SECONDS)}
     supported = {field.name for field in dataclasses.fields(ChatSettings)}
     unsupported_settings = sorted(set(wanted) - supported)
     if unsupported_settings:
-        # PLAN-3 §4 sert kuralı: donmuş bir ayar taşımada yoksa **gönderim yok**.
-        write_json(directory / "result.json",
-                   {"schema": "semread-001b-result/1", "case_id": case_id, "attempt_id": attempt_id,
-                    "arm": arm, "phase": phase, "split": page["split"],
-                    "product_verdict": "blocked", "blocking_kind": "unsupported_frozen_setting",
-                    "unsupported_settings": unsupported_settings, "send_attempted": False,
-                    "inference_calls": 0})
-        mark_send_state(case_id, phase=phase, state_name="not_sent_unsupported_setting",
-                        detail="donmuş ayar taşımada desteklenmiyor")
-        record_attempt(attempt_id, directory, page, arm, phase=phase, verdict="blocked",
-                       gates={}, seconds=0.0, state="blocked_unsupported_setting",
+        return blocked("blocked_unsupported_setting",
+                       result_extra={"blocking_kind": "unsupported_frozen_setting",
+                                     "unsupported_settings": unsupported_settings},
                        stats={"unsupported_settings": unsupported_settings})
-        return {"case_id": case_id, "verdict": "blocked", "directory": str(directory),
-                "reason": "donmuş ayar taşımada desteklenmiyor", "unsupported": unsupported_settings}
+
+    # Model keşfi + digest: bilinen bir uyuşmazlıkta gönderim yok (bütçe harcanmaz).
+    try:
+        installed = find_model(installed_models(), MODEL)
+    except Exception as exc:  # noqa: BLE001 - keşif hatası gönderimi engeller
+        return blocked("blocked_model_discovery", verdict="fail",
+                       result_extra={"blocking_kind": "model_discovery",
+                                     "blocking_reason": f"{type(exc).__name__}: {exc}"},
+                       error={"kind": "model_discovery", "detail": f"{type(exc).__name__}: {exc}"})
+    if installed is None:
+        return blocked("blocked_model_discovery", verdict="fail",
+                       result_extra={"blocking_kind": "model_discovery",
+                                     "blocking_reason": f"model bulunamadı: {MODEL}"},
+                       error={"kind": "model_discovery", "detail": f"model bulunamadı: {MODEL}"})
+    if installed.digest != EXPECTED_DIGEST:
+        return blocked("blocked_model_mismatch", verdict="fail",
+                       result_extra={"blocking_kind": "model_changed",
+                                     "blocking_reason": (f"digest {installed.digest[:12]}… != "
+                                                         f"{EXPECTED_DIGEST[:12]}…")},
+                       manifest_extra={"model_metadata_seen": installed.as_dict()})
+
+    runtime = runtime_identity()
+    if runtime.get("version") != EXPECTED_RUNTIME:
+        write_json(directory / "runtime-identity.json", runtime)
+        return blocked("blocked_runtime_mismatch", verdict="blocked", runtime=runtime.get("version"),
+                       result_extra={"blocking_kind": "runtime_mismatch",
+                                     "blocking_reason": (f"gerçek runtime {runtime.get('version')!r} != "
+                                                         f"beklenen {EXPECTED_RUNTIME!r} "
+                                                         f"(hata: {runtime.get('error')!r})")},
+                       stats={"runtime_seen": runtime.get("version")})
+
+    # Gerçek hazırlanmış girdi kimliği (P0R-FINAL-C): rezervasyondan hemen önce.
+    prediction_input = prediction_input_record(page, arm, bundle=bundle, prompt=prompt)
+    store_prepared_input(page, arm, prediction_input)
+
+    reservation = reserve_live_call(case_id, phase=phase, arm=arm, split=page["split"],
+                                    attempt_dir=directory, attempt_id=attempt_id)
+    if not reservation.get("reserved"):
+        return blocked("blocked_budget",
+                       result_extra={"blocking_kind": "budget",
+                                     "blocking_reason": reservation.get("reason")})
+
     settings = ChatSettings(**{key: value for key, value in wanted.items() if key in supported})
     recorder = Recorder(directory / "inference-log.json", label=f"semread-001b {case_id}")
     chat = RecordedChat(MODEL, settings=settings, recorder=recorder)
     forbidden = _forbidden_terms(page)
-    mark_send_state(case_id, phase=phase, state_name="sending")
+    mark_send_state(attempt_id, state_name="sending")
     started = time.perf_counter()
-    outcome = read_page(chat, bundle, forbidden=[term for term in forbidden if term],
-                        num_predict=NUM_PREDICT)
+    try:
+        outcome = read_page(chat, bundle, forbidden=[term for term in forbidden if term],
+                            num_predict=NUM_PREDICT)
+    except Exception as exc:  # noqa: BLE001 - gönderim durumu belirsiz: bütçede kalır
+        mark_send_state(attempt_id, state_name="dispatch_uncertain",
+                        detail=f"{type(exc).__name__}: {exc}")
+        return finalize_attempt(attempt_id=attempt_id, directory=directory, page=page, arm=arm,
+                                phase=phase, state="transport_error", verdict="fail",
+                                send_attempted=True, inference_calls=1,
+                                error={"kind": "dispatch_uncertain",
+                                       "detail": f"{type(exc).__name__}: {exc}"},
+                                runtime=runtime.get("version"), budget=reservation["record"],
+                                model_metadata={**installed.as_dict(),
+                                                "runtime_version_seen": runtime.get("version")},
+                                prediction_input=prediction_input,
+                                result_extra={"blocking_kind": "transport_error",
+                                              "runtime_matches_expected": False})
     seconds = round(time.perf_counter() - started, 3)
-    mark_send_state(case_id, phase=phase,
-                    state_name="sent" if outcome.get("outcome") == "answered"
-                    else f"transport_{outcome.get('failure_kind') or 'unknown'}",
+    mark_send_state(attempt_id,
+                    state_name=("sent" if outcome.get("outcome") == "answered"
+                                else f"transport_{outcome.get('failure_kind') or 'unknown'}"),
                     detail=f"{seconds} sn")
 
     write_json(directory / "request-manifest.json", outcome.get("request") or {})
@@ -778,16 +1086,6 @@ def write_live_attempt(page: dict, arm: str, *, phase: str, observations=None, s
                 "rss": {"value_bytes": resource.getrusage(resource.RUSAGE_SELF).ru_maxrss,
                         "scope": "bu sürecin RSS'i; toplam sistem/model RAM'i değildir"}})
     write_json(directory / "runtime-identity.json", runtime)
-    write_json(directory / "manifest.json",
-               _attempt_manifest(page, arm, attempt_id=attempt_id, phase=phase,
-                                 runtime=runtime.get("version"),
-                                 model_metadata={**installed.as_dict(),   # P0R-4: kanonik ayrıştırıcı
-                                                 "runtime_version_seen": runtime.get("version"),
-                                                 "settings_unsupported": unsupported_settings,
-                                                 "runtime_matches_expected":
-                                                     runtime.get("version") == EXPECTED_RUNTIME,
-                                                 "runtime_error": runtime.get("error")},
-                                 request_hashes_seen=request_hashes(outcome.get("request"))))
 
     gates = {
         "answered": outcome.get("outcome") == "answered",
@@ -799,23 +1097,33 @@ def write_live_attempt(page: dict, arm: str, *, phase: str, observations=None, s
         "no_leakage": not (outcome.get("leakage") or []),
     }
     verdict = "pass" if all(gates.values()) else "fail"
-    write_json(directory / "result.json",
-               {"schema": "semread-001b-result/1", "case_id": case_id, "attempt_id": attempt_id,
-                "arm": arm, "phase": phase, "split": page["split"],
-                "runtime": runtime.get("version"),
-                "runtime_matches_expected": runtime.get("version") == EXPECTED_RUNTIME,
-                "product_verdict": verdict, "evaluation_scope": "candidate-accuracy",
-                "semantic_evaluation": "provisional-reference", "cad_evaluation": "not_evaluated",
-                "gates": gates, "inference_calls": 1, "send_attempted": True, "seconds": seconds,
-                "reserved_at": reservation["record"]["started_at"]})
-    write_json(directory / "artifact-index.json", artifact_index(directory))
+    if outcome.get("outcome") != "answered":
+        state = "transport_error"
+    elif not gates["parsed"]:
+        state = "parse_error"
+    elif verdict == "pass":
+        state = "pass"
+    else:
+        state = "failed_gates"
+    finalized = finalize_attempt(
+        attempt_id=attempt_id, directory=directory, page=page, arm=arm, phase=phase, state=state,
+        verdict=verdict, send_attempted=True, inference_calls=1, gates=gates, seconds=seconds,
+        runtime=runtime.get("version"), stats={key: stats.get(key) for key in
+                                               ("done_reason", "eval_count", "prompt_eval_count")},
+        prediction_input=prediction_input, budget=reservation["record"],
+        model_metadata={**installed.as_dict(), "runtime_version_seen": runtime.get("version"),
+                        "settings_unsupported": unsupported_settings,
+                        "runtime_matches_expected": runtime.get("version") == EXPECTED_RUNTIME,
+                        "runtime_error": runtime.get("error")},
+        request_hashes_seen=request_hashes(outcome.get("request")),
+        result_extra={"runtime_matches_expected": runtime.get("version") == EXPECTED_RUNTIME,
+                      "evaluation_scope": "candidate-accuracy",
+                      "semantic_evaluation": "provisional-reference",
+                      "cad_evaluation": "not_evaluated",
+                      "reserved_at": reservation["record"]["reserved_at"],
+                      "failure_kind": outcome.get("failure_kind")})
+    return {**finalized, "seconds": seconds, "outcome": outcome}
 
-    record_attempt(attempt_id, directory, page, arm, phase=phase, verdict=verdict, gates=gates,
-                   seconds=seconds,
-                   stats={key: stats.get(key) for key in
-                          ("done_reason", "eval_count", "prompt_eval_count")})
-    return {"case_id": case_id, "directory": str(directory), "verdict": verdict, "gates": gates,
-            "seconds": seconds, "outcome": outcome}
 
 
 def _forbidden_terms(page: dict) -> list[str]:
@@ -848,9 +1156,69 @@ def evaluation_run_id(attempt_ids: list[str]) -> str:
                                     "attempts": sorted(attempt_ids)}, sort_keys=True))[:32]
 
 
+def selected_attempts_payload(matrix_cells: list[dict], run_id: str) -> dict:
+    """Seçilen matris hücrelerinin değişmez kanıtı: attempt kimliği + sonuç/manifest hash'i."""
+    rows = []
+    for cell in matrix_cells:
+        attempt = cell.get("attempt")
+        if not attempt:
+            continue
+        directory = Path(attempt)
+        manifest_path = directory / "manifest.json"
+        result_path = directory / "result.json"
+        manifest = read_json(manifest_path) or {}
+        rows.append({"page_id": cell["page_id"], "arm": cell["arm"], "cell": cell.get("cell"),
+                     "directory": str(directory),
+                     "attempt_id": manifest.get("attempt_id")
+                     or f"{cell['page_id']}-{cell['arm']}/{directory.name}",
+                     "manifest_sha256": sha256_of(manifest_path) if manifest_path.exists() else None,
+                     "result_sha256": sha256_of(result_path) if result_path.exists() else None,
+                     "prediction_input_identity": manifest.get("prediction_input_identity")})
+    return {"schema": "semread-001b-selected-attempts/1", "evaluation_run_id": run_id,
+            "evaluation_identity": evaluation_identity(), "attempts": rows, "count": len(rows)}
+
+
+def write_evaluation_artifacts(payload: dict, acceptance: dict | None, report_text: str | None,
+                               selected: dict) -> dict:
+    """Değerlendirme kanıtını `evaluations/<evaluation_run_id>/` altına yaz (P0R-FINAL-D).
+
+    Eski bir koşunun klasörü **asla** üzerine yazılmaz: farklı bir kimlik aynı hedefe düşerse
+    (bozuk/çakışan durum) yeni klasör sonek alır ve eskisi olduğu gibi kalır. `final/pointer.json`
+    yalnız güncel koşuya işaret eder; `final/report.md` okunabilirlik için tutulan bir kopyadır.
+    """
+    run_id = payload["evaluation_run_id"]
+    base = REPORT_ROOT / "evaluations"
+    directory = base / run_id
+    suffix = 2
+    while True:
+        existing = read_json(directory / "evaluation.json")
+        if existing is None or existing.get("evaluation_run_id") == run_id:
+            break
+        directory = base / f"{run_id}-{suffix}"
+        suffix += 1
+    directory.mkdir(parents=True, exist_ok=True)
+    write_json(directory / "evaluation.json", payload)
+    if acceptance is not None:
+        write_json(directory / "acceptance.json", acceptance)
+    if report_text is not None:
+        (directory / "report.md").write_text(report_text, encoding="utf-8")
+    write_json(directory / "selected-attempts.json", selected)
+    (REPORT_ROOT / "final").mkdir(parents=True, exist_ok=True)
+    write_json(REPORT_ROOT / "final" / "pointer.json",
+               {"schema": "semread-001b-final-pointer/1", "evaluation_run_id": run_id,
+                "directory": str(directory.relative_to(REPORT_ROOT)), "written_at": _now(),
+                "note": "kanıt koşu klasöründedir; bu dosya yalnız güncel koşuya işaret eder"})
+    artifacts = {"schema": "semread-001b-evaluation-artifacts/1", "evaluation_run_id": run_id,
+                 "directory": str(directory),
+                 "files": sorted(path.name for path in directory.iterdir() if path.is_file())}
+    write_json(REPORT_ROOT / "evaluation-artifacts.json", artifacts)
+    return artifacts
+
+
 def evaluate(write_report: bool = True) -> dict:
     manifest = read_json(CORPUS_DIR / "manifest.json") or corpus_manifest()
-    matrix_cells = final_matrix().get("cells") or []
+    matrix_payload = final_matrix()
+    matrix_cells = matrix_payload.get("cells") or []
     matrix = {f"{cell['page_id']}-{cell['arm']}": cell for cell in matrix_cells}
     cells_status: list[dict] = []
     per_page: dict[str, dict] = {}
@@ -920,15 +1288,25 @@ def evaluate(write_report: bool = True) -> dict:
                 .get("evaluation_identity") != evaluation_identity())],
         "code_identity": code_identity(),
         "budget": budget_report(),
+        "attempt_ledger": attempt_ledger_report(),
+        "lifecycle": attempt_lifecycle_report(),
         "pages": pages_rows, "aggregates": aggregates, "comparison": comparison,
         "matrix": matrix_cells, "cells_status": cells_status,
-        "matrix_totals": (final_matrix().get("totals") if matrix_cells else {}),
+        "matrix_totals": matrix_payload.get("totals") or {},
     }
-    write_json(REPORT_ROOT / "evaluation.json", payload)
     if write_report:
-        write_acceptance(payload)
+        acceptance = write_acceptance(payload)
+        report_text = render_report(payload)
         (REPORT_ROOT / "final").mkdir(parents=True, exist_ok=True)
-        (REPORT_ROOT / "final" / "report.md").write_text(render_report(payload), encoding="utf-8")
+        (REPORT_ROOT / "final" / "report.md").write_text(report_text, encoding="utf-8")
+    else:
+        acceptance, report_text = None, None
+    # P0R-FINAL-D: kanıt, değerlendirme koşusu kimliğiyle **sürümlenmiş** klasöre yazılır; eski
+    # koşular korunur. `final/` yalnız güncel koşuya işaret eder.
+    payload["evaluation_artifacts"] = write_evaluation_artifacts(
+        payload, acceptance, report_text,
+        selected_attempts_payload(matrix_cells, payload["evaluation_run_id"]))
+    write_json(REPORT_ROOT / "evaluation.json", payload)
     return payload
 
 
@@ -1036,10 +1414,16 @@ def render_report(payload: dict) -> str:
         f"- HEAD (bilgi): `{_git('rev-parse', 'HEAD')}`",
         f"- üretici (kod) kimliği: `{payload['code_identity']}`",
         f"- değerlendirme kimliği: `{payload['evaluation_identity']}`",
+        f"- değerlendirme koşusu: `{payload['evaluation_run_id']}` "
+        f"(`{(payload.get('evaluation_artifacts') or {}).get('directory') or 'yazılmadı'}`)",
         f"- model: `{MODEL}` digest `{EXPECTED_DIGEST[:16]}…`; beklenen runtime `{EXPECTED_RUNTIME}`",
-        f"- bütçe: dev {budget['dev_used']}/{budget['dev_limit']}, final {budget['final_used']}/"
-        f"{budget['final_limit']}, toplam {budget['total_used']}/{budget['total_limit']}",
+        f"- bütçe (inference): dev {budget['dev_used']}/{budget['dev_limit']}, final "
+        f"{budget['final_used']}/{budget['final_limit']}, toplam {budget['total_used']}/"
+        f"{budget['total_limit']}",
         f"  ({budget['counting_note']})",
+        f"- attempt defteri: {payload.get('attempt_ledger', {}).get('total', 'yok')} kayıt "
+        f"({payload.get('attempt_ledger', {}).get('by_state', {})}); yerel retler inference "
+        f"harcamaz (P0R-FINAL-B)",
         "",
         "## Referans niteliği",
         "",
@@ -1171,9 +1555,14 @@ def reusable_d_attempt(page: dict) -> dict | None:
 def reusable_attempt(case_id: str, page: dict) -> dict | None:
     """Final hücresi için yeniden kullanılabilir geçerli attempt (politika önceden sabit).
 
-    Yeniden kullanım yalnız teknik geçerliliğe bakar: aynı üretici kimliği, aynı sayfa hash'i,
-    doğrulanmış model digest'i, engellenmemiş verdict. Sonucun "güzel" olması seçim gerekçesi
+    Yeniden kullanım yalnız teknik geçerliliğe bakar: aynı üretici kimliği, **aynı gerçek hazırlanmış
+    girdi kimliği** (`prediction_input_identity`, P0R-FINAL-C/D), doğrulanmış model digest'i,
+    engellenmemiş verdict ve gerçekten yapılmış gönderim. Sonucun "güzel" olması seçim gerekçesi
     değildir; başarısız/failed bir attempt final hücresini kapatmaz, çağrı olarak sayılır.
+
+    Önbellekteki sayfa PNG hash'i (`page_png_sha256`) yalnız meta veridir: tek başına V/VE tahminini
+    yeniden kullanılabilir yapmaz. Ucuz denetimler önce koşar; hazırlanmış girdi kaydı yalnız gerekince
+    (üretici kimliği tutan bir aday attempt varsa) okunur — hazırlanamıyorsa yeniden kullanım yoktur.
     """
     state = load_state()
     records = (state.get("attempts") or {}).get(case_id) or []
@@ -1181,6 +1570,9 @@ def reusable_attempt(case_id: str, page: dict) -> dict | None:
         records = [records]
     page_png = PAGES_DIR / f"{page['page_id']}.png"
     source = ROOT / page["path"]
+    arm = case_id[len(page["page_id"]) + 1:] if case_id.startswith(f"{page['page_id']}-") else None
+    current_identity: str | None = None
+    current_loaded = False
     for record in reversed(records):       # en yeni geçerli attempt
         if record.get("verdict") != "pass":
             continue
@@ -1193,9 +1585,9 @@ def reusable_attempt(case_id: str, page: dict) -> dict | None:
             continue                       # üretici kimliği değişti → bayat attempt
         # P0R-1: değerlendirme kimliği **aranmaz**. Yalnız evaluator/gold düzeltmesi geçerli ham
         # tahmini geçersiz kılmaz; yeni değerlendirme yeni inference olmadan üretilebilir.
-        if manifest.get("input_identity") not in (None, input_identity(page)):
+        if manifest.get("input_identity") != input_identity(page):
             continue                       # girdi sözleşmesi/hazırlama değişti
-        if manifest.get("model_identity") not in (None, model_identity()):
+        if manifest.get("model_identity") != model_identity():
             continue
         if manifest.get("expected_digest") != EXPECTED_DIGEST:
             continue
@@ -1205,15 +1597,25 @@ def reusable_attempt(case_id: str, page: dict) -> dict | None:
             continue                       # girdi byte'ları aynı mı
         if page_png.exists() and manifest.get("page_png_sha256") != sha256_of(page_png):
             continue
-        if result.get("blocking_kind") or result.get("send_attempted") is False:
+        if result.get("blocking_kind"):
             continue
+        if arm in ARMS and result.get("send_attempted") is not True:
+            continue                       # gönderilmemiş attempt tahmin sayılmaz
         if (result.get("gates") or {}).get("no_leakage") is not True:
             continue
-        if result.get("runtime_matches_expected") is not True and result.get("arm") != D_ARM:
+        if result.get("runtime_matches_expected") is not True and arm != D_ARM:
             continue
+        if arm in ARMS:
+            if not current_loaded:         # pahalı adım: yalnız aday varken ve bir kez
+                current_identity = prediction_input_identity(prepared_input_record(page, arm))
+                current_loaded = True
+            stored = manifest.get("prediction_input_identity")
+            if current_identity is None or stored != current_identity:
+                continue                   # gerçek hazırlanmış girdi kanıtlanamıyor → yeniden kullanma
         return {"directory": str(directory), "phase": record.get("phase"),
                 "verdict": record.get("verdict"), "gates": record.get("gates"),
-                "attempt_id": record.get("attempt_id")}
+                "attempt_id": record.get("attempt_id"),
+                "prediction_input_identity": manifest.get("prediction_input_identity")}
     return None
 
 
@@ -1255,9 +1657,12 @@ def final_matrix(reuse: bool = True) -> dict:
                        "not_run": sum(1 for c in cells if c["cell"] == "not_run"),
                        "by_kind": by_kind},
             "reuse_policy": ("geçerli attempt = pass + aynı üretici kimliği + aynı girdi/model "
-                             "kimliği + doğrulanmış digest + sızıntı kapısı geçmiş; değerlendirme "
-                             "kimliği yeniden kullanımı etkilemez (P0R-1); politika sonuç "
-                             "görülmeden sabitlendi"),
+                             "kimliği + **aynı gerçek hazırlanmış girdi kimliği** "
+                             "(prediction_input_identity) + doğrulanmış digest + gerçekten yapılmış "
+                             "gönderim + sızıntı kapısı geçmiş; değerlendirme kimliği yeniden "
+                             "kullanımı etkilemez (P0R-1); sayfa PNG hash'i tek başına yeterli "
+                             "değildir; politika sonuç görülmeden sabitlendi"),
+            "lifecycle": attempt_lifecycle_report(),
             "budget": budget_report()}
 
 
@@ -1316,6 +1721,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--phase", choices=list(PHASES), default=None,
                         help="çağrının amacı: dev (≤10) ya da final (≤20)")
     parser.add_argument("--matrix", action="store_true", help="30 hücrenin durumu (çağrı yok)")
+    parser.add_argument("--lifecycle", action="store_true",
+                        help="attempt yaşam döngüsü/geçmiş tutarlılığı (çağrı yok)")
     parser.add_argument("--no-reuse", action="store_true",
                         help="geçerli attempt'leri yeniden kullanma (politika dışı, tanı için)")
     parser.add_argument("--arms", default="V,VE")
@@ -1344,6 +1751,11 @@ def main(argv: list[str] | None = None) -> int:
     if args.matrix:
         print(json.dumps(final_matrix(reuse=not args.no_reuse), ensure_ascii=False, indent=2))
         return 0
+    if args.lifecycle:
+        print(json.dumps({"lifecycle": attempt_lifecycle_report(),
+                          "attempt_ledger": attempt_ledger_report()},
+                         ensure_ascii=False, indent=2))
+        return 0
     if args.dry_run:
         if not args.phase:
             raise SystemExit("--dry-run için --phase gerekli (dev|final)")
@@ -1370,7 +1782,10 @@ def main(argv: list[str] | None = None) -> int:
                                                "claim_recall": value["claim_recall"]}
                                          for arm, value in payload["aggregates"].items()},
                           "reference_present": sum(1 for row in payload["reference_status"].values()
-                                                   if row.get("present"))},
+                                                   if row.get("present")),
+                          "evaluation_run_id": payload["evaluation_run_id"],
+                          "evaluation_artifacts": payload.get("evaluation_artifacts"),
+                          "attempt_ledger": payload.get("attempt_ledger")},
                          ensure_ascii=False, indent=2))
         return 0
     parser.print_help()

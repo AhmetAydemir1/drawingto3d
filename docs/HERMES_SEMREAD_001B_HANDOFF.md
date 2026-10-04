@@ -339,6 +339,35 @@ yazılmamalı (yer tutucu B02'yi açık bırakır). **P4:** D kolunun 10 hücres
 sıfır inference). **P5:** dondurma manifesti + 20 frozen V/VE çağrısı (gerçek inference; başlamadan
 önce kullanıcı onayı).
 
+#### P3 ilerlemesi (bu pencerede başladı)
+
+`dev-plate-pocket` gold'u **yazıldı ve doğrulamadan geçti** (`--evaluate`: `reference_status`
+`ok=true`, problem yok). Yöntem ve kararlar (kalan 9 sayfa için aynen kullanılacak):
+
+1. **Kısa biçim → builder → kapı.** `out/lab/semread-001b/corpus/gold-src/<page_id>.json` elle
+   yazılır (bölgeler **pafta pikselinde**), sonra
+   `.venv/bin/python eval/semread_001b_reference.py --page <page_id>` normalize edip
+   `corpus/gold/<page_id>.json` üretir; kapı `check_reference()`tir (yer tutucu/bölge/gözlem
+   kimliği/raster-vision). Bölgeler elle hesaplanmaz: küçük bir script gözlem tablosundan
+   (`observation_table(observe(...))`) hedef bölgeyi ve çağrı metin kutusunu px'e çevirir
+   (`/tmp/make_gold_src_plate.py` bu işin örneğidir — kalıcı bir kopyası bir sonraki adımda
+   `eval/` altına alınmalı).
+2. **Hedef = çağrının işaret ettiği özellik**, gözlem kimliğiyle izlenebilir (`observation_id`),
+   ör. köşe deliği `g12`, cep dairesi `g8`. `Ø50,00` hedefinin ölçüsü 393,7 px = 50 mm @200 dpi
+   çıktı: gözlem geometrisi ile çap birebir tutuyor (çap okuması bağımsız olarak doğrulandı).
+3. **Şema sınırı:** `M8 - 6H THRU ALL` gibi **diş** çağrıları ifade edilemiyor (form kapalı kümesi
+   `R | diameter | none | unknown`). Aynı dört delik tek claim olarak yazıldı (matkap Ø6,80), diş
+   bilgisi `notes` alanında; dişi ikinci aday olarak üreten VLM'in adayı yanlış pozitif değil, alan
+   kararıdır (size/form) — bu ayrım devir notunda yazılı.
+4. **Derinlik pafta genelinden bağlanır:** cep derinliği (8,00) çağrının kendisinde değil SECTION
+   B-B'de yazıyor; claim'e `depth=8.0, depth_state="stated"` olarak yazıldı ve `evidence` bunu
+   açıklıyor. Çağrının yazmadığı sayı (cebin adedi) `count_printed=null` bırakılır: `count_printed`
+   **basılı** sayıdır, "aslında bir tane" yorumu değil.
+5. **Kapsam beyanı:** bu sayfa için `{"scope": "predicates", "predicates": [<yedi yüklem>]}` —
+   "bu yüklemler için eksiksizim" demek; kapsam bölgesi gold claim'lerinin kendisidir (bkz. §6f/§12
+   düzeltmesi). Doğrusal ölçüler (1 00,00 / 80,00 / 60,00 / 15,00) kapsam dışı ve `scope` alanında
+   yazılı.
+
 Not: `EVALUATION_IDENTITY_FILES` içinde `eval/semread_001b_pilot.py` var — pilot/dosya
 düzenlemeleri değerlendirme kimliğini değiştirir ve seçili attempt'leri "bayat" yapar. Bu yüzden
 sıra: **kod düzenlemeleri bitince D koşusu**, sonra doküman düzenlemeleri (dokümanlar kimliğe

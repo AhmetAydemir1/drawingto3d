@@ -1229,3 +1229,34 @@ açık: B05, B06") — §20 gereği V/VE ölçümü öncesi açık kalır.
 
 **Sıradaki (PLAN-11 §23):** atomik `--freeze` (P5 kapısı) → `FREEZE.json` (tam bağlamalarla) →
 ondan sonra V/VE.
+
+### 6x. PLAN-11 §23 — atomik P5 freeze GEÇTİ: 10/10 + tam yeniden üretim + FREEZE.json tam bağlamalı
+
+**`gold_manifest --freeze` (tek komut, atomik; `7299830`):**
+* **"P5 kapısı: kapsam 10/10 — TAMAM"**; `gold_content_identity ae30ce6f1b1d8d56…`;
+  **"yeniden üretim kanıtı: 10 sayfa koşuldu (§17)"**; dondurma kaydı →
+  `eval/semread_001b_gold/FREEZE.json`; `FREEZE_EXIT=0`.
+* §23 kriter listesi: coverage 10/10 ✓; manifest strict pass ✓; source/spec/reference hash'leri ✓;
+  tüm referanslar yeniden üretildi (10/10 eşleşti) ✓; kimlik kararlı ✓; FREEZE.json tam ✓ →
+  **P5 CLOSED**.
+
+**FREEZE.json (izlenen dosya) içeriği:** schema `semread-001b-freeze/1`; coverage `10/10`; 10
+sayfa (page_id/split/claim_count + source/spec/reference sha256); `bindings`: git HEAD `7299830…`;
+üretici `16878366…`; değerlendirme `4f63027b…`; kod kimliği `16878366…`; kirli-öncesi `361204ee…`;
+aday şeması `semread-001b-case/1`; eşleştirme politikası `semread-001b-match/2`; koşu sözleşmesi
+`semread-001b-run-contract/3`; model `qwen3-vl:8b-instruct` + digest `0533d743…` + runtime `0.32.1`;
+üretim ayarları; D koşu kimliği `944071ab…` + 10 seçili attempt (manifest/result sha256);
+bütçe `0/30`; yaşam döngüsü ok=True; matris {valid_reuse 10 / to_run 20}. Zaman damgası kimliğe
+girmedi.
+
+**§24 (P5 sonrası değişiklik yasağı):** gold, corpus, prompt, aday şeması, model/digest/runtime,
+ayarlar, preprocessing, eşleştirme politikası/toleransı, belirsizlik kuralı ve değerlendirme
+semantiği artık değişmez; değişiklik gerekirse freeze invalid → düzelt → yeni kimlik → yeniden
+dondurma.
+
+**Test durumu:** freeze-bağlama kod değişikliği (`041d525`) sonrası SEMREAD alt kümesi yeniden
+koşuluyor; sonuç bir sonraki nota işlenecek (önceki tam koşu: 179/179 ve full pytest 1188/1188 —
+P3 kapanışı).
+
+**Sıradaki (PLAN-11 §25–§29):** V/VE preflight (P5 kapalı ✓, D valid_reuse 10 ✓, V/VE to_run 20,
+bütçe 0/30, orphan 0) → V/VE final matrisi (≤20 çağrı) → final rapor + failure taxonomy.

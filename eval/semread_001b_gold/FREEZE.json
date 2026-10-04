@@ -1,0 +1,704 @@
+{
+  "schema": "semread-001b-freeze/1",
+  "gold_content_identity": "ae30ce6f1b1d8d5666bd5e749414883b67a7971ba7233f96cb0a41b01ce9a277",
+  "coverage": "10/10",
+  "pages": [
+    {
+      "page_id": "dev-plate-pocket",
+      "split": "dev",
+      "claim_count": 2,
+      "source_sha256": "9e34e6713de6ef8d95bad464e0c87330b515976abc7e5e2e0f9bb0fe701d96ef",
+      "spec_sha256": "8895aaff7ba51f370b8c6251d269a2dd6b83e1dab6b109ada93e3a32ef0f34a2",
+      "reference_sha256": "48671f502d196ad6ecccdcfca81d2f61b4640801eaf260cdd25980422dc1972c"
+    },
+    {
+      "page_id": "dev-flange-book",
+      "split": "dev",
+      "claim_count": 7,
+      "source_sha256": "9c0a91e21bf7265d13074adad10ba36171e802cc0e70895cfd4c24656933282a",
+      "spec_sha256": "af593ef8f823e98ddbb5162d1dd1eaba651ce873d562da1dee0d9cc7c3a8f051",
+      "reference_sha256": "ecf13221bc678fc597750058d2c13be651817b2a55029ae59b4bdf8ae328a2d2"
+    },
+    {
+      "page_id": "dev-flange-elbow",
+      "split": "dev",
+      "claim_count": 7,
+      "source_sha256": "20a2e6b4968960caab806ff91808fd7e625fc60fd5b98de5a1bb07f133babbff",
+      "spec_sha256": "006841a10a9bdfcff3bd81bf85731c1bf39b9d684549e7ffe90aae9963be7dfa",
+      "reference_sha256": "2d9138a75418e4c5cc564a4745533a47c5074efc127c67bac23e793aeaebc3ef"
+    },
+    {
+      "page_id": "dev-drawing-2",
+      "split": "dev",
+      "claim_count": 6,
+      "source_sha256": "cdf6285583f54f9a2350c45cf8061a0d74d5ec2077b30af33adef1bda9ed2114",
+      "spec_sha256": "6fb37b0688a8d60dd04fa4e81cc6cfb56fc1afb5f7fe1f1ce590ae11b5d93e57",
+      "reference_sha256": "f3be4c268aaf3db6a1ef16d887a81060612177ba8f3d33b85e37b7fce17c2279"
+    },
+    {
+      "page_id": "frozen-exercise-51",
+      "split": "frozen",
+      "claim_count": 10,
+      "source_sha256": "b19423550cd579ec24a2ef0630babd8af7bbe50a0ce7b2b9532f9bcec476abe8",
+      "spec_sha256": "b996a131dac05ee21badcfb345c91e0de4efc826dd55828483dff7b91e3d0d18",
+      "reference_sha256": "27cdcb6a0ad63befc2a21d4224823371440bcdaeb753fc6fe7a21f10cb895ab1"
+    },
+    {
+      "page_id": "frozen-exercise-12",
+      "split": "frozen",
+      "claim_count": 14,
+      "source_sha256": "0a03e53e950f464fde9a14846d8350635b80c72ba9aaeaf8439fbe9477436f1a",
+      "spec_sha256": "2c614d1029d633a4c5d807a0c998f7789e9ee68d72a5d841fe1b420871199151",
+      "reference_sha256": "bf5d3f7e931d7220dbda98a60e3be7ba54c95e72e6b80d2512ccf5dbc8663261"
+    },
+    {
+      "page_id": "frozen-exercise-17",
+      "split": "frozen",
+      "claim_count": 3,
+      "source_sha256": "5c926b6dc7e881204fbb60945eb435a0184250a907a32910166ea41cd4e0b2f5",
+      "spec_sha256": "5c8f270bf9041d13ddd8f1481c94017379c8dec9c72cb3f37eecc45227268ba7",
+      "reference_sha256": "c4bcca71c66f54999dd4398cb02fcb079d194e536104d6dd42cc5a67d1c5564a"
+    },
+    {
+      "page_id": "frozen-exercise-13",
+      "split": "frozen",
+      "claim_count": 7,
+      "source_sha256": "fbc8e970056d4d4cd8c620a170076b1e44b1e46d83b0f653819b5f7f8d6a4895",
+      "spec_sha256": "26f26d994d6a6613e72d2da6157a70250dc869232d14838cefe2ebf25685dd02",
+      "reference_sha256": "8dab4daa975bc87e7c642dfee6bb8f6455770f8598500883553984a89d530f74"
+    },
+    {
+      "page_id": "frozen-enclosure",
+      "split": "frozen",
+      "claim_count": 1,
+      "source_sha256": "7698e830ca02ad46aa89f910c67f2efb6b1c930ff63d30bb0b80a8585519da4d",
+      "spec_sha256": "717e4be3846e9852ede3da153b50eb88fc0d9947c5724363a4bdd5196adb9514",
+      "reference_sha256": "be3e56542f2b8970d876f0f014a9905d639cf4e9ec7765befe4404c67ba8f2ab"
+    },
+    {
+      "page_id": "frozen-views-exercise",
+      "split": "frozen",
+      "claim_count": 8,
+      "source_sha256": "48422670180f32afa49c1fe540ce3f560eac0eab062bbf08415d14be16c76e74",
+      "spec_sha256": "01bdee7c4ae81fd6803a31695171eb03bb8d98d37ba951991dff269da1d6ecd4",
+      "reference_sha256": "1b35cec4eb33f74002e06f2a58a7bdb6e1d34cb68798a017a7f51543b7bd9650"
+    }
+  ],
+  "bindings": {
+    "git_head": "7299830e6a3e26e23bda61188a92ebbc1811965c",
+    "producer_identity": "16878366a1aba7ead3b94e460f9868e4ca4bcced9675eb6947d33d4d311d8430",
+    "evaluation_identity": "4f63027bc1a386a2dc84278a0b0061d68715a30a4fdb4d55997e5b74c59aacc7",
+    "code_identity": "16878366a1aba7ead3b94e460f9868e4ca4bcced9675eb6947d33d4d311d8430",
+    "preprocessing_identity": "361204ee827221e43f445a8b047697f9cc0b63b41b8bbc610db8936fc47995e5",
+    "candidate_schema": "semread-001b-case/1",
+    "match_policy": {
+      "version": "semread-001b-match/2",
+      "anchor": "candidate.target.region, yoksa candidate.source.region",
+      "region_iou_threshold": 0.15,
+      "centre_tolerance_norm": 0.05,
+      "ambiguous_score_margin": 0.05,
+      "ambiguous_policy": "yakın puanlı rakip varsa kalem `ambiguous` sayılır ve semantik alan puanlanmasına **girmez** (aday sırasına bağlı seçim yapılmaz)",
+      "localization_vs_semantic": "`localization_match_rate` yalnız bölge eşleşmesini ölçer; alan doğruluğu `semantic_field_accuracy`, bağlama doğruluğu `target_binding_accuracy` ile ayrı raporlanır",
+      "extras_policy": "gold `exhaustiveness` kapsamı içindeki eşleşmemiş aday `false_positive`; kapsam dışındaki aday `unscorable_extra_candidate` (cezalanmaz)",
+      "numeric_relative": 0.02,
+      "numeric_absolute": 0.05,
+      "unit_normalisation": "in -> mm (25.4); birim bilinmiyorsa yalnız göreli karşılaştırma yapılmaz",
+      "pairing": "bire bir; kopya aday recall'u artırmaz"
+    },
+    "contract_version": "semread-001b-run-contract/3",
+    "model": "qwen3-vl:8b-instruct",
+    "expected_model_digest": "0533d74300e4f9bc367d675d4e64ffd073d50ff16a2b4096cc2e8a1cf8c96319",
+    "runtime": "0.32.1",
+    "generation_settings": {
+      "num_predict": 2048,
+      "settings": {
+        "num_ctx": 8192,
+        "temperature": 0.0,
+        "num_predict": 2048,
+        "keep_alive": "5m",
+        "image_max_side": 1280,
+        "images_layout": "per_image_message_labeled",
+        "image_label_prefix": "Image ID: ",
+        "raw_page_strategy": "single_full_page"
+      }
+    },
+    "matrix": {
+      "totals": {
+        "cells": 30,
+        "vlm_cells": 20,
+        "d_cells": 10,
+        "new_vlm_calls": 20,
+        "new_d_runs": 0,
+        "stale_d_cells": 0,
+        "reused_vlm_cells": 0,
+        "reused_d_cells": 10,
+        "not_run": 0,
+        "by_kind": {
+          "deterministic:valid_reuse": 10,
+          "vlm:to_run": 20
+        }
+      },
+      "dispositions": {
+        "schema": "semread-001b-dispositions/1",
+        "cells": [
+          {
+            "page_id": "dev-plate-pocket",
+            "split": "dev",
+            "arm": "D",
+            "cell": "valid_reuse",
+            "attempt": "/Users/aydemir/Desktop/drawingto3d/out/lab/semread-001b/attempts/dev-plate-pocket-D/attempt-0003",
+            "stale_detected": false,
+            "kind": "deterministic",
+            "disposition": "valid_reuse",
+            "reason": "yeniden kullanım kimliği doğrulandı"
+          },
+          {
+            "page_id": "dev-plate-pocket",
+            "split": "dev",
+            "arm": "V",
+            "cell": "to_run",
+            "attempt": null,
+            "kind": "vlm",
+            "disposition": "to_run",
+            "reason": "hiç koşulmadı"
+          },
+          {
+            "page_id": "dev-plate-pocket",
+            "split": "dev",
+            "arm": "VE",
+            "cell": "to_run",
+            "attempt": null,
+            "kind": "vlm",
+            "disposition": "to_run",
+            "reason": "hiç koşulmadı"
+          },
+          {
+            "page_id": "dev-flange-book",
+            "split": "dev",
+            "arm": "D",
+            "cell": "valid_reuse",
+            "attempt": "/Users/aydemir/Desktop/drawingto3d/out/lab/semread-001b/attempts/dev-flange-book-D/attempt-0002",
+            "stale_detected": false,
+            "kind": "deterministic",
+            "disposition": "valid_reuse",
+            "reason": "yeniden kullanım kimliği doğrulandı"
+          },
+          {
+            "page_id": "dev-flange-book",
+            "split": "dev",
+            "arm": "V",
+            "cell": "to_run",
+            "attempt": null,
+            "kind": "vlm",
+            "disposition": "to_run",
+            "reason": "hiç koşulmadı"
+          },
+          {
+            "page_id": "dev-flange-book",
+            "split": "dev",
+            "arm": "VE",
+            "cell": "to_run",
+            "attempt": null,
+            "kind": "vlm",
+            "disposition": "to_run",
+            "reason": "hiç koşulmadı"
+          },
+          {
+            "page_id": "dev-flange-elbow",
+            "split": "dev",
+            "arm": "D",
+            "cell": "valid_reuse",
+            "attempt": "/Users/aydemir/Desktop/drawingto3d/out/lab/semread-001b/attempts/dev-flange-elbow-D/attempt-0002",
+            "stale_detected": false,
+            "kind": "deterministic",
+            "disposition": "valid_reuse",
+            "reason": "yeniden kullanım kimliği doğrulandı"
+          },
+          {
+            "page_id": "dev-flange-elbow",
+            "split": "dev",
+            "arm": "V",
+            "cell": "to_run",
+            "attempt": null,
+            "kind": "vlm",
+            "disposition": "to_run",
+            "reason": "hiç koşulmadı"
+          },
+          {
+            "page_id": "dev-flange-elbow",
+            "split": "dev",
+            "arm": "VE",
+            "cell": "to_run",
+            "attempt": null,
+            "kind": "vlm",
+            "disposition": "to_run",
+            "reason": "hiç koşulmadı"
+          },
+          {
+            "page_id": "dev-drawing-2",
+            "split": "dev",
+            "arm": "D",
+            "cell": "valid_reuse",
+            "attempt": "/Users/aydemir/Desktop/drawingto3d/out/lab/semread-001b/attempts/dev-drawing-2-D/attempt-0002",
+            "stale_detected": false,
+            "kind": "deterministic",
+            "disposition": "valid_reuse",
+            "reason": "yeniden kullanım kimliği doğrulandı"
+          },
+          {
+            "page_id": "dev-drawing-2",
+            "split": "dev",
+            "arm": "V",
+            "cell": "to_run",
+            "attempt": null,
+            "kind": "vlm",
+            "disposition": "to_run",
+            "reason": "hiç koşulmadı"
+          },
+          {
+            "page_id": "dev-drawing-2",
+            "split": "dev",
+            "arm": "VE",
+            "cell": "to_run",
+            "attempt": null,
+            "kind": "vlm",
+            "disposition": "to_run",
+            "reason": "hiç koşulmadı"
+          },
+          {
+            "page_id": "frozen-exercise-51",
+            "split": "frozen",
+            "arm": "D",
+            "cell": "valid_reuse",
+            "attempt": "/Users/aydemir/Desktop/drawingto3d/out/lab/semread-001b/attempts/frozen-exercise-51-D/attempt-0001",
+            "stale_detected": false,
+            "kind": "deterministic",
+            "disposition": "valid_reuse",
+            "reason": "yeniden kullanım kimliği doğrulandı"
+          },
+          {
+            "page_id": "frozen-exercise-51",
+            "split": "frozen",
+            "arm": "V",
+            "cell": "to_run",
+            "attempt": null,
+            "kind": "vlm",
+            "disposition": "to_run",
+            "reason": "hiç koşulmadı"
+          },
+          {
+            "page_id": "frozen-exercise-51",
+            "split": "frozen",
+            "arm": "VE",
+            "cell": "to_run",
+            "attempt": null,
+            "kind": "vlm",
+            "disposition": "to_run",
+            "reason": "hiç koşulmadı"
+          },
+          {
+            "page_id": "frozen-exercise-12",
+            "split": "frozen",
+            "arm": "D",
+            "cell": "valid_reuse",
+            "attempt": "/Users/aydemir/Desktop/drawingto3d/out/lab/semread-001b/attempts/frozen-exercise-12-D/attempt-0001",
+            "stale_detected": false,
+            "kind": "deterministic",
+            "disposition": "valid_reuse",
+            "reason": "yeniden kullanım kimliği doğrulandı"
+          },
+          {
+            "page_id": "frozen-exercise-12",
+            "split": "frozen",
+            "arm": "V",
+            "cell": "to_run",
+            "attempt": null,
+            "kind": "vlm",
+            "disposition": "to_run",
+            "reason": "hiç koşulmadı"
+          },
+          {
+            "page_id": "frozen-exercise-12",
+            "split": "frozen",
+            "arm": "VE",
+            "cell": "to_run",
+            "attempt": null,
+            "kind": "vlm",
+            "disposition": "to_run",
+            "reason": "hiç koşulmadı"
+          },
+          {
+            "page_id": "frozen-exercise-17",
+            "split": "frozen",
+            "arm": "D",
+            "cell": "valid_reuse",
+            "attempt": "/Users/aydemir/Desktop/drawingto3d/out/lab/semread-001b/attempts/frozen-exercise-17-D/attempt-0001",
+            "stale_detected": false,
+            "kind": "deterministic",
+            "disposition": "valid_reuse",
+            "reason": "yeniden kullanım kimliği doğrulandı"
+          },
+          {
+            "page_id": "frozen-exercise-17",
+            "split": "frozen",
+            "arm": "V",
+            "cell": "to_run",
+            "attempt": null,
+            "kind": "vlm",
+            "disposition": "to_run",
+            "reason": "hiç koşulmadı"
+          },
+          {
+            "page_id": "frozen-exercise-17",
+            "split": "frozen",
+            "arm": "VE",
+            "cell": "to_run",
+            "attempt": null,
+            "kind": "vlm",
+            "disposition": "to_run",
+            "reason": "hiç koşulmadı"
+          },
+          {
+            "page_id": "frozen-exercise-13",
+            "split": "frozen",
+            "arm": "D",
+            "cell": "valid_reuse",
+            "attempt": "/Users/aydemir/Desktop/drawingto3d/out/lab/semread-001b/attempts/frozen-exercise-13-D/attempt-0001",
+            "stale_detected": false,
+            "kind": "deterministic",
+            "disposition": "valid_reuse",
+            "reason": "yeniden kullanım kimliği doğrulandı"
+          },
+          {
+            "page_id": "frozen-exercise-13",
+            "split": "frozen",
+            "arm": "V",
+            "cell": "to_run",
+            "attempt": null,
+            "kind": "vlm",
+            "disposition": "to_run",
+            "reason": "hiç koşulmadı"
+          },
+          {
+            "page_id": "frozen-exercise-13",
+            "split": "frozen",
+            "arm": "VE",
+            "cell": "to_run",
+            "attempt": null,
+            "kind": "vlm",
+            "disposition": "to_run",
+            "reason": "hiç koşulmadı"
+          },
+          {
+            "page_id": "frozen-enclosure",
+            "split": "frozen",
+            "arm": "D",
+            "cell": "valid_reuse",
+            "attempt": "/Users/aydemir/Desktop/drawingto3d/out/lab/semread-001b/attempts/frozen-enclosure-D/attempt-0001",
+            "stale_detected": false,
+            "kind": "deterministic",
+            "disposition": "valid_reuse",
+            "reason": "yeniden kullanım kimliği doğrulandı"
+          },
+          {
+            "page_id": "frozen-enclosure",
+            "split": "frozen",
+            "arm": "V",
+            "cell": "to_run",
+            "attempt": null,
+            "kind": "vlm",
+            "disposition": "to_run",
+            "reason": "hiç koşulmadı"
+          },
+          {
+            "page_id": "frozen-enclosure",
+            "split": "frozen",
+            "arm": "VE",
+            "cell": "to_run",
+            "attempt": null,
+            "kind": "vlm",
+            "disposition": "to_run",
+            "reason": "hiç koşulmadı"
+          },
+          {
+            "page_id": "frozen-views-exercise",
+            "split": "frozen",
+            "arm": "D",
+            "cell": "valid_reuse",
+            "attempt": "/Users/aydemir/Desktop/drawingto3d/out/lab/semread-001b/attempts/frozen-views-exercise-D/attempt-0001",
+            "stale_detected": false,
+            "kind": "deterministic",
+            "disposition": "valid_reuse",
+            "reason": "yeniden kullanım kimliği doğrulandı"
+          },
+          {
+            "page_id": "frozen-views-exercise",
+            "split": "frozen",
+            "arm": "V",
+            "cell": "to_run",
+            "attempt": null,
+            "kind": "vlm",
+            "disposition": "to_run",
+            "reason": "hiç koşulmadı"
+          },
+          {
+            "page_id": "frozen-views-exercise",
+            "split": "frozen",
+            "arm": "VE",
+            "cell": "to_run",
+            "attempt": null,
+            "kind": "vlm",
+            "disposition": "to_run",
+            "reason": "hiç koşulmadı"
+          }
+        ],
+        "counts": {
+          "valid_reuse": 10,
+          "to_run": 20
+        },
+        "complete": false,
+        "open_cells": [
+          {
+            "page_id": "dev-plate-pocket",
+            "arm": "V",
+            "disposition": "to_run",
+            "reason": "hiç koşulmadı"
+          },
+          {
+            "page_id": "dev-plate-pocket",
+            "arm": "VE",
+            "disposition": "to_run",
+            "reason": "hiç koşulmadı"
+          },
+          {
+            "page_id": "dev-flange-book",
+            "arm": "V",
+            "disposition": "to_run",
+            "reason": "hiç koşulmadı"
+          },
+          {
+            "page_id": "dev-flange-book",
+            "arm": "VE",
+            "disposition": "to_run",
+            "reason": "hiç koşulmadı"
+          },
+          {
+            "page_id": "dev-flange-elbow",
+            "arm": "V",
+            "disposition": "to_run",
+            "reason": "hiç koşulmadı"
+          },
+          {
+            "page_id": "dev-flange-elbow",
+            "arm": "VE",
+            "disposition": "to_run",
+            "reason": "hiç koşulmadı"
+          },
+          {
+            "page_id": "dev-drawing-2",
+            "arm": "V",
+            "disposition": "to_run",
+            "reason": "hiç koşulmadı"
+          },
+          {
+            "page_id": "dev-drawing-2",
+            "arm": "VE",
+            "disposition": "to_run",
+            "reason": "hiç koşulmadı"
+          },
+          {
+            "page_id": "frozen-exercise-51",
+            "arm": "V",
+            "disposition": "to_run",
+            "reason": "hiç koşulmadı"
+          },
+          {
+            "page_id": "frozen-exercise-51",
+            "arm": "VE",
+            "disposition": "to_run",
+            "reason": "hiç koşulmadı"
+          },
+          {
+            "page_id": "frozen-exercise-12",
+            "arm": "V",
+            "disposition": "to_run",
+            "reason": "hiç koşulmadı"
+          },
+          {
+            "page_id": "frozen-exercise-12",
+            "arm": "VE",
+            "disposition": "to_run",
+            "reason": "hiç koşulmadı"
+          },
+          {
+            "page_id": "frozen-exercise-17",
+            "arm": "V",
+            "disposition": "to_run",
+            "reason": "hiç koşulmadı"
+          },
+          {
+            "page_id": "frozen-exercise-17",
+            "arm": "VE",
+            "disposition": "to_run",
+            "reason": "hiç koşulmadı"
+          },
+          {
+            "page_id": "frozen-exercise-13",
+            "arm": "V",
+            "disposition": "to_run",
+            "reason": "hiç koşulmadı"
+          },
+          {
+            "page_id": "frozen-exercise-13",
+            "arm": "VE",
+            "disposition": "to_run",
+            "reason": "hiç koşulmadı"
+          },
+          {
+            "page_id": "frozen-enclosure",
+            "arm": "V",
+            "disposition": "to_run",
+            "reason": "hiç koşulmadı"
+          },
+          {
+            "page_id": "frozen-enclosure",
+            "arm": "VE",
+            "disposition": "to_run",
+            "reason": "hiç koşulmadı"
+          },
+          {
+            "page_id": "frozen-views-exercise",
+            "arm": "V",
+            "disposition": "to_run",
+            "reason": "hiç koşulmadı"
+          },
+          {
+            "page_id": "frozen-views-exercise",
+            "arm": "VE",
+            "disposition": "to_run",
+            "reason": "hiç koşulmadı"
+          }
+        ],
+        "final_states": [
+          "valid_result",
+          "valid_reuse",
+          "failed_attempt",
+          "blocked"
+        ],
+        "pending_states": [
+          "to_run",
+          "not_run"
+        ],
+        "note": "her hücre nihai bir durum almalı; başarısız/bloklu hücreler sonucun parçasıdır ve açık sayılmaz (PLAN-5 §18)"
+      },
+      "reuse_policy": "geçerli attempt = pass + aynı üretici kimliği + aynı girdi/model kimliği + **aynı gerçek hazırlanmış girdi kimliği** (prediction_input_identity) + doğrulanmış digest + gerçekten yapılmış gönderim + sızıntı kapısı geçmiş; değerlendirme kimliği yeniden kullanımı etkilemez (P0R-1); sayfa PNG hash'i tek başına yeterli değildir; politika sonuç görülmeden sabitlendi"
+    },
+    "budget": {
+      "dev_used": 0,
+      "dev_limit": 10,
+      "final_used": 0,
+      "final_limit": 20,
+      "total_used": 0,
+      "total_limit": 30,
+      "by_arm": {},
+      "by_send_state": {},
+      "invalid_phase_records": 0,
+      "legacy_non_dispatch_records": 1,
+      "attempt_ledger": {
+        "schema": "semread-001b-attempt-ledger/1",
+        "total": 16,
+        "by_state": {
+          "blocked_runtime_mismatch": 1,
+          "pass": 15
+        },
+        "unique_attempt_ids": 16,
+        "dispatched": 15,
+        "note": "attempt defteri her denemeyi sayar; inference bütçesi **ayrı** defterdir ve yalnız gönderilen/belirsiz istekleri sayar (P0R-FINAL-B)"
+      },
+      "over_budget": false,
+      "method": "inference bütçesi = state.live_calls'ta gönderilmiş/belirsiz kayıtlar; her kayıt gönderimden hemen önce yazılır; split (veri bölümü) ile phase (çağrı amacı) ayrıdır; attempt defteri ayrı tutulur",
+      "counting_note": "timeout, başarısız istek, tanı çağrıları ve gönderilip gönderilmediği belirsiz ('reserved') kayıtlar sayılır; kaynak/gözlem/hazırlama hatası, bilinen model/digest/runtime uyuşmazlığı, desteklenmeyen donmuş ayar ve bütçe reddi **sayılmaz** (attempt defterine yazılır); cache hit inference değildir; 001A sayaçları bu sayaca dahil değildir"
+    },
+    "lifecycle": {
+      "schema": "semread-001b-lifecycle/1",
+      "attempt_directories": 15,
+      "history_rows": 16,
+      "unique_attempt_ids": 16,
+      "orphan_attempts": [],
+      "duplicate_attempt_ids": [],
+      "rows_without_directory": [],
+      "ok": true,
+      "note": "her attempt klasörü için tam olarak bir geçmiş kaydı olmalı; 0 ya da 2+ kayıt kabul edilmez. `rows_without_directory` kanıtı silinmiş kayıtları gösterir: bunlar kanıt zincirine giremez"
+    },
+    "d_evaluation_run_id": "944071ab22e3061ef132212f070728eb",
+    "d_selected_attempts": [
+      {
+        "page_id": "dev-plate-pocket",
+        "attempt_id": "dev-plate-pocket-D/attempt-0003",
+        "manifest_sha256": "f694894529fb2b6b4c56c6fd4557fbbc418f96860f9c0138b561f81abf11c189",
+        "result_sha256": "55b19d491991940c7ae7899915720ae243ae34c7a313554e33d9211085b8e32b"
+      },
+      {
+        "page_id": "dev-flange-book",
+        "attempt_id": "dev-flange-book-D/attempt-0002",
+        "manifest_sha256": "1b6261a7cebfbc2bc2a044b73d23bb3e7bca0d0ae4c37ea616fe8a68cb341f57",
+        "result_sha256": "81cc11d22205716dd6cde8a2da9fe1fea31d84f6430ab405be71b7c7a8564cd3"
+      },
+      {
+        "page_id": "dev-flange-elbow",
+        "attempt_id": "dev-flange-elbow-D/attempt-0002",
+        "manifest_sha256": "74d0c78a72424694c96750f0ad92bbe949560b10eb5536ffb95b0e1e30c9d8a6",
+        "result_sha256": "4b52ae9bfc9736521021d3edce43300638a0a87b1ea87184e2907d29e2ca26f5"
+      },
+      {
+        "page_id": "dev-drawing-2",
+        "attempt_id": "dev-drawing-2-D/attempt-0002",
+        "manifest_sha256": "44283a5a8f38ab9214addd68701a43c34180ccd2c9cdd1faf1b00702344d6f04",
+        "result_sha256": "86f09e9f52e4e05ed194ceb9a537aac5c8f09caa6ba42fe67f100ba2f16db42e"
+      },
+      {
+        "page_id": "frozen-exercise-51",
+        "attempt_id": "frozen-exercise-51-D/attempt-0001",
+        "manifest_sha256": "740c46284c50ed0708d4f3549f6c98d220cfc0efc500db5bb0877d8009f4a8b7",
+        "result_sha256": "75831db53ef522fad7ecede32e9b417c208ffc876a83367d585330c2760a9527"
+      },
+      {
+        "page_id": "frozen-exercise-12",
+        "attempt_id": "frozen-exercise-12-D/attempt-0001",
+        "manifest_sha256": "209a08955270e3a502092db45c0453718360bd5fb75898a358826ed8cd74e5c9",
+        "result_sha256": "88079feb822982ca0354200532bcbb95d588b9447256533c721749203f5d5df2"
+      },
+      {
+        "page_id": "frozen-exercise-17",
+        "attempt_id": "frozen-exercise-17-D/attempt-0001",
+        "manifest_sha256": "22590ec9a174ee4023a03bdb78869c78e7c4c8133598e9a1970206407ac34ab0",
+        "result_sha256": "0225308017322c5f42cba69bbe09e188b6d59caf2108361a31b5d8526fc507a0"
+      },
+      {
+        "page_id": "frozen-exercise-13",
+        "attempt_id": "frozen-exercise-13-D/attempt-0001",
+        "manifest_sha256": "ddbebc85fe934d71964d9134566b0308f325a8db305f0676943de280d5cccf51",
+        "result_sha256": "34d224b5a32eb895671881990d410b4604dff7d5c7eecdc4abf0b71038e43561"
+      },
+      {
+        "page_id": "frozen-enclosure",
+        "attempt_id": "frozen-enclosure-D/attempt-0001",
+        "manifest_sha256": "86f5de226827cc34a99edc3189a19d734bc78d003832f39e9675035f55e300ab",
+        "result_sha256": "88000922effeb93b0963f336e7b141549b2987e117f3311eb33ac377ed3310a9"
+      },
+      {
+        "page_id": "frozen-views-exercise",
+        "attempt_id": "frozen-views-exercise-D/attempt-0001",
+        "manifest_sha256": "7e5b45272310782f8f14803ce49e739e892f743173ab1b725f5a12fbb4454423",
+        "result_sha256": "00a047b635d2b7d8dbd5316125db7d79174256d421080de86cb836d22ed7e8bc"
+      }
+    ]
+  },
+  "declarations": {
+    "gold_annotator": "agent",
+    "review_status": "provisional",
+    "corpus": "küçük / bağımsız holdout değil",
+    "inference": "0/30 — V/VE bu dondurmadan sonra ölçülür (PLAN-9 §24–§26)"
+  },
+  "note": "PLAN-11 §22 (PLAN-9 §17): atomik `--freeze` doğrulamasının kaydı; `bindings` git HEAD'i, üretici/değerlendirme/kirli-öncesi kimliklerini, model/digest/runtime'ı, koşu sözleşmesini ve D kanıtıyla bütçe/yaşam döngüsü/matris anlık görüntülerini taşır. gold_content_identity deterministiktir; zaman damgası kimliğe girmez."
+}

@@ -655,9 +655,9 @@ testi silindi (yanlış sözleşmeyi bağlıyordu); yerine bilgilendirici sapma 
 
 ```text
 --evidence   : complete=true, 10/10 hücre, kopuk halka 0
---evaluate   : run 33360aa3604f3107d759230b488924f4, değerlendirme kimliği f2b40123524e…
+--evaluate   : run 6da99ce0b59388c3872465181d9d1c4e, değerlendirme kimliği 1d7f3908e3ea…
                kanıt zinciri 10/10, evaluation_run ok=true, sapma (yalnız bilgi) 10 hücre
-kapılar      : B01, B03, B04, B07 KAPALI; B02 (gold 2/10), B05 (20 VLM hücresi to_run),
+kapılar      : B01, B03, B04, B07 KAPALI; B02 (gold 3/10), B05 (20 VLM hücresi to_run),
                B06 (karşılaştırma ölçülmedi) AÇIK  → PLAN-7 §15'in beklediği P6 öncesi durum
 bütçe        : 0/30 (değişmedi); D tahminleri **yeniden koşulmadı** (10 attempt aynı kaldı,
                yalnız yeni değerlendirme koşusu açıldı)

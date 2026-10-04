@@ -95,6 +95,10 @@ NON_DISPATCH_SEND_STATES = ("not_sent_model_mismatch", "not_sent_runtime_mismatc
 
 PREDICTION_INPUT_SCHEMA = "semread-001b-prediction-input/1"
 
+# Değerlendirme koşusunun seçili attempt kanıtı (PLAN-7 §5): koşu kimliği + seçilen artifact
+# hash'leri. Kimliğin **koşuya** ait olduğunun yazılı kanıtı budur.
+SELECTED_ATTEMPTS_SCHEMA = "semread-001b-selected-attempts/1"
+
 # Matris hücresinin **nihai** durumları (PLAN-5 §18): bunlar dışındaki hücre "henüz koşulmadı"
 # sayılır ve kabul kapısı B05 kapanamaz. Başarısız/bloklu hücre de nihaidir: silinmez.
 DISPOSITION_FINAL = ("valid_result", "valid_reuse", "failed_attempt", "blocked")
@@ -587,19 +591,78 @@ def report_evidence(report_text: str | None, payload: dict) -> dict:
             "note": ("rapor içeriği şarttır: işaretler yoksa ya da hiç ölçüm yoksa B06 açık kalır")}
 
 
-def evidence_chain_report(cells: list[dict]) -> dict:
-    """Seçili her hücre için kanıt zinciri (PLAN-5 §20).
+def evaluation_context(cells: list[dict], evaluation: dict | None = None) -> dict:
+    """Bir değerlendirme koşusunun **sahip olduğu** kimlikler (PLAN-7 §3).
 
-    Zincir halkaları: attempt geçmiş kaydı → artifact hash'leri (yeniden hesaplanır) → üretici ve
-    girdi kimliği → gönderilen istek kaydı → bütçe kaydı → matris seçimi → değerlendirme kimliği.
-    Bir halka kopuksa hücre "gap" sayılır ve B07 kapanamaz. D kolu model çağırmadığı için bütçe
-    halkası `not_applicable`dır (uydurma kanıt yazılmaz).
+    Değerlendirme kimliği ve koşu kimliği **koşuya** aittir: güncel değerlendiriciyi ve seçilen
+    attempt'leri bağlar. Bir attempt'in yaratılış anındaki `evaluation_identity`si yalnız
+    provenance'dır (bilgilendirici sapma); tahmin geçerliliğini ve B07 kapanışını **belirlemez** —
+    evaluator/gold düzeltmesi geçerli ham tahmini geçersiz kılmaz, yeni değerlendirme koşusu üretir.
+    """
+    current = evaluation_identity()
+    attempt_dirs = [str(cell["attempt"]) for cell in cells if cell.get("attempt")]
+    expected_run_id = evaluation_run_id(attempt_dirs)
+    claimed = evaluation or {}
+    provided = claimed.get("selected_attempts")
+    if isinstance(provided, dict) and provided.get("schema") == SELECTED_ATTEMPTS_SCHEMA:
+        selected, source = provided, "değerlendirme yükü"
+    else:
+        stored = read_json(REPORT_ROOT / "evaluations" / expected_run_id / "selected-attempts.json")
+        if isinstance(stored, dict) and stored.get("schema") == SELECTED_ATTEMPTS_SCHEMA:
+            selected, source = stored, "yazılı koşu klasörü"
+        else:
+            selected, source = {}, "verilmedi"
+    rows = _selected_rows(selected)
+    prior_rows = _selected_rows(read_json(REPORT_ROOT / "evaluations" / expected_run_id
+                                          / "selected-attempts.json"))
+    checks = {
+        "payload_evaluation_identity": claimed.get("evaluation_identity") in (None, current),
+        "payload_evaluation_run_id": claimed.get("evaluation_run_id") in (None, expected_run_id),
+        "selected_attempts_identity": (not rows) or selected.get("evaluation_identity") == current,
+        "selected_attempts_run_id": (not rows) or selected.get("evaluation_run_id") == expected_run_id,
+        "selected_attempts_cover_cells": (not rows) or set(rows) == set(attempt_dirs),
+        "prior_run_selection_stable": (not prior_rows) or prior_rows == rows,
+    }
+    return {"schema": "semread-001b-evaluation-context/1", "evaluation_identity": current,
+            "evaluation_run_id": expected_run_id, "selected_attempt_directories": attempt_dirs,
+            "selected_source": source, "selected_rows": rows,
+            "checks": checks, "gaps": sorted(name for name, ok in checks.items() if not ok),
+            "ok": all(checks.values()),
+            "note": ("kimlik ve koşu kimliği koşuya aittir; attempt'in tarihsel evaluation_identity "
+                     "si yalnız provenance'dır ve yeniden inference gerektirmez (PLAN-7 §3)")}
+
+
+def _selected_rows(selected) -> dict:
+    """`selected-attempts.json` satırlarını klasör yoluna göre indeksle (bozuk/eksik → boş)."""
+    if not isinstance(selected, dict) or selected.get("schema") != SELECTED_ATTEMPTS_SCHEMA:
+        return {}
+    return {str(row.get("directory")): row for row in (selected.get("attempts") or [])
+            if isinstance(row, dict) and row.get("directory")}
+
+
+def evidence_chain_report(cells: list[dict], evaluation: dict | None = None) -> dict:
+    """Seçili her hücre için kanıt zinciri (PLAN-5 §20, PLAN-7 §3–§4).
+
+    Zincir halkaları: attempt geçmiş kaydı → artifact hash'leri (yeniden hesaplanır) → üretici
+    kimliği → **gerçek model girdisi** (`prediction-input.json` yeniden hash'lenir) → model/runtime/
+    istek kaydı → bütçe kaydı → matris seçimi → **koşuya ait** değerlendirme kimliği + seçili
+    artifact bağı. Bir halka kopuksa hücre "gap" sayılır ve B07 kapanamaz.
+
+    Sahiplik (PLAN-7 §3): tahmin attempt'i üretici/girdi/model/istek kanıtını taşır; değerlendirme
+    kimliği + seçilen artifact'ler **koşuya** aittir. Attempt'in yaratılış anındaki
+    `evaluation_identity`si yalnız bilgilendirici sapmadır (`attempt_evaluation_identity_drift`).
+
+    D kolu modele görüntü/prompt göndermediği için model-girdisi halkası `not_applicable`dır
+    (PLAN-7 §4); gönderilmemiş V/VE attempt'inde model girdisi yoktur, onun yerine yerel ret/engel
+    kaydı kanıtlanır (uydurma kanıt yazılmaz).
     """
     state = load_state()
     history = all_attempt_records(state)
     inference = inference_records(state)
-    current_evaluation = evaluation_identity()
+    context = evaluation_context(cells, evaluation)
+    current_evaluation = context["evaluation_identity"]
     cells_out: list[dict] = []
+    drift: list[dict] = []
     for cell in cells:
         if not cell.get("attempt"):
             continue
@@ -625,49 +688,137 @@ def evidence_chain_report(cells: list[dict]) -> dict:
             checks["artifact_index"] = False
             details["artifact_index"] = f"eksik/bozuk artifact: {mismatched}"
         manifest = read_json(directory / "manifest.json") or {}
-        checks["producer_identity"] = bool(manifest.get("code_identity")) and bool(
-            manifest.get("model") or manifest.get("deterministic_evidence"))
+        result = read_json(directory / "result.json") or {}
+        # Üretici kimliği **eşitlik** olarak denetlenir (varlık yetmez): kodu/ayarı/corpus'u
+        # değiştiren her şey ham tahmini bayatlatır.
+        checks["producer_identity"] = manifest.get("producer_identity") == producer_identity()
         if not checks["producer_identity"]:
-            details["producer_identity"] = "manifest üretici kimliği eksik"
+            details["producer_identity"] = (f"kayıtlı: {manifest.get('producer_identity')!r} / "
+                                            f"güncel: {producer_identity()!r}")
+        # Girdi bütünlüğü: kaynak + hazırlanmış sayfa PNG + hazırlama sözleşmesi. D için bu **asıl**
+        # girdidir; V/VE'de meta veridir (asıl kanıt `prediction-input.json`dır, PLAN-7 §4).
         recorded_png = row.get("page_png_sha256") or manifest.get("page_png_sha256")
         page_png = PAGES_DIR / f"{cell['page_id']}.png"
         current_png = sha256_of(page_png) if page_png.exists() else None
-        checks["input_identity"] = bool(recorded_png) and recorded_png == current_png
+        page = next((row_ for row_ in PAGES if row_["page_id"] == cell["page_id"]), None)
+        manifest_input_ok = (page is None) or manifest.get("input_identity") == input_identity(page)
+        checks["input_identity"] = (bool(recorded_png) and recorded_png == current_png
+                                    and manifest_input_ok)
         if not checks["input_identity"]:
-            details["input_identity"] = f"girdi sha256 kaydı: {recorded_png!r} / şimdiki: {current_png!r}"
+            details["input_identity"] = (f"girdi sha256 kaydı: {recorded_png!r} / şimdiki: "
+                                         f"{current_png!r}; sözleşme kimliği tutuyor: "
+                                         f"{manifest_input_ok}")
         sent = [call for call in inference
                 if Path(str(call.get("attempt_dir") or "")).resolve() == directory.resolve()]
+        selected_row = context["selected_rows"].get(str(directory))
         if cell["arm"] == D_ARM:
             checks["request_record"] = True  # D model çağırmaz: istek kaydı yok, beklenmez
             checks["budget_record"] = None
             details["budget_record"] = "not_applicable: D kolu inference harcamaz"
+            checks["prediction_input_identity"] = None
+            details["prediction_input_identity"] = ("not_applicable: D kolu modele görüntü/prompt "
+                                                    "göndermez (PLAN-7 §4)")
+            checks["model_identity"] = None
+            details["model_identity"] = "not_applicable: D kolu model çağırmaz"
+            checks["runtime"] = None
+            details["runtime"] = "not_applicable: D kolu model runtime'ı çalıştırmaz"
         else:
-            checks["request_record"] = (directory / "request-manifest.json").is_file()
-            checks["budget_record"] = bool(sent)
-            if not sent:
-                details["budget_record"] = "bu attempt için bütçe kaydı yok"
-        checks["evaluation_identity"] = (row.get("evaluation_identity") == current_evaluation
-                                        and (manifest.get("evaluation_identity") in (None,
-                                             current_evaluation)))
-        if not checks["evaluation_identity"]:
-            details["evaluation_identity"] = (f"kayıtlı: {row.get('evaluation_identity')!r} / "
-                                              f"güncel: {current_evaluation!r}")
+            checks["request_record"] = ((directory / "request-manifest.json").is_file()
+                                        and bool(manifest.get("request_manifest_sha256")))
+            if not checks["request_record"]:
+                details["request_record"] = "istek kaydı ya da istek hash'i yok"
+            checks["model_identity"] = (manifest.get("model_identity") == model_identity()
+                                        and manifest.get("expected_digest") == EXPECTED_DIGEST)
+            if not checks["model_identity"]:
+                details["model_identity"] = ("kayıtlı model/digest beklenenle uyuşmuyor: "
+                                             f"{manifest.get('model_identity')!r} / "
+                                             f"{manifest.get('expected_digest')!r}")
+            checks["runtime"] = manifest.get("runtime") == EXPECTED_RUNTIME
+            if not checks["runtime"]:
+                details["runtime"] = (f"kayıtlı runtime {manifest.get('runtime')!r} != beklenen "
+                                      f"{EXPECTED_RUNTIME!r}")
+            if result.get("send_attempted") is True:
+                record = read_json(directory / "prediction-input.json")
+                recomputed = prediction_input_identity(record)
+                claimed_ids = {"manifest": manifest.get("prediction_input_identity"),
+                               "result": result.get("prediction_input_identity"),
+                               "history": row.get("prediction_input_identity")}
+                if selected_row is not None:
+                    claimed_ids["selected"] = selected_row.get("prediction_input_identity")
+                checks["prediction_input_artifact"] = isinstance(record, dict) and bool(recomputed)
+                if not checks["prediction_input_artifact"]:
+                    details["prediction_input_artifact"] = ("attempt klasöründe okunabilir "
+                                                            "prediction-input.json yok")
+                checks["prediction_input_identity"] = (
+                    bool(recomputed) and all(value == recomputed
+                                             for value in claimed_ids.values()))
+                if not checks["prediction_input_identity"]:
+                    details["prediction_input_identity"] = (
+                        "yeniden hesaplanan kimlik " + f"{recomputed!r} ile kayıtlı alanlar "
+                        + json.dumps(claimed_ids, ensure_ascii=False))
+                checks["budget_record"] = bool(sent)
+                if not sent:
+                    details["budget_record"] = "bu attempt için bütçe kaydı yok"
+            else:
+                # Gönderilmemiş attempt: model girdisi **yoktur**, uydurulmaz. Kanıtlanması gereken
+                # şey yerel ret/engel kaydının varlığıdır.
+                checks["prediction_input_identity"] = None
+                details["prediction_input_identity"] = ("not_applicable: ada gönderim yapılmadı "
+                                                        "(yerel ret kanıtı aranır)")
+                checks["no_dispatch_evidence"] = bool(result.get("blocking_kind")
+                                                      or result.get("error_kind"))
+                if not checks["no_dispatch_evidence"]:
+                    details["no_dispatch_evidence"] = ("gönderilmemiş attempt için yerel ret/engel "
+                                                       "kaydı yok")
+                checks["budget_record"] = None
+                details["budget_record"] = "not_applicable: gönderim yapılmadı"
+        if not context["selected_rows"]:
+            checks["selected_artifact"] = None
+            details["selected_artifact"] = ("not_applicable: seçili-attempt kanıtı verilmedi "
+                                            "(koşu klasörü de yok)")
+        else:
+            manifest_path = directory / "manifest.json"
+            result_path = directory / "result.json"
+            checks["selected_artifact"] = isinstance(selected_row, dict) and (
+                selected_row.get("attempt_id") == row.get("attempt_id")
+                and selected_row.get("manifest_sha256") == (sha256_of(manifest_path)
+                                                            if manifest_path.is_file() else None)
+                and selected_row.get("result_sha256") == (sha256_of(result_path)
+                                                          if result_path.is_file() else None))
+            if not checks["selected_artifact"]:
+                details["selected_artifact"] = ("koşunun seçili-attempt kaydı bu klasörün "
+                                                "manifest/result hash'leriyle uyuşmuyor")
         checks["result"] = (directory / "result.json").is_file() and "result.json" in listed
         checks["selection"] = str(row.get("attempt_id") or "") == f"{case_id}/" + directory.name
         if not checks["selection"]:
             details["selection"] = f"geçmiş kaydı id: {row.get('attempt_id')!r}"
         gaps = sorted(name for name, ok in checks.items() if ok is False)
+        at_creation = row.get("evaluation_identity")
+        if at_creation != current_evaluation:
+            drift.append({"page_id": cell["page_id"], "arm": cell["arm"],
+                          "attempt_id": row.get("attempt_id"),
+                          "attempt_evaluation_identity_at_creation": at_creation,
+                          "current_evaluation_identity": current_evaluation,
+                          "why": ("attempt'in tarihsel (provenance) kimliği: evaluator/gold "
+                                  "düzeltmesi ham tahmini geçersiz kılmaz ve yeniden inference "
+                                  "gerektirmez (PLAN-7 §3)")})
         cells_out.append({"page_id": cell["page_id"], "arm": cell["arm"],
                           "attempt": str(directory), "checks": checks, "details": details,
+                          "attempt_evaluation_identity_at_creation": at_creation,
                           "ok": not gaps, "gaps": gaps})
     incomplete = [cell for cell in cells_out if not cell["ok"]]
     return {"schema": "semread-001b-evidence-chain/1", "cells": cells_out,
             "checked_cells": len(cells_out), "incomplete_cells": incomplete,
+            "evaluation_run": {key: value for key, value in context.items()
+                               if key != "selected_rows"},
+            "attempt_evaluation_identity_drift": drift,
             "vacuous": not cells_out,
-            "complete": not incomplete and bool(cells_out),
+            "complete": (not incomplete and bool(cells_out) and context["ok"]),
             "note": ("kanıt zinciri yeniden hesaplanan hash'lerle doğrulanır; halka kopuksa hücre "
-                     "kabul edilmez ve B07 açık kalır. Seçili hücre yoksa zincir **boştur**: "
-                     "boş kanıt zinciri kabul edilmez (PLAN-5 §20)")}
+                     "kabul edilmez ve B07 açık kalır. Değerlendirme kimliği **koşuya** aittir; "
+                     "attempt'in eski kimliği yalnız bilgilendirici sapmadır (PLAN-7 §3) ve yeniden "
+                     "inference gerektirmez. Seçili hücre yoksa zincir **boştur**: boş kanıt "
+                     "zinciri kabul edilmez (PLAN-5 §20)")}
 
 
 def attempt_lifecycle_report() -> dict:
@@ -959,6 +1110,10 @@ def _attempt_manifest(page: dict, arm: str, *, attempt_id: str, phase: str,
         # P0R-FINAL-C: yeniden kullanım kararı bu kimliğe bakar (gerçek hazırlanmış girdi).
         "prediction_input_identity": prediction_input_identity(prediction_input),
         "prediction_input_record": ("prediction-input.json" if prediction_input else None),
+        # PLAN-7 §4: D kolu model girdisi **hazırlamaz**; bu açıkça yazılır (eksik kanıt gibi
+        # okunmamalı) ve D'nin girdi bütünlüğü kaynak/sayfa artefaktlarıyla kanıtlanır.
+        "prediction_input_state": ("recorded" if prediction_input
+                                   else "not_applicable_no_model_input"),
         "page_png_sha256_metadata_note": ("page_png_sha256 yalnız meta veridir; V/VE yeniden "
                                           "kullanımı prediction_input_identity ile kanıtlanır"),
         "code_identity": producer_identity(),          # geriye dönük alan adı (P0R-7)
@@ -1410,8 +1565,12 @@ def selected_attempts_payload(matrix_cells: list[dict], run_id: str) -> dict:
                      or f"{cell['page_id']}-{cell['arm']}/{directory.name}",
                      "manifest_sha256": sha256_of(manifest_path) if manifest_path.exists() else None,
                      "result_sha256": sha256_of(result_path) if result_path.exists() else None,
-                     "prediction_input_identity": manifest.get("prediction_input_identity")})
-    return {"schema": "semread-001b-selected-attempts/1", "evaluation_run_id": run_id,
+                     "prediction_input_identity": manifest.get("prediction_input_identity"),
+                     # D kolu model girdisi hazırlamaz: bu açıkça yazılır (PLAN-7 §4).
+                     "prediction_input_state": (manifest.get("prediction_input_state")
+                                                or ("not_applicable_no_model_input"
+                                                   if cell["arm"] == D_ARM else None))})
+    return {"schema": SELECTED_ATTEMPTS_SCHEMA, "evaluation_run_id": run_id,
             "evaluation_identity": evaluation_identity(), "attempts": rows, "count": len(rows)}
 
 
@@ -1511,6 +1670,8 @@ def evaluate(write_report: bool = True) -> dict:
         if pages:
             aggregates[arm] = aggregate(pages)
     comparison = compare_arms(per_page) if per_page else {"vs_d": {}, "ve_vs_v": {}}
+    run_id = evaluation_run_id([cell["attempt"] for cell in matrix_cells if cell.get("attempt")])
+    selected = selected_attempts_payload(matrix_cells, run_id)
     payload = {
         "schema": "semread-001b-evaluation/1", "created_at": _now(),
         "reference_status": reference_status,
@@ -1520,14 +1681,7 @@ def evaluate(write_report: bool = True) -> dict:
                      "niteliği taşır ve ürün doğruluğu sertifikası değildir.")},
         "match_policy": MATCH_POLICY,
         "evaluation_identity": evaluation_identity(), "producer_identity": producer_identity(),
-        "evaluation_run_id": evaluation_run_id(
-            [cell["attempt"] for cell in matrix_cells if cell.get("attempt")]),
-        "evaluation_stale_cells": [
-            {"page_id": cell["page_id"], "arm": cell["arm"],
-             "why": "attempt'in evaluation_identity'si güncel değil"}
-            for cell in matrix_cells if cell.get("attempt") and (
-                (read_json(Path(cell["attempt"]) / "manifest.json") or {})
-                .get("evaluation_identity") != evaluation_identity())],
+        "evaluation_run_id": run_id,
         "code_identity": code_identity(),
         "budget": budget_report(),
         "attempt_ledger": attempt_ledger_report(),
@@ -1538,7 +1692,14 @@ def evaluate(write_report: bool = True) -> dict:
         "matrix_totals": matrix_payload.get("totals") or {},
     }
     payload["outcome_totals"] = outcome_totals()
-    payload["evidence_chain"] = evidence_chain_report(matrix_cells)
+    # Kimlik **koşuya** aittir (PLAN-7 §3): kanıt zinciri koşunun kendi kimliğini ve seçili
+    # attempt kanıtını denetler; attempt'in yaratılış anındaki `evaluation_identity`si yalnız
+    # bilgilendirici sapmadır ve yeniden inference gerektirmez.
+    payload["evidence_chain"] = evidence_chain_report(matrix_cells, {
+        "evaluation_identity": payload["evaluation_identity"],
+        "evaluation_run_id": run_id, "selected_attempts": selected})
+    payload["attempt_evaluation_identity_drift"] = payload["evidence_chain"][
+        "attempt_evaluation_identity_drift"]
     if write_report:
         report_text = render_report(payload)
         payload["report_checks"] = report_evidence(report_text, payload)
@@ -1549,9 +1710,8 @@ def evaluate(write_report: bool = True) -> dict:
         acceptance, report_text = None, None
     # P0R-FINAL-D: kanıt, değerlendirme koşusu kimliğiyle **sürümlenmiş** klasöre yazılır; eski
     # koşular korunur. `final/` yalnız güncel koşuya işaret eder.
-    payload["evaluation_artifacts"] = write_evaluation_artifacts(
-        payload, acceptance, report_text,
-        selected_attempts_payload(matrix_cells, payload["evaluation_run_id"]))
+    payload["evaluation_artifacts"] = write_evaluation_artifacts(payload, acceptance, report_text,
+                                                                 selected)
     write_json(REPORT_ROOT / "evaluation.json", payload)
     return payload
 
@@ -1634,15 +1794,18 @@ def acceptance_rows(payload: dict) -> dict:
                            + f"; puanlanmış kol: {measured_arms or 'yok'}"
                            + f"; match policy {payload['match_policy'].get('version')}")},
         "B07": {"status": "closed" if (chain.get("complete") and payload["lifecycle"].get("ok")
-                                       and not payload.get("evaluation_stale_cells")
+                                       and (chain.get("evaluation_run") or {}).get("ok")
                                        and not payload["budget"]["by_arm"].get("?"))
                 else "open",
                 "evidence": [str(state_path()), str(REPORT_ROOT / "attempts"),
                              str(REPORT_ROOT / "evaluations")],
                 "detail": (f"kanıt zinciri: {chain.get('checked_cells')} hücre denetlendi, "
                            f"{len(chain.get('incomplete_cells') or [])} kopuk; yaşam döngüsü "
-                           f"ok={payload['lifecycle'].get('ok')}; bayat hücre: "
-                           f"{len(payload.get('evaluation_stale_cells') or [])}")},
+                           f"ok={payload['lifecycle'].get('ok')}; değerlendirme koşusu "
+                           f"`{(chain.get('evaluation_run') or {}).get('evaluation_run_id')}` "
+                           f"ok={(chain.get('evaluation_run') or {}).get('ok')}; attempt kimliği "
+                           f"sapması (yalnız bilgi): "
+                           f"{len(payload.get('attempt_evaluation_identity_drift') or [])} hücre")},
     }
     return rows
 
@@ -1701,6 +1864,10 @@ def render_report(payload: dict) -> str:
         f"- değerlendirme kimliği: `{payload['evaluation_identity']}`",
         f"- değerlendirme koşusu: `{payload['evaluation_run_id']}` "
         f"(`{(payload.get('evaluation_artifacts') or {}).get('directory') or 'yazılmadı'}`)",
+        "- kimlik sahipliği: değerlendirme kimliği **ve** koşu kimliği koşuya aittir; attempt yalnız "
+        "ham tahminini + gerçek hazırlanmış girdisini kanıtlar (PLAN-7 §3–§4)",
+        "- attempt yaratılış-anı kimlik sapması (yalnız bilgi; yeniden inference gerektirmez): "
+        f"{len(payload.get('attempt_evaluation_identity_drift') or [])} hücre",
         f"- model: `{MODEL}` digest `{EXPECTED_DIGEST[:16]}…`; beklenen runtime `{EXPECTED_RUNTIME}`",
         f"- bütçe (inference): dev {budget['dev_used']}/{budget['dev_limit']}, final "
         f"{budget['final_used']}/{budget['final_limit']}, toplam {budget['total_used']}/"

@@ -724,3 +724,25 @@ B05 (20 VLM hücresi `to_run`), **B06** (V/VE hiç koşmadığı için `puanlanm
 koşularda da aynı durumdaydı, bu değişiklikten bağımsız). B01/B03/B04/B07 kapalı.
 **Sırada:** `dev-flange-book` + kalan 4 raster frozen sayfa → 10/10 → B02 kapanır; B06/P6 için
 gerçek V/VE çağrıları kullanıcı onayı ister.
+
+### 6m. `frozen-exercise-17` (raster) — P3 başladı, gold **henüz yazılmadı** (sıradaki pencere için durum)
+
+Bu pencerede başlandı, ölçüm/okuma durumu aşağıda; **spec yazılmadı**, `gold/`da dosya yok.
+
+* Gözlem dökümü: `--page frozen-exercise-17` → 782 gözlem (593 `line`, 166 `arc`, 15 `text`,
+  5 `linear`, 3 `circle`), **çağrı-benzeri metin 0**. Sebep: rasterda tesseract Ø glifini
+  düşürüyor — OCR "20.00" (t6, px 1452-1637/1816-1869), "14.00" (t2), "10.00" (t3), "4.00" (t0)
+  olarak okudu; `Ø22.00` / `Ø20.00` çağrıları metin katmanında **yok**. Bu yüzden claim'ler
+  `vision` kanıtına + ölçülmüş `target_box_norm`a dayanmak zorunda (PLAN-5 §16).
+* Sayfa künyesi (vision): dirsek (socket'li), `SCALE 1:1`, A3, mm, AISI 304; görünüşler:
+  üst-sol (üstten görünüş), üst-sağ (izo), alt-sol (ön görünüş), alt-sağ (ağız/yan görünüş).
+  Okunan çağrılar: **Ø22.00, Ø20.00** (ön görünüşte dikey), **Ø20.00** (alt-sağ görünüşte leader'lı)
+  + doğrusal 5.00/14.00/10.00/4.00/3.00.
+* Alt-sağ görünüşün ölçümü (piksel taraması, merkez ≈ (1897, 1417)): **dış daire 390 px**,
+  **iç daire 285 px** (Hough: g593 = 389 px, g673 = 279 px). İç daireye `Ø20.00` leader'ı iniyor
+  (vision okuması).
+* **Açık soru (ilk ölçüm adımı):** px/mm. Hipotez A: iç = Ø20 → **14,25 px/mm** (dış 390 px =
+  27,4 mm, çağrısız socket bileziği). Hipotez B: dış = Ø22 → 17,7 px/mm (o zaman iç ≈ 16,1 mm,
+  `Ø20` ile çelişir). A, yazılı `Ø20` ile uyuşuyor; doğrulamak için ön görünüşteki genişlik çifti
+  (Ø22/Ø20 arası) veya socket derinliği `10.00` (t3) pikselle ölçülmeli. Bu ölçüm yapılmadan
+  claim yazılmamalı.

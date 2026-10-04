@@ -95,6 +95,11 @@ NON_DISPATCH_SEND_STATES = ("not_sent_model_mismatch", "not_sent_runtime_mismatc
 
 PREDICTION_INPUT_SCHEMA = "semread-001b-prediction-input/1"
 
+# Matris hücresinin **nihai** durumları (PLAN-5 §18): bunlar dışındaki hücre "henüz koşulmadı"
+# sayılır ve kabul kapısı B05 kapanamaz. Başarısız/bloklu hücre de nihaidir: silinmez.
+DISPOSITION_FINAL = ("valid_result", "valid_reuse", "failed_attempt", "blocked")
+DISPOSITION_PENDING = ("to_run", "not_run")
+
 # D kolu modele görüntü/prompt göndermez. Manifestte kola bağlı iki alan (PLAN-4 §8) D için
 # V/VE adlarıyla karışmasın diye açıkça "yok" yazılır.
 D_INPUT_VARIANT = "none"
@@ -523,6 +528,146 @@ def attempt_ledger_report(state: dict | None = None) -> dict:
                               if row.get("state") in DISPATCHED_ATTEMPT_STATES),
             "note": ("attempt defteri her denemeyi sayar; inference bütçesi **ayrı** defterdir ve "
                      "yalnız gönderilen/belirsiz istekleri sayar (P0R-FINAL-B)")}
+
+
+def outcome_totals() -> dict:
+    """Taşıma/parse/yerel hata ve bütçe sayaçları (PLAN-5 §19: rapor bunları yazmak zorunda).
+
+    Sayaçlar **attempt defterinden** türetilir (uydurulmaz): her hata sınıfı kaç attempt'te
+    görüldüyse o kadar yazılır; gerçek gönderim sayısı ayrı defterden gelir.
+    """
+    records = all_attempt_records(load_state())
+    states = [str(row.get("state") or "") for row in records]
+    counts = {
+        "attempts": len(records),
+        "dispatched_attempts": sum(1 for state in states if state in DISPATCHED_ATTEMPT_STATES),
+        "transport_failure_count": states.count("transport_error"),
+        "parse_failure_count": states.count("parse_error"),
+        "failed_gates_count": states.count("failed_gates"),
+        "local_error_count": sum(1 for state in states if state.startswith("local_error")),
+        "blocked_count": sum(1 for state in states if state.startswith("blocked")),
+        "passed_attempts": states.count("pass"),
+    }
+    counts["inference_calls_used"] = budget_report()["total_used"]
+    counts["failed_attempt_total"] = (counts["transport_failure_count"]
+                                      + counts["parse_failure_count"]
+                                      + counts["failed_gates_count"]
+                                      + counts["local_error_count"])
+    return counts
+
+
+# Rapor içeriği kapısı (PLAN-5 §19): B06 "boş olmayan comparison" ile kapanamaz. Aşağıdaki
+# işaretler rapor metninde **aranır**; eksik olan varsa B06 açık kalır.
+REPORT_MARKERS = (
+    ("predicate_metrics", "yüklem bazında"),
+    ("comparison_d_v_ve", "D'ye göre"),
+    ("split", "Geliştirme / frozen ayrımı"),
+    ("matrix", "Matris hücreleri"),
+    ("cost_failures", "Maliyet ve hatalar"),
+    ("failure_examples", "Gerçek hata örnekleri"),
+    ("reference_quality", "Referans niteliği"),
+    ("ambiguity", "belirsiz kalem"),
+    ("unscorable_extras", "kapsam-dışı fazla aday"),
+)
+
+
+def report_evidence(report_text: str | None, payload: dict) -> dict:
+    """Rapor metni §19'un şartlarını taşıyor mu? (B06'nın kanıtı.)
+
+    Şart: her işaret metinde bulunmalı **ve** en az bir gerçek ölçüm olmalı (aggregate ya da
+    yüklem satırı). Boş bir rapor işaretleri taşıyamaz, dolayısıyla B06 kapanamaz.
+    """
+    text = report_text or ""
+    markers = {name: (needle in text) for name, needle in REPORT_MARKERS}
+    measured = bool(payload.get("aggregates")) or bool(
+        (payload.get("comparison", {}).get("vs_d") or {}))
+    return {"schema": "semread-001b-report-checks/1", "markers": markers,
+            "missing": sorted(name for name, present in markers.items() if not present),
+            "measured": measured, "complete": all(markers.values()) and measured,
+            "note": ("rapor içeriği şarttır: işaretler yoksa ya da hiç ölçüm yoksa B06 açık kalır")}
+
+
+def evidence_chain_report(cells: list[dict]) -> dict:
+    """Seçili her hücre için kanıt zinciri (PLAN-5 §20).
+
+    Zincir halkaları: attempt geçmiş kaydı → artifact hash'leri (yeniden hesaplanır) → üretici ve
+    girdi kimliği → gönderilen istek kaydı → bütçe kaydı → matris seçimi → değerlendirme kimliği.
+    Bir halka kopuksa hücre "gap" sayılır ve B07 kapanamaz. D kolu model çağırmadığı için bütçe
+    halkası `not_applicable`dır (uydurma kanıt yazılmaz).
+    """
+    state = load_state()
+    history = all_attempt_records(state)
+    inference = inference_records(state)
+    current_evaluation = evaluation_identity()
+    cells_out: list[dict] = []
+    for cell in cells:
+        if not cell.get("attempt"):
+            continue
+        directory = Path(str(cell["attempt"]))
+        case_id = f"{cell['page_id']}-{cell['arm']}"
+        checks: dict[str, bool | None] = {}
+        details: dict[str, str] = {}
+        rows = [row for row in history
+                if Path(str(row.get("directory") or "")).resolve() == directory.resolve()]
+        checks["history_row"] = len(rows) == 1
+        if len(rows) != 1:
+            details["history_row"] = f"eşleşen geçmiş kaydı: {len(rows)} (1 olmalı)"
+        row = rows[0] if len(rows) == 1 else {}
+        index = read_json(directory / "artifact-index.json") or {}
+        listed = {entry.get("path"): entry.get("sha256") for entry in index.get("files") or []}
+        checks["artifact_index"] = bool(listed)
+        mismatched = []
+        for name, digest in listed.items():
+            path = directory / str(name)
+            if not path.is_file() or sha256_of(path) != digest:
+                mismatched.append(str(name))
+        if mismatched:
+            checks["artifact_index"] = False
+            details["artifact_index"] = f"eksik/bozuk artifact: {mismatched}"
+        manifest = read_json(directory / "manifest.json") or {}
+        checks["producer_identity"] = bool(manifest.get("code_identity")) and bool(
+            manifest.get("model") or manifest.get("deterministic_evidence"))
+        if not checks["producer_identity"]:
+            details["producer_identity"] = "manifest üretici kimliği eksik"
+        recorded_png = row.get("page_png_sha256") or manifest.get("page_png_sha256")
+        page_png = PAGES_DIR / f"{cell['page_id']}.png"
+        current_png = sha256_of(page_png) if page_png.exists() else None
+        checks["input_identity"] = bool(recorded_png) and recorded_png == current_png
+        if not checks["input_identity"]:
+            details["input_identity"] = f"girdi sha256 kaydı: {recorded_png!r} / şimdiki: {current_png!r}"
+        sent = [call for call in inference
+                if Path(str(call.get("attempt_dir") or "")).resolve() == directory.resolve()]
+        if cell["arm"] == D_ARM:
+            checks["request_record"] = True  # D model çağırmaz: istek kaydı yok, beklenmez
+            checks["budget_record"] = None
+            details["budget_record"] = "not_applicable: D kolu inference harcamaz"
+        else:
+            checks["request_record"] = (directory / "request-manifest.json").is_file()
+            checks["budget_record"] = bool(sent)
+            if not sent:
+                details["budget_record"] = "bu attempt için bütçe kaydı yok"
+        checks["evaluation_identity"] = (row.get("evaluation_identity") == current_evaluation
+                                        and (manifest.get("evaluation_identity") in (None,
+                                             current_evaluation)))
+        if not checks["evaluation_identity"]:
+            details["evaluation_identity"] = (f"kayıtlı: {row.get('evaluation_identity')!r} / "
+                                              f"güncel: {current_evaluation!r}")
+        checks["result"] = (directory / "result.json").is_file() and "result.json" in listed
+        checks["selection"] = str(row.get("attempt_id") or "") == f"{case_id}/" + directory.name
+        if not checks["selection"]:
+            details["selection"] = f"geçmiş kaydı id: {row.get('attempt_id')!r}"
+        gaps = sorted(name for name, ok in checks.items() if ok is False)
+        cells_out.append({"page_id": cell["page_id"], "arm": cell["arm"],
+                          "attempt": str(directory), "checks": checks, "details": details,
+                          "ok": not gaps, "gaps": gaps})
+    incomplete = [cell for cell in cells_out if not cell["ok"]]
+    return {"schema": "semread-001b-evidence-chain/1", "cells": cells_out,
+            "checked_cells": len(cells_out), "incomplete_cells": incomplete,
+            "vacuous": not cells_out,
+            "complete": not incomplete and bool(cells_out),
+            "note": ("kanıt zinciri yeniden hesaplanan hash'lerle doğrulanır; halka kopuksa hücre "
+                     "kabul edilmez ve B07 açık kalır. Seçili hücre yoksa zincir **boştur**: "
+                     "boş kanıt zinciri kabul edilmez (PLAN-5 §20)")}
 
 
 def attempt_lifecycle_report() -> dict:
@@ -1389,11 +1534,15 @@ def evaluate(write_report: bool = True) -> dict:
         "lifecycle": attempt_lifecycle_report(),
         "pages": pages_rows, "aggregates": aggregates, "comparison": comparison,
         "matrix": matrix_cells, "cells_status": cells_status,
+        "matrix_dispositions": matrix_payload.get("dispositions") or {},
         "matrix_totals": matrix_payload.get("totals") or {},
     }
+    payload["outcome_totals"] = outcome_totals()
+    payload["evidence_chain"] = evidence_chain_report(matrix_cells)
     if write_report:
-        acceptance = write_acceptance(payload)
         report_text = render_report(payload)
+        payload["report_checks"] = report_evidence(report_text, payload)
+        acceptance = write_acceptance(payload)
         (REPORT_ROOT / "final").mkdir(parents=True, exist_ok=True)
         (REPORT_ROOT / "final" / "report.md").write_text(report_text, encoding="utf-8")
     else:
@@ -1439,6 +1588,10 @@ def acceptance_rows(payload: dict) -> dict:
     live_attempts = [row for row in all_attempt_records(attempts)
                      if row.get("arm") in (V_ARM, VE_ARM)]
     final_live = [row for row in live_attempts if row.get("split") == "frozen"]
+    dispositions = payload.get("matrix_dispositions") or {}
+    if not dispositions:
+        dispositions = matrix_dispositions(final_matrix()["cells"])
+    chain = payload.get("evidence_chain") or evidence_chain_report(final_matrix()["cells"])
     rows = {
         "B01": {"status": "closed" if (REPORT_ROOT / "snapshot").exists() else "open",
                 "evidence": [str(REPORT_ROOT / "snapshot")],
@@ -1455,25 +1608,42 @@ def acceptance_rows(payload: dict) -> dict:
         "B04": {"status": "closed" if "D" in arms and payload["match_policy"] else "open",
                 "evidence": [str(REPORT_ROOT / "evaluation.json")],
                 "detail": "eşleştirme/metrikler; verifier başarısı iddia edilmiyor"},
-        "B05": {"status": "closed" if (D_ARM in arms and V_ARM in arms and VE_ARM in arms
-                                       and len(final_live) >= 2 * len(final_pages["frozen"]))
+        "B05": {"status": "closed" if dispositions.get("complete") else "open",
+                "evidence": [str(REPORT_ROOT / "attempts"),
+                             str(REPORT_ROOT / "final/report.md")],
+                "detail": (f"30 hücreli matris (10 sayfa × D/V/VE): {dispositions.get('counts') or {}}"
+                           + (f"; açık hücreler: {dispositions.get('open_cells')}"
+                              if dispositions.get("open_cells") else "")
+                           + f". Başarısız/bloklu hücreler sonucun parçasıdır; frozen V/VE "
+                             f"denemesi: {len(final_live)}")},
+        "B06": {"status": "closed" if (arms and payload.get("comparison", {}).get("vs_d")
+                                       and (payload.get("report_checks") or {}).get("complete"))
                 else "open",
-                "evidence": [str(REPORT_ROOT / "attempts")],
-                "detail": ("sabit corpusun D/V/VE sonuçları; kollar bir eksikse açık kalır")},
-        "B06": {"status": "closed" if arms and payload.get("comparison", {}).get("vs_d") else "open",
                 "evidence": [str(REPORT_ROOT / "final/report.md")],
-                "detail": "kalite farkı, recovery/regression, maliyet analizi"},
-        "B07": {"status": "closed" if not payload["budget"]["by_arm"].get("?") else "open",
-                "evidence": [str(state_path())],
-                "detail": "kanıt zinciri/kimlik/cache/bütçe doğrulandı"},
+                "detail": ("rapor içeriği: " + (f"eksik işaretler {checks.get('missing')}"
+                                                if (checks := payload.get("report_checks") or {})
+                                                and checks.get("missing")
+                                                else "tüm şartlar yazılı")
+                           + f"; match policy {payload['match_policy'].get('version')}")},
+        "B07": {"status": "closed" if (chain.get("complete") and payload["lifecycle"].get("ok")
+                                       and not payload.get("evaluation_stale_cells")
+                                       and not payload["budget"]["by_arm"].get("?"))
+                else "open",
+                "evidence": [str(state_path()), str(REPORT_ROOT / "attempts"),
+                             str(REPORT_ROOT / "evaluations")],
+                "detail": (f"kanıt zinciri: {chain.get('checked_cells')} hücre denetlendi, "
+                           f"{len(chain.get('incomplete_cells') or [])} kopuk; yaşam döngüsü "
+                           f"ok={payload['lifecycle'].get('ok')}; bayat hücre: "
+                           f"{len(payload.get('evaluation_stale_cells') or [])}")},
     }
     return rows
 
 
 def write_acceptance(payload: dict) -> dict:
     rows = acceptance_rows(payload)
+    # Açık kapı listesi tek kaynaktan gelir: state'e yazılan liste ile `conclusion` **aynı** olmalı
+    # (eskiden B05 state listesinden düşürülüyordu; §18'den sonra B05 gerçek matris kapısıdır).
     open_rows = sorted(row for row, value in rows.items() if value["status"] != "closed")
-    core_open = [row for row in open_rows if row != "B05"]
     conclusion = ("SEMREAD-001B pilot_complete" if not open_rows
                   else f"implementation status: {len(rows) - len(open_rows)}/{len(rows)} kapandı; "
                        f"açık: {open_rows}")
@@ -1499,10 +1669,10 @@ def write_acceptance(payload: dict) -> dict:
                           ("verifier olmadığı için wrong-supported, accepted coverage, otomatik CAD "
                            "güvenliği ve kullanıcı emeği azalması not_evaluated kalır")]}
     write_json(REPORT_ROOT / "acceptance.json", document)
-    if core_open:
-        state = load_state()
-        state["blocked"] = {"open": core_open, "conclusion": conclusion}
-        save_state(state)
+    state = load_state()
+    # Kapı durumu state'e işlenir; tüm kapılar kapandıysa kayıt temizlenir (bayat blok kalmaz).
+    state["blocked"] = ({"open": open_rows, "conclusion": conclusion} if open_rows else None)
+    save_state(state)
     return document
 
 
@@ -1569,7 +1739,15 @@ def render_report(payload: dict) -> str:
                      f"{value['false_positive_candidate_count']} |")
     lines += ["", "not: " + (next(iter(payload["aggregates"].values()), {}).get("metric_note")
                               or MATCH_POLICY["localization_vs_semantic"]),
-              "", "## Alan bazında doğruluk", "",
+              "",
+              "- kapsam-dışı fazla aday sayacı: "
+              + (", ".join(f"{arm}={value['unscorable_extra_candidate_count']} / "
+                           f"yanlış pozitif={value['false_positive_candidate_count']} / "
+                           f"belirsiz kalem={value['ambiguous_claim_count']}"
+                           for arm, value in payload["aggregates"].items())
+                 or "bu koşuda ölçülen kol yok"),
+              "",
+              "## Alan bazında doğruluk", "",
               "| alan | kol | doğru | yanlış | çekimser | scorable | doğruluk |",
               "| --- | --- | --- | --- | --- | --- | --- |"]
     for arm, value in payload["aggregates"].items():
@@ -1599,6 +1777,40 @@ def render_report(payload: dict) -> str:
                      f"net={ve_vs_v.get('net')}")
     for note in (comparison.get("notes") or []):
         lines.append(f"- not: {note}")
+    dispositions = payload.get("matrix_dispositions") or {}
+    counts = dispositions.get("counts") or {}
+    lines += ["", "## Matris hücreleri (10 sayfa × D/V/VE = 30)", "",
+              f"- nihai durumlar: {counts}",
+              f"- nihai olmayan (açık) hücre: {len(dispositions.get('open_cells') or [])}"]
+    for row in dispositions.get("cells") or []:
+        lines.append(f"| {row['page_id']} | {row['arm']} | {row['disposition']} | "
+                     f"{row.get('reason') or ''} |")
+    lines += ["", "## Geliştirme / frozen ayrımı", ""]
+    split_counts: dict[str, dict[str, int]] = {}
+    for row in dispositions.get("cells") or []:
+        bucket = split_counts.setdefault(row.get("split") or "?", {})
+        bucket[row["disposition"]] = bucket.get(row["disposition"], 0) + 1
+    for split, bucket in sorted(split_counts.items()):
+        lines.append(f"- {split}: {bucket}")
+    outcomes = payload.get("outcome_totals") or {}
+    lines += ["", "## Maliyet ve hatalar", "",
+              f"- gerçek inference çağrısı (bütçe defteri): {outcomes.get('inference_calls_used')}"
+              f" / {budget['total_limit']}",
+              f"- gönderilmiş deneme: {outcomes.get('dispatched_attempts')}, "
+              f"geçen deneme: {outcomes.get('passed_attempts')}",
+              f"- taşıma hatası: {outcomes.get('transport_failure_count')}, "
+              f"parse hatası: {outcomes.get('parse_failure_count')}, "
+              f"kapı hatası: {outcomes.get('failed_gates_count')}, "
+              f"yerel hata: {outcomes.get('local_error_count')}, "
+              f"bloklu: {outcomes.get('blocked_count')}"]
+    lines += ["", "## Gerçek hata örnekleri", ""]
+    examples = [row for row in (dispositions.get("cells") or [])
+                if row["disposition"] in ("failed_attempt", "blocked")]
+    if not examples:
+        lines.append("- bu koşuda başarısız/bloklu hücre yok")
+    for row in examples[:10]:
+        lines.append(f"- {row['page_id']} / {row['arm']}: {row['disposition']} — "
+                     f"{row.get('reason')} ({row.get('attempt_id') or 'attempt yok'})")
     lines += ["", "## Ölçülmeyenler", "",
               "- Verifier yok: wrong-supported, accepted coverage, otomatik CAD güvenliği ve kullanıcı",
               "  emeği azalması `not_evaluated`.",
@@ -1740,6 +1952,67 @@ def reusable_attempt(case_id: str, page: dict) -> dict | None:
     return None
 
 
+def matrix_dispositions(cells: list[dict]) -> dict:
+    """30 hücrenin **nihai** durumu (PLAN-5 §18).
+
+    Her hücre şu dört nihai durumdan birini almalıdır: `valid_result` (üretilmiş geçerli sonuç),
+    `valid_reuse` (kanıtlanmış yeniden kullanım), `failed_attempt` (koştu, ürün kararı geçmedi),
+    `blocked` (kapı/bütçe engeli). `to_run`/`not_run` **nihai değildir**: böyle bir hücre kalırsa
+    matris tamamlanmamıştır ve B05 kapanamaz. Başarısızlıklar sonucun parçasıdır: silinmez, sayılır.
+    """
+    state = load_state()
+    history = all_attempt_records(state)
+    rows: list[dict] = []
+    for cell in cells:
+        case_id = f"{cell['page_id']}-{cell['arm']}"
+        arm = cell["arm"]
+        pending = "not_run" if arm == D_ARM else "to_run"
+        attempt = cell.get("attempt")
+        if attempt:
+            result = read_json(Path(attempt) / "result.json") or {}
+            verdict = result.get("product_verdict") or result.get("verdict")
+            if cell.get("cell") in ("reuse", "valid_reuse"):
+                rows.append({**cell, "disposition": "valid_reuse",
+                             "reason": "yeniden kullanım kimliği doğrulandı"})
+            elif result and verdict == "pass":
+                rows.append({**cell, "disposition": "valid_result", "verdict": verdict})
+            else:
+                rows.append({**cell, "disposition": "failed_attempt",
+                             "reason": (f"ürün kararı {verdict!r}" if result
+                                        else "result.json yok: deneme kapanmamış")})
+            continue
+        case_history = [row for row in history
+                        if str(row.get("attempt_id") or "").startswith(f"{case_id}/")]
+        if not case_history:
+            rows.append({**cell, "disposition": pending, "reason": "hiç koşulmadı"})
+            continue
+        last = case_history[-1]
+        attempt_state = str(last.get("state") or "")
+        entry = {**cell, "attempt_id": last.get("attempt_id"),
+                 "attempt_state": attempt_state, "attempt_directory": last.get("directory")}
+        if attempt_state.startswith("blocked"):
+            rows.append({**entry, "disposition": "blocked", "reason": attempt_state})
+        elif attempt_state in ("sending", "transport_error", "parse_error", "failed_gates",
+                               "local_error_source", "local_error_observe",
+                               "local_error_preparation"):
+            rows.append({**entry, "disposition": "failed_attempt", "reason": attempt_state})
+        else:
+            rows.append({**entry, "disposition": pending,
+                         "reason": f"geçmişteki deneme ({attempt_state}) matrise seçilmedi: "
+                                   f"yeniden koşulmalı"})
+    counts: dict[str, int] = {}
+    for row in rows:
+        counts[row["disposition"]] = counts.get(row["disposition"], 0) + 1
+    open_cells = [{"page_id": row["page_id"], "arm": row["arm"], "disposition": row["disposition"],
+                   "reason": row.get("reason")} for row in rows
+                  if row["disposition"] not in DISPOSITION_FINAL]
+    return {"schema": "semread-001b-dispositions/1", "cells": rows, "counts": counts,
+            "complete": not open_cells, "open_cells": open_cells,
+            "final_states": list(DISPOSITION_FINAL), "pending_states": list(DISPOSITION_PENDING),
+            "note": ("her hücre nihai bir durum almalı; başarısız/bloklu hücreler sonucun " 
+                     "parçasıdır ve açık sayılmaz (PLAN-5 §18)")}
+
+
 def final_matrix(reuse: bool = True) -> dict:
     """10 sayfa × D/V/VE = 30 hücrenin durumu: hangi attempt, hangisi not_run, kaç yeni çağrı."""
     cells: list[dict] = []
@@ -1769,6 +2042,7 @@ def final_matrix(reuse: bool = True) -> dict:
     new_calls = sum(1 for cell in cells if cell["cell"] == "to_run" and cell["kind"] == "vlm")
     new_d_runs = sum(1 for cell in cells if cell["cell"] == "to_run" and cell["kind"] == "deterministic")
     return {"schema": "semread-001b-matrix/1", "created_at": _now(), "cells": cells,
+            "dispositions": matrix_dispositions(cells),
             "totals": {"cells": len(cells), "vlm_cells": FINAL_VLM_CELLS,
                        "d_cells": len(PAGES), "new_vlm_calls": new_calls,
                        "new_d_runs": new_d_runs,
@@ -1843,7 +2117,9 @@ def main(argv: list[str] | None = None) -> int:
                         help="çağrının amacı: dev (≤10) ya da final (≤20)")
     parser.add_argument("--matrix", action="store_true", help="30 hücrenin durumu (çağrı yok)")
     parser.add_argument("--lifecycle", action="store_true",
-                        help="attempt yaşam döngüsü/geçmiş tutarlılığı (çağrı yok)")
+                        help="attempt yaşam döngüsü + defter (çağrı yok)")
+    parser.add_argument("--evidence", action="store_true",
+                        help="seçili hücrelerin kanıt zinciri (çağrı yok)")
     parser.add_argument("--no-reuse", action="store_true",
                         help="geçerli attempt'leri yeniden kullanma (politika dışı, tanı için)")
     parser.add_argument("--arms", default="V,VE")
@@ -1870,7 +2146,19 @@ def main(argv: list[str] | None = None) -> int:
                          ensure_ascii=False, indent=2))
         return 0
     if args.matrix:
-        print(json.dumps(final_matrix(reuse=not args.no_reuse), ensure_ascii=False, indent=2))
+        matrix = final_matrix(reuse=not args.no_reuse)
+        print(json.dumps({"totals": matrix["totals"],
+                          "dispositions": (matrix.get("dispositions") or {}).get("counts"),
+                          "open_cells": (matrix.get("dispositions") or {}).get("open_cells"),
+                          "complete": (matrix.get("dispositions") or {}).get("complete")},
+                         ensure_ascii=False, indent=2))
+        return 0
+    if args.evidence:
+        chain = evidence_chain_report(final_matrix(reuse=not args.no_reuse)["cells"])
+        print(json.dumps({"complete": chain["complete"],
+                          "checked_cells": chain["checked_cells"],
+                          "incomplete_cells": chain["incomplete_cells"]},
+                         ensure_ascii=False, indent=2))
         return 0
     if args.lifecycle:
         print(json.dumps({"lifecycle": attempt_lifecycle_report(),

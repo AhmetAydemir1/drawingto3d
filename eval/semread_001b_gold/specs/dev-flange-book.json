@@ -1,0 +1,236 @@
+{
+  "page_type": "raster",
+  "split": "dev",
+  "vision_checked": true,
+  "scope": "Yalnız Ø/R çağrıları (7 adet): 6x Ø6.40 (↧15.00) ve ⌴ Ø11.00 (↧3.90) — ön görünüşteki üst deliğin karşı delik çifti; Ø100.00 (ön görünüş, plaka dış çapı, 591 px); R35.00 (ön görünüş, cıvata dairesi yarıçapı, 413 px kesikli daire); Ø60.00 (kesit A-A, göbek dış çapı); Ø30.00 (kesit A-A, göbek deliği); R2.00 (kesit A-A, göbek kökü filetosu). Kapsam dışı: doğrusal ölçüler (50.00 parça toplam boyu, 20.00 plaka kalınlığı, 30.00 delik derinliği yerine geçen 30,00 yayılımı yok — bkz. notes), 1.00 X 45° pah notları (iki adet), 30° açı ölçüsü, geometrik tolerans çerçeveleri (⊕ Ø0.2 konum, ⊥ 0.2, ∥ 0.2, ⊙ 0.1), başlık bloğu metinleri ve ölçüsüz izometrik görünüş. Bu sayfa 001B'nin 'radius/diameter callouts, count' kapsamındadır: Ø/R çağrıları + basılı adet (6x) gold'a girer; doğrusal/açısal ölçüler yalnız ölçek kökü ve çapraz doğrulama olarak kullanılır.",
+  "annotation_method": "Ölçülmüş ilke: raster sayfada OCR Ø/R çağrılarını düşürüyor (gözlem tablosunda 20 metin satırı var, çağrı benzeri 0; '⌴' sembolü '2' olarak, 'Ø' harfi 'D' olarak okunmuş). Her hedef kutu pafta pikselinde satır/kolon koşu taramasıyla (renk sınıflı: K = parça kenarı, g = ölçü/merkez çizgisi) ve ızgaralı büyütülmüş kırpmalarda (10x, 0,002 adım) görsel okumayla ölçüldü; çağrı metinleri harf harf/glif glif okundu (derinlik sembolü = üstte çubuk + altında aşağı ok; karşı delik sembolü = U biçimi).",
+  "measurement_reason": "Raster sayfada OCR Ø/R çağrı satırlarını düşürdüğü için hedefler gözlem kimliği yerine ölçülmüş kutu olarak yazıldı (ex13/ex17 ile aynı yöntem). Her kutu çizilmiş geometriden piksel cinsinden ölçüldü (kutu ölçümü: yarıçap/köşe koşu taraması; yarıçap kapsama eğrisi ile dolu/kesikli ayrımı) ve ızgaralı büyütülmüş kırpmayla görsel olarak doğrulandı; çağrı okları (leader) uçlarının hangi geometriye dokunduğu ayrıca izlendi.",
+  "exhaustiveness": {
+    "scope": "predicates",
+    "predicates": [
+      "representation",
+      "physical",
+      "form",
+      "size",
+      "count_printed",
+      "termination",
+      "depth"
+    ]
+  },
+  "notes": [
+    "Pafta: 3300x2550 piksel. Başlık bloğu görsel okuması: TITLE 'Flange', kâğıt A3, SCALE 1:2, MAT: Plain Carbon Steel, SHEET 1 of 1, DATE 11-Apr-25 (Chittagong University of Engineering & Technology). Başlıktaki 'SCALE 1:2' notu tek başına px/mm vermez (PLAN-9 §8 + PLAN-10 §4.7): raster yeniden boyutlandırılmış olabilir; px/mm bağımsız doğrusal datuma dayandırıldı.",
+    "Ölçek kökü (bağımsız doğrusal datum): kesit A-A'daki 50,00 mm parça toplam boyu — plaka sol yüzü x=1766,5 px ile göbek uç yüzü x=2062,5 px arası 296 px → 5,920 px/mm. Çapraz doğrulama (hepsi claim setinin dışındaki doğrusal ölçüler/ölçülen geometri): 20,00 mm plaka kalınlığı 119 px (1766,5→1885,5) → 5,950; Ø60.00 göbek dış çapı 355 px → 5,917; Ø100.00 plaka dış çapı 591 px → 5,910; Ø30.00 delik 177 px → 5,900; R35.00 cıvata dairesi 413 px → 5,900; Ø11.00 karşı delik 65 px → 5,91; 6x Ø6.40 deliği 38 px → 5,94. Yayılım ≈ ±%0,4 (5,90–5,95 px/mm). Ön görünüş merkezi (898,0; 1480,0) px; düşey merkez/kesme çizgisi x=898 px, yatay merkez çizgisi y=1480 px (her ikisi de sayısal olarak doğrulandı).",
+    "Çağrı bloğu (görsel okuma, 10x): 1. satır '6 x Ø 6.40 ↧ 15.00'; 2. satır '⌴ Ø 11.00 ↧ 3.90'. Yani: altı adet Ø6,40 delik, 15,00 mm derinlik; karşı delik (karşı delik sembolü, U biçimi) Ø11,00, 3,90 mm derinlik. Semboller ayrı ayrı glif düzeyinde okundu: derinlik sembolü = üstte yatay çubuk + altında aşağı bakan ok (↧); karşı delik sembolü = U biçimi. 2. satırda adet öneki (6 x) **yazılı değil** — bu yüzden Ø11.00 claim'inde count_printed null.",
+    "Kesit A-A delik profili (üst delik, piksel): karşı delik çukuru plaka sol yüzünden x=1766,5'ten omuza x=1789,5'e kadar 23 px (= 3,88 mm ≈ yazılı 3,90) ve y=1240,5–1307,5 arası 66 px (= 11,14 mm ≈ yazılı Ø11,00); Ø6,40 deliği x=1789,5→1855,5 (68 px = 11,5 mm) ve y=1254,5–1292,5 (37 px = 6,25 mm ≈ yazılı 6,40); matkap ucu konisi x≈1870'e kadar (kolon koşusu y=1271–1273). Delik ağzından tam çaplı dip seviyesine kadar 1766,5→1855,5 = 89 px = **15,03 mm = yazılı 15,00**; kalan et kalınlığı 1855,5→1885,5 = 30 px = 5,06 mm. Bu, yazılı derinliklerin (15,00 / 3,90) çizimde de tuttuğunu gösterir; delikler kör (kapalı dip + konik uç) → termination=blind.",
+    "Ön görünüş = karşı delik yüzü görünüşü: plaka dış çapı Ø100 (dolu çember, yarıçap 295,5 px), cıvata dairesi (kesikli çember, yarıçap 206,5 px, yarıçap kapsama oranı 0,82 → kesikli), delik çemberleri (Ø11 dış, Ø6,40 iç) 6 konumda ve göbek deliği Ø30 (dolu çember, yarıçap 88,5 px) + pah çemberi Ø32 (dolu, yarıçap 94,5 px; 189 px = 30 + 2 × 1,00 → '1.00 X 45°' notuyla uyumlu). Altı delik 30°/90°/150°/210°/270°/330° konumlarındadır (30/150/210/330 ışınlarında delik koşuları görüldü; 90/270 delikleri A-A kesme düzleminden geçer). Göbek (Ø60) ön görünüşte **çizilmemiş**: yarıçapı ≈178 px olan ne dolu ne kesikli bir çember yok (kapsama eğrisi 86–97 px ve 204–209 px dışında boş) → görünüş karşı delik yüzüne bakar, göbek arkada kalır ve gizli çizgi olarak da çizilmemiştir.",
+    "Kapsam dışı geometrinin ölçülen karşılıkları (yalnız denetim izi): 50,00 = plaka sol yüzü → göbek uç yüzü (296 px); 20,00 = plaka kalınlığı (119 px); '30,00' dikey ölçü = göbek deliği Ø30,00 (kesitte x=2610 kolonundaki uzatma çizgileri y=1391,8 ve y=1568,8'e iner = 177 px); 1,00 X 45° (iki adet) = göbek deliğinin plaka yüzündeki pahı (pah çemberi 189 px = Ø32) ve göbek dış kenarının uç yüzündeki pahı (kesitte uç köşe); 30° = yatay merkez çizgisi ile bir delik ekseni arasındaki açı; ⊕Ø0.2 / ⊥0.2 / ∥0.2 / ⊙0.1 = geometrik tolerans çerçeveleri (boyut çağrısı değil). İzometrik görünüş ölçüsüzdür.",
+    "Eş merkezli hedef kutular (geometrinin doğal sonucu, ölçüm gücünü her kolda aynı oranda düşürür): ön görünüşte Ø6.40 kutusu Ø11.00 kutusunun içindedir (IoU ≈ 0,34), göbek deliği Ø30 kutusu kesitte Ø60 göbek kutusunun içindedir (IoU ≈ 0,37). Kutular küçültülerek bu iç içelik gizlenmedi (PLAN-10 §13.5 + gold-reference-authoring: 'eş merkezli claim'lerde kutular kaçınılmaz olarak örtüşür').",
+    "Çizilmemiş/çağrısız geometri: göbek kökü filetosunun alt köşesi de aynı R2,00'dir (kesitte iki köşe de yuvarlatılmış), ancak çağrı tek olduğu için gold'da tek claim vardır (aynı özelliğin iki görünüşü değil, tek fileto). Ölçüsüz hiçbir çap/yarıçap gold'a zorlanmadı."
+  ],
+  "claims": [
+    {
+      "claim_id": "dev-flange-book-01",
+      "name": "6x Ø6.40 delik (ön görünüş üst deliği; ↧ 15.00)",
+      "target_box_norm": [
+        0.266364,
+        0.491961,
+        0.277879,
+        0.506863
+      ],
+      "target_reason": "Ön görünüşteki üst deliğin Ø6,40 çemberi: merkez (898,0; 1273,5) px, yarıçap 19 px; kutu çember sınırlarıdır (x 879,0–917,0 px, y 1254,5–1292,5 px). Ölçüm: satır/kolon koşu taraması — y=1274 satırında çember duvarları 878,5 ve 916,5 px (38 px = 6,41 mm); delik merkezi ayrıca kesitteki aynı deliğin ekseniyle (y=1273) çakışır. Ölçüm piksel koşu taramasıyla alındı.",
+      "representation": "circle",
+      "physical": "hole",
+      "form": "diameter",
+      "size": 6.4,
+      "unit": "mm",
+      "count_printed": 6,
+      "termination": "blind",
+      "depth": 15.0,
+      "depth_state": "stated",
+      "state": "determinate_present",
+      "evidence": "Çağrı bloğunda 1. satır '6 x Ø 6.40 ↧ 15.00' (etiket ≈ x 240–745, y 715–770 px); derinlik sembolü ↧ yazılıdır ve değer 15,00'dir. Altı delikten üstteki ön görünüşte x=898 sütununda (A-A kesme düzleminden geçen delik) çizilidir: Ø6,40 çemberi 38 px = 6,41 mm (yazılı 6,40 ile sapma ≈ %0,2), karşı delik çemberi 65 px = 10,96 mm (yazılı Ø11,00). Aynı deliğin kesit profili: delik ağzından tam çaplı dibe 89 px = 15,03 mm = yazılı 15,00; dip konik (matkap ucu) ve arka yüzeye 5,06 mm et kalıyor → delik kör. Çağrı tüm altı deliği kapsar (basılı çarpan 6x); 6 delik 30°/90°/150°/210°/270°/330° konumlarında Ø70 cıvata dairesi üzerindedir.",
+      "source_evidence": "vision + piksel taraması: ızgaralı büyütülmüş kırpma (10x, 0,002 adım) çağrı satırını glif glif okudu (6 x Ø 6.40 ↧ 15.00); satır/kolon koşu taraması (y=1274 satırı ve kesitte y=1273 ekseni) deliğin iki çemberini ve kesitteki 15,00 mm dip seviyesini verdi; 'test edilen üst delik' ayrıca ızgaralı kırpmayla görsel olarak doğrulandı (vision + piksel taraması).",
+      "corroboration": {
+        "kind": "independent_scale",
+        "basis": "bağımsız 50,00 mm doğrusal ölçü (kesit A-A, parça toplam boyu: plaka sol yüzü x=1766,5 → göbek uç yüzü x=2062,5 = 296 px) → 5,920 px/mm; çapraz: 20,00 mm plaka kalınlığı (119 px → 5,950), Ø60.00 göbek (355 px → 5,917), Ø100.00 (591 px → 5,910), Ø30.00 (177 px → 5,900), R35.00 cıvata dairesi (413 px → 5,900)",
+        "basis_value": 50.0,
+        "scale_px_per_mm": 5.92
+      }
+    },
+    {
+      "claim_id": "dev-flange-book-02",
+      "name": "⌴ Ø11.00 karşı delik (ön görünüş üst deliği; ↧ 3.90)",
+      "target_box_norm": [
+        0.262273,
+        0.486667,
+        0.281970,
+        0.512157
+      ],
+      "target_reason": "Ön görünüşteki üst deliğin karşı delik (Ø11,00) çemberi: merkez (898,0; 1273,5) px, yarıçap 32,5 px; kutu çember sınırlarıdır (x 865,5–930,5 px, y 1241,0–1306,0 px). Ölçüm: satır/kolon koşu taraması — y=1274 satırında dış çember duvarları 865,5 ve 930,5 px (65 px = 10,96 mm); kesitte aynı karşı deliğin duvarları y=1240,5 ve 1307,5 (66 px = 11,14 mm). Ölçüm piksel koşu taramasıyla alındı.",
+      "representation": "circle",
+      "physical": "hole",
+      "form": "diameter",
+      "size": 11.0,
+      "unit": "mm",
+      "count_printed": null,
+      "termination": "blind",
+      "depth": 3.9,
+      "depth_state": "stated",
+      "state": "determinate_present",
+      "evidence": "Çağrı bloğunda 2. satır '⌴ Ø 11.00 ↧ 3.90' (etiket ≈ x 236–746, y 787–845 px); karşı delik sembolü (U biçimi) ve derinlik sembolü ↧ yazılıdır, değer 3,90'dır. Bu satırda adet öneki **yazılı değildir** (1. satırdaki 6x yalnız 1. satıra aittir) → count_printed null. Ön görünüşte karşı delik çemberi 65 px = 10,96 mm (yazılı Ø11,00 ile sapma ≈ %0,4); kesitte karşı delik çukuru plaka sol yüzünden omuza 23 px = 3,88 mm ≈ yazılı 3,90 ve çukur duvarları arası 66 px = 11,14 mm. Çukur dibi düz omuzdur (karşı delik), ötesinde Ø6,40 delik devam eder.",
+      "source_evidence": "vision + piksel taraması: ızgaralı büyütülmüş kırpma (10x, 0,002 adım) 2. satırın başındaki karşı delik sembolünü ve ↧ 3.90 değerini glif düzeyinde gösterdi; satır/kolon koşu taraması (ön görünüş y=1274; kesit x=1780 kolonu ve y=1242 satırı) karşı deliğin çemberini/çukurunu ve omuz konumunu verdi (vision + piksel taraması).",
+      "corroboration": {
+        "kind": "independent_scale",
+        "basis": "bağımsız 50,00 mm doğrusal ölçü (kesit A-A, parça toplam boyu: plaka sol yüzü x=1766,5 → göbek uç yüzü x=2062,5 = 296 px) → 5,920 px/mm; çapraz: 20,00 mm plaka kalınlığı (119 px → 5,950), Ø60.00 göbek (355 px → 5,917), Ø100.00 (591 px → 5,910), Ø30.00 (177 px → 5,900), R35.00 cıvata dairesi (413 px → 5,900)",
+        "basis_value": 50.0,
+        "scale_px_per_mm": 5.92
+      }
+    },
+    {
+      "claim_id": "dev-flange-book-03",
+      "name": "Ø100.00 plaka dış çapı (ön görünüş)",
+      "target_box_norm": [
+        0.182576,
+        0.46451,
+        0.361667,
+        0.696275
+      ],
+      "target_reason": "Ön görünüşteki dolu dış çember: merkez (898,0; 1480,0) px, yarıçap 295,5 px; kutu çemberin sınır bölgesidir (x 602,5–1193,5 px, y 1184,5–1775,5 px). Ölçüm: yarıçap kapsama eğrisi (294–297 px aralığında kapsama 1,00 → dolu çember) + satır/kolon koşu taraması. Aynı çap kesitte plakanın üst/alt kenarı olarak da ölçülür (y=1184,5 ve y=1775,5; 591 px). Ölçüm piksel koşu taramasıyla alındı.",
+      "representation": "circle",
+      "physical": "not_hole",
+      "form": "diameter",
+      "size": 100.0,
+      "unit": "mm",
+      "count_printed": null,
+      "termination": "unknown",
+      "depth": null,
+      "depth_state": "not_stated",
+      "state": "determinate_present",
+      "evidence": "Ön görünüşte 'Ø100.00' çağrısı (45° döndürülmüş etiket ≈ x 285–630, y 950–1160 px); leader yukarı-soldan iner ve ok ucu ≈ (690, 1270) px'te dış çembere dokunur (ok ucu koşusu y=1250'de 658–674, y=1260'ta 672–681; çemberin aynı satırdaki geçişi x=690,1). Ölçülen dış çap 591 px = 99,66 mm; yazılı 100,00 mm ile sapma ≈ %0,3. Çap kesitte de plaka yüksekliği olarak 591 px'tir (aynı özellik, iki görünüş).",
+      "source_evidence": "vision + piksel taraması: yarıçap kapsama eğrisi (dolu çember, kapsama 1,00) ve satır/kolon koşu taraması; ızgaralı büyütülmüş kırpma (0,005 adım, 6x) leader ok ucunun çembere dokunduğunu gösterdi (vision + piksel taraması).",
+      "corroboration": {
+        "kind": "independent_scale",
+        "basis": "bağımsız 50,00 mm doğrusal ölçü (kesit A-A, parça toplam boyu: plaka sol yüzü x=1766,5 → göbek uç yüzü x=2062,5 = 296 px) → 5,920 px/mm; çapraz: 20,00 mm plaka kalınlığı (119 px → 5,950), Ø60.00 göbek (355 px → 5,917), Ø30.00 (177 px → 5,900), R35.00 cıvata dairesi (413 px → 5,900)",
+        "basis_value": 50.0,
+        "scale_px_per_mm": 5.92
+      }
+    },
+    {
+      "claim_id": "dev-flange-book-04",
+      "name": "R35.00 cıvata dairesi (ön görünüş, kesikli çember)",
+      "target_box_norm": [
+        0.209545,
+        0.499412,
+        0.334697,
+        0.661373
+      ],
+      "target_reason": "Ön görünüşteki kesikli çember (altı deliğin oturduğu cıvata dairesi): merkez (898,0; 1480,0) px, yarıçap 206,5 px; kutu çemberin sınır bölgesidir (x 691,5–1104,5 px, y 1273,5–1686,5 px). Ölçüm: yarıçap kapsama eğrisi (kapsama 0,82 → kesikli) + delik merkezlerinin aynı yarıçapta olması; kesitte iki karşı deliğin ekseni de merkezden ±206,5 px (y=1273 ve y=1686). Ölçüm piksel koşu taramasıyla alındı.",
+      "representation": "circle",
+      "physical": "not_hole",
+      "form": "radius",
+      "size": 35.0,
+      "unit": "mm",
+      "count_printed": null,
+      "termination": "unknown",
+      "depth": null,
+      "depth_state": "not_stated",
+      "state": "determinate_present",
+      "evidence": "Ön görünüşte 'R35.00' çağrısı (45° döndürülmüş etiket ≈ x 1168–1321, y 1030–1140 px); leader aşağı-sola iner, ok ucu ≈ (1044, 1334) px'te kesikli çembere dokunur — bu nokta merkezden 206,5 px = 34,83 mm uzaklıktadır (yazılı 35,00 mm ile sapma ≈ %0,5). Altı deliğin merkezleri de tam bu yarıçaptadır (üst delik merkezi y=1273,5 px = merkez − 206,5 px).",
+      "source_evidence": "vision + piksel taraması: yarıçap kapsama eğrisi (kapsama 0,82 → kesikli çember ayrımı) ve leader uç izleme (y=1200–1340 satırlarında ok ucu koşuları); ızgaralı büyütülmüş kırpma leader'ın kesikli çembere indiğini görsel olarak doğruladı (vision + piksel taraması).",
+      "corroboration": {
+        "kind": "independent_scale",
+        "basis": "bağımsız 50,00 mm doğrusal ölçü (kesit A-A, parça toplam boyu: plaka sol yüzü x=1766,5 → göbek uç yüzü x=2062,5 = 296 px) → 5,920 px/mm; çapraz: 20,00 mm plaka kalınlığı (119 px → 5,950), Ø100.00 (591 px → 5,910), Ø60.00 (355 px → 5,917), Ø30.00 (177 px → 5,900)",
+        "basis_value": 50.0,
+        "scale_px_per_mm": 5.92
+      }
+    },
+    {
+      "claim_id": "dev-flange-book-05",
+      "name": "Ø60.00 göbek dış çapı (kesit A-A)",
+      "target_box_norm": [
+        0.571364,
+        0.510784,
+        0.625,
+        0.65
+      ],
+      "target_reason": "Kesit A-A'daki göbek gövdesi: plaka sağ yüzü x=1885,5 px ile göbek uç yüzü x=2062,5 px arası, üst yüzey y=1302,5 px ve alt yüzey y=1657,5 px; kutu gövdenin sınır bölgesidir (355 px yükseklik = 59,86 mm). Ölçüm: satır/kolon koşu taraması — y=1391,8 ve y=1568,8 uzun koşuları deliği, y=1302,5 ve y=1657,5 koşuları göbek dış yüzeyini verir. Ölçüm piksel koşu taramasıyla alındı.",
+      "representation": "other",
+      "physical": "not_hole",
+      "form": "diameter",
+      "size": 60.0,
+      "unit": "mm",
+      "count_printed": null,
+      "termination": "unknown",
+      "depth": null,
+      "depth_state": "not_stated",
+      "state": "determinate_present",
+      "evidence": "Kesitte 'Ø60.00' çağrısı (yatay etiket ≈ x 2450–2700, y 1470–1525 px) ve dikey ölçü çizgisi x=2754'te: ok uçları göbek üst yüzeyi (y≈1302,5) ile alt yüzeyi (y≈1657,5) arasındadır (ok başları y=1336–1342 ve y=1618–1625). Ölçülen göbek dış çapı 355 px = 59,86 mm; yazılı 60,00 mm ile sapma ≈ %0,2. Göbek boyu 2062,5 − 1885,5 = 177 px = 29,9 mm (50,00 toplam − 20,00 plaka = 30,00 ile uyumlu).",
+      "source_evidence": "vision + piksel taraması: ızgaralı büyütülmüş kırpma (0,01 adım, 4x) Ø60.00 ölçüsünün uzatma çizgilerini ve ok başlarını gösterdi; satır/kolon koşu taraması göbek dış yüzey koşularını (y=1302,5 ve y=1657,5; x 1885,5–2062,5) verdi (vision + piksel taraması).",
+      "corroboration": {
+        "kind": "independent_scale",
+        "basis": "bağımsız 50,00 mm doğrusal ölçü (kesit A-A, parça toplam boyu: plaka sol yüzü x=1766,5 → göbek uç yüzü x=2062,5 = 296 px) → 5,920 px/mm; çapraz: 20,00 mm plaka kalınlığı (119 px → 5,950), Ø100.00 plaka dış çapı (591 px → 5,910), Ø30.00 delik (177 px → 5,900), R35.00 cıvata dairesi (413 px → 5,900)",
+        "basis_value": 50.0,
+        "scale_px_per_mm": 5.92
+      }
+    },
+    {
+      "claim_id": "dev-flange-book-06",
+      "name": "Ø30.00 göbek deliği (kesit A-A)",
+      "target_box_norm": [
+        0.536667,
+        0.545804,
+        0.624545,
+        0.615216
+      ],
+      "target_reason": "Kesit A-A'daki delik: iki uzun yatay koşu y=1391,8 px (üst) ve y=1568,8 px (alt), plaka sol yüzü x≈1766,5 px'ten göbek uç yüzü x=2061 px'e kadar; kutu deliğin çizilmiş bölgesidir (177 px çap = 29,85 mm). Ölçüm: satır/kolon koşu taraması (uzun koşu listesi, min 45 px) + kolon x=2610'daki uzatma çizgilerinin aynı iki yüksekliğe inmesi. Ölçüm piksel koşu taramasıyla alındı.",
+      "representation": "other",
+      "physical": "hole",
+      "form": "diameter",
+      "size": 30.0,
+      "unit": "mm",
+      "count_printed": null,
+      "termination": "thru",
+      "depth": null,
+      "depth_state": "not_stated",
+      "state": "determinate_present",
+      "evidence": "Kesitte 'Ø30.00' çağrısı 90° döndürülmüş olarak sağ altta yazılıdır (etiket ≈ x 2540–2630, y 1750–1960 px; glif okuması: 'Ø' + '30.00'); ölçü çizgisi x=2610'dur ve uzatma çizgileri delik yüzeylerine (y=1391,8 ve y=1568,8) iner; ok başları y=1412–1431 ve y=1529–1549 arasındadır (dıştan içe). Ölçülen delik çapı 177 px = 29,85 mm; yazılı 30,00 mm ile sapma ≈ %0,5. Delik plaka sol yüzünden göbek uç yüzüne kadar kesintisiz açıktır (iki uçta da malzeme kesilmiş) → thru; ayrıca pah çemberi ön görünüşte Ø32 (189 px = 30 + 2 × 1,00) olarak görünür.",
+      "source_evidence": "vision + piksel taraması: döndürülmüş metin ızgaralı kırpmayla 90° çevrilip okundu (Ø30.00); satır/kolon koşu taraması deliğin iki yüzey koşusunu (y=1391,8 ve y=1568,8; x 1771–2061) ve x=2610 ölçü kolonunun uzatma/ok geometrisini verdi (vision + piksel taraması).",
+      "corroboration": {
+        "kind": "independent_scale",
+        "basis": "bağımsız 50,00 mm doğrusal ölçü (kesit A-A, parça toplam boyu: plaka sol yüzü x=1766,5 → göbek uç yüzü x=2062,5 = 296 px) → 5,920 px/mm; çapraz: 20,00 mm plaka kalınlığı (119 px → 5,950), Ø60.00 göbek (355 px → 5,917), Ø100.00 (591 px → 5,910), R35.00 cıvata dairesi (413 px → 5,900)",
+        "basis_value": 50.0,
+        "scale_px_per_mm": 5.92
+      }
+    },
+    {
+      "claim_id": "dev-flange-book-07",
+      "name": "R2.00 göbek kökü filetosu (kesit A-A)",
+      "target_box_norm": [
+        0.571364,
+        0.506118,
+        0.575,
+        0.510784
+      ],
+      "target_reason": "Kesit A-A'da göbek dış yüzeyi (y=1302,5 px) ile plaka sağ yüzü (x=1885,5 px) birleşimindeki iç fileto yayı: yarıçap ≈ 11,9 px (2,00 mm); çeyrek yayın bölgesi x 1885,5–1897,5 px, y 1290,6–1302,5 px (yay x=1885,5'te y≈1290,6'dan başlar, y=1302,5'te x≈1897,4'te biter; göbek dış yüzey koşusu x=1891'den itibaren uzanır). Ölçüm: satır/kolon koşu taraması (y=1292/1296/1300 satırlarında yay koşuları 1887–1894 ve 1888–1891). Ölçüm piksel koşu taramasıyla alındı.",
+      "representation": "arc",
+      "physical": "not_hole",
+      "form": "radius",
+      "size": 2.0,
+      "unit": "mm",
+      "count_printed": null,
+      "termination": "unknown",
+      "depth": null,
+      "depth_state": "not_stated",
+      "state": "determinate_present",
+      "evidence": "Kesitte 'R2.00' çağrısı (45° döndürülmüş etiket ≈ x 2107–2225, y 934–1025 px); leader aşağı-sola iner, ok ucu ≈ (1881, 1305) px'te göbek kökü köşesine dokunur (göbek dış yüzeyinin plaka sağ yüzüne birleştiği yer). Ölçülen yay yarıçapı ≈ 12 px = 2,03 mm; yazılı 2,00 mm ile sapma ≈ %1,5 (2 px çözünürlük sınırı). Aynı fileto alt köşede de çizilidir; çağrı tek olduğu için tek claim.",
+      "source_evidence": "vision + piksel taraması: ızgaralı büyütülmüş kırpma (0,005 adım, 5x) R2.00 leader'ının ok ucunu ve dosya köşesini gösterdi; satır/kolon koşu taraması fileto yayının koşularını (y=1292–1300, x 1887–1894) ve göbek dış yüzey başlangıcını (x=1891, y=1302,5) verdi (vision + piksel taraması).",
+      "corroboration": {
+        "kind": "independent_scale",
+        "basis": "bağımsız 50,00 mm doğrusal ölçü (kesit A-A, parça toplam boyu: plaka sol yüzü x=1766,5 → göbek uç yüzü x=2062,5 = 296 px) → 5,920 px/mm; çapraz: 20,00 mm plaka kalınlığı (119 px → 5,950), Ø60.00 göbek (355 px → 5,917), Ø30.00 (177 px → 5,900)",
+        "basis_value": 50.0,
+        "scale_px_per_mm": 5.92
+      }
+    }
+  ],
+  "reconstruction_note": "PLAN-10 §8 (AŞAMA A) — dev-flange-book kanonik gold'u. Ölçek kökü claim setinin dışındaki bağımsız doğrusal datuma dayanır (50,00 mm parça toplam boyu, 296 px → 5,920 px/mm; çapraz 20,00/Ø60/Ø100/Ø30/R35 ile yayılım ≈ %0,4); hiçbir claim ne kendi ne başka bir değerlendirilen Ø/R claim'inin yazılı değerine dayanır (§6). Hedefler ölçülmüş kutulardır; px/mm çıkarılamasa bile ölçülmüş kutu geçerli olurdu (§7 sonu). Yazılı çağrılar tek gerçek kaynak, piksel geometrisi yalnız kanıt/çapraz doğrulamadır (§4.5)."
+}

@@ -1,6 +1,6 @@
 {
   "schema": "semread-001b-gold-manifest/1",
-  "gold_content_identity": "40a9569103345dff06679a7da96a151dc61b82fe474ca9c1ca7d381655170d17",
+  "gold_content_identity": "9b8aa3aabc5340b760acb266103d0dc41a53b584baa40daf86198fe13c815e73",
   "note": "izlenen kanonik gold spec'leri ve üretilmiş referans hash'leri; P5 dondurma `gold_content_identity`ye bağlanır — dosya hash'ine değil (PLAN-9 §14–§15). Manifest zaman damgası taşımaz: aynı içerik yeniden yazılınca bayt bayt aynıdır; `--check` / `--freeze` ile doğrulanır.",
   "pages": [
     {
@@ -14,6 +14,22 @@
       "reference": "out/lab/semread-001b/corpus/gold/dev-plate-pocket.json",
       "reference_sha256": "48671f502d196ad6ecccdcfca81d2f61b4640801eaf260cdd25980422dc1972c",
       "claim_count": 2,
+      "annotator": "agent",
+      "review_status": "provisional",
+      "vision_checked": true,
+      "exhaustiveness": "predicates"
+    },
+    {
+      "page_id": "dev-flange-book",
+      "split": "dev",
+      "page_type": "raster",
+      "source": "examples/pdf with steps/8/Flange.PNG",
+      "source_sha256": "9c0a91e21bf7265d13074adad10ba36171e802cc0e70895cfd4c24656933282a",
+      "spec": "eval/semread_001b_gold/specs/dev-flange-book.json",
+      "spec_sha256": "af593ef8f823e98ddbb5162d1dd1eaba651ce873d562da1dee0d9cc7c3a8f051",
+      "reference": "out/lab/semread-001b/corpus/gold/dev-flange-book.json",
+      "reference_sha256": "ecf13221bc678fc597750058d2c13be651817b2a55029ae59b4bdf8ae328a2d2",
+      "claim_count": 7,
       "annotator": "agent",
       "review_status": "provisional",
       "vision_checked": true,

@@ -966,3 +966,74 @@ sonra, §24–§26).
 
 **Sıradaki (PLAN-9 §31):** 6) `dev-flange-book` → 7) `frozen-exercise-51` → 8)
 `frozen-views-exercise` → 9) 10/10 → 10) `--verify` tümü → 11) D denemelerini değerlendir…
+
+### 6s. PLAN-10 §8 (AŞAMA A) — `dev-flange-book` kanonik gold izlendi: px/mm bağımsız 50,00 mm datasından (8/10)
+
+**Ne yapıldı (PLAN-10 §8 "sıradaki tek somut iş"; PLAN-9 §31/6):**
+`eval/semread_001b_gold/specs/dev-flange-book.json` yazıldı — **7 Ø/R claim**: `6x Ø6.40 (↧15.00)`
+ve `⌴ Ø11.00 (↧3.90)` (ön görünüşteki üst deliğin karşı delik çifti), `Ø100.00` (plaka dış çapı),
+`R35.00` (cıvata dairesi), `Ø60.00` (göbek dış çapı, kesit A-A), `Ø30.00` (göbek deliği, kesit A-A),
+`R2.00` (göbek kökü filetosu). Doğrusal/açısal ölçüler, geometrik tolerans çerçeveleri ve izometrik
+görünüş kapsam dışı (ex13/ex17 ile aynı kural).
+
+**Çağrı bloğu glif düzeyinde okundu (§8.3):** 1. satır `6 x Ø 6.40 ↧ 15.00`, 2. satır
+`⌴ Ø 11.00 ↧ 3.90`. **`6 x` gerçekten basılı** (10x kırpma); `Ø6.40` açık; derinlik sembolü ↧
+(üstte çubuk + altında aşağı ok) **var** ve 15,00 bu simgeye bağlıdır; 2. satırda adet öneki
+**yazılı değil** → `Ø11.00` claim'inde `count_printed = null`. OCR bu satırları düşürmüştü
+(20 metin satırının çağrı benzeri 0'ı; `⌴` → "2", `Ø` → "D"), bu yüzden hedefler ölçülmüş kutudur.
+
+**Ölçek kökü bağımsız doğrusal datum (§4.6–§4.7):** kesit A-A'da **50,00 mm** parça toplam boyu
+(plaka sol yüzü x=1766,5 → göbek uç yüzü x=2062,5 = 296 px) → **5,920 px/mm**. Çapraz: 20,00 mm
+plaka kalınlığı 119 px → 5,950; Ø60.00 göbek 355 px → 5,917; Ø100.00 591 px → 5,910; Ø30.00
+177 px → 5,900; R35.00 cıvata dairesi 413 px → 5,900; Ø11 65 px → 5,91; Ø6.40 38 px → 5,94
+(yayılım ≈ ±%0,4). Hiçbir claim ne kendi ne başka bir değerlendirilen Ø/R claim'inin değerine
+dayanıyor (§6); başlıktaki `SCALE 1:2` px/mm kaynağı yapılmadı (§4.7).
+
+**Ana ölçüm bulguları:** ön görünüş merkezi (898,0; 1480,0) px; dış çember Ø100 dolu (yarıçap
+295,5 px), cıvata dairesi kesikli (206,5 px; yarıçap kapsama oranı 0,82), göbek deliği Ø30
+(88,5 px) ve pah çemberi Ø32 (94,5 px = 30 + 2 × 1,00 → "1.00 X 45°" ile uyumlu); 6 delik
+30°/90°/150°/210°/270°/330° konumlarında. Göbek (Ø60) ön görünüşte çizilmemiş (≈178 px'te ne dolu
+ne kesikli çember var) → görünüş karşı delik yüzüne bakar. Kesitte delik profili yazılı
+derinlikleri doğruladı: karşı delik çukuru 1766,5→1789,5 = 23 px = 3,88 mm ≈ **3,90** ve duvarlar
+66 px ≈ **Ø11,00**; Ø6,40 deliği ağızdan tam çaplı dibe 89 px = **15,03 mm ≈ 15,00** (dip konik,
+arka yüzeye 5,06 mm et kalıyor → `termination=blind`). Göbek dış çapı 355 px = 59,86 ≈ **Ø60,00**;
+delik 177 px = 29,85 ≈ **Ø30,00** ve iki uçta da açık → `termination=thru`; göbek kökü filetosu
+yayı ≈12 px ≈ **R2,00** (leader ok ucu (1881, 1305) px'te köşeye dokunuyor).
+
+**Çağrı → hedef bağlama (leader izleri):** Ø100.00 oku (690, 1270) px'te **dış çembere**;
+R35.00 oku (1044, 1334) px'te **kesikli cıvata dairesine**; Ø60.00 ölçüsü x=2754'te göbek üst/alt
+yüzeyleri arası; Ø30.00 ölçüsü x=2610'da delik yüzeyleri arası (uzatma çizgileri y=1391,8 ve
+y=1568,8'e iner); R2.00 oku göbek kökü köşesine; `1.00 X 45°` okları deliğin plaka yüzündeki
+pahına ve göbek dış kenarının uç köşesine.
+
+**Eş merkezli kutular (not edildi):** ön görünüşte `Ø6.40` kutusu `Ø11.00` kutusunun içinde
+(IoU ≈ 0,34), kesitte `Ø30.00` kutusu `Ø60.00` kutusunun içinde (IoU ≈ 0,37) — geometrinin doğal
+sonucu, kutular küçültülerek gizlenmedi (PLAN-10 §13.5); maliyet her kolda aynıdır.
+
+**Kanıt (bu turda koşuldu):**
+* Zincir: `gold_regions --page dev-flange-book --write` → `reference --page dev-flange-book` →
+  `check_reference` (pilot kapısı: **ok=true, problems=[]**, `raster_vision_required=true`) →
+  `gold_manifest --write` → `--verify --page dev-flange-book` → `--check`.
+* `--verify --page dev-flange-book`: **"referans TAMAM (yeniden üretilen ecf13221bc67… / manifest
+  ecf13221bc67…); gold-src aynı; 7 claim"** — izlenen spec'ten birebir yeniden üretim (§16 kanıtı).
+* `--check`: **"manifest: 8/10 sayfa izleniyor — TAMAM"** (`gold_content_identity: 9b8aa3aa…`;
+  önceki 7/10 kimliği `40a95691…`).
+* `--freeze`: **AÇIK** — tek sorun kalan iki spec (`frozen-exercise-51`, `frozen-views-exercise`);
+  8 sayfanın yeniden üretim kanıtı kapının içinde koştu ("8 sayfa koşuldu (§17)").
+* `gold_regions.py` ölçülen kutu claim'lerinde bilgilendirici "gerekçe `notes`ta olmalı" uyarısı
+  verir (exit 1); gerekçeler spec `notes` + `measurement_reason` + her claim `target_reason`
+  alanındadır — mevcut akışta engel değil (ex13/ex17 ile aynı davranış).
+* **Test:** `tests/test_semread_001b*.py` — bu turda koşuluyor (kayıt §6s ekine bakınız).
+
+**Teslim raporu (PLAN-10 §41):** page frame 3300×2550; scorable claim **7**; basılı çağrılar
+Ø6.40 / Ø11.00 / Ø100.00 / R35.00 / Ø60.00 / Ø30.00 / R2.00; kapsam dışı bırakılan belirsiz çağrı
+**yok** (her çağrının leader'ı ölçülerek bağlandı; ölçüsüz çap zorlanmadı); hedef bağlama claim
+başına yukarıdaki px koordinatlarıyla yazıldı; bağımsız ölçek datum'u 50,00 mm (296 px);
+`corroboration.kind = independent_scale` (yedi claim'de de aynı doğrusal kök, döngüsellik yok);
+`vision` izi yedi claim'in `source_evidence`ında; exhaustiveness `predicates`; referans hash
+`ecf13221bc67…`; manifest kimliği `9b8aa3aa…`; kapsam **8/10**; bütçe **0/30** (model çağrısı yok).
+
+**Sıradaki (PLAN-10 §9 = PLAN-9 §31/7):** `frozen-exercise-51` (`examples/pdf with steps/1/Exercise_51.PNG`,
+frozen split — tuning verisi değil; annotation turu) → sonra `frozen-views-exercise` → 10/10 →
+tüm sayfalar `--verify` → D denemelerini değerlendir (yeniden koşma yok, PLAN-10 §14) → temiz klon
+denetimi (§16) → `FREEZE.json` bağlamalarını §17 alanlarıyla tamamla → ancak ondan sonra V/VE.

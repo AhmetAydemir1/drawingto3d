@@ -832,3 +832,43 @@ yanlış-pozitif değil.
 **Sıradaki:** `frozen-exercise-13` veya `-51` gold'u (aynı yöntem: ızgara kırpma + satır/kolon
 taraması + ASCII harita; gerekirse `callout_texts` ile gözlem kimliği) → 10/10 → tek değerlendirme
 → temiz klon denetimi (`--verify` tüm sayfalar) → P5 dondurma.
+
+### 6p. P3 — `frozen-exercise-13` keşfi (gold yazılmadı; ölçüm turu yarım kaldı)
+
+**Sayfa:** 3300x2550 px, başlık bloğu görsel okuması: TITLE **Exercise 13**, kâğıt **A3**,
+**SCALE 1:5**, MAT AISI 304, tarih 29-Aug-24. Görünüşler: üst-orta (plan), alt-orta (ön),
+sol ve sağ yan görünüş, sağ-üst izometrik.
+
+**Gözlem tablosu** (`gold_inspect --page frozen-exercise-13`, ~4 dk): 575 gözlem (25 metin,
+294 daire/ark); **çağrı benzeri metin 0** → OCR yine Ø/R etiketlerini düşürdü (ex17 ile aynı
+durum). 294 dairenin çoğu izometrik görünüşün konturları ve Hough gürültüsü (ör. göbek için
+175/193/293 px'lik tutarsız arklar) → **gözlem kimliğiyle bağlama güvenilmez**, ölçülmüş kutu
++ kendi piksel taraması doğru yol.
+
+**Görsel okunan Ø/R çağrıları (7 adet):** Ø25.00 (üst görünüş, sol plaka deliği, ~x 0.24-0.31
+y 0.07-0.12), R25.00 (üst görünüş, sağ plaka ucu, ~x 0.58-0.62 y 0.26-0.28), R30.00 (alt görünüş,
+sol üst köşe filetosu, ~x 0.29-0.35 y 0.48-0.52), Ø60.00 (~x 0.49-0.53 y 0.45-0.53, leader göbeğin
+dış dairesine), R50.00 (~x 0.55-0.60 y 0.49-0.51, leader parçanın sağ uç yayına), Ø25.00
+(alt görünüş, ~x 0.51-0.55 y 0.76-0.79, leader göbek deliğine), R10.00 (~x 0.44-0.48 y 0.78-0.82,
+yuva köşesi). Kapsam dışı doğrusal ölçüler: 30.00, 50.00 (üst); 170.00, 42.00, 60.00 (x2),
+30.00, 60.00, 25.00, 240.00 (alt); 60.00 (sol yan), 10.00, 50.00 (sağ yan).
+
+**Açık ölçüm sorusu (px/mm):** iki aday çelişiyor —
+göbek dış dairesi (merkez ≈ 1549,1572) **310 px** → Ø60 ile **5.17 px/mm**;
+göbek deliği (aynı merkez) **125 px** → Ø25 ile **5.00 px/mm** (çizgi kalınlığı düzeltmesiyle
+~4.9). Üçüncü bir yazılı çap (üst görünüşün Ø25 deliği) ölçülmeden karar verilmemeli; doğru
+yöntem ex17'deki gibi: önce **iki bağımsız yazılı çapı** ölçüp px/mm'i sabitlemek, sonra
+hedefleri kutu olarak yazmak (§11: hiçbir claim kendi değerine dayanamaz).
+
+**Hazır araçlar (scratch, 24 saatte silinir — gerekirse yeniden yazılır):**
+`grid_crop.py` (ızgara kırpma), `lines_report.py` (satır/kolon koşuları), `ascii_map.py`
+(bölge yoğunluk haritası), `circle_measure.py` (merkez çevresi koşular + en-dış açıklık),
+`text_groups.py` (eğik yazıları **bulamaz** — Ø/R etiketleri 45° olduğu için gruplara
+girmedi; yalnız yatay/dikey yazılar için kullan). Scratch dizini: `~/.hermes/cache/scratch/`.
+
+**Sıradaki adımlar (ex13):** 1) üst görünüşten Ø25 deliğini ve R25 yayını ölç, px/mm'i sabitle;
+2) göbek/delik/R50/R30/R10 hedeflerini kutu olarak ölç (ex17'deki gibi `target_box_norm` +
+`target_reason` + `corroboration=independent_scale`, dayanak **karşı** çap); 3) spec yaz →
+`gold_regions --write` → `reference --page` → `gold_check` → `gold_manifest --write/--check/--verify`;
+4) `frozen-exercise-51` ve `frozen-views-exercise` (736x1041 px — düşük çözünürlük, en zor sayfa)
+aynı yöntemle; 5) 10/10 → tek değerlendirme → temiz klon denetimi → P5 dondurma.

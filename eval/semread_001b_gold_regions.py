@@ -21,6 +21,8 @@ Spec (JSON) alanları:
       "claims": [
         {"claim_id": "...", "name": "...",
          "target_observation": "g12",          # hedef bölge bu gözlemden
+         # ya da (raster sayfalarda Hough primitifleri güvenilmezse) görselden ölçülen kutu:
+         "target_box_norm": [x0, y0, x1, y1],  # normalize 0..1, sıralı; gerekçe `notes`a
          "callout_texts": ["t3", "t4", "t5"],  # çağrı kutusu bu metinlerin birleşimi
          "representation": "circle", "physical": "hole", "form": "diameter",
          "size": 6.8, "unit": "mm", "count_printed": 4, "termination": "thru",
@@ -30,6 +32,8 @@ Spec (JSON) alanları:
     }
 
 `--write` olmadan yalnız özet yazar (hesaplanan kutular + doğrulama uyarıları): önce bak, sonra yaz.
+Ölçülen kutu kullanıldığında çıkış kodu 1'dir (uyarı var) — bilinçli: gold gözle onaylanmadan
+yazılmamalı.
 """
 
 from __future__ import annotations
@@ -96,14 +100,32 @@ def build(page_id: str, spec: dict) -> tuple[dict, list[str]]:
     claims = []
     for index, raw in enumerate(spec.get("claims") or [], start=1):
         target = raw.get("target_observation")
-        if not target:
-            raise SystemExit(f"claim #{index}: target_observation yok")
+        box = raw.get("target_box_norm")
+        if not target and not box:
+            raise SystemExit(f"claim #{index}: target_observation ya da target_box_norm yok")
         callout = raw.get("callout_texts") or []
+        if box:
+            # Raster sayfalarda Hough primitifleri güvenilmez olabilir (uydurma büyük daireler,
+            # eksik köşe delikleri): hedef bölge **görselden ölçülen** normalize kutu olarak
+            # verilebilir. Gerekçe gold `notes`una yazılmalı; `target_observation` verilirse yalnız
+            # iz olarak saklanır (bölge ondan türetilmez).
+            if len(box) != 4:
+                raise SystemExit(f"claim #{index}: target_box_norm dört sayı olmalı")
+            x0, y0, x1, y1 = (float(value) for value in box)
+            if not (0.0 <= x0 < x1 <= 1.0 and 0.0 <= y0 < y1 <= 1.0):
+                raise SystemExit(f"claim #{index}: target_box_norm 0..1 aralığında ve sıralı olmalı "
+                                 f"(0<=x0<x1<=1, 0<=y0<y1<=1)")
+            target_bbox = px([x0, y0, x1, y1])
+            observation_id = target
+            warnings.append(f"claim #{index}: hedef bölge ölçülen kutu — gerekçe `notes`ta olmalı")
+        else:
+            target_bbox = px(by_id[target]["region"])
+            observation_id = target
         claim = {
             "claim_id": raw.get("claim_id") or f"{page_id}-{index:02d}",
             "name": raw.get("name") or f"hedef-{index}",
-            "target_bbox_px": px(by_id[target]["region"]),
-            "observation_id": target,
+            "target_bbox_px": target_bbox,
+            "observation_id": observation_id,
             "representation": raw.get("representation", "unknown"),
             "physical": raw.get("physical", "unknown"),
             "form": raw.get("form", "unknown"),

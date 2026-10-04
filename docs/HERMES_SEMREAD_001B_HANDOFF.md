@@ -555,3 +555,25 @@ birleşim yayı, `4x2-Ø60` + `4x2-Ø30` flanş cıvata deliği deseni (Ø30 ge�
 
 Sıra (değişmedi): raster dev gold'ları → 6 frozen gold → **tek `--d` koşusu** → `--evaluate`
 (B07 yeniden kapanır, B02 10/10 olur); P5 dondurma; P6 (gerçek V/VE) kullanıcı onayı ister.
+
+#### 6j-1. Raster hedef bölgesi — araç genişletildi (karar uygulandı)
+
+* `eval/semread_001b_gold_regions.py` artık `target_box_norm: [x0,y0,x1,y1]` kabul ediyor
+  (normalize, sıralı, 0..1; dördü de doğrulanır). Gözlem kimliği verilirse yalnız **iz** olarak
+  saklanır, bölge ondan türetilmez; ölçülen kutuda araç uyarı basar ve **çıkış kodu 1** döner
+  (gold gözle onaylanmadan yazılmasın). PDF yolu regresyonsuz: `dev-drawing-2` spec'i aynı altı
+  satırı ve aynı px değerlerini veriyor.
+* Gerekçe: rasterlarda Hough primitifleri güvenilmez — `dev-flange-elbow`'da 133 adayın çoğu
+  düz çizgilerden türeyen dev/hayalet daireler (merkezleri sayfa dışında), köşe delikleri için
+  tutarlı küme yok; `dev-flange-book`'da 228 yay. Bu yüzden hedef bölge **görselden ölçülen** kutu.
+* **Izgara tekniği** (kalıcı yöntem): sayfa PNG'sinden 0,02'lik ızgaralı kırpma üretilir
+  (3× büyütme, kenarlarda normalize etiketler), vision ile kutu okunur. `dev-flange-elbow` için
+  üretildi: `elbow-A-section.png` (kesit, x 0–0,62 / y 0,50–1,00), `elbow-C-flange.png`
+  (sağ-alt flanş, x 0,40–1,00 / y 0,44–1,00) — scratch 24 saatte silindiği için gerekirse
+  tek komutla yeniden üretilir.
+* `dev-flange-elbow` hedef adayları (kutuları okunacak): Ø210 + Ø290 → kesitteki boru ağzı
+  (dikey flanş yüzü x≈0,49–0,51), R260 → kesitteki kesikli eksen yayı, C10 → pah kenarı,
+  4-R20 → kare plakanın köşe yayı, `4x2-Ø60` + `4x2-Ø30` → cıvata deliği deseni, R110 → flanş-boru
+  birleşim yayı. **Açık kalan iki soru:** (1) `4x2-...` metninin tam okunuşu ve `count_printed`
+  karşılığı (4 mü 8 mi), (2) R110'un hedefi (birleşim yayı mı, plaka köşesi mi) — ikisi de
+  zoom ile netleşmeden spec yazılmamalı.

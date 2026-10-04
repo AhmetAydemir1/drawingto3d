@@ -664,7 +664,53 @@ bütçe        : 0/30 (değişmedi); D tahminleri **yeniden koşulmadı** (10 at
 ```
 
 **Sıradaki iş:** PLAN-7 §25'in 1–3. maddeleri (bu bölüm) bitti; P3 gold ilerliyor — `dev-drawing-2`
-(6 claim) ve `dev-flange-elbow` (7 claim) yazıldı, **gold 3/10**. Sırada `dev-flange-book` (döküm
-hazır, OCR üç çağrıyı okumuş) → 6 frozen sayfa → 10/10 → `--evaluate` (**B02 kapanır**; D hücreleri
+(6 claim), `dev-flange-elbow` (7 claim), `frozen-enclosure` (1 claim) ve `frozen-exercise-12`
+(14 claim) yazıldı, **gold 5/10** (§6l). Sırada `dev-flange-book` (döküm hazır, OCR üç çağrıyı okumuş)
+ve kalan 4 raster frozen sayfa → 10/10 → `--evaluate` (**B02 kapanır**; D hücreleri
 PLAN-7'den sonra yalnız bilgilendirici sapma taşıdığı için yeniden koşu gerekmez, yalnız gerçekten
 bayat hücre için tek `--d` koşusu) → P5 dondurma. P6 (gerçek V/VE, ücretli çağrı) kullanıcı onayı ister.
+
+### 6l. P3 gold — iki frozen PDF sayfası yazıldı: `frozen-enclosure` (1 claim) + `frozen-exercise-12` (14 claim) → **gold 5/10**
+
+İki sayfanın da kaynağı PDF (vektör/metin katmanı), bu yüzden çağrı metinleri çizimin kendi
+metninden okundu; ölçüler gözlem tablosunun ilkel bbox'larıyla mm'ye çevrildi. Specler:
+`corpus/gold-specs/frozen-enclosure.json`, `corpus/gold-specs/frozen-exercise-12.json`
+(üretilen `corpus/gold-src/*` + `corpus/gold/*` lab'de, `out/` gitignored).
+
+**`frozen-enclosure`** — A4 200 dpi (1654×2339 px), `SCALE 1:2` → 3,9370 px/mm (bağımsız
+doğrulamalar: R8 yayı bbox 62,9 px = 16,0 mm; delik daireleri 4,78/3,99/2,97 mm ↔ çağrılar
+4,80/4,00/3,00; yuva genişliği 10,03 mm ↔ 10,00).
+* 1 claim: `R8,00` kenar filetosu → gözlem `g8` (yay), `callout_texts: [t2]`, leader ucu ızgaralı
+  kırpmayla doğrulandı (ok ≈(0,386; 0,355)'te üst yüzey çizgisinin bittiği yere iniyor).
+* `exhaustiveness: regions` (yalnız R8 çevresi) — sayfadaki tek Ø/R çağrısı bu; öteki ölçüler
+  (120/60/46/25/18/10/10/4,80/4,00/3,00/1,50) Ø/R işareti taşımıyor (metin katmanında `linear`),
+  bu yüzden kapsam dışı. Kapsam dışı aday `false_positive` değil `unscorable_extra_candidate`.
+* `reference_sha256` **be3e56542f2b8970d876f0f014a9905d639cf4e9ec7765befe4404c67ba8f2ab**.
+* D hücresi (bilgi): 14 aday, 1 claim **ambiguous** (d-2/d-3 aynı yere yakın puanlı), 3 FP
+  (üçü de exhaustive bölge içinde), 11 kapsam dışı. Sayfa ölçüm gücü düşük ama karşılaştırma
+  tüm kollar için aynı.
+
+**`frozen-exercise-12`** — 200 dpi (2200×1700 px = 11×8,5 in), `SCALE 1:5` → **1,5748 px/mm**
+(sekiz bağımsız doğrulama: 425,2 px = 269,94 ≈ Ø270; 249,0 = 158,09 ≈ Ø158; 220,4 = 139,94 ≈ Ø140;
+189,0 = 120,00 = Ø120; 144,8 = 91,95 ≈ Ø92; 119,7 = 76,00 = Ø76; 346,5 = 220,02 ≈ Ø220 (iki
+görünüşte aynı); 28,4 = 18,02 ≈ Ø18; ayrıca 20 mm bbox yayı = 2×R10).
+* 14 claim, hepsi **ölçülmüş ilkele** bağlı (`target_observation`): Ø270→g50, Ø220→g178/g79,
+  Ø158→g43, Ø140→g51, Ø120→g58, Ø92→g59, Ø76→g60/g72, Ø18→g49/g179/g75, R10→g69, R8→g128.
+  Beş adet eşmerkezli daire üst-sol görünüşte (büyük flanş yüzü), küçük flanş üst-orta ve
+  alt-sağ görünüşlerde; Ø18 üç ayrı çağrı, R8 SECTION A-A'da.
+* Bağlanamayan çağrılar kapsam dışı ve gerekçeli: `Ø180,00` (sayfada Ø180 ilkeli yok;
+  eşmerkezli küme 270/158/140/124/120/118,3/92/76), `Ø116,00` ×2 (182,7 px'lik ilkel yok — çağrı
+  boru profilinin iki düz çizgisi arasını ölçüyor), `R25,00` ×2 (leader uçları ≈(0,777;0,777) ve
+  ≈(0,798;0,816); oradaki ayrık yaylar g68/g69 = 2×R10, R25 yayı ayrı ilkel değil).
+* `exhaustiveness: predicates` (representation/physical/form/size/termination/depth);
+  `reference_sha256` **bf5d3f7e931d7220dbda98a60e3be7ba54c95e72e6b80d2512ccf5dbc8663261**.
+* D hücresi (bilgi): 30 aday, 4 eşleşti, **8 ambiguous**, 2 eşleşmemiş claim, 10 FP, 16 kapsam
+  dışı. Ambiguity'nin kaynağı D'nin aynı özellik çevresine birden çok aday koyması; `MATCH_POLICY`
+  v2 gereği yakın puanlı kalemler puanlanmıyor (sıra bağımsızlığı).
+
+**Yöntem notu (5 raster sayfa için tekrar kullanılabilir):** gözlem tablosundaki daire/yayları
+sayfa PNG'sinin üzerine kimlikleriyle çizmek (`overlay`), leader ucunu 0,01 ızgaralı kırpmada
+okumak ve ilkel bbox'ını px→mm çevirip çağrıyla karşılaştırmak. Kullandığım geçici araçlar:
+`~/.hermes/cache/scratch/{grid_crop.py,overlay.py,gold_check.py}` (scratch 24 saat sonra
+temizlenir; `gold_check.py PAGE_ID --arms` tam `--evaluate` koşmadan tek sayfanın
+`check_reference`ını ve kol puanlarını verir — yeni gold yazarken hızlı kapı kontrolü).

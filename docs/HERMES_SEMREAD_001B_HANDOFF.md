@@ -1108,3 +1108,64 @@ bütçe **0/30** (model çağrısı yok).
 çözünürlük; §10.1 gereği amaç maksimum claim değil güvenilir scorable gold; çözülemeyen leader
 dışlanır ve not yazılır) → sonra **10/10** → tüm sayfalar `--verify` → tam `pytest` (milestone) →
 D reuse → acceptance snapshot → clean-clone → freeze.
+
+### 6u. PLAN-11 §9 — `frozen-views-exercise` kanonik gold izlendi: 8 Ø/R claim (**10/10**)
+
+**Ne yapıldı (PLAN-11 §9; PLAN-10 §10):**
+`eval/semread_001b_gold/specs/frozen-views-exercise.json` yazıldı — **8 Ø/R claim**: `Ø80` (üst görünüş dış
+konturu), `Ø94` (altı yuva yayının merkezlerini taşıyan kesikli daire), `R15` (yuva yayı), `Ø40` (göbek
+dairesi), `Ø10` (sol kesitte merkez delik), `Ø8` (sağ kesitte göbek yan yüzü yan deliği), `R5` ×2
+(sol kesitte flanş sağ uç üst/alt köşe yuvarlatmaları). Kapsam dışı: sol kesitte doğrusal `40`, `20`, `25`
+ve sağ kesitte `30` (yalnız ölçek kökü/çapraz — ex13/ex17 düzeni), `C4` pah notu (Ø/R değil), iki ISO
+render (boyutsuz), başlık bloğu/çerçeve. Sayfada adet öneki ve THRU/derinlik notu yok →
+`termination=unknown`, `depth=null` (hiçbir alan uydurulmadı, §9.10).
+
+**Ölçek kökü (bağımsız doğrusal datum, §9.8):** sağ kesitteki **30,00 mm** dikey ölçü — uzatma
+çizgileri y=772 ve y=856 px (Ø8 ekseni → flanş alt yüzü) → 84 px → **2,800 px/mm**. Çapraz: `40,00` →
+744→856 = 112 px (2,800); `20,00` → 800→856 = 56 px (2,800); `25,00` → 744→813,5 ≈ 69,7 px (2,79).
+Başlıktaki `SCALE` notu px/mm kaynağı yapılmadı (§5.7); doğrusal datum değerlendirilen Ø/R setinin
+dışında → döngüsellik yok (§6).
+
+**Ölçüm bulguları (piksel):** üst görünüş merkezi ≈(229,5; 482,0) → kontur r≈112,3 (d≈224,6 px ≈
+**80,2 mm**), kesikli merkez dairesi r≈131,7 (**94,1 mm**), göbek r≈56,0 (**39,98 mm**), göbek üst yüzü
+r≈44,8 (32,0 = 40 − 2×4 ✓), delik r≈14,0 (9,98). Yuva yayı fitleri (Kasa): 330° yuvası c≈(341,2; 416,8)
+r≈39,8 px; 30° yuvası c≈(343,4; 547,4) r≈41,8 px (merkez uzaklığı ≈131,4 px); yuva en derin noktası
+≈89,5 px = **32,0 mm = Ø94/2 − R15** ✓. Sol kesit: göbek 174–284,5, flanş 800–855,5, Ø10 kenarları
+x≈216/243,5, V ucu y≈828,5. Sağ kesit: Ø8 kenarları y≈761/783,5, ağız x≈540,5, yuvarlak uç ≈590
+(genişlik ≈22 px ≈ 7,9–8,0 mm). R5 köşe yayları çizili ≈5–7 px (≈2 mm) — değer yazılı çağrıdan (§5.5;
+sadeleştirilmiş çizim notu spec'te).
+
+**Leader bağlama (ok ucu → hedef):** Ø80 → ≈(281, 389) dış kontur bandı; Ø94 → merkezden geçen çap
+ölçüsü çizgisi (merkez sapması <0,5 px), oklar ≈(103–106, 456–457) ve ≈(352–356, 505–506); R15 →
+yarıçap çizgisi y≈416,3, ok ≈(302,3; 416,3); Ø40 → ok ≈(186; 517,5); Ø10 → ölçü çizgisi y≈705,5,
+uzatmalar x≈216/243,5; Ø8 → uzatmalar y≈761/783,5; R5 ×2 → oklar ≈(341; 801–806) ve ≈(337,5; 855,5).
+`R5`/`R15` metinleri döndürülmüş 16–20x kırpmalarla harf harf doğrulandı (§9.4: 5 vs 2/6, 15 vs 16/18).
+
+**Kanıt (bu turda koşuldu):**
+* Zincir (§9.6): `gold_regions --page frozen-views-exercise --write` (8 claim; bilgilendirici
+  "gerekçe `notes`ta" uyarıları — ex13/ex17 ile aynı davranış) → `reference --page frozen-views-exercise`
+  → `check_reference` (**ok=true, problems=[]**) → `gold_manifest --write` (**10 sayfa**;
+  `gold_content_identity ae30ce6f1b1d8d56…`) → `--verify` (**"referans TAMAM (yeniden üretilen
+  1b35cec4eb33… / manifest 1b35cec4eb33…); gold-src aynı; 8 claim"**) → `--check`
+  (**"manifest: 10/10 sayfa izleniyor — TAMAM"**).
+* Determinizm (§13): iki ardışık `--write` **bayt-identik** (manifest sha256 058c13d6a8f8…); kimlik
+  9/10'dan farklı (`351ad8e5fcdf62b1…` → `ae30ce6f1b1d8d56…`).
+* Denetim: 5 raster sayfada vision izi claim'lerin tamamında, ölçülen kutular geçerli,
+  `measurement_reason` var, yer tutucu yok; tüm `independent_scale` kökleri değerlendirilen setin
+  dışında (döngü yok, §15).
+* **SEMREAD:** `tests/test_semread_001b*.py` → **179 passed** (46:53).
+* **Full pytest (milestone):** `pytest -q` → **1188 passed / 0 failed** (1:10:16; kayıtlı baseline
+  1188 ile aynı; açıklanamayan toplama kaybı yok).
+* Hedefli ara koşu: `tests/test_semread_001b_gold_manifest.py` → 33 passed (0,63 s).
+
+**Teslim raporu (PLAN-11 §59):** page frame **736×1041**; scorable claim **8**; dışlanan belirsiz çağrı
+**yok** (her çağrının leader/ölçü yolu ölçülerek bağlandı); basılı çağrılar Ø80, Ø94, R15, Ø40, Ø10, Ø8,
+R5 ×2; `target_box_norm` sekiz claim'de; bağımsız ölçek datum'u 30,00 mm (84 px) → 2,800 px/mm;
+`corroboration.kind = independent_scale` (döngüsellik yok); `vision` izi sekiz claim'in
+`source_evidence`ında; exhaustiveness `predicates`; referans hash `1b35cec4eb33…`; yeni
+`gold_content_identity ae30ce6f1b1d8d56…`; kapsam **10/10**; SEMREAD **179**; bütçe **0/30**
+(model çağrısı yok).
+
+**Sıradaki (PLAN-11 §11):** D reuse değerlendirmesi (§18/§19; yeniden inference yok) → acceptance
+snapshot (§20) → temiz klon (§21) → `FREEZE.json` bağlamaları (§22) → atomik P5 (`--freeze`, §23) →
+ancak ondan sonra V/VE.

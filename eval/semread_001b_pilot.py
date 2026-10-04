@@ -17,6 +17,7 @@ kurulmaz.
 from __future__ import annotations
 
 import argparse
+import dataclasses
 import fcntl
 import hashlib
 import json
@@ -45,6 +46,12 @@ from drawingto3d.semantic_evaluation import (MATCH_POLICY, aggregate, compare_ar
                                              evaluate_page)
 from drawingto3d.semantic_images import open_source  # noqa: E402
 from drawingto3d.inference_log import RecordedChat, Recorder  # noqa: E402
+from drawingto3d.semantic_run_contract import (CASE_SCHEMA, CONTRACT_VERSION,  # noqa: E402
+                                                D_SOURCE_FILES, EXPECTED_DIGEST,
+                                                EXPECTED_RUNTIME, GOLD_SENTINEL, IMAGE_MAX_SIDE,
+                                                MODEL, NUM_PREDICT, PAGE_IMAGE_ID,
+                                                PREPROCESSING_FILES, PRODUCER_SOURCE_FILES,
+                                                SETTINGS)
 from drawingto3d_lab.runner import Job, LabRunner  # noqa: E402
 
 LAB_ROOT = ROOT / "out/lab"
@@ -55,11 +62,6 @@ PAGES_DIR = CORPUS_DIR / "pages"
 ATTEMPT_ROOT = REPORT_ROOT / "attempts"
 
 JOB_PREFIX = "semread-001b-"
-CASE_SCHEMA = "semread-001b-case/1"
-PAGE_IMAGE_ID = "image-1"
-MODEL = "qwen3-vl:8b-instruct"
-EXPECTED_DIGEST = "0533d74300e4f9bc367d675d4e64ffd073d50ff16a2b4096cc2e8a1cf8c96319"
-EXPECTED_RUNTIME = "0.32.1"
 CASE_TIMEOUT_SECONDS = 600
 RUN_TIMEOUT_SECONDS = 7200
 MODEL_TIMEOUT_SECONDS = 300
@@ -69,30 +71,19 @@ LIVE_CALL_LIMIT_TOTAL = LIVE_CALL_LIMIT_DEV + LIVE_CALL_LIMIT_FINAL
 PHASES = ("dev", "final")                  # çağrının amacı
 PHASE_LIMITS = {"dev": LIVE_CALL_LIMIT_DEV, "final": LIVE_CALL_LIMIT_FINAL}
 FINAL_VLM_CELLS = 20                       # 10 sayfa × V/VE
-NUM_PREDICT = 2048
-IMAGE_MAX_SIDE = 1280          # development aşamasında sabitlenir; final koşuya kadar değişmez
-GOLD_SENTINEL = "semread-001b-gold-sentinel-4f21"
 
-# Üretici kimliği: **yalnız tahmini değiştirebilecek** dosyalar (P0-7). Değerlendirici kodu burada
-# yoktur: yalnız evaluator/gold düzeltmesi geçerli ham tahmini geçersiz kılmaz.
-PRODUCER_IDENTITY_FILES = (
-    "eval/semread_001b_pilot.py",
-    "src/drawingto3d/semantic_candidates.py", "src/drawingto3d/semantic_candidate_reader.py",
-    "src/drawingto3d/semantic_deterministic.py", "src/drawingto3d/semantic_schema.py",
-    "src/drawingto3d/semantic_images.py", "src/drawingto3d/llama.py",
-    "src/drawingto3d/inference_log.py", "src/drawingto3d/observe.py", "src/drawingto3d/bind.py",
-    "src/drawingto3d/meaning.py",
-)
 
-# Değerlendirici kimliği: gold + eşleştirme politikası + değerlendirici **uygulaması** (P0-7).
+# Üretici kimliği (P0R-2): tahmini üreten her şey **semantic_run_contract.py** ve kaynak
+# dosyalarda yaşar. Bu pilot dosyası burada **yoktur**: kabul kapıları, rapor ve değerlendirme
+# kodu değişince ham tahmin geçersizleşmez.
+PRODUCER_IDENTITY_FILES = ("src/drawingto3d/semantic_run_contract.py",
+                           *PRODUCER_SOURCE_FILES, *D_SOURCE_FILES)
+
+# Değerlendirici kimliği: gold + eşleştirme politikası + değerlendirici **uygulaması** (P0R-7).
+# Bu pilot dosyası evaluate()/kabul/rapor kodunu taşıdığı için buradadır.
 EVALUATION_IDENTITY_FILES = ("src/drawingto3d/semantic_evaluation.py",
-                             "eval/semread_001b_reference.py")
-
-# Sabitlenmiş üretim ayarları (P5'te dondurulur; attempt kaydında taşınır).
-SETTINGS = {"num_ctx": 8192, "temperature": 0.0, "top_p": 1.0, "seed": 20261004,
-            "num_predict": NUM_PREDICT, "keep_alive": "5m", "image_max_side": IMAGE_MAX_SIDE,
-            "images_layout": "per_image_message_labeled", "image_label_prefix": "Image ID: ",
-            "input_strategy": "single_full_page"}
+                             "eval/semread_001b_reference.py",
+                             "eval/semread_001b_pilot.py")
 
 # Corpus: 10 sayfa, 10 bağımsız parça grubu, 4 development + 6 frozen. 001A'da incelenmiş örnekler
 # (plate/flange) bilinçli olarak development'a ayrıldı (goal §4).
@@ -174,8 +165,41 @@ def producer_identity() -> str:
 
 
 def code_identity() -> str:
-    """Geriye dönük ad: üretici kimliği (attempt kayıtlarında `producer_identity`)."""
+    """Geriye dönük ad (P0R-7): yeni kayıtlarda `producer_identity` kullanılır."""
     return producer_identity()
+
+
+def _sha256_text(payload: str) -> str:
+    return hashlib.sha256(payload.encode()).hexdigest()
+
+
+def input_identity(page: dict) -> str:
+    """Girdi kimliği: kaynak byte'ları + hazırlanmış sayfa PNG'si + hazırlama sözleşmesi."""
+    source = ROOT / page["path"]
+    page_png = PAGES_DIR / f"{page['page_id']}.png"
+    return _sha256_text(json.dumps({
+        "source_sha256": sha256_of(source) if source.exists() else None,
+        "page_png_sha256": sha256_of(page_png) if page_png.exists() else None,
+        "preprocessing": _files_identity(PREPROCESSING_FILES),
+        "image_max_side": SETTINGS["image_max_side"],
+        "input_strategy": SETTINGS["input_strategy"],
+    }, sort_keys=True))
+
+
+def model_identity() -> str:
+    """Model kimliği: etiket + beklenen digest + beklenen runtime + üretim ayarları."""
+    return _sha256_text(json.dumps({"model": MODEL, "digest": EXPECTED_DIGEST,
+                                    "runtime": EXPECTED_RUNTIME, "settings": SETTINGS},
+                                   sort_keys=True))
+
+
+def request_hashes(trace: dict | None) -> dict:
+    """İki ayrı alan (P0R-3): gerçek HTTP gövdesi hash'i ve kayıt (manifest) hash'i."""
+    trace = trace or {}
+    return {"http_request_sha256": trace.get("request_sha256"),
+            "request_manifest_sha256": _sha256_text(json.dumps(trace, sort_keys=True,
+                                                               ensure_ascii=False))
+            if trace else None}
 
 
 def evaluation_identity() -> str:
@@ -466,7 +490,7 @@ def new_attempt_dir(case_id: str) -> Path:
 
 def _attempt_manifest(page: dict, arm: str, *, attempt_id: str, phase: str,
                       runtime: str | None = None, model_metadata: dict | None = None,
-                      request_sha256: str | None = None) -> dict:
+                      request_hashes_seen: dict | None = None) -> dict:
     """Bir attempt'in değişmez kimlik kaydı (P0: hangi girdi/kod/model ile üretildi)."""
     page_png = PAGES_DIR / f"{page['page_id']}.png"
     source = ROOT / page["path"]
@@ -474,8 +498,10 @@ def _attempt_manifest(page: dict, arm: str, *, attempt_id: str, phase: str,
         "schema": "semread-001b-attempt/2", "attempt_id": attempt_id, "case_id": attempt_id,
         "page_id": page["page_id"], "arm": arm, "phase": phase, "split": page["split"],
         "group": page["group"], "created_at": _now(),
+        "contract_version": CONTRACT_VERSION,
         "producer_identity": producer_identity(), "evaluation_identity": evaluation_identity(),
-        "code_identity": producer_identity(),          # geriye dönük alan adı
+        "input_identity": input_identity(page), "model_identity": model_identity(),
+        "code_identity": producer_identity(),          # geriye dönük alan adı (P0R-7)
         "case_schema": CASE_SCHEMA, "candidate_schema": CANDIDATE_SCHEMA_VERSION,
         "head": _git("rev-parse", "HEAD"),
         "source": {"path": page["path"], "sha256": sha256_of(source) if source.exists() else None,
@@ -485,17 +511,20 @@ def _attempt_manifest(page: dict, arm: str, *, attempt_id: str, phase: str,
         if (CORPUS_DIR / "manifest.json").exists() else None,
         "model": MODEL, "expected_digest": EXPECTED_DIGEST, "runtime": runtime,
         "model_metadata": model_metadata or {},
-        "settings": dict(SETTINGS), "request_sha256": request_sha256,
+        "settings": dict(SETTINGS),
+        **(request_hashes_seen or {"http_request_sha256": None,
+                                   "request_manifest_sha256": None}),
     }
 
 
 def record_attempt(attempt_id: str, directory: Path, page: dict, arm: str, *, phase: str,
-                   verdict: str, gates: dict, seconds: float, stats: dict | None = None) -> dict:
+                   verdict: str, gates: dict, seconds: float, stats: dict | None = None,
+                   state: str | None = None) -> dict:
     """Attempt geçmişine **ekle** (üzerine yazmaz). state.json artık vaka başına liste tutar (P0)."""
     manifest = read_json(directory / "manifest.json") or {}
     record = {"attempt_id": attempt_id, "directory": str(directory), "arm": arm,
               "page_id": page["page_id"], "split": page["split"], "phase": phase,
-              "verdict": verdict, "gates": gates, "seconds": seconds,
+              "verdict": verdict, "state": state or verdict, "gates": gates, "seconds": seconds,
               "created_at": manifest.get("created_at") or _now(),
               "producer_identity": manifest.get("producer_identity"),
               "evaluation_identity": manifest.get("evaluation_identity"),
@@ -544,8 +573,18 @@ def write_d_attempt(page: dict, *, observations=None, source=None) -> dict:
     if observations is None:
         observations = observe(ROOT / page["path"])
     started = time.perf_counter()
-    result = deterministic_candidates(ROOT / page["path"], image_id=PAGE_IMAGE_ID,
-                                      observations=observations)
+    try:
+        result = deterministic_candidates(ROOT / page["path"], image_id=PAGE_IMAGE_ID,
+                                          observations=observations)
+    except Exception as exc:  # noqa: BLE001 - D hatası da kayda geçer (P0R-5)
+        write_json(directory / "local-error.json",
+                   {"schema": "semread-001b-local-error/1", "arm": D_ARM, "kind": "deterministic",
+                    "detail": f"{type(exc).__name__}: {exc}", "send_attempted": False,
+                    "inference_calls": 0})
+        record_attempt(attempt_id, directory, page, D_ARM, phase="deterministic", verdict="fail",
+                       gates={}, seconds=0.0, state="local_error")
+        return {"case_id": case_id, "directory": str(directory), "verdict": "fail",
+                "candidates": 0, "local_error": str(exc)}
     seconds = round(time.perf_counter() - started, 3)
     response = result["response"]
     payload = response.model_dump(mode="json")
@@ -613,6 +652,8 @@ def write_live_attempt(page: dict, arm: str, *, phase: str, observations=None, s
                    {"schema": "semread-001b-local-error/1", "arm": arm,
                     "kind": "preparation", "detail": f"{type(exc).__name__}: {exc}",
                     "send_attempted": False, "inference_calls": 0})
+        record_attempt(attempt_id, directory, page, arm, phase=phase, verdict="fail",
+                       gates={}, seconds=0.0, state="local_error")
         return {"case_id": case_id, "directory": str(directory), "verdict": "fail",
                 "local_error": str(exc), "inference_calls": 0}
     (directory / "prompt.txt").write_text(prompt, encoding="utf-8")
@@ -632,9 +673,13 @@ def write_live_attempt(page: dict, arm: str, *, phase: str, observations=None, s
                                     attempt_dir=directory)
     if not reservation.get("reserved"):
         write_json(directory / "result.json",
-                   {"schema": "semread-001b-result/1", "case_id": case_id, "arm": arm,
+                   {"schema": "semread-001b-result/1", "case_id": case_id, "attempt_id": attempt_id,
+                    "arm": arm, "phase": phase, "split": page["split"],
                     "product_verdict": "blocked", "blocking_kind": "budget",
-                    "blocking_reason": reservation.get("reason"), "inference_calls": 0})
+                    "blocking_reason": reservation.get("reason"), "send_attempted": False,
+                    "inference_calls": 0})
+        record_attempt(attempt_id, directory, page, arm, phase=phase, verdict="blocked",
+                       gates={}, seconds=0.0, state="blocked_budget")
         return {"case_id": case_id, "verdict": "blocked", "directory": str(directory),
                 "reason": reservation.get("reason")}
 
@@ -648,6 +693,8 @@ def write_live_attempt(page: dict, arm: str, *, phase: str, observations=None, s
                     "product_verdict": "fail", "blocking_kind": "model_changed",
                     "blocking_reason": f"digest {installed.digest[:12]}… != {EXPECTED_DIGEST[:12]}…",
                     "send_attempted": False, "inference_calls": 0})
+        record_attempt(attempt_id, directory, page, arm, phase=phase, verdict="fail",
+                       gates={}, seconds=0.0, state="blocked_model_mismatch")
         return {"case_id": case_id, "verdict": "fail", "directory": str(directory),
                 "reason": "model digest uyuşmuyor"}
 
@@ -664,12 +711,21 @@ def write_live_attempt(page: dict, arm: str, *, phase: str, observations=None, s
                     "runtime": runtime.get("version"), "send_attempted": False,
                     "inference_calls": 0})
         write_json(directory / "runtime-identity.json", runtime)
+        record_attempt(attempt_id, directory, page, arm, phase=phase, verdict="blocked",
+                       gates={}, seconds=0.0, state="blocked_runtime_mismatch",
+                       stats={"runtime_seen": runtime.get("version")})
         return {"case_id": case_id, "verdict": "blocked", "directory": str(directory),
                 "reason": "runtime sürümü sözleşmeyle uyuşmuyor"}
 
-    settings = ChatSettings(model=MODEL, num_ctx=8192, temperature=0.0, num_predict=NUM_PREDICT,
-                            keep_alive="5m", timeout=float(MODEL_TIMEOUT_SECONDS),
-                            images_layout="per_image_message_labeled", image_max_side=IMAGE_MAX_SIDE)
+    wanted = {"model": MODEL, "num_ctx": SETTINGS["num_ctx"], "temperature": SETTINGS["temperature"],
+              "top_p": SETTINGS["top_p"], "seed": SETTINGS["seed"],
+              "num_predict": SETTINGS["num_predict"], "keep_alive": SETTINGS["keep_alive"],
+              "timeout": float(MODEL_TIMEOUT_SECONDS),
+              "images_layout": SETTINGS["images_layout"],
+              "image_max_side": SETTINGS["image_max_side"]}
+    supported = {field.name for field in dataclasses.fields(ChatSettings)}
+    settings = ChatSettings(**{key: value for key, value in wanted.items() if key in supported})
+    unsupported_settings = sorted(set(wanted) - supported)
     recorder = Recorder(directory / "inference-log.json", label=f"semread-001b {case_id}")
     chat = RecordedChat(MODEL, settings=settings, recorder=recorder)
     forbidden = _forbidden_terms(page)
@@ -708,15 +764,13 @@ def write_live_attempt(page: dict, arm: str, *, phase: str, observations=None, s
     write_json(directory / "manifest.json",
                _attempt_manifest(page, arm, attempt_id=attempt_id, phase=phase,
                                  runtime=runtime.get("version"),
-                                 model_metadata={**runtime.get("model", {}),
-                                                 "installed_digest": installed.digest,
+                                 model_metadata={**installed.as_dict(),   # P0R-4: kanonik ayrıştırıcı
                                                  "runtime_version_seen": runtime.get("version"),
+                                                 "settings_unsupported": unsupported_settings,
                                                  "runtime_matches_expected":
                                                      runtime.get("version") == EXPECTED_RUNTIME,
                                                  "runtime_error": runtime.get("error")},
-                                 request_sha256=hashlib.sha256(json.dumps(
-                                     outcome.get("request") or {}, sort_keys=True).encode()
-                                 ).hexdigest()))
+                                 request_hashes_seen=request_hashes(outcome.get("request"))))
 
     gates = {
         "answered": outcome.get("outcome") == "answered",
@@ -769,6 +823,12 @@ def _arm_candidates(directory) -> dict | None:
     """Yalnız **matris hücresinin seçtiği** attempt klasörünü okur (varlık taraması yapmaz)."""
     payload = read_json(Path(directory) / "response-parsed.json")
     return payload
+
+
+def evaluation_run_id(attempt_ids: list[str]) -> str:
+    """Değerlendirme koşusunun kimliği: değerlendirici kimliği + seçilen attempt'ler (P0R-7)."""
+    return _sha256_text(json.dumps({"evaluation_identity": evaluation_identity(),
+                                    "attempts": sorted(attempt_ids)}, sort_keys=True))[:32]
 
 
 def evaluate(write_report: bool = True) -> dict:
@@ -832,7 +892,16 @@ def evaluate(write_report: bool = True) -> dict:
             "note": ("Referans ajan tarafından hazırlandı; gerçek insan onayı yoktur. Metrikler bu "
                      "niteliği taşır ve ürün doğruluğu sertifikası değildir.")},
         "match_policy": MATCH_POLICY,
-        "evaluation_identity": evaluation_identity(), "code_identity": code_identity(),
+        "evaluation_identity": evaluation_identity(), "producer_identity": producer_identity(),
+        "evaluation_run_id": evaluation_run_id(
+            [cell["attempt"] for cell in matrix_cells if cell.get("attempt")]),
+        "evaluation_stale_cells": [
+            {"page_id": cell["page_id"], "arm": cell["arm"],
+             "why": "attempt'in evaluation_identity'si güncel değil"}
+            for cell in matrix_cells if cell.get("attempt") and (
+                (read_json(Path(cell["attempt"]) / "manifest.json") or {})
+                .get("evaluation_identity") != evaluation_identity())],
+        "code_identity": code_identity(),
         "budget": budget_report(),
         "pages": pages_rows, "aggregates": aggregates, "comparison": comparison,
         "matrix": matrix_cells, "cells_status": cells_status,
@@ -1040,6 +1109,36 @@ def run_d(split: str | None = None) -> list[dict]:
     return results
 
 
+def reusable_d_attempt(page: dict) -> dict | None:
+    """Deterministic D için bayat denetimi (P0R-6). Şüphede yeniden koşar: inference maliyeti yok."""
+    case_id = f"{page['page_id']}-{D_ARM}"
+    state = load_state()
+    records = (state.get("attempts") or {}).get(case_id) or []
+    if isinstance(records, dict):
+        records = [records]
+    source = ROOT / page["path"]
+    page_png = PAGES_DIR / f"{page['page_id']}.png"
+    for record in reversed(records):
+        if record.get("verdict") != "pass":
+            continue
+        directory = Path(record.get("directory") or "")
+        if not directory.exists() or not (directory / "response-parsed.json").exists():
+            continue
+        manifest = read_json(directory / "manifest.json") or {}
+        if manifest.get("producer_identity") != producer_identity():
+            continue
+        if (manifest.get("source") or {}).get("sha256") != (sha256_of(source)
+                                                            if source.exists() else None):
+            continue
+        if page_png.exists() and manifest.get("page_png_sha256") != sha256_of(page_png):
+            continue
+        if manifest.get("candidate_schema") != CANDIDATE_SCHEMA_VERSION:
+            continue
+        return {"directory": str(directory), "attempt_id": record.get("attempt_id"),
+                "verdict": record.get("verdict")}
+    return None
+
+
 def reusable_attempt(case_id: str, page: dict) -> dict | None:
     """Final hücresi için yeniden kullanılabilir geçerli attempt (politika önceden sabit).
 
@@ -1063,7 +1162,11 @@ def reusable_attempt(case_id: str, page: dict) -> dict | None:
         result = read_json(directory / "result.json") or {}
         if manifest.get("producer_identity") != producer_identity():
             continue                       # üretici kimliği değişti → bayat attempt
-        if manifest.get("evaluation_identity") != evaluation_identity():
+        # P0R-1: değerlendirme kimliği **aranmaz**. Yalnız evaluator/gold düzeltmesi geçerli ham
+        # tahmini geçersiz kılmaz; yeni değerlendirme yeni inference olmadan üretilebilir.
+        if manifest.get("input_identity") not in (None, input_identity(page)):
+            continue                       # girdi sözleşmesi/hazırlama değişti
+        if manifest.get("model_identity") not in (None, model_identity()):
             continue
         if manifest.get("expected_digest") != EXPECTED_DIGEST:
             continue
@@ -1092,12 +1195,12 @@ def final_matrix(reuse: bool = True) -> dict:
         for arm in (D_ARM, V_ARM, VE_ARM):
             case_id = f"{page['page_id']}-{arm}"
             if arm == D_ARM:
-                directory = latest_attempt_dir(case_id)
-                present = bool(directory and (directory / "response-parsed.json").exists())
+                reused_d = reusable_d_attempt(page) if reuse else None
+                stale = latest_attempt_dir(case_id) is not None and reused_d is None
                 cells.append({"page_id": page["page_id"], "split": page["split"], "arm": arm,
-                              "cell": "ready" if present else "not_run",
-                              "attempt": str(directory) if present else None,
-                              "kind": "deterministic"})
+                              "cell": "valid_reuse" if reused_d else "to_run",
+                              "attempt": reused_d["directory"] if reused_d else None,
+                              "stale_detected": bool(stale), "kind": "deterministic"})
                 continue
             reused = reusable_attempt(case_id, page) if reuse else None
             if reused:
@@ -1111,15 +1214,21 @@ def final_matrix(reuse: bool = True) -> dict:
     for cell in cells:
         key = f"{cell['kind']}:{cell['cell']}"
         by_kind[key] = by_kind.get(key, 0) + 1
-    new_calls = sum(1 for cell in cells if cell["cell"] == "to_run")
+    new_calls = sum(1 for cell in cells if cell["cell"] == "to_run" and cell["kind"] == "vlm")
+    new_d_runs = sum(1 for cell in cells if cell["cell"] == "to_run" and cell["kind"] == "deterministic")
     return {"schema": "semread-001b-matrix/1", "created_at": _now(), "cells": cells,
             "totals": {"cells": len(cells), "vlm_cells": FINAL_VLM_CELLS,
                        "d_cells": len(PAGES), "new_vlm_calls": new_calls,
+                       "new_d_runs": new_d_runs,
+                       "stale_d_cells": sum(1 for c in cells if c.get("stale_detected")),
                        "reused_vlm_cells": sum(1 for c in cells if c["cell"] == "reuse"),
+                       "reused_d_cells": sum(1 for c in cells if c["cell"] == "valid_reuse"),
                        "not_run": sum(1 for c in cells if c["cell"] == "not_run"),
                        "by_kind": by_kind},
-            "reuse_policy": ("geçerli attempt = pass + aynı üretici kimliği + doğrulanmış digest + "
-                             "sızıntı kapısı geçmiş; politika sonuç görülmeden sabitlendi"),
+            "reuse_policy": ("geçerli attempt = pass + aynı üretici kimliği + aynı girdi/model "
+                             "kimliği + doğrulanmış digest + sızıntı kapısı geçmiş; değerlendirme "
+                             "kimliği yeniden kullanımı etkilemez (P0R-1); politika sonuç "
+                             "görülmeden sabitlendi"),
             "budget": budget_report()}
 
 

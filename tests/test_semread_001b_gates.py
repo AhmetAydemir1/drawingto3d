@@ -295,8 +295,10 @@ def test_the_matrix_counts_cells_not_frozen_pages_only(scratch_budget):
     assert matrix["totals"]["vlm_cells"] == pilot.FINAL_VLM_CELLS == 20
     assert matrix["totals"]["d_cells"] == len(pilot.PAGES) == 10
     assert matrix["totals"]["new_vlm_calls"] == 20, "yeniden kullanım kapalıyken 20 yeni çağrı"
-    assert all(cell["cell"] in ("ready", "not_run", "to_run", "reuse")
+    assert matrix["totals"]["new_d_runs"] == 10, "reuse kapalıyken 10 D koşusu (0 inference)"
+    assert all(cell["cell"] in ("ready", "not_run", "to_run", "reuse", "valid_reuse")
                for cell in matrix["cells"])
+    assert all(cell["kind"] in ("vlm", "deterministic") for cell in matrix["cells"])
     frozen_cells = [cell for cell in matrix["cells"] if cell["split"] == "frozen"]
     assert len(frozen_cells) == 6 * 3, "frozen hücreleri 6 sayfa × 3 kol olmalı"
 
@@ -426,3 +428,126 @@ def test_a_runtime_mismatch_blocks_the_send_but_stays_in_the_ledger(scratch_budg
     assert report["by_send_state"] == {"not_sent_runtime_mismatch": 1}, \
         "gönderilmeyen rezervasyon sessizce silinmemeli"
     assert report["total_used"] == 1
+
+
+# ------------------------------------------------------------- P0R: kimlik ve bayatlık
+
+
+def _valid_attempt(scratch_budget, monkeypatch, tmp_path, *, arm="V", page_id="page"):
+    """Geçerli (yeniden kullanılabilir) bir V attempt'i kur: gerçek kimliklerle."""
+    pages = scratch_budget / "pages_ok"
+    pages.mkdir(parents=True, exist_ok=True)
+    (pages / f"{page_id}.png").write_bytes(b"\x89PNG\r\n\x1a\n" + b"e" * 32)
+    monkeypatch.setattr(pilot, "ATTEMPT_ROOT", scratch_budget / "attempts_ok")
+    monkeypatch.setattr(pilot, "PAGES_DIR", pages)
+    page = {"page_id": page_id, "split": "dev", "group": "g", "path": "examples/README.md"}
+    directory = pilot.new_attempt_dir(f"{page_id}-{arm}")
+    attempt_id = f"{page_id}-{arm}/{directory.name}"
+    pilot.write_json(directory / "manifest.json",
+                     pilot._attempt_manifest(page, arm, attempt_id=attempt_id, phase="dev"))
+    pilot.write_json(directory / "result.json",
+                     {"send_attempted": True, "gates": {"no_leakage": True},
+                      "runtime_matches_expected": True, "arm": arm})
+    pilot.record_attempt(attempt_id, directory, page, arm, phase="dev", verdict="pass",
+                         gates={}, seconds=1.0)
+    return page, directory
+
+
+def test_an_evaluator_change_does_not_invalidate_the_raw_prediction(scratch_budget, monkeypatch,
+                                                                   tmp_path):
+    """P0R-1: yalnız evaluator/gold düzeltmesi geçerli ham tahmini geçersiz kılmaz."""
+    page, directory = _valid_attempt(scratch_budget, monkeypatch, tmp_path)
+    assert pilot.reusable_attempt("page-V", page) is not None
+
+    probe = tmp_path / "evaluator_probe.py"
+    probe.write_text("v1", encoding="utf-8")
+    monkeypatch.setattr(pilot, "EVALUATION_IDENTITY_FILES", (str(probe),))
+    before_eval = pilot.evaluation_identity()
+    probe.write_text("v2", encoding="utf-8")          # yalnız değerlendirici değişti
+    assert pilot.evaluation_identity() != before_eval
+    assert pilot.reusable_attempt("page-V", page) is not None, \
+        "değerlendirme kimliği değişince ham tahmin bayatlamamalı"
+    manifest = json.loads((directory / "manifest.json").read_text(encoding="utf-8"))
+    assert manifest["evaluation_identity"] != pilot.evaluation_identity(), \
+        "eski değerlendirme artık bayat sayılmalı (yeni değerlendirme yeni inference istemez)"
+
+
+def test_a_producer_change_does_invalidate_the_raw_prediction(scratch_budget, monkeypatch,
+                                                              tmp_path):
+    probe = tmp_path / "producer_probe.py"
+    probe.write_text("v1", encoding="utf-8")
+    monkeypatch.setattr(pilot, "PRODUCER_IDENTITY_FILES", (str(probe),))
+    page, _directory = _valid_attempt(scratch_budget, monkeypatch, tmp_path)
+    assert pilot.reusable_attempt("page-V", page) is not None
+    probe.write_text("v2", encoding="utf-8")          # tahmini etkileyen dosya değişti
+    assert pilot.reusable_attempt("page-V", page) is None, \
+        "üretici kimliği değişince ham tahmin yeniden üretilmeli"
+
+
+def test_pilot_file_is_not_part_of_producer_identity(scratch_budget):
+    assert "eval/semread_001b_pilot.py" not in pilot.PRODUCER_IDENTITY_FILES
+    assert "eval/semread_001b_pilot.py" in pilot.EVALUATION_IDENTITY_FILES
+    assert "src/drawingto3d/semantic_run_contract.py" in pilot.PRODUCER_IDENTITY_FILES
+
+
+def test_the_request_hash_fields_are_separate(scratch_budget):
+    trace = {"request_sha256": "a" * 64, "model": "m", "messages": [{"role": "user"}]}
+    hashes = pilot.request_hashes(trace)
+    assert hashes["http_request_sha256"] == "a" * 64, "gerçek HTTP gövdesi hash'i taşınmalı"
+    assert hashes["request_manifest_sha256"] != "a" * 64
+    assert len(hashes["request_manifest_sha256"]) == 64
+    assert pilot.request_hashes(None) == {"http_request_sha256": None,
+                                          "request_manifest_sha256": None}
+
+
+def test_every_created_attempt_directory_has_exactly_one_history_entry(scratch_budget, monkeypatch):
+    monkeypatch.setattr(pilot, "ATTEMPT_ROOT", scratch_budget / "attempts_hist")
+    monkeypatch.setattr(pilot, "PAGES_DIR", scratch_budget / "pages_hist")
+    (scratch_budget / "pages_hist").mkdir(parents=True, exist_ok=True)
+    (scratch_budget / "pages_hist" / "page.png").write_bytes(b"\x89PNG\r\n\x1a\n" + b"f" * 32)
+    monkeypatch.setattr(pilot, "runtime_identity",
+                        lambda: {"version": "0.31.0", "model": {}, "error": None})
+    monkeypatch.setattr(pilot, "prepare_arm_inputs",
+                        lambda *a, **k: {"images": [], "observations": [],
+                                         "page_image_id": "image-1", "arm": "V"})
+    monkeypatch.setattr(pilot, "candidate_prompt", lambda *a, **k: "görev")
+    monkeypatch.setattr(pilot, "open_source", lambda _path: object())
+    monkeypatch.setattr(pilot, "observe", lambda _path: object())
+
+    def broken(*_args, **_kwargs):
+        raise ValueError("hazırlık hatası")
+
+    page = {"page_id": "page", "split": "dev", "group": "g", "path": "examples/README.md",
+            "type": "raster", "source_sha256": "9" * 64}
+    monkeypatch.setattr(pilot, "prepare_arm_inputs", broken)
+    outcomes = [pilot.write_live_attempt(page, "V", phase="dev") for _ in range(2)]
+    monkeypatch.setattr(pilot, "prepare_arm_inputs",
+                        lambda *a, **k: {"images": [], "observations": [],
+                                         "page_image_id": "image-1", "arm": "V"})
+    outcomes.append(pilot.write_live_attempt(page, "V", phase="dev"))   # runtime reddi
+
+    directories = sorted(path.name for path in pilot.attempt_dirs("page-V"))
+    history = pilot.load_state()["attempts"]["page-V"]
+    assert len(directories) == len(history) == 3, "her attempt klasörü tek bir geçmiş kaydı olmalı"
+    assert [row["state"] for row in history] == ["local_error", "local_error",
+                                                 "blocked_runtime_mismatch"]
+    assert all(row["attempt_id"].endswith(path) for row, path in zip(history, directories))
+
+
+def test_a_stale_deterministic_attempt_is_not_matrix_ready(scratch_budget, monkeypatch):
+    monkeypatch.setattr(pilot, "ATTEMPT_ROOT", scratch_budget / "attempts_d")
+    monkeypatch.setattr(pilot, "PAGES_DIR", scratch_budget / "pages_d")
+    (scratch_budget / "pages_d").mkdir(parents=True, exist_ok=True)
+    (scratch_budget / "pages_d" / "dev-plate-pocket.png").write_bytes(
+        b"\x89PNG\r\n\x1a\n" + b"1" * 32)
+    page = next(row for row in pilot.PAGES if row["page_id"] == "dev-plate-pocket")
+    directory = pilot.new_attempt_dir("dev-plate-pocket-D")
+    pilot.write_json(directory / "response-parsed.json", {"items": []})
+    pilot.write_json(directory / "manifest.json", {"producer_identity": "eski"})
+    pilot.record_attempt(f"dev-plate-pocket-D/{directory.name}", directory, page, "D",
+                         phase="deterministic", verdict="pass", gates={}, seconds=0.5)
+    assert pilot.reusable_d_attempt(page) is None, "bayat D attempt yeniden kullanılmamalı"
+
+    cell = next(cell for cell in pilot.final_matrix()["cells"]
+                if cell["page_id"] == "dev-plate-pocket" and cell["arm"] == "D")
+    assert cell["cell"] == "to_run" and cell["stale_detected"] is True

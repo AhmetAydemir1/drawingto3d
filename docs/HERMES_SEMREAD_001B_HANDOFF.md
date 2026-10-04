@@ -163,6 +163,23 @@ P3 gold → P4 D taban çizgisi → P5 dondurma → P6 V/VE → P7 ölçüm → 
 | P0 üretici/değerlendirici kimliği ayrımı | **bitti** | `producer_identity()` yalnız tahmini etkileyen dosyalar + `settings` + şema + model/digest/runtime + corpus byte'ları; `evaluation_identity()` gold + politika + **`semantic_evaluation.py`/`semread_001b_reference.py` byte'ları**. Test: evaluator dosyası değişince üretici kimliği sabit kalıyor, tersi de öyle |
 | P0 `evaluate` seçilen attempt'i okur | **bitti** | `evaluate()` matrisi kurar ve **hücrenin seçtiği** attempt klasörünü okur; `cells_status` seçilemeyen hücreleri `not_run` olarak yazar; `evaluation.json` artık `matrix`, `cells_status`, `matrix_totals` taşır |
 
+## 6b. PLAN-2 (P0R) DURUMU — HEAD `27bbe8d` incelemesi
+
+P0 tam kapanmamıştı; P0R maddeleri uygulandı (hepsi 0 inference):
+
+| P0R | Durum | Nasıl |
+| --- | --- | --- |
+| P0R-1 evaluator değişikliği ham tahmini bayatlatmasın | **bitti** | `reusable_attempt()` artık `evaluation_identity` **eşitliği aramıyor**; test: yalnız evaluator değişince tahmin yeniden kullanılabilir kalıyor, eski değerlendirme bayat işaretleniyor |
+| P0R-2 pilot dosyası üretici kimliğinde olmasın | **bitti** | yeni `src/drawingto3d/semantic_run_contract.py`: model/digest/runtime/settings/görüntü sözleşmesi orada; `PRODUCER_IDENTITY_FILES` = kontrat + üretici kaynak dosyaları (pilot **yok**); pilot artık `EVALUATION_IDENTITY_FILES` içinde |
+| P0R-3 gerçek HTTP istek hash'i | **bitti** | `http_request_sha256` (taşımanın serileştirdiği gövde) ve `request_manifest_sha256` (kayıt izi) ayrı alanlar olarak manifestte |
+| P0R-4 kanonik model meta verisi | **bitti** | `find_model(installed_models(), MODEL).as_dict()` → name/digest/size_bytes/parameter_size/quantization/context_length/families/capabilities + runtime sürümü |
+| P0R-5 her attempt geçmişe girsin | **bitti** | erken çıkışlar da kayıtlanıyor: `local_error`, `blocked_budget`, `blocked_model_mismatch`, `blocked_runtime_mismatch`; test her attempt klasörüne **tam bir** geçmiş kaydı düştüğünü doğruluyor |
+| P0R-6 D için bayat denetimi | **bitti** | `reusable_d_attempt()`: üretici kimliği + kaynak hash'i + sayfa PNG + aday şeması; bayatsa matris hücresi `to_run` (`stale_detected: true`) — D yeniden koşar, inference harcanmaz |
+| P0R-7 kimlik adları | **bitti** | `producer_identity` / `input_identity` / `model_identity` / `evaluation_identity` / `attempt_id` / `evaluation_run_id`; `code_identity` yalnız geriye dönük ad |
+| P0R-8 kapanış kapısı | **bitti** | kapı testleri **26 geçti** (6'sı P0R); toplam SEMREAD-001B takımı **133 geçti** (26 kapı + 25 + 26 + 56). Matris: 30 hücre, 20 VLM `to_run`, 10 D `to_run`, **4 bayat D** (kontrat öncesi attempt'ler) — bütçe 0/30 |
+
+Not: kontrat modülü eklendiği için **eski** (bu değişiklikten önceki) attempt'ler üretici kimliği bakımından bayat sayılır — D hücreleri yeniden koşacak (0 inference), V/VE hücreleri zaten hiç çağrı yapmadı.
+
 **P1'de kalanlar (sıradaki iş):** predicate-geneli recovery/regression, belirsiz eşleşme politikası
 (şimdiki davranış bir adayı puanlıyor), `localization_match_rate` / `semantic_field_accuracy` /
 `overclaim_rate` / `abstention_rate` ayrımı, `exhaustiveness`'e göre `unscorable_extra_candidate` ↔

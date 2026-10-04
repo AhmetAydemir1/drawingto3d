@@ -313,4 +313,33 @@ olduğu yerde kalem artık doğruluk paydasına girmiyor — bu, `matches_by_ord
 §19 B06'nın rapor içeriğini şart koşması (yüklem metrikleri, D/V/VE karşılaştırması, belirsizlik ve
 kapsam-dışı sayaçları, taşıma/parse hataları, referans niteliği, gerçek hata örnekleri), §20 B07
 kanıt zinciri (attempt geçmişi → artifact hash → üretici/girdi/model/runtime kimliği → HTTP istek
-hash'i → bütçe kaydı → matris seçimi → değerlendirme kimliği).
+hash'i → bütçe kaydı → matris seçimi → değerlendirme kimliği). — **bu iş bitti, bkz. §6g.**
+
+### 6g. PLAN-5 P2 (§18–§20) — **UYGULANDI**
+
+| § | İş | Kanıt |
+| --- | --- | --- |
+| 18 | B05 gerçek matrise bağlı | `matrix_dispositions()` her hücreye nihai durum verir: `valid_result` (seçili attempt'in ürün kararı `pass`), `valid_reuse`, `failed_attempt` (koştu, karar geçmedi / `result.json` yok / taşıma-parse-yerel hata), `blocked` (kapı/bütçe). `to_run`/`not_run` **nihai değildir** → `complete=false` → B05 açık. Başarısız/bloklu hücre sayıdan düşmez, gerekçesiyle yazılır. `--matrix` artık sayaç + açık hücre listesi yazar |
+| 19 | B06 rapor içeriğini şart koşar | `REPORT_MARKERS` + `report_evidence()`: yüklem metrikleri, D/V/VE karşılaştırması, geliştirme-frozen ayrımı, matris hücreleri, maliyet/hatalar, gerçek hata örnekleri, referans niteliği, belirsizlik ve kapsam-dışı fazla sayaçları rapora **yazılmalı**; ayrıca gerçek ölçüm şart (`aggregates` ya da `vs_d` boşsa kapı açık). Sayaçlar `outcome_totals()` ile attempt defterinden türetilir (taşıma/parse/kapı/yerel hata + bütçe) |
+| 20 | B07 gerçek kanıt zinciri | `evidence_chain_report()`: her seçili hücre için geçmiş kaydı (tek kayıt) → `artifact-index.json` hash'leri **yeniden hesaplanarak** doğrulanır → üretici kimliği → girdi sha256 → istek kaydı → bütçe kaydı (D için `not_applicable`) → seçim → değerlendirme kimliği. Kopuk halka B07'yi açar; **boş zincir kabul edilmez** (`vacuous`). Yeni `--evidence` komutu |
+
+Ek düzeltme: state'e yazılan `blocked.open` listesi ile `conclusion` artık **aynı** kaynaktan gelir
+(eskiden B05 state listesinden düşürülüyordu, ikisi çelişebiliyordu); tüm kapılar kapanınca bayat
+blok kaydı silinir. Gerçek lab kökünde `--evaluate`: açık kapılar B02, B04, B05, B06, B07 —
+B05 30 hücrenin tamamı koşulmadığı için, B06 ölçüm olmadığı için, B07 seçili attempt olmadığı için.
+
+Doğrulama: `tests/test_semread_001b_acceptance.py` (15 test: nihai durumlar, hücre sayaçları, rapor
+içeriği kapısı, kategori/hash/kimlik kıran zincir testleri, boş zincir reddi) + mevcut semread
+suite → `pytest -k "semread or semantic"` **320 geçti, 0 fail**. Inference bütçesi 0/30.
+
+**P3'te sıradaki iş (gold):** 10 sayfa için referans yazımı — PDF'lerde metin katmanı + görsel
+okuma, rasterlarda OCR **üzerine görsel doğrulama** (§16 zorunlu); `exhaustiveness` yapılı yazılmalı
+(`{"scope": "full_page"}` / `regions` / `predicates`), kapsam ve kanıt alanlarına yer tutucu
+yazılmamalı (yer tutucu B02'yi açık bırakır). **P4:** D kolunun 10 hücresi (dev 4 hücre koşuluyor,
+sıfır inference). **P5:** dondurma manifesti + 20 frozen V/VE çağrısı (gerçek inference; başlamadan
+önce kullanıcı onayı).
+
+Not: `EVALUATION_IDENTITY_FILES` içinde `eval/semread_001b_pilot.py` var — pilot/dosya
+düzenlemeleri değerlendirme kimliğini değiştirir ve seçili attempt'leri "bayat" yapar. Bu yüzden
+sıra: **kod düzenlemeleri bitince D koşusu**, sonra doküman düzenlemeleri (dokümanlar kimliğe
+girmez). D kolu şüphede yeniden koşar (inference maliyeti yok); V/VE'de bu bedel gerçek çağrıdır.

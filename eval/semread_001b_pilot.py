@@ -1383,7 +1383,17 @@ def write_acceptance(payload: dict) -> dict:
     document = {"schema": "semread-001b-acceptance/1", "created_at": _now(),
                 "acceptance": rows, "open": open_rows, "conclusion": conclusion,
                 "reference_status": payload["reference_quality"],
-                "quality_result": {arm: {"candidate_precision": value["candidate_precision"],
+                "quality_result": {arm: {"localization_match_rate": value["localization_match_rate"],
+                                         "semantic_field_accuracy": value["semantic_field_accuracy"],
+                                         "target_binding_accuracy": value["target_binding_accuracy"],
+                                         "candidate_overclaim_rate": value["candidate_overclaim_rate"],
+                                         "candidate_abstention_rate": value["candidate_abstention_rate"],
+                                         "ambiguous_claim_count": value["ambiguous_claim_count"],
+                                         "unscorable_extra_candidate_count":
+                                             value["unscorable_extra_candidate_count"],
+                                         "false_positive_candidate_count":
+                                             value["false_positive_candidate_count"],
+                                         "candidate_precision": value["candidate_precision"],
                                          "claim_recall": value["claim_recall"],
                                          "omission": value["omission"]}
                                    for arm, value in payload["aggregates"].items()},
@@ -1450,13 +1460,19 @@ def render_report(payload: dict) -> str:
         lines.append(f"| {row['page_id']} | {row['split']} | {row['reference']} | "
                      + " | ".join(cells) + " |")
     lines += ["", "## Kollar (toplam)", "",
-              "| kol | aday | eşleşen | aday kesinliği | claim recall | omission |",
-              "| --- | --- | --- | --- | --- | --- |"]
+              "| kol | aday | eşleşen | yerelleştirme | alan doğruluğu | binding | overclaim | çekimser "
+              "| belirsiz kalem | kapsam-dışı fazla | yanlış pozitif |",
+              "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |"]
     for arm, value in payload["aggregates"].items():
         lines.append(f"| {arm} | {value['candidates']} | {value['matched']} | "
-                     f"{value['candidate_precision']} | {value['claim_recall']} | "
-                     f"{value['omission']} |")
-    lines += ["", "## Alan bazında doğruluk", "",
+                     f"{value['localization_match_rate']} | {value['semantic_field_accuracy']} | "
+                     f"{value['target_binding_accuracy']} | {value['candidate_overclaim_rate']} | "
+                     f"{value['candidate_abstention_rate']} | {value['ambiguous_claim_count']} | "
+                     f"{value['unscorable_extra_candidate_count']} | "
+                     f"{value['false_positive_candidate_count']} |")
+    lines += ["", "not: " + (next(iter(payload["aggregates"].values()), {}).get("metric_note")
+                              or MATCH_POLICY["localization_vs_semantic"]),
+              "", "## Alan bazında doğruluk", "",
               "| alan | kol | doğru | yanlış | çekimser | scorable | doğruluk |",
               "| --- | --- | --- | --- | --- | --- | --- |"]
     for arm, value in payload["aggregates"].items():
@@ -1464,7 +1480,15 @@ def render_report(payload: dict) -> str:
             lines.append(f"| {field} | {arm} | {stats['correct']} | {stats['wrong']} | "
                          f"{stats['abstained']} | {stats['scorable']} | {stats['accuracy']} |")
     comparison = payload.get("comparison") or {}
-    lines += ["", "## D'ye göre recovery/regression", ""]
+    lines += ["", "## D'ye göre recovery/regression (yüklem bazında)", "",
+              "| yüklem | kol | scorable | kurtarılan | geriye (yanlış) | geriye (çekimser) | net |",
+              "| --- | --- | --- | --- | --- | --- | --- |"]
+    for arm, value in (comparison.get("vs_d") or {}).items():
+        for row in value.get("predicate_rows") or []:
+            lines.append(f"| {row['predicate']} | {arm} | {row['scorable_target_count']} | "
+                         f"{row['recovered_count']} | {row['regressed_wrong_count']} | "
+                         f"{row['regressed_abstention_count']} | {row['net_correct_gain']} |")
+    lines += ["", "### Toplamlar", ""]
     for arm, value in (comparison.get("vs_d") or {}).items():
         lines += [f"- **{arm}**: recovered={value['recovered']}, "
                   f"regressed(wrong candidate)={value['regressed_wrong_candidate']}, "

@@ -10,6 +10,18 @@
 
 Eşleştirme, tolerans, birim normalizasyonu ve belirsizlik politikası **final tahminlerden önce**
 sabitlenir: `MATCH_POLICY` sürümlenir ve rapora aynen yazılır.
+
+P1 (PLAN-5 §9–§12) ile sabitlenen dört karar — hepsi politika v2'de (`MATCH_POLICY`) yazılıdır:
+
+* **Belirsiz eşleşme dışlanır** (§10): yakın puanlı rakip varsa kalem semantik alan puanlanmasına
+  girmez, `ambiguous` olarak sayılır. Böylece sonuç aday sırasına bağlı olmaz.
+* **Yerelleştirme ile alan doğruluğu ayrılır** (§11): `localization_match_rate` bölge eşleşmesini,
+  `semantic_field_accuracy` alan alan doğruluğu ölçer; `target_binding` ayrı raporlanır.
+* **Fazla adaylar kapsam-duyarlıdır** (§12): gold `exhaustiveness` o bölgeyi/konumu taradığını
+  iddia etmiyorsa aday `unscorable_extra_candidate` olur (cezalanmaz), kapsıyorsa `false_positive`.
+* **Karşılaştırma yüklem (predicate) bazındadır** (§9): her alan için scorable/kurtarılan/geriye
+  giden sayıları ve `net_correct_gain` ayrı satırlarda; paydalar farklı olduğu için oran
+  karşılaştırması tek başına karar kuralı değildir.
 """
 
 from __future__ import annotations
@@ -18,13 +30,20 @@ from typing import Any
 
 from drawingto3d.semantic_candidates import (Region, numeric_tolerance, regions_match)
 
-MATCH_POLICY_VERSION = "semread-001b-match/1"
+MATCH_POLICY_VERSION = "semread-001b-match/2"
 MATCH_POLICY = {
     "version": MATCH_POLICY_VERSION,
     "anchor": "candidate.target.region, yoksa candidate.source.region",
     "region_iou_threshold": 0.15,
     "centre_tolerance_norm": 0.05,
     "ambiguous_score_margin": 0.05,
+    "ambiguous_policy": ("yakın puanlı rakip varsa kalem `ambiguous` sayılır ve semantik alan "
+                         "puanlanmasına **girmez** (aday sırasına bağlı seçim yapılmaz)"),
+    "localization_vs_semantic": ("`localization_match_rate` yalnız bölge eşleşmesini ölçer; alan "
+                                 "doğruluğu `semantic_field_accuracy`, bağlama doğruluğu "
+                                 "`target_binding_accuracy` ile ayrı raporlanır"),
+    "extras_policy": ("gold `exhaustiveness` kapsamı içindeki eşleşmemiş aday `false_positive`; "
+                      "kapsam dışındaki aday `unscorable_extra_candidate` (cezalanmaz)"),
     "numeric_relative": 0.02,
     "numeric_absolute": 0.05,
     "unit_normalisation": "in -> mm (25.4); birim bilinmiyorsa yalnız göreli karşılaştırma yapılmaz",
@@ -34,11 +53,20 @@ MATCH_POLICY = {
 MM_PER_INCH = 25.4
 FIELDS = ("representation", "physical", "form", "size", "count_printed", "termination", "depth",
           "target_binding")
+# §11: bölge eşleşmesi ("yerelleştirme") ile alan doğruluğu aynı oranda raporlanmaz.
+SEMANTIC_FIELDS = ("representation", "physical", "form", "size", "count_printed", "termination",
+                   "depth")
+BINDING_FIELD = "target_binding"
+# §12: referansın hangi kapsamda eksiksiz olduğunu beyan ettiği kapalı küme.
+EXHAUSTIVENESS_SCOPES = ("full_page", "regions", "predicates")
 
 
 def _region(payload: dict | None) -> Region | None:
+    """Bölge okuyucu: `{x0,y0,x1,y1}` ya da `[x0,y0,x1,y1]` (gold kısa biçimi liste yazabilir)."""
     if not payload:
         return None
+    if isinstance(payload, (list, tuple)) and len(payload) == 4:
+        payload = dict(zip(("x0", "y0", "x1", "y1"), payload))
     try:
         return Region(**{key: float(payload[key]) for key in ("x0", "y0", "x1", "y1")})
     except (KeyError, TypeError, ValueError):
@@ -72,8 +100,20 @@ def pair_score(claim: dict, candidate: dict, policy: dict | None = None) -> floa
 
 def match_claims(claims: list[dict], candidates: list[dict],
                  policy: dict | None = None) -> dict:
-    """Bire bir eşleştirme (açgözlü, deterministik). Kopya adaylar recall'u artırmaz."""
+    """Bire bir eşleştirme; belirsiz kalemler **dışlanır** (politika v2, PLAN-5 §10).
+
+    İki belirsizlik türü de aday sırasından bağımsız tanımlanır:
+
+    * `close_scores` — kalemin en iyi puanına `ambiguous_score_margin` içinde **birden çok** aday
+      var: hangisinin kastedildiği belirsizdir, kalem puanlanmaz.
+    * `candidate_contested` — aynı aday birden çok kalemin en iyi adayı: eşleştirme sırası sonucu
+      değiştireceği için ikisi de puanlanmaz.
+
+    Dışlanan kalem `pairs`e **girmez** (böylece semantik alan puanı üretilmez), `ambiguous_claims`
+    altında sayılır ve rapora mekanik olarak geçer.
+    """
     policy = policy or MATCH_POLICY
+    margin = policy["ambiguous_score_margin"]
     scores: list[tuple[float, str, str]] = []
     for claim in claims:
         for candidate in candidates:
@@ -81,32 +121,60 @@ def match_claims(claims: list[dict], candidates: list[dict],
             if score > 0:
                 scores.append((score, claim["claim_id"], candidate.get("candidate_id", "?")))
     scores.sort(key=lambda row: (-row[0], row[1], row[2]))
-    pairs: list[dict] = []
-    used_claims: set[str] = set()
-    used_candidates: set[str] = set()
-    ambiguous: list[dict] = []
+    per_claim: dict[str, list[tuple[float, str]]] = {}
+    per_candidate: dict[str, list[tuple[float, str]]] = {}
     for score, claim_id, candidate_id in scores:
-        if claim_id in used_claims or candidate_id in used_candidates:
-            # Aynı aday/kalem başka bir eşleşmeye gitti: bu bir "belirsiz" sinyaldir, yeni eşleşme değil.
-            if claim_id not in used_claims:
+        per_claim.setdefault(claim_id, []).append((score, candidate_id))
+        per_candidate.setdefault(candidate_id, []).append((score, claim_id))
+
+    ambiguous: list[dict] = []
+    ambiguous_claims: set[str] = set()
+    for claim_id in sorted(per_claim):
+        rows = per_claim[claim_id]
+        best = max(score for score, _ in rows)
+        rivals = sorted(candidate_id for score, candidate_id in rows if best - score <= margin)
+        if len(rivals) > 1:
+            ambiguous_claims.add(claim_id)
+            ambiguous.append({"claim_id": claim_id, "candidate_id": rivals[0], "score": round(best, 6),
+                              "kind": "close_scores", "others": rivals[1:]})
+    for candidate_id in sorted(per_candidate):
+        rows = per_candidate[candidate_id]
+        best = max(score for score, _ in rows)
+        owners = sorted(claim_id for score, claim_id in rows if best - score <= margin)
+        if len(owners) > 1:
+            for claim_id in owners:
+                if claim_id in ambiguous_claims:
+                    continue
+                ambiguous_claims.add(claim_id)
                 ambiguous.append({"claim_id": claim_id, "candidate_id": candidate_id,
-                                  "score": score, "kind": "candidate_taken"})
+                                  "score": round(best, 6), "kind": "candidate_contested",
+                                  "others": [other for other in owners if other != claim_id]})
+
+    pairs: list[dict] = []
+    used_candidates: set[str] = set()
+    for claim_id in sorted(per_claim, key=lambda cid: (-max(row[0] for row in per_claim[cid]), cid)):
+        if claim_id in ambiguous_claims:
             continue
-        near = [row for row in scores
-                if row[1] == claim_id and row[2] != candidate_id and abs(row[0] - score)
-                <= policy["ambiguous_score_margin"] and row[2] not in used_candidates]
-        used_claims.add(claim_id)
-        used_candidates.add(candidate_id)
-        pairs.append({"claim_id": claim_id, "candidate_id": candidate_id, "score": score,
-                      "ambiguous_with": [row[2] for row in near]})
-        if near:
-            ambiguous.append({"claim_id": claim_id, "candidate_id": candidate_id, "score": score,
-                              "kind": "close_scores", "others": [row[2] for row in near]})
-    unmatched_claims = [claim["claim_id"] for claim in claims if claim["claim_id"] not in used_claims]
+        # Belirsizlik dışlandıktan sonra "kendi en iyi adayı kapılmış" durumu kalmaz: bir adayı
+        # birden çok kalem en iyi adayı sayıyorsa hepsi dışlanır. Yedek arama yalnız savunma amaçlı.
+        for score, candidate_id in sorted(per_claim[claim_id], key=lambda row: (-row[0], row[1])):
+            if candidate_id in used_candidates:
+                continue
+            used_candidates.add(candidate_id)
+            pairs.append({"claim_id": claim_id, "candidate_id": candidate_id,
+                          "score": round(score, 6), "matching_status": "matched"})
+            break
+    pairs.sort(key=lambda row: (-row["score"], row["claim_id"], row["candidate_id"]))
+    paired = {pair["claim_id"] for pair in pairs}
+    unmatched_claims = [claim["claim_id"] for claim in claims
+                        if claim["claim_id"] not in paired
+                        and claim["claim_id"] not in ambiguous_claims]
     unmatched_candidates = [candidate.get("candidate_id", "?") for candidate in candidates
                             if candidate.get("candidate_id", "?") not in used_candidates]
-    return {"pairs": pairs, "ambiguous": ambiguous, "unmatched_claims": unmatched_claims,
-            "unmatched_candidates": unmatched_candidates, "policy": policy["version"]}
+    return {"pairs": pairs, "ambiguous": ambiguous, "ambiguous_claims": sorted(ambiguous_claims),
+            "unmatched_claims": unmatched_claims, "unmatched_candidates": unmatched_candidates,
+            "policy": policy["version"],
+            "note": ("belirsiz kalemler semantik puanlanmaz; `pairs` yalnız kesin eşleşmeleri taşır")}
 
 
 # ----------------------------------------------------------------- alan bazında puanlama
@@ -202,12 +270,46 @@ def score_pair(claim: dict, candidate: dict) -> list[dict]:
     return rows
 
 
+def exhaustive_scope(reference: dict) -> dict:
+    """Gold'un **hangi kapsamda eksiksiz** olduğunu okur (PLAN-5 §12).
+
+    Dönen: `{"scope": ..., "full_page": bool, "regions": [Region, ...]}`. Bilinmeyen ya da yer
+    tutucu kapsam `None`'dır ve **hiçbir** fazla aday cezalanmaz: gold kapsamadığı yeri suçlayamaz.
+    """
+    raw = reference.get("exhaustiveness")
+    if not isinstance(raw, dict) or raw.get("scope") not in EXHAUSTIVENESS_SCOPES:
+        return {"scope": None, "full_page": False, "regions": [],
+                "note": "exhaustiveness beyanı yok/yer tutucu: fazla adaylar cezalanmaz"}
+    scope = raw["scope"]
+    boxes: list[Region] = []
+    if scope == "regions":
+        boxes = [region for region in (_region(box) for box in (raw.get("regions") or []))
+                 if region is not None]
+    elif scope == "predicates":
+        for claim in reference.get("claims") or []:
+            if claim.get("representation") in (raw.get("predicates") or []):
+                box = claim_region(claim)
+                if box is not None:
+                    boxes.append(box)
+    return {"scope": scope, "full_page": scope == "full_page", "regions": boxes,
+            "predicates": list(raw.get("predicates") or []), "note": None}
+
+
+def _within(box: Region | None, boxes: list[Region]) -> bool:
+    return bool(box is not None and any(regions_match(box, other) for other in boxes))
+
+
 def evaluate_page(reference: dict, arm: dict, policy: dict | None = None) -> dict:
-    """Bir sayfanın bir kol için puanı: eşleşmeler, alan kararları, sayımlar."""
+    """Bir sayfanın bir kol için puanı: eşleşmeler, alan kararları, sayımlar.
+
+    Belirsiz kalemler (`matching_status="ambiguous"`) **puanlanmaz**: alan kararları `not_scored`
+    olur ve `_field_ok` bunları `None` sayar, böylece kurtarma/geriye gitme sayılarına girmezler.
+    """
     policy = policy or MATCH_POLICY
     claims = reference.get("claims") or []
     candidates = (arm.get("response") or {}).get("items") or []
     matching = match_claims(claims, candidates, policy)
+    ambiguous_ids = set(matching.get("ambiguous_claims") or [])
     by_candidate = {candidate.get("candidate_id"): candidate for candidate in candidates}
     by_claim = {claim["claim_id"]: claim for claim in claims}
     field_rows: list[dict] = []
@@ -215,20 +317,37 @@ def evaluate_page(reference: dict, arm: dict, policy: dict | None = None) -> dic
     for pair in matching["pairs"]:
         claim, candidate = by_claim[pair["claim_id"]], by_candidate[pair["candidate_id"]]
         rows = score_pair(claim, candidate)
-        per_claim[pair["claim_id"]] = {"matched": True, "candidate_id": pair["candidate_id"],
+        per_claim[pair["claim_id"]] = {"matched": True, "matching_status": "matched",
+                                       "candidate_id": pair["candidate_id"],
                                        "fields": {row["field"]: row["verdict"] for row in rows},
                                        "rows": rows, "score": pair["score"]}
         field_rows += [{**row, "claim_id": pair["claim_id"], "candidate_id": pair["candidate_id"]}
                        for row in rows]
     for claim_id in matching["unmatched_claims"]:
-        claim = by_claim[claim_id]
-        per_claim[claim_id] = {"matched": False,
+        per_claim[claim_id] = {"matched": False, "matching_status": "unmatched",
                                "fields": {field: "not_produced" for field in FIELDS}}
+    for claim_id in sorted(ambiguous_ids):
+        per_claim[claim_id] = {"matched": False, "matching_status": "ambiguous",
+                               "fields": {field: "not_scored" for field in FIELDS},
+                               "reason": "belirsiz eşleşme: semantik puanlama yapılmaz (PLAN-5 §10)"}
+    scope = exhaustive_scope(reference)
+    extras = []
+    for candidate_id in matching["unmatched_candidates"]:
+        box = candidate_anchor(by_candidate.get(candidate_id) or {})
+        scorable = scope["full_page"] or _within(box, scope["regions"])
+        extras.append({"candidate_id": candidate_id, "anchor": box.as_list() if box else None,
+                       "kind": "false_positive" if scorable else "unscorable_extra_candidate"})
     summary = {"fields": {}, "claims": len(claims), "candidates": len(candidates),
                "matched": len(matching["pairs"]),
                "unmatched_claims": len(matching["unmatched_claims"]),
                "unmatched_candidates": len(matching["unmatched_candidates"]),
-               "ambiguous": len(matching["ambiguous"])}
+               "ambiguous": len(matching["ambiguous"]),
+               "ambiguous_claims": len(ambiguous_ids),
+               "false_positive_candidates": sum(1 for row in extras
+                                                if row["kind"] == "false_positive"),
+               "unscorable_extra_candidates": sum(1 for row in extras
+                                                  if row["kind"] == "unscorable_extra_candidate"),
+               "exhaustiveness": scope["scope"]}
     for field in FIELDS:
         rows = [row for row in field_rows if row["field"] == field]
         verdicts: dict[str, int] = {}
@@ -236,7 +355,8 @@ def evaluate_page(reference: dict, arm: dict, policy: dict | None = None) -> dic
             verdicts[row["verdict"]] = verdicts.get(row["verdict"], 0) + 1
         summary["fields"][field] = verdicts
     return {"matching": matching, "per_claim": per_claim, "field_rows": field_rows,
-            "summary": summary, "policy": policy["version"]}
+            "extras": extras, "exhaustiveness": scope, "summary": summary,
+            "policy": policy["version"]}
 
 
 # ----------------------------------------------------------------- toplama ve karşılaştırma
@@ -248,15 +368,25 @@ def _ratio(numerator: int, denominator: int) -> float | None:
 
 
 def aggregate(pages: list[dict]) -> dict:
-    """Birden çok sayfanın toplamı: alan bazında TP/FP/FN ve oranlar."""
+    """Birden çok sayfanın toplamı: alan bazında TP/FP/FN ve **ayrık** oranlar (PLAN-5 §11).
+
+    `localization_match_rate` yalnız bölge eşleşmesidir; alan doğruluğu `semantic_field_accuracy`
+    (yüklem alanları) ve `target_binding_accuracy` (bağlama) olarak ayrı verilir. Eski
+    `candidate_precision`/`claim_recall` adları rapor uyumu için korunur ama bunlar yerelleştirme
+    ağırlıklıdır — semantik doğruluk kanıtı değildir.
+    """
     totals: dict[str, dict[str, int]] = {field: {} for field in FIELDS}
     claims = candidates = matched = ambiguous = 0
+    ambiguous_claims = false_positive = unscorable = 0
     for page in pages:
         summary = page["summary"]
         claims += summary["claims"]
         candidates += summary["candidates"]
         matched += summary["matched"]
         ambiguous += summary["ambiguous"]
+        ambiguous_claims += summary.get("ambiguous_claims", 0)
+        false_positive += summary.get("false_positive_candidates", 0)
+        unscorable += summary.get("unscorable_extra_candidates", 0)
         for field, verdicts in summary["fields"].items():
             for verdict, count in verdicts.items():
                 totals[field][verdict] = totals[field].get(verdict, 0) + count
@@ -276,95 +406,165 @@ def aggregate(pages: list[dict]) -> dict:
             "accuracy": _ratio(correct, scorable),
             "abstention_rate": _ratio(abstained, scorable),
             "wrong_rate": _ratio(wrong, scorable),
+            "unscored": verdicts.get("not_scored", 0),
         }
+    semantic_correct = sum(fields[field]["correct"] for field in SEMANTIC_FIELDS)
+    semantic_scorable = sum(fields[field]["scorable"] for field in SEMANTIC_FIELDS)
+    semantic_wrong = sum(fields[field]["wrong"] for field in SEMANTIC_FIELDS)
+    semantic_overclaim = sum(fields[field]["verdicts"].get("overclaim", 0)
+                             + fields[field]["verdicts"].get("false_claim", 0)
+                             for field in SEMANTIC_FIELDS)
+    semantic_abstained = sum(fields[field]["abstained"] for field in SEMANTIC_FIELDS)
+    binding = fields[BINDING_FIELD]
     return {
         "claims": claims, "candidates": candidates, "matched": matched,
+        # Yerelleştirme (bölge) — semantik doğruluk değildir.
+        "localization_match_rate": _ratio(matched, claims),
+        "candidate_localization_precision": _ratio(matched, candidates),
         "candidate_precision": _ratio(matched, candidates),
         "claim_recall": _ratio(matched, claims),
         "omission": claims - matched,
         "omission_rate": _ratio(claims - matched, claims),
+        # Alan doğruluğu (yüklemler) ve bağlama — ayrı ölçülür.
+        "semantic_field_accuracy": _ratio(semantic_correct, semantic_scorable),
+        "semantic_scorable_fields": semantic_scorable,
+        "target_binding_accuracy": binding["accuracy"],
+        "candidate_overclaim_rate": _ratio(semantic_overclaim, semantic_scorable),
+        "candidate_abstention_rate": _ratio(semantic_abstained, semantic_scorable),
+        "candidate_wrong_rate": _ratio(semantic_wrong, semantic_scorable),
         "ambiguous_pairs": ambiguous,
+        "ambiguous_claim_count": ambiguous_claims,
+        "false_positive_candidate_count": false_positive,
+        "unscorable_extra_candidate_count": unscorable,
         "fields": fields,
+        "metric_note": ("`candidate_precision`/`claim_recall` yerelleştirme ağırlıklıdır: bölge "
+                        "eşleşmesi doğru olsa da R/Ø, değer, bitiş, sayı ve fiziksel yorum yanlış "
+                        "olabilir — onlar `semantic_field_accuracy` ve alan satırlarındadır"),
     }
 
 
 def _field_ok(per_claim: dict, claim_id: str, field: str) -> bool | None:
+    """Alan kararı: `True` doğru, `False` yanlış/eksik, `None` **puanlanamaz** (PLAN-5 §9/§10).
+
+    `None` dönen hâller karşılaştırmanın paydasına **girmez**: belirsiz eşleşme (politika gereği
+    puanlanmaz) ve kayıtsız kalem. Eşleşmemiş kalem yanlış değil **eksik** cevaptır.
+    """
     record = per_claim.get(claim_id)
-    if not record or not record.get("matched"):
-        return False if record else None
+    if not record:
+        return None
+    if not record.get("matched"):
+        return None if record.get("matching_status") == "ambiguous" else False
     verdict = (record.get("fields") or {}).get(field)
-    if verdict is None:
+    if verdict is None or verdict == "not_scored":
         return None
     return verdict in ("correct", "not_applicable")
 
 
+def _predicate_row(per_page: dict[str, dict], arm: str, field: str) -> dict:
+    """Tek bir yüklem (alan) için kurtarma/geriye gitme satırı (PLAN-5 §9)."""
+    recovered = regressed_wrong = regressed_abstained = 0
+    scorable = 0
+    examples: list[dict] = []
+    for page_id, arms in per_page.items():
+        d_claims = (arms.get("D") or {}).get("per_claim") or {}
+        arm_claims = (arms.get(arm) or {}).get("per_claim") or {}
+        for claim_id in d_claims:
+            arm_record = arm_claims.get(claim_id)
+            if arm_record is None:
+                continue
+            d_ok = _field_ok(d_claims, claim_id, field)
+            arm_ok = _field_ok(arm_claims, claim_id, field)
+            if d_ok is None or arm_ok is None:
+                continue
+            scorable += 1
+            kind: str | None = None
+            if not d_ok and arm_ok:
+                recovered += 1
+                kind = "recovered"
+            elif d_ok and not arm_ok:
+                if arm_record.get("matched"):
+                    regressed_wrong += 1
+                    kind = "regressed_wrong_candidate"
+                else:
+                    regressed_abstained += 1
+                    kind = "regressed_abstention"
+            if kind:
+                examples.append({"page_id": page_id, "claim_id": claim_id, "kind": kind})
+    return {"predicate": field, "scorable_target_count": scorable, "recovered_count": recovered,
+            "regressed_wrong_count": regressed_wrong,
+            "regressed_abstention_count": regressed_abstained,
+            "net_correct_gain": recovered - regressed_wrong - regressed_abstained,
+            "examples": examples}
+
+
 def compare_arms(per_page: dict[str, dict]) -> dict:
-    """Aynı gold claim'ler üzerinde V/VE vs D recovery/regression; VE vs V farkı.
+    """Aynı gold claim'ler üzerinde V/VE vs D: **yüklem bazında** recovery/regression (PLAN-5 §9).
+
+    Her yüklem için scorable/kurtarılan/geriye giden sayıları ve `net_correct_gain` ayrı satırdır;
+    toplamlar yüklem satırlarının toplamıdır (aynı kalem birden çok yüklemde sayılabilir). Paydalar
+    farklı olduğu için `recovery_rate > regression_rate` **karar kuralı değildir**.
 
     `per_page`: `{"<page_id>": {"D": evaluate_page sonucu, "V": ..., "VE": ...}}`.
     """
-    result: dict[str, Any] = {"vs_d": {}, "ve_vs_v": {}, "notes": []}
+    result: dict[str, Any] = {"vs_d": {}, "ve_vs_v": {}, "predicates": list(FIELDS),
+                              "totals_note": ("toplamlar yüklem satırlarının toplamıdır; aynı kalem "
+                                              "birden çok yüklemde sayılabilir"),
+                              "notes": []}
     for arm in ("V", "VE"):
-        recovered = regressed_wrong = regressed_abstained = 0
-        gain_rows: list[dict] = []
-        d_scorable = arm_scorable = 0
-        for page_id, arms in per_page.items():
-            d_claims = (arms.get("D") or {}).get("per_claim") or {}
-            arm_claims = (arms.get(arm) or {}).get("per_claim") or {}
-            for claim_id, d_record in d_claims.items():
-                arm_record = arm_claims.get(claim_id)
-                if arm_record is None:
-                    continue
-                d_ok = _field_ok(d_claims, claim_id, "size")
-                arm_ok = _field_ok(arm_claims, claim_id, "size")
-                if d_ok is None or arm_ok is None:
-                    continue
-                d_scorable += 1
-                arm_scorable += 1
-                if d_ok is False and arm_ok is True:
-                    recovered += 1
-                    gain_rows.append({"page_id": page_id, "claim_id": claim_id, "kind": "recovered"})
-                elif d_ok is True and arm_ok is False:
-                    if arm_record.get("matched"):
-                        regressed_wrong += 1
-                        kind = "regressed_wrong_candidate"
-                    else:
-                        regressed_abstained += 1
-                        kind = "regressed_abstention"
-                    gain_rows.append({"page_id": page_id, "claim_id": claim_id, "kind": kind})
-        result["vs_d"][arm] = {
-            "recovered": recovered, "regressed_wrong_candidate": regressed_wrong,
-            "regressed_abstention": regressed_abstained,
-            "regressed_total": regressed_wrong + regressed_abstained,
-            "net_correct_gain": recovered - (regressed_wrong + regressed_abstained),
-            "d_scorable": d_scorable, "arm_scorable": arm_scorable,
-            "recovery_rate": _ratio(recovered, d_scorable),
-            "regression_rate": _ratio(regressed_wrong + regressed_abstained, arm_scorable),
-            "rows": gain_rows,
-            "note": ("oranların paydaları farklı olabilir; 'recovery > regression' tek başına fayda "
-                     "kanıtı değildir"),
+        rows = [_predicate_row(per_page, arm, field) for field in FIELDS]
+        totals = {
+            "scorable_target_count": sum(row["scorable_target_count"] for row in rows),
+            "recovered_count": sum(row["recovered_count"] for row in rows),
+            "regressed_wrong_count": sum(row["regressed_wrong_count"] for row in rows),
+            "regressed_abstention_count": sum(row["regressed_abstention_count"] for row in rows),
         }
-    # VE vs V: aynı sayfada aynı claim'in size alanındaki fark (bilgi kaynağı bağımsız değildir).
-    ve_better = ve_worse = 0
-    for _page_id, arms in per_page.items():
-        v_claims = (arms.get("V") or {}).get("per_claim") or {}
-        ve_claims = (arms.get("VE") or {}).get("per_claim") or {}
-        for claim_id in set(v_claims) & set(ve_claims):
-            v_ok = _field_ok(v_claims, claim_id, "size")
-            ve_ok = _field_ok(ve_claims, claim_id, "size")
-            if v_ok is None or ve_ok is None:
-                continue
-            if ve_ok and not v_ok:
-                ve_better += 1
-            elif v_ok and not ve_ok:
-                ve_worse += 1
-    result["ve_vs_v"] = {"ve_better": ve_better, "ve_worse": ve_worse,
-                         "net": ve_better - ve_worse}
+        totals["net_correct_gain"] = (totals["recovered_count"] - totals["regressed_wrong_count"]
+                                      - totals["regressed_abstention_count"])
+        result["vs_d"][arm] = {
+            **totals,
+            "predicate_rows": rows,
+            # Geriye dönük adlar (rapor/uyum): eski anahtarlar korunur.
+            "recovered": totals["recovered_count"],
+            "regressed_wrong_candidate": totals["regressed_wrong_count"],
+            "regressed_abstention": totals["regressed_abstention_count"],
+            "regressed_total": (totals["regressed_wrong_count"]
+                                + totals["regressed_abstention_count"]),
+            "d_scorable": totals["scorable_target_count"],
+            "arm_scorable": totals["scorable_target_count"],
+            "rows": [example for row in rows for example in row["examples"]],
+            "note": ("her yüklem ayrı satırdır; oranların paydaları farklı olduğu için oran "
+                     "karşılaştırması tek başına fayda kanıtı değildir (PLAN-5 §9)"),
+        }
+    # VE vs V: aynı sayfada aynı claim'in **her yüklemdeki** farkı (bilgi kaynağı bağımsız değildir).
+    per_predicate: list[dict] = []
+    for field in FIELDS:
+        ve_better = ve_worse = 0
+        for _page_id, arms in per_page.items():
+            v_claims = (arms.get("V") or {}).get("per_claim") or {}
+            ve_claims = (arms.get("VE") or {}).get("per_claim") or {}
+            for claim_id in set(v_claims) & set(ve_claims):
+                v_ok = _field_ok(v_claims, claim_id, field)
+                ve_ok = _field_ok(ve_claims, claim_id, field)
+                if v_ok is None or ve_ok is None:
+                    continue
+                if ve_ok and not v_ok:
+                    ve_better += 1
+                elif v_ok and not ve_ok:
+                    ve_worse += 1
+        per_predicate.append({"predicate": field, "ve_better": ve_better, "ve_worse": ve_worse,
+                              "net_difference": ve_better - ve_worse})
+    result["ve_vs_v"] = {
+        "ve_better": sum(row["ve_better"] for row in per_predicate),
+        "ve_worse": sum(row["ve_worse"] for row in per_predicate),
+        "per_predicate": per_predicate,
+    }
+    result["ve_vs_v"]["net"] = result["ve_vs_v"]["ve_better"] - result["ve_vs_v"]["ve_worse"]
     result["notes"].append("D ile VE bağımsız kanıt kaynakları değildir: VE'nin gözlem tablosu aynı "
                            "deterministic hattan gelir.")
     return result
 
 
-__all__ = ["FIELDS", "MATCH_POLICY", "MATCH_POLICY_VERSION", "MM_PER_INCH", "aggregate",
-           "candidate_anchor", "claim_region", "compare_arms", "evaluate_page", "match_claims",
-           "pair_score", "score_pair"]
+__all__ = ["BINDING_FIELD", "EXHAUSTIVENESS_SCOPES", "FIELDS", "MATCH_POLICY", "MATCH_POLICY_VERSION",
+           "MM_PER_INCH", "SEMANTIC_FIELDS", "aggregate", "candidate_anchor", "claim_region",
+           "compare_arms", "evaluate_page", "exhaustive_scope", "match_claims", "pair_score",
+           "score_pair"]

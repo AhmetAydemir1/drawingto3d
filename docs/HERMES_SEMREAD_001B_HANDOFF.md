@@ -574,6 +574,11 @@ Sıra (değişmedi): raster dev gold'ları → 6 frozen gold → **tek `--d` ko�
 * `dev-flange-elbow` hedef adayları (kutuları okunacak): Ø210 + Ø290 → kesitteki boru ağzı
   (dikey flanş yüzü x≈0,49–0,51), R260 → kesitteki kesikli eksen yayı, C10 → pah kenarı,
   4-R20 → kare plakanın köşe yayı, `4x2-Ø60` + `4x2-Ø30` → cıvata deliği deseni, R110 → flanş-boru
-  birleşim yayı. **Açık kalan iki soru:** (1) `4x2-...` metninin tam okunuşu ve `count_printed`
-  karşılığı (4 mü 8 mi), (2) R110'un hedefi (birleşim yayı mı, plaka köşesi mi) — ikisi de
-  zoom ile netleşmeden spec yazılmamalı.
+  birleşim yayı.
+* **Çözüldü (zoom, 0,01 ızgara):** iki çağrı birebir `4x2-Ø60` ve `4x2-Ø30` (kutuları ≈ x 0,76–0,85;
+  üstteki y 0,485–0,507, alttaki y 0,530–0,552). Anlamı: kenar (kesit) görünüşünde her cıvata deliği
+  iki çaplı çizilmiş — Ø30 geçen delik + Ø60 havşa/spot yüzey; metindeki `4x2` = **iki flanş × 4
+  delik = 8**. Bu yüzden `count_printed` iki claim'de de **8** yazılacak ve gerekçe `evidence`ta
+  duracak (VLM bu görünüşte 4 delik görecek; "printed" ile "found" ayrımı tam da burada ölçülüyor).
+* **Açık kalan tek soru:** `R110`'un hedefi (flanş-boru birleşim yayı mı, plaka köşesi mi) — zoom
+  ile netleşmeden spec yazılmamalı; netleşmezse claim kapsam dışı bırakılıp `scope`ta anılır.

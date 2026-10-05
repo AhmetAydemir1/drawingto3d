@@ -69,16 +69,32 @@ SETTINGS = {"num_ctx": 22528, "temperature": 0.0,
             "images_layout": IMAGES_LAYOUT, "image_label_prefix": IMAGE_LABEL_PREFIX,
             "raw_page_strategy": RAW_PAGE_STRATEGY}
 
-# VLM döngü kırıcı — KOL BAŞINA (zarf #7, ölçümle): iki kol farklı çıktı rejimi.
-#  * V kolu (görsel-only): yoğun sayfada (elbow) aynı bölgeyi sonsuz tekrarlıyordu; 1.25 kıramadı
-#    (30 özdeş aday, 8192'de kesildi), 1.6 yanıtı boşalttı (25 token, items:[]), 1.4 probda temiz
-#    durdu (150 token, stop).
-#  * VE kolu (tablo çapalı): 1.25'te zengin yanıt veriyor (plate-VE: 41 aday, 6529 token, stop);
-#    1.4 aynı sayfada yanıtı 175 tokene kısıyor — ağır ceza yapısal tekrarları bastırıp listeyi
-#    erken kapatıyor. Bu yüzden VE 1.25'te kalır.
+# VLM döngü kırıcı — **ORTAK** (PLAN-13 §4/§6): kol-başına repeat_penalty kaldırıldı. Final
+# zarfında `generation_settings(V) == generation_settings(VE)` zorunludur; döngü sampling ile
+# değil yapısal çıktı sözleşmesiyle (items.maxItems + kopya kuralı, PLAN-13 §5) sınırlanır.
+# Ölçüm geçmişi (zarf #7 karar kaydı): V 1.25 → elbow tekrar döngüsü (30 özdeş aday, 8192'de
+# kesildi); 1.6 → yanıt boşaldı (25 token, items:[]); 1.4 → probda temiz durdu ama plate-VE'nin
+# 41 adaylık zengin yanıtını 175 tokene kıstı. Ortak başlangıç 1.25'tir (VE zengin rejimini korur;
+# V'nin döngüsünü yapısal cap keser). Freeze, 8 dev hücrenin paylaşımlı zarfla yeniden
+# doğrulanmasına (PLAN-13 §8 requalification) bağlıdır.
 # Pencere 512: döngü item'ı ~230-580 token; varsayılan 64'lük pencere tekrarı hiç görmez.
 REPEAT_LAST_N = 512
-REPEAT_PENALTY_BY_ARM = {"V": 1.4, "VE": 1.25}
+REPEAT_PENALTY = 1.25
+
+
+def generation_settings(arm: str) -> dict:
+    """Kola göre üretim ayarları — **tek kaynak** (PLAN-13 §4/§8).
+
+    `generation_settings(V) == generation_settings(VE)` otomatik invarianttır: kollar arasında izin
+    verilen fark yalnız kanıt katmanıdır (evidence_mode, overlay, gözlem tablosu, kanıt prompt
+    bölümü, görüntü sayısı) — hiçbiri üretim ayarı değildir. `arm` yalnız doğrulama içindir; dönen
+    ayarlar kol-farkısızdır.
+    """
+    if arm not in ARM_VARIANTS:
+        raise ValueError(f"bilinmeyen kol: {arm}")
+    return {"model": MODEL, **SETTINGS,
+            "repeat_penalty": REPEAT_PENALTY, "repeat_last_n": REPEAT_LAST_N}
+
 
 # Görüntü hazırlama sözleşmesi (preprocessing identity): hazırlama kodu bu dosyalarda yaşar.
 PREPROCESSING_FILES = ("src/drawingto3d/semantic_images.py",

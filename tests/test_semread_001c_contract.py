@@ -384,7 +384,7 @@ def test_p4_attempt_state_keeps_truncation_apart_from_parse_error():
 
 def test_p5_run_contract_envelope_is_001c_and_measured():
     from drawingto3d.semantic_run_contract import (CONTRACT_VERSION, NUM_PREDICT,  # noqa: F401
-                                                   REPEAT_LAST_N, REPEAT_PENALTY_BY_ARM,
+                                                   REPEAT_LAST_N, REPEAT_PENALTY,
                                                    SETTINGS)
 
     assert CONTRACT_VERSION == "semread-001c-run-contract/1"
@@ -394,11 +394,31 @@ def test_p5_run_contract_envelope_is_001c_and_measured():
     assert NUM_PREDICT == 8192 and SETTINGS["num_predict"] == NUM_PREDICT
     assert SETTINGS["num_ctx"] == 22528
     assert 14121 + SETTINGS["num_predict"] <= SETTINGS["num_ctx"]
-    # VLM döngü kırıcı KOL BAŞINA (zarf #7): V 1.4 (elbow döngüsü 1.25'te kırılmadı, 1.6 susturdu),
-    # VE 1.25 (1.4, plate-VE'nin 41 adaylık zengin yanıtını 175 tokene kısıyor). Pencere 512.
-    assert REPEAT_PENALTY_BY_ARM == {"V": 1.4, "VE": 1.25}
-    assert REPEAT_LAST_N == 512
+    # PLAN-13 §4/§6: kol-başına repeat_penalty KALDIRILDI (zarf #7 → ortak zarf başlangıcı);
+    # döngü sampling ile değil yapısal sözleşmeyle (maxItems + kopya kuralı) sınırlanır.
+    # Ölçüm geçmişi (V 1.25 döngü / 1.6 boşalttı / 1.4 VE'yi kıstı) semantic_run_contract'ta.
+    assert REPEAT_PENALTY == 1.25 and REPEAT_LAST_N == 512
     assert SETTINGS["temperature"] == 0.0
+
+
+def test_plan13_shared_generation_invariant_v_equals_ve():
+    """PLAN-13 §4/§8 otomatik invariantı: üretim ayarları kol-farkısız; kol farkı yalnız kanıttır."""
+    import drawingto3d.semantic_run_contract as contract
+
+    assert not hasattr(contract, "REPEAT_PENALTY_BY_ARM"), \
+        "kol-başına ceza kaldırılmalı (PLAN-13 §39)"
+    assert contract.generation_settings("V") == contract.generation_settings("VE")
+    for arm in ("V", "VE"):
+        settings = contract.generation_settings(arm)
+        assert settings["repeat_penalty"] == contract.REPEAT_PENALTY
+        assert settings["repeat_last_n"] == contract.REPEAT_LAST_N
+        assert settings["num_ctx"] == contract.SETTINGS["num_ctx"]
+        assert settings["num_predict"] == contract.SETTINGS["num_predict"]
+        assert settings["temperature"] == contract.SETTINGS["temperature"]
+    # İzin verilen tek sınıf fark kanıt katmanıdır (üretim ayarı değildir).
+    assert contract.arm_evidence_mode("V") != contract.arm_evidence_mode("VE")
+    with pytest.raises(ValueError):
+        contract.generation_settings("X")
 
 
 def test_p6_experiment_switch_moves_only_the_ledger(tmp_path, monkeypatch):

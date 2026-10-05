@@ -21,6 +21,9 @@
   açıklaması aynı asgari sözleşmeyi söyler (§4; `anyOf` **eklenmedi** — §5).
 - **Sıradaki (§60#2 / §63):** `semread-001d-run-contract/1` + producer identity; ardından dev rapor
   (§17–§22), static preflight (§23–§25) + gates → Round 1 (4 çağrı; §31).
+- **Bonus koşu bulgusu (0 inference, §1d/§1e):** 001B acceptance süiti ölçümsüz kapanabilen bir rapor
+  kapısı gösterdi (`report_evidence.measured` sıfır satırlı `vs_d`'yi ölçüm sayıyordu) — tek kaynak
+  `arms_with_measurement()` ile düzeltildi + pin testi; süit tamamı **27 passed** (31:48).
 - **External CI/status:** yok — kabul kanıtı yerel pytest + `eval/` araçlarıdır (PLAN-14 §45).
 
 ---

@@ -192,12 +192,31 @@ CHANGED / TEST EVIDENCE / INFERENCE BUDGET / OPEN GATE / NEXT SINGLE STEP*.
 - **KAPSAM:** yalnız rapor/ölçüm kapısı tanımı; prompt · şema · parser · run-contract · bütçe
   değişmedi. 001B lab'ı (`out/lab/semread-001b/**`) ve 001C lab'ı **yazılmadı** (test monkeypatch'li,
   `git status` yalnız bu iki dosyayı gösterir).
-- **TEST EVIDENCE:** yeni pin + komşu kapı testi **2 passed** (0.28 s); daha önce kırmızı olan testin
-  yeniden koşusu **başlatıldı** (tek başına, arka planda) — sonuç bu kayda eklenecek §1e'de olacak;
-  henüz "geçti" iddiası yok. Etkilenebilecek hızlı SEMREAD süitleri (lifecycle/identity/
-  gold-manifest/reference/`test_semread_001b`) yeniden koşuldu: **119 passed**; `check_tables`
-  **21 satır / 0 tutmuyor**.
+- **TEST EVIDENCE:** yeni pin + komşu kapı testi **2 passed** (0.28 s); etkilenebilecek hızlı SEMREAD
+  süitleri (lifecycle/identity/gold-manifest/reference/`test_semread_001b`) yeniden koşuldu:
+  **119 passed**; `check_tables` **21 satır / 0 tutmuyor**. Daha önce kırmızı olan testin **tek başına**
+  yeniden koşusu harness tarafından 813 s'de öldürüldü (log 0 byte — kanıt üretmedi, "geçti" iddiası
+  yok); yerine süiti tamamı koşuldu → **§1e: 27 passed**.
 - **INFERENCE BUDGET:** 001D dev **0/12**, final **0/20** (toplam **0/32**) — değişmedi.
 - **OPEN GATE:** §60#2 / §63 — run-contract `001d/1` + producer identity.
 - **NEXT SINGLE STEP:** §10/§63 (değişmedi): run-contract `001d/1` kimliği + producer identity; §62'nin
   kanıt listesi bu düzeltmeyle birlikte "focused + gates + closure + D regresyonu" olarak eksiksiz.
+
+---
+
+## 1e. 001B acceptance süiti — düzeltme sonrası yeşil (0 inference) — 2026-10-05
+
+- **CURRENT HEAD:** `0c0ecc4` (§1d düzeltmesi; bu kayıttan önce)
+- **TEST EVIDENCE:** `tests/test_semread_001b_acceptance.py` tamamı **27 passed** (1908.28 s ≈ 31:48).
+  Süit düzeltme öncesi **1 failed / 25 passed** vermişti; kırmızı olan test
+  (`test_the_report_carries_every_required_section_on_the_real_payload`) artık yeşil: ölçümsüz hâlde
+  `measured=False` → `complete=False` ve `bool(payload["aggregates"])` ile tutarlı. 27 = 26 mevcut
+  test + §1d'de eklenen pin testi.
+- **NOT:** §1d'de başlatılan **tek başına** yeniden koşu harness tarafından 813 s'de öldürüldü
+  (exit -15, log 0 byte) ve kanıt üretmedi; yerine süiti tamamı koşuldu (yukarıdaki sayı). Ölçüm
+  değişikliği yalnız rapor/kapı tanımında olduğu için prompt · şema · parser · run-contract kimliği ve
+  001D bütçesi etkilenmedi.
+- **INFERENCE BUDGET:** 001D dev **0/12**, final **0/20** (toplam **0/32**) — değişmedi; 0 inference.
+- **OPEN GATE:** §60#2 / §63 — `semread-001d-run-contract/1` + producer identity.
+- **NEXT SINGLE STEP:** §10/§63 (değişmedi): run-contract `001d/1` kimliği + producer identity; ardından
+  §17–§22 dev rapor katmanı ve §23–§25 static preflight → Round 1 (4 çağrı).

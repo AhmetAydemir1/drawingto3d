@@ -245,6 +245,9 @@ def prediction_input_record(page: dict, arm: str, *, bundle: dict, prompt: str) 
         "observation_table_sha256": (_sha256_text(json.dumps(table, sort_keys=True,
                                                             ensure_ascii=False))
                                      if table else None),
+        # P3 §17: sayım kaydı (raw/sent/dropped) ve prompt **byte** sayısı kanıtın parçası.
+        "observation_counts": bundle.get("observation_counts"),
+        "prompt_bytes": len(prompt.encode("utf-8")),
         "preprocessing_identity": preprocessing_identity(),
     }
 
@@ -1717,9 +1720,10 @@ def evaluate(write_report: bool = True) -> dict:
 
 
 def _observation_rows(path: Path) -> list[dict]:
-    from drawingto3d.semantic_candidate_reader import observation_table
+    """Tam (eleme uygulanmamış) gözlem satırları: kimlik denetimi extraction'ın ürettiğini görür."""
+    from drawingto3d.semantic_candidate_reader import raw_observation_rows
 
-    return observation_table(observe(path))
+    return raw_observation_rows(observe(path))
 
 
 # ------------------------------------------------------------------ kabul ve rapor

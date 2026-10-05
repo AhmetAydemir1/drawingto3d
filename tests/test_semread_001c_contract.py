@@ -16,6 +16,7 @@ Model çağrısı yok; yalnız şema + parser + prompt (saf fonksiyonlar).
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 import pytest
 
@@ -23,10 +24,26 @@ from drawingto3d.semantic_candidates import (CANDIDATE_READER_VERSION, CANDIDATE
                                              TASK_INSTRUCTIONS, CandidateParseError, Region,
                                              candidate_json_schema, candidate_prompt,
                                              parse_candidate_json)
+from drawingto3d.observe import BBox, Frame, Observations, Primitive, SourceRef, TextObservation
 from drawingto3d.semantic_candidate_reader import read_page
 from drawingto3d.semantic_schema import PreparedImage
 
 GOLD_SENTINEL = "semread-001b-gold-sentinel-4f21"
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def _load_pilot():
+    """001C sürücüsü: 001B pilot modülünü yükler (saf fonksiyonlar; çağrı yok)."""
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location("semread_001c_contract_pilot",
+                                                  ROOT / "eval/semread_001b_pilot.py")
+    if spec is None or spec.loader is None:
+        raise RuntimeError("pilot yüklenemedi")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 PIXEL_REGION = {"x0": 65, "y0": 287, "x1": 349, "y1": 450}
 NORMALIZED_REGION = {"x0": 0.10, "y0": 0.20, "x1": 0.30, "y1": 0.40}
@@ -222,3 +239,85 @@ def test_p2_parse_error_kinds_are_machine_readable():
     with pytest.raises(CandidateParseError) as guessed:
         parse_candidate_json(json.dumps(no_guess))
     assert guessed.value.kind == "schema_no_guess"
+
+
+# ---------------------------------------------------------------- P3: VE evidence compression
+
+
+def _observations_with_gaps() -> Observations:
+    """3 dolu + 2 boş-kanıt satır: g0 (nokta+bölge) kalır; p1/g1 bölgesiz kalır; t1 bölgeli."""
+    return Observations(
+        source=SourceRef(ref="probe.png", sha256="b" * 64, page=0),
+        frame=Frame(width=400, height=300), text_placement="as-is",
+        primitives=[
+            Primitive(id="g0", path_id="p0", kind="circle", centre=[100.0, 80.0], radius=12.0),
+            Primitive(id="p1", path_id="p1", kind="line", start=[10.0, 10.0], end=[50.0, 50.0]),
+            Primitive(id="g1", path_id="p2", kind="arc"),
+        ],
+        texts=[
+            TextObservation(id="t0", text="Ø8", value=8.0, unit="mm", kind="diameter",
+                            bbox=BBox(x=120, y=70, w=30, h=10)),
+            TextObservation(id="t1", text="", value=None, kind="text",
+                            bbox=BBox(x=200, y=150, w=40, h=12)),
+        ])
+
+
+def test_p3_empty_evidence_rows_are_pruned_with_stable_order_and_hash():
+    from hashlib import sha256
+
+    from drawingto3d.semantic_candidate_reader import (observation_table,
+                                                       observation_table_with_counts)
+    observations = _observations_with_gaps()
+    rows, counts = observation_table_with_counts(observations)
+    assert [row["id"] for row in rows] == ["g0", "t0", "t1"]
+    assert counts == {"raw": 5, "sent": 3, "dropped": 2}
+    rows_again, counts_again = observation_table_with_counts(observations)
+    assert rows_again == rows and counts_again == counts
+    dump = json.dumps(rows, sort_keys=True, ensure_ascii=False)
+    dump_again = json.dumps(rows_again, sort_keys=True, ensure_ascii=False)
+    assert sha256(dump.encode()).hexdigest() == sha256(dump_again.encode()).hexdigest()
+    for row in rows:
+        assert set(row) <= {"id", "kind", "text", "value", "unit", "region"}, "nötr alanlar"
+        assert "gold" not in json.dumps(row).lower()
+    # Kural sınırı: bölgesi olan boş metin satırı kalır — bölge adreslenebilir kanıttır.
+    assert any(row["id"] == "t1" for row in rows)
+    assert observation_table(observations) == rows
+
+
+def test_p3_ve_bundle_records_raw_sent_dropped_and_prompt_follows_the_pruned_table(tmp_path):
+    from drawingto3d.semantic_candidate_reader import prepare_arm_inputs
+    from drawingto3d.semantic_images import open_source
+
+    source = open_source(_write_page_png(tmp_path))
+    observations = _observations_with_gaps()
+    ve_bundle = prepare_arm_inputs(source, observations, image_id="image-1", arm="VE")
+    assert ve_bundle["observation_counts"] == {"raw": 5, "sent": 3, "dropped": 2}
+    assert len(ve_bundle["observations"]) == 3
+    ve_prompt = candidate_prompt(["image-1"], observations=ve_bundle["observations"])
+    assert "g0" in ve_prompt and "t0" in ve_prompt and "t1" in ve_prompt
+    assert "| line |" not in ve_prompt and "| arc |" not in ve_prompt, \
+        "boş kanıt satırı prompt'a girmemeli"
+    v_bundle = prepare_arm_inputs(source, observations, image_id="image-1", arm="V")
+    assert v_bundle["observations"] == []
+    assert v_bundle["observation_counts"] == {"raw": 5, "sent": 0, "dropped": 0}
+
+
+def test_p3_prediction_input_records_prompt_bytes_and_observation_counts():
+    pilot = _load_pilot()
+    bundle = {"observations": [], "images": [],
+              "observation_counts": {"raw": 5, "sent": 0, "dropped": 0}}
+    prompt = "örnek görev metni"
+    record = pilot.prediction_input_record({"page_id": "page"}, "V", bundle=bundle, prompt=prompt)
+    assert record["prompt_bytes"] == len(prompt.encode("utf-8"))
+    assert record["observation_counts"] == {"raw": 5, "sent": 0, "dropped": 0}
+
+
+def _write_page_png(tmp_path, width: int = 400, height: int = 300):
+    import cv2
+    import numpy as np
+
+    path = tmp_path / "page.png"
+    ok, buffer = cv2.imencode(".png", np.full((height, width), 255, dtype=np.uint8))
+    assert ok
+    path.write_bytes(buffer.tobytes())
+    return path

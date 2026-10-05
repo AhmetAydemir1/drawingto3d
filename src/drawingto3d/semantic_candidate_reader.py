@@ -39,11 +39,11 @@ OVERLAY_IMAGE_ID = "image-2"          # ham sayfa kimliği image-1'dir; overlay 
 RAW_IMAGE_ID = "image-1"
 
 
-def observation_table(observations: Observations) -> list[dict]:
-    """VE'nin gördüğü **adreslenebilir** tablo: yalnız ölçülmüş gözlem alanları.
+def raw_observation_rows(observations: Observations) -> list[dict]:
+    """Ham gözlem satırları (eleme **uygulanmaz**): yalnız ölçülmüş alanlar; gold/karar yok.
 
-    `meaning`/gold/karar yoktur. Kimlikler gerçek gözlem kimlikleridir (`g*` primitive, `t*` metin,
-    `p*` yol); bölge normalize `[x0,y0,x1,y1]`.
+    Referans/kimlik denetimleri bu tam listeyi kullanır: extraction bir kimliği ürettiyse, o satır
+    serileştirmede elenmiş olsa bile vardır (P3 §17 yalnız VLM'e giden tabloyu küçültür).
     """
     frame = observations.frame
     width, height = float(frame.width) or 1.0, float(frame.height) or 1.0
@@ -68,6 +68,34 @@ def observation_table(observations: Observations) -> list[dict]:
     return rows
 
 
+def _empty_evidence(row: dict) -> bool:
+    """P3 §17: bölgesi, metni ve değeri olmayan satır **kanıt taşımaz** — serileştirilmez."""
+    return (row.get("region") is None and not (row.get("text") or "").strip()
+            and row.get("value") is None)
+
+
+def observation_table_with_counts(observations: Observations) -> tuple[list[dict], dict]:
+    """VE tablosu + sayım kaydı (PLAN-12 §17): raw / sent / dropped.
+
+    Kaynak `Observations` **değişmez**; yalnız VLM'e giden serileştirme küçülür. Sıra stabildir
+    (primitives sonra texts, kaynak sırası korunur) ve kayıt gold'a bağlı değildir.
+    """
+    rows = raw_observation_rows(observations)
+    kept = [row for row in rows if not _empty_evidence(row)]
+    counts = {"raw": len(rows), "sent": len(kept), "dropped": len(rows) - len(kept)}
+    return kept, counts
+
+
+def observation_table(observations: Observations) -> list[dict]:
+    """VE'nin gördüğü **adreslenebilir** tablo: yalnız ölçülmüş gözlem alanları.
+
+    `meaning`/gold/karar yoktur. Kimlikler gerçek gözlem kimlikleridir (`g*` primitive, `t*` metin,
+    `p*` yol); bölge normalize `[x0,y0,x1,y1]`. Boş kanıt satırları elenir (§17); sayımlar için
+    `observation_table_with_counts` kullanılır.
+    """
+    return observation_table_with_counts(observations)[0]
+
+
 def prepare_arm_inputs(source: "SourcePage", observations: Observations, *, image_id: str, arm: str,
                        resize_max_side: int | None = None) -> dict:
     """Kolun girdisini hazırla. VE'nin ham sayfası V'ninkiyle **aynı byte'lar** olmalıdır."""
@@ -80,9 +108,14 @@ def prepare_arm_inputs(source: "SourcePage", observations: Observations, *, imag
         overlay = overlay_from_observations(observations, OVERLAY_IMAGE_ID, source=source,
                                            resize_max_side=resize_max_side)
         images.append(overlay)
-        table = observation_table(observations)
+        table, counts = observation_table_with_counts(observations)
+    else:
+        # V kolu gözlem satırı **görmez**; sayım kaydı yine tutulur (karşılaştırma için ham adet).
+        counts = {"raw": len(observations.primitives) + len(observations.texts), "sent": 0,
+                  "dropped": 0}
     return {"arm": arm, "images": images, "image_ids": [image.image_id for image in images],
             "page_image_id": image_id, "observations": table,
+            "observation_counts": counts,
             "arm_input_variant": arm, "evidence_mode": EVIDENCE_MODES[arm]}
 
 
@@ -168,4 +201,5 @@ def read_page(chat, bundle: dict, *, forbidden: list[str], num_predict: int | No
 
 
 __all__ = ["ARMS", "OVERLAY_IMAGE_ID", "RAW_IMAGE_ID", "EVIDENCE_MODES", "V_ARM", "VE_ARM",
-           "leak_check", "observation_table", "prepare_arm_inputs", "read_page"]
+           "leak_check", "observation_table", "observation_table_with_counts", "prepare_arm_inputs",
+           "raw_observation_rows", "read_page"]

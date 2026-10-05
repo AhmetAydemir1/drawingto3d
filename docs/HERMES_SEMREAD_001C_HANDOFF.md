@@ -91,3 +91,24 @@ burada ve `docs/PLAN-12.md` altında yürür. 001B ve 001C ledger/klasörleri ka
 - **OPEN GATE:** P3 — VE evidence compression.
 - **NEXT SINGLE STEP:** P3 (PLAN-12 §17): "boş kanıt satırını serileştirme" kuralı + sayım kaydı
   (raw/sent/dropped + prompt byte) ve stabil sıra/hash testleri.
+
+---
+
+## 1e. PLAN-12 §17 (P3) — VE evidence compression ✓
+
+- **CURRENT HEAD:** `12f8527` (P2; P3 commit'i ilerletir).
+- **WHAT CHANGED:** `semantic_candidate_reader.py`: `raw_observation_rows` (tam liste) +
+  `observation_table_with_counts` (kural: **bölge + metin + değer üçü de yoksa satır
+  serileştirilmez**); `observation_table` elenmiş tabloyu döner; `prepare_arm_inputs` bund'a
+  `observation_counts` {raw, sent, dropped} koyar; pilot `_observation_rows` **tam** listeyi
+  kullanır (kimlik denetimi extraction'ın ürettiğini görür). `prediction_input_record` artık
+  `observation_counts` + `prompt_bytes` taşır. Kaynak `Observations` değişmez; sıra stabil
+  (primitives→texts), hash stabil, gold'a bağımlılık yok.
+- **TEST EVIDENCE:** `pytest tests/test_semread_001c_contract.py tests/test_semantic_candidates.py
+  tests/test_semantic_reader.py` → **62 passed** (0,86 s). Sınır vakası testli: bölgeli boş metin
+  satırı kalır; bölgesiz/boş satır prompt'a giremez (`| line |`, `| arc |` yok).
+- **INFERENCE BUDGET:** 001C **0/30** (çağrı yok).
+- **OPEN GATE:** P4 — truncation first-class failure.
+- **NEXT SINGLE STEP:** P4 (§18): `read_page` sırası — `done_reason=length` → `truncated_output`
+  (parser **çağrılmaz**, ham saklanır); `stop`+tam metadata → parse; eksik metadata → fail-closed
+  teşhis; parse hata alt türleri (`kind`) taşımaya ve pilot attempt durumuna bağlanır.

@@ -1990,10 +1990,10 @@ işine geçme.
 - [x] optional unknown fields may be omitted
 - [x] defaults deterministic
 - [x] provenance ownership decided
-- [ ] empty observation rows pruned
-- [ ] row ordering deterministic
-- [ ] evidence serialization identity stable
-- [ ] prompt byte count recorded
+- [x] empty observation rows pruned
+- [x] row ordering deterministic
+- [x] evidence serialization identity stable
+- [x] prompt byte count recorded
 - [x] zero inference
 
 ---

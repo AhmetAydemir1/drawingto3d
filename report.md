@@ -1,7 +1,7 @@
 # SEMREAD-001C — Faz Raporu
 
 **Tarih:** 2026-10-05 · **Aktif plan:** `docs/PLAN-13.md` (PLAN_LATEST; bayt kopya, sha256 `cc61e0bc…`; PLAN-12 + kök PLAN.md history — §34)
-**Durum:** §21 dev kapısı **8/8 GEÇTİ**; §37 semantik değerlendirme TAMAM (V/VE degenerate — §2b); **§35 #5 requalification KOŞULDU: §8 resmî kapı 7/8 (elbow-VE `schema_coordinate`) — paylaşımlı ayar 8/8 ✓, stop 8/8 ✓, içerik 0/8 (§2c)** · §7 gereği 001C final kararı kullanıcıda (handoff §1s).
+**Durum:** §21 dev kapısı **8/8 GEÇTİ**; §37 semantik değerlendirme TAMAM (V/VE degenerate — §2b); §35 #5 requalification **KOŞULDU: §8 resmî kapı 7/8 (elbow-VE `schema_coordinate`; paylaşımlı ayar 8/8 ✓, stop 8/8 ✓, içerik 0/8 — §2c)** · **KAPANIŞ (2026-10-05): 001C final yok — READ-ONLY kapandı (Kapanış); karar: yeni experiment version = SEMREAD-001D; closure snapshot: `eval/semread_001c_closure.json`; kayıt: handoff §1t.**
 
 ---
 
@@ -19,12 +19,12 @@
 | araç | 6555e62 | `eval/semread_001c_dev_report.py` (§21 kapısı + §19/§43 ölçüm) |
 | kapanış | 1f5977a | report.md + handoff §1o |
 | §37 | 21e0691 | Offline dev semantik değerlendirme (0 inference) + D kolu (4 sayfa) + PLAN-13 izlendi |
-| §35 #2–#4 | d08e8c3 · f9b417f · bu commit | Paylaşımlı zarf (ortak rp + `generation_settings` invariantı) · `maxItems=32` + kopya kuralı · dev tavanı 32 deklare (24/32) |
+| §35 #2–#4 | d08e8c3 · f9b417f · 85b3bdf | Paylaşımlı zarf (ortak rp + `generation_settings` invariantı) · `maxItems=32` + kopya kuralı · dev tavanı 32 deklare (o an 24/32; kapanış 32/32 — §5) |
 
 Ek tanı araçları: `eval/semread_001c_measure_prompts.py` (çağrısız prompt ölçümü),
 `eval/semread_001c_probe_big.py` (`--ctx/--predict/--format/--repeat-penalty/--labeled/--dump`).
 
-## 2. §21 dev kapısı — 8/8 GEÇTİ (24/24 canlı çağrı)
+## 2. §21 dev kapısı — 8/8 GEÇTİ (HISTORICAL kapı fazı: 24/24 çağrı; güncel defter 32/32 — §2c)
 
 | hücre | geçerli | parse | refs | stop | koord. | sızıntı | attempt | aday |
 |---|---|---|---|---|---|---|---|---|
@@ -38,14 +38,16 @@ Ek tanı araçları: `eval/semread_001c_measure_prompts.py` (çağrısız prompt
 | dev-drawing-2-VE | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | attempt-0001 | 2 |
 
 **Kapı:** GEÇTİ — V 4/4, VE 4/4, stop=True, koordinat=True, refs=True, sızıntı=True.
-`valid_output_rate = 1.0`. Kanıt: `out/lab/semread-001c/dev-report.{json,md}` (araç: `eval/semread_001c_dev_report.py`).
+`valid_output_rate = 1.0`. Kanıt: `out/lab/semread-001c/dev-report.{json,md}` (araç:
+`eval/semread_001c_dev_report.py`; **kapanışta tazelendi** — dosyalar artık "en yeni pass" seçimini
+gösterir, §2c; bu bölümdeki tablo kapı fazının 24-çağrı seçimidir — HISTORICAL).
 
-**Attempt dağılımı (24):** pass 8 · truncated_output 5 · transport_error 2 · parse_error 1 ·
-failed_gates 1 · sonuçsuz (kill/kuyruk) 7.
+**Attempt dağılımı (24, kapı fazı):** pass 8 · truncated_output 5 · transport_error 2 · parse_error 1 ·
+failed_gates 1 · sonuçsuz (kill/kuyruk) 7. (Güncel defter: 37 attempt dizini — §7.)
 
-## 2b. §37 offline dev semantik değerlendirme — TAMAM (bulgu: parse-valid V/VE çıktısı degenerate)
+## 2b. §37 offline dev semantik değerlendirme — TAMAM (HISTORICAL veri: §37 anı; bulgu: parse-valid V/VE çıktısı degenerate — requal sonrası da sürüyor, §2c)
 
-**0 model çağrısı** (defter 24/24 sabit; final 0/20). Araç: `eval/semread_001c_dev_semantic_eval.py`
+**0 model çağrısı** (o an defter 24/24; kapanışta 32/32 — §2c; final 0/20). Araç: `eval/semread_001c_dev_semantic_eval.py`
 (salt-okur; dondurulmuş gold FREEZE hash denetimli; D/V/VE **aynı** `semantic_evaluation` yolu; VLM
 zincirini import etmez). Çıktı: `out/lab/semread-001c/dev-semantic-report.{json,md}`. Testler:
 `tests/test_semread_001c_dev_semantic_eval.py`.
@@ -73,8 +75,8 @@ değil) · elbow 17 · drawing-2 17 — 001B D adetleriyle birebir aynı (7/12/1
    içerikli → "aşırı bastırma gerçek içeriği kesti" okuması veriyle desteklenmiyor (§28).
 4. **plate-VE 41 aday:** 0 eşleşme, 41 unscorable (kapsam dışı), 4 yakın kopya, 41/41 yankı (§27).
 
-**Sonuç:** freeze'e bu çıktıyla geçilemez. Sıradaki iş: PLAN-13 §35 #5 — 8-hücre shared-envelope
-requalification (#2–#4 tamam; bkz. §6).
+**Sonuç:** freeze'e bu çıktıyla geçilemez (§37 anı). Sıradaki iş o an: PLAN-13 §35 #5 — 8-hücre
+shared-envelope requalification (#2–#4 tamam; koşuldu → §2c).
 
 ## 2c. §35 #5 shared-envelope requalification — SONUÇ (2026-10-05 12:00–15:00)
 
@@ -105,9 +107,10 @@ bitmeyen döngüsü bitti: eski 64/30-aday kesintileri yerine 32'de `stop`).
 **Sonuç (PLAN-13 §7 birebir):** "32 sonrası geçmezse: 001C final yok; yeni experiment version.
 Call-call bütçe artırma yok." → **001C bu haliyle final fazına geçemez**; retry/redo §36 gereği yasak.
 Karar kullanıcıya sunuldu (handoff §1s: (a) plan yolu = yeni experiment version, (b) tek-sapma redo —
-§36'ya aykırı, önerilmez).
+§36'ya aykırı, önerilmez). → **Kapanış: karar (a) uygulandı — 001C final yok, yeni experiment
+version = SEMREAD-001D; bu bölümden sonra 0 canlı çağrı (Kapanış).**
 
-## 3. Zarf revizyonları (hepsi ölçümle)
+## 3. Zarf revizyonları — HISTORICAL gelişim (hepsi ölçümle; kapanış zarfı altta)
 
 | # | Değişiklik | Gerekçe (kanıt) |
 |---|---|---|
@@ -118,10 +121,17 @@ Karar kullanıcıya sunuldu (handoff §1s: (a) plan yolu = yeni experiment versi
 | 4 | ctx → **22528**, predict → **8192** | elbow-V 5120'de kesildi (≥40 aday); flange 14121+8192=22.313 ≤ 22.528 |
 | 5 | MODEL 1800→**3000** / CASE 2400→**5400**; lab case tavanı 600→**7200** | İşler paralel; istekler ollama'da kuyruğa giriyor (aşağıda) |
 | 6 | `repeat_penalty` kablolandı (llama.py) | VLM döngüsü (aşağıda) |
-| 7 | Döngü kırıcı **kol başına: V=1.4 / VE=1.25**, pencere 512 | Prob taraması: 1.25 kırmadı · 1.6 susturdu (items:[]) · 1.4 durdu (150 tok); 1.4 ayrıca plate-VE'nin 41-adaylı zengin yanıtını 175 tokene kısıyor |
+| 7 | Döngü kırıcı **kol başına: V=1.4 / VE=1.25**, pencere 512 | Prob taraması: 1.25 kırmadı · 1.6 susturdu (items:[]) · 1.4 durdu (150 tok); 1.4 ayrıca plate-VE'nin 41-adaylı zengin yanıtını 175 tokene kısıyor (kol-başına seçim HISTORICAL; paylaşımlı zarfa §35 #2'de geçildi) |
 
-**Kilitli zarf:** predict 8192 · ctx 22528 · temperature 0.0 · repeat_last_n 512 ·
-repeat_penalty V 1.4 / VE 1.25 · MODEL 3000 s < CASE 5400 s < RUN 14400 s.
+**HISTORICAL envelope evolution:** yukarıdaki 7 revizyon ölçüm gerekçeleriyle tarihsel gelişimdir;
+döngü kırıcı önce kol başına seçilmişti (**V 1.4 / VE 1.25** — HISTORICAL).
+
+**CURRENT 001C closure envelope (FINAL):** `num_predict` **8192** · `num_ctx` **22528** ·
+`temperature` **0.0** · `repeat_last_n` **512** · `repeat_penalty` **1.25** (**paylaşımlı:
+V == VE**) · `maxItems = 32` + kopya kuralı · MODEL 3000 s < CASE 5400 s < RUN 14400 s
+(lab case tavanı 7200 s). Paylaşımlı-ayar requalification'ı bu zarfla koşuldu (§2c; 8/8 tek imza).
+Sabitlerin tek kaynağı: `src/drawingto3d/semantic_run_contract.py`
+(`generation_settings(V) == generation_settings(VE)`).
 
 Ayrıca şema sertleştirmesi (model çıktısını doğrudan etkiler): `candidate_id` →
 `minLength:1` + `pattern ^[A-Za-z0-9][A-Za-z0-9_.-]*$` (parser'ın reddettiğini şema da yasaklar).
@@ -138,6 +148,7 @@ Ayrıca şema sertleştirmesi (model çıktısını doğrudan etkiler): `candida
    üretip 5120'de kesildi; 8192'de de 30 özdeş adayla tekrarladı. Varsayılan ceza penceresi (64)
    ~230–580 token'lık item'ı görmediği için hiç ateşlemiyordu. → `repeat_penalty/repeat_last_n`
    kablolandı; kol-başına değerler prob taramasıyla seçildi (1.25 kırmadı / 1.6 susturdu / 1.4 durdu).
+   Kol-başına seçim HISTORICAL'dır; kapanış zarfında ceza paylaşımlı **1.25 + rln 512** (§3).
 4. **Şema↔parser ayrışması**: model cezadan kaçmak için `candidate_id: ""` üretti (şema izin verdi,
    parser reddetti → parse_error); sonra parser'ın kendi sentinelini taklit etti (`"<auto-generated>"`
    ×2 → yinelenen kimlik → refs düştü). → minLength + pattern; parser ve şema artık aynı sözü verir.
@@ -146,31 +157,62 @@ Ayrıca şema sertleştirmesi (model çıktısını doğrudan etkiler): `candida
 
 ## 5. Bütçe tarihçesi (§20 sapmaları)
 
-dev **10 → 12 → 16 → 18 → 20 → 22 → 24** (toplam 30 → **44**). 24/24 kullanıldı.
-Sınıflar: platform kurbanı 5 (600 s tavanı) · operatör kill'i 4 (yanlış/erken kill — rapor
-sorumluluğu kabul edilir) · zarf/kıyas redo'ları 8 · döngü+şema redo'ları 4 · ilk geçerli 3.
-Her artış `state.json` notu + handoff §1i/§1l/§1n + test assertion'ı ile kayıtlıdır.
+dev **10 → 12 → 16 → 18 → 20 → 22 → 24 → 32** (toplam 30 → 44 → **52**). Closure: **dev 32/32
+kullanıldı; final 0/20** (kullanılmadı).
+Sınıflar (ilk 24'ün): platform kurbanı 5 (600 s tavanı) · operatör kill'i 4 (yanlış/erken kill —
+rapor sorumluluğu kabul edilir) · zarf/kıyas redo'ları 8 · döngü+şema redo'ları 4 · ilk geçerli 3;
+\+ **8 requalification çağrısı** (§35 #5; paylaşımlı zarf doğrulaması — #25–#32) = **32**.
+Her artış `state.json` notu + handoff §1i/§1l/§1n/§1o/§1q + test assertion'ı ile kayıtlıdır
+(son tavan #6: §1q; requalification sonucu: §1s).
 
 ## 6. Kalan işler
 
 - **PLAN-13 §35 #2–#4 TAMAM** (d08e8c3 / f9b417f / 85b3bdf); **#5 requalification KOŞULDU — §8 resmî
   kapı GEÇMEDİ (7/8: elbow-VE `schema_coordinate`); paylaşımlı ayar 8/8, stop 8/8, içerik 0/8 (§2c).**
-  §7 gereği karar kullanıcıda: (a) plan yolu — 001C final yok, yeni experiment version planı;
-  (b) tek-sapma redo (plan dışı, önerilmez). **Yeni çağrı yok; karar bekleniyor (handoff §1s).**
-- **P7 (§23) — YENİ BAĞIMSIZ HOLDOUT: kullanıcı girdisi gerekli.** Repoda görülmemiş bir sayfa yok;
-  final fazının kilitleneceği yeni çizim(ler) sağlanmalı. P8 (freeze) → P9/P10 (20 final çağrı +
-  değerlendirme) buna bağlıdır.
-- Final fazı zarfı: dev'de kilitlenen zarfın aynısı önerilir (freeze adımında yeniden onaylanır).
+  §7 gereği **001C final yok**; karar (a) uygulandı: **yeni experiment version = SEMREAD-001D**
+  (kullanıcı planı; 001D skeleton'ı sıradaki commit'lerde). **001C bundan sonra READ-ONLY; yeni çağrı
+  yok** (bütçe 32/32 kapandı; retry/redo §36 gereği yasak).
+- **P7 (bağımsız holdout) 001D'ye taşındı** — 001D planı holdout intake/selection'ı kapsar
+  (PLAN_SEMREAD_001D §30–§33). 001C'de final koşusu yapılmayacak.
+- Sıra (PLAN_SEMREAD_001D §41–§43): closure snapshot (bu kayıtla) → 001D skeleton → semantic-content
+  contract → dev proof → holdout → freeze → final.
 
 ## 7. Kanıt yolları
 
-- Defter: `out/lab/semread-001c/state.json` (24 çağrı, bütçe 24/24) · `attempts/` (24 attempt dizini,
-  ham yanıt + kapı sonuçları + kaynak/istek manifestleri)
-- Dev raporu: `out/lab/semread-001c/dev-report.{json,md}` · araç `eval/semread_001c_dev_report.py`
-- Dev semantik raporu (§37): `out/lab/semread-001c/dev-semantic-report.{json,md}` · araç
+- Defter: `out/lab/semread-001c/state.json` (**32 canlı çağrı; dev 32/32 · final 0/20**;
+  requalification #25–#32) · `attempts/` (**37 attempt dizini**: 32 canlı + 4 D + 1 D-orphan
+  [result.json'sız, defterde kayıt değil — §2b]; ham yanıt + kapı sonuçları + kaynak/istek
+  manifestleri)
+- Dev raporu: `out/lab/semread-001c/dev-report.{json,md}` — **kapanışta tazelendi** (0 inference,
+  salt-okur; "en yeni pass" seçimi; bütçe satırı dev 32/32) · araç `eval/semread_001c_dev_report.py`
+- Dev semantik raporu (§37): `out/lab/semread-001c/dev-semantic-report.{json,md}` —
+  **requalification sonrası tazelendi** (§2c seçili attempt'leri) · araç
   `eval/semread_001c_dev_semantic_eval.py` · testler `tests/test_semread_001c_dev_semantic_eval.py`
   (8 test; sıfır-inference ayrıca taze süreçte kanıtlanır)
-- Prob kanıtları: `~/.hermes/cache/scratch/probe-*.log|json` (rp 1.4/1.6/1.3 taraması, etiketli
-  üretim-birebir probe dahil)
-- Koşu zincirleri: `~/.hermes/cache/scratch/semread-001c-batch*.log`
-- Handoff: `docs/HERMES_SEMREAD_001C_HANDOFF.md` (§1a–§1p)
+- **Kapanış snapshot'ı:** `eval/semread_001c_closure.json` (+ `eval/semread_001c_closure.py`,
+  `tests/test_semread_001c_closure.py`) — izlenen doküman/defter/rapor/attempt hash'leri + kimlikler;
+  `--verify` ile denetlenir (Kapanış)
+- Prob kanıtları (repo dışı): `~/.hermes/cache/scratch/probe-*.log|json` (rp 1.4/1.6/1.3 taraması,
+  etiketli üretim-birebir probe dahil)
+- Koşu zincirleri (repo dışı): `~/.hermes/cache/scratch/semread-001c-batch*.log` ·
+  `semread-001c-elbowV-final*.log` · `semread-001c-requal.log` (§1r/§1s)
+- Handoff: `docs/HERMES_SEMREAD_001C_HANDOFF.md` (§1a–§1t; kapanış kaydı §1t)
+
+---
+
+## Kapanış — 001C READ-ONLY ilanı (2026-10-05)
+
+- **Karar (PLAN-13 §7 birebir):** dev bütçesi 32/32 dolu ve §8 resmî kapısı geçilmedi → **001C
+  final fazına geçmez**; call-call bütçe artırma yok. Karar (a) uygulandı: **yeni experiment
+  version = SEMREAD-001D** (kullanıcı planı).
+- **Closure hijyeni (0 inference; izlenen dosyalarda docs-only):** report zarf/bütçe/kanıt satırları
+  historical/current ayrımıyla güncellendi (§3/§5/§7); `semantic_run_contract.py` docstring'i iki
+  katmana ayrıldı (P0.5 — sabitler ve davranış değişmedi; dosya byte'ı değiştiği için
+  `producer_identity()` recompute'u run-time değerinden mekanik sapar, snapshot ikisini de kaydeder);
+  `dev-report` ve `dev-semantic-report` tazelendi; handoff §1t.
+- **Closure snapshot:** `eval/semread_001c_closure.json` (`--write`/`--verify`) — izlenen doküman +
+  defter + rapor + 12 seçili attempt hash'leri, kimlikler (producer/evaluation/run-contract) ve
+  bütçe/requalification özeti; kapanış HEAD'ini pinler.
+- **Read-only ilanı:** 001C attempt/bütçe/ledger artifact'ları bundan sonra **değiştirilmez**
+  (rewrite yasak — PLAN_SEMREAD_001D §9); bir düzeltme gerekirse yeni sürümde (001D) yapılır.
+  Kanıt zinciri `--verify` ile (temiz klonda `out/` eksikleri açıkça raporlanarak) denetlenir.

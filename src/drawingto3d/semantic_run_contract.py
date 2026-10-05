@@ -8,14 +8,33 @@ Kural: buradaki bir değeri değiştirmek ham tahmini geçersiz kılar. Değerle
 rapor üretimi ve referans doğrulaması bu dosyada **yaşamaz** — onlar `evaluation_identity()`ye girer.
 Böylece yalnız evaluator/gold düzeltmesi geçerli ham tahmini yeniden üretmeyi gerektirmez.
 
-Sürüm `/1` (SEMREAD-001C, PLAN-12 §19): üretim zarfı 001B'nin **ölçülmüş** tavanlarına göre
-yeniden seçildi ve dev ölçümüyle iki kez revize edildi. 001B'de gönderilen 19 çağrının 11'i
-`done_reason=length` ile kesildi (10'u 2048 tavanında, biri bağlam tavanında). 001C dev'de:
-`dev-plate-pocket-VE` 3072'de son adayın ortasında kesildi → `num_predict = 4096`; `dev-flange-book-VE`
-14.121 token'lık prompt ile 12288 ctx'te HTTP 400 (`exceed_context_size_error`) aldı → `num_ctx = 20480`
-(en kötü ölçülen VE prompt'u 14.121 — dev-flange-book; elbow ≤11,8k, drawing-2 ≤7,7k tahmin üst sınırı;
-14.121 + 4.096 = 18.217 ≤ 20.480, %11 pay). En büyük context körlemesine seçilmez (§19.3): değerler
-ölçümlü, gerekçesi resources.json `protocol` bloğunda ve deney kaydında izlenir.
+Sürüm `/1` (SEMREAD-001C, PLAN-12 §19). İki katman ayrı okunur:
+
+**HISTORICAL — 001C dev zarf revizyonları** (hepsi ölçümle; tam tablo: report.md §3):
+001B'de gönderilen 19 çağrının 11'i `done_reason=length` ile kesilmişti (10'u 2048 tavanında, biri
+bağlam tavanında). 001C dev'de sırayla: `dev-plate-pocket-VE` 3072'de son adayın ortasında kesildi →
+`num_predict = 4096`; `dev-flange-book-VE` 14.121 token'lık prompt ile 12288 ctx'te HTTP 400
+(`exceed_context_size_error`) aldı → `num_ctx = 20480` (14.121 + 4.096 = 18.217 ≤ 20.480); 4096 payı
+dar kaldı → `num_predict = 5120`; `dev-flange-elbow-V` 5120'de de kesildi → `num_predict = 8192` +
+`num_ctx = 22528` (14.121 + 8.192 = 22.313 ≤ 22.528). En büyük context körlemesine seçilmez
+(§19.3): değerler ölçümlü, gerekçesi resources.json `protocol` bloğunda ve deney kaydında izlenir.
+Zaman aşımı hiyerarşisi: MODEL 3000 s < CASE 5400 s < RUN 14400 s (lab case tavanı 7200 s). Tekrar
+döngüsü için `repeat_penalty`/`repeat_last_n = 512` kablolandı; prob taraması (1.25 kırmadı /
+1.6 susturdu / 1.4 durdu ama plate-VE'nin zengin yanıtını kıstı) sonucu **geçici olarak kol başına**
+seçildi (V 1.4 / VE 1.25) — bu kol-başına seçim HISTORICAL'dır.
+
+**CURRENT (001C closure) — paylaşımlı requalification zarfı** (PLAN-13 §4/§6/§8):
+`generation_settings(V) == generation_settings(VE)` zorunlu; kol-başına repeat_penalty kaldırıldı,
+ortak `repeat_penalty = 1.25` + `repeat_last_n = 512`; döngü sampling ile değil **yapısal çıktı
+sözleşmesiyle** sınırlanır (`items.maxItems = 32` + kopya kuralı, PLAN-13 §5). 8 dev hücre bu
+zarfla yeniden doğrulandı (requalification, 2026-10-05): paylaşımlı ayar 8/8 ✓, `stop` 8/8 ✓,
+resmî §8 kapısı **7/8** (elbow-VE tek normalize ihlali: `callout_region.y1 = 1.05`). PLAN-13 §7
+gereği 001C final fazına geçmedi → deney **READ-ONLY** kapandı; sıradaki experiment version
+SEMREAD-001D; kapanış snapshot'ı: `eval/semread_001c_closure.json`. Bu dosya kapanışta **yalnız
+dokümantasyon** olarak revize edildi (P0.5): sabitler ve davranış değişmedi; dosya byte'ı
+değiştiği için `producer_identity()` recompute'u run-time değerinden mekanik olarak sapar
+(snapshot iki değeri de kaydeder).
+
 001B sözleşmesi (`semread-001b-run-contract/3`) `docs/PLAN-11.md` kaydında donmuştur; bu sürüm
 001C deneyinin kimliğidir.
 """
@@ -51,11 +70,12 @@ IMAGES_LAYOUT = "per_image_message_labeled"
 IMAGE_LABEL_PREFIX = "Image ID: "
 
 IMAGE_MAX_SIDE = 1280          # development'ta sabitlenir; final koşuya kadar değişmez
-# PLAN-12 §19: 2048 körlemesine yükseltilmedi; 001B'nin ölçülen kesilme tavanına göre 3072 seçildi,
-# sonra 001C dev'de ölçüm 4096'ya çıkardı: `dev-plate-pocket-VE` 25 satırlık tabloda 3072'nin
-# tamamını kullanıp **son adayın ortasında** kesildi (state=truncated_output; ~7,7 tok/s M1'de
-# 4096'nın en kötü karşılığı ~530 s < 900 s model tavanı). Kabul yalnız `done_reason == stop`;
-# hedef: başarılı eval_count ≤ 0.8 × num_predict (4096 → 3277).
+# HISTORICAL revizyon (PLAN-12 §19 → PLAN-13 §5): 2048 körlemesine yükseltilmedi; 001B'nin ölçülen
+# kesilme tavanına göre 3072 seçildi; `dev-plate-pocket-VE` 25 satırlık tabloda 3072'nin tamamını
+# kullanıp **son adayın ortasında** kesildi (state=truncated_output) → 4096; payı dar → 5120;
+# `dev-flange-elbow-V` 5120'de de kesildi → **8192** (ctx da 20480→22528; flange 14.121 + 8.192 =
+# 22.313 ≤ 22.528). Kabul yalnız `done_reason == stop`; hedef: başarılı eval_count ≤ 0.8 ×
+# num_predict (8192 → 6553).
 NUM_PREDICT = 8192
 
 # Üretim ayarları: taşıma katmanı bu değerlerden kurulur (kopyası tutulmaz).
@@ -72,11 +92,12 @@ SETTINGS = {"num_ctx": 22528, "temperature": 0.0,
 # VLM döngü kırıcı — **ORTAK** (PLAN-13 §4/§6): kol-başına repeat_penalty kaldırıldı. Final
 # zarfında `generation_settings(V) == generation_settings(VE)` zorunludur; döngü sampling ile
 # değil yapısal çıktı sözleşmesiyle (items.maxItems + kopya kuralı, PLAN-13 §5) sınırlanır.
-# Ölçüm geçmişi (zarf #7 karar kaydı): V 1.25 → elbow tekrar döngüsü (30 özdeş aday, 8192'de
-# kesildi); 1.6 → yanıt boşaldı (25 token, items:[]); 1.4 → probda temiz durdu ama plate-VE'nin
-# 41 adaylık zengin yanıtını 175 tokene kıstı. Ortak başlangıç 1.25'tir (VE zengin rejimini korur;
-# V'nin döngüsünü yapısal cap keser). Freeze, 8 dev hücrenin paylaşımlı zarfla yeniden
-# doğrulanmasına (PLAN-13 §8 requalification) bağlıdır.
+# Ölçüm geçmişi (HISTORICAL — zarf #7 karar kaydı): V 1.25 → elbow tekrar döngüsü (30 özdeş aday,
+# 8192'de kesildi); 1.6 → yanıt boşaldı (25 token, items:[]); 1.4 → probda temiz durdu ama
+# plate-VE'nin 41 adaylık zengin yanıtını 175 tokene kıstı. Ortak değer 1.25'tir (gerekçe aynı:
+# VE zengin rejimini korur; V'nin döngüsünü yapısal cap keser). Requalification (2026-10-05) bu
+# zarfla koşuldu: paylaşımlı ayar 8/8 ✓, stop 8/8 ✓, resmî §8 kapısı 7/8 (elbow-VE koordinat
+# ihlali) → 001C final yok (PLAN-13 §7); deney READ-ONLY — değerler kapanıştan sonra değişmez.
 # Pencere 512: döngü item'ı ~230-580 token; varsayılan 64'lük pencere tekrarı hiç görmez.
 REPEAT_LAST_N = 512
 REPEAT_PENALTY = 1.25

@@ -458,3 +458,46 @@ burada ve `docs/PLAN-12.md` altında yürür. 001B ve 001C ledger/klasörleri ka
   - **(b) Tek-sapma (plan dışı):** yalnız elbow-VE için 1 redo (bütçe 33) — açık kullanıcı onayı +
     sapma kaydı ister; §36'ya aykırı, önerilmez.
 - **NEXT SINGLE STEP:** KULLANICI (a)/(b) kararı. Karar gelene kadar **yeni çağrı yok**.
+
+---
+
+## 1t. KAPANIŞ — 001C closure hijyeni + immutable snapshot → READ-ONLY ilanı (2026-10-05 ~18:30)
+
+- **CURRENT HEAD:** `2c42f1b` (requalification sonuç kaydı; bu kayıttan önce). Closure commit'leri
+  ilerletir: **(A) hijyen** — `report.md` + bu §1t + `semantic_run_contract.py` docstring (davranış
+  değişikliği yok); **(B) snapshot** — `eval/semread_001c_closure.{py,json}` +
+  `tests/test_semread_001c_closure.py`. Manifest `recorded_at_git_head` = **(A)**.
+- **KARAR (PLAN-13 §7 → PLAN_SEMREAD_001D):** 001C final fazına geçmez; karar (a) uygulandı —
+  **yeni experiment version = SEMREAD-001D** (kullanıcı planı). 001C bundan sonra **READ-ONLY
+  HISTORICAL EXPERIMENT**: attempt/bütçe/ledger rewrite yasak; düzeltme yeni sürümde yapılır.
+- **WHAT CHANGED (0 canlı çağrı; bütçe 32/32 ve final 0/20 sabit):**
+  1. `report.md` — stale zarf/bütçe/kanıt satırları düzeltildi: current envelope = **paylaşımlı
+     rp 1.25** (+ ctx 22528 / predict 8192 / temp 0.0 / rln 512; §3 historical↔current ayrımı);
+     bütçe **32/32**, final **0/20**; kanıt yolları (tazelenmiş raporlar, §1a–§1t, 37 attempt
+     dizini); yeni **Kapanış** bölümü (read-only ilanı + karar + snapshot referansı).
+  2. `src/drawingto3d/semantic_run_contract.py` — **yalnız docstring/yorum** (P0.5): historical
+     revizyonlar vs closure paylaşımlı zarf ayrımı; sabitler ve davranış birebir aynı
+     (`generation_settings(V) == generation_settings(VE)` ✓). Dosya byte'ı değişti:
+     f1a5a909… (2c42f1b blob'u) → ef1d407a…; `producer_identity()` recompute'u bu yüzden
+     670da040… → 208a6888… **mekanik** sapar — run-time değer (670da040…) attempt
+     manifestlerinde ve snapshot'ta korunur.
+  3. `out/` tazelemeleri (0 inference, salt-okur araçlar): `dev-report.{json,md}` `--write`
+     ("en yeni pass" seçimi; §21 kapısı 8/8; bütçe satırı `dev 32/32`) — `state.json` mtime
+     değişmedi; `dev-semantic-report.{json,md}` §1s'te tazelenmişti, içeriği doğrulandı.
+  4. `eval/semread_001c_closure.py` — closure manifesti (`--write`/`--verify`): izlenenler
+     report.md + handoff + PLAN-13 + FREEZE + defter + 2 rapor (json+md) + 12 seçili attempt
+     (manifest/result/parsed) = **45 artifact**; kimlikler (run-time gruplar + closure recompute +
+     run-contract), bütçe/attempt/requalification özeti. Hiçbir 001C dosyasına yazmaz.
+- **TEST EVIDENCE:** `eval/semread_001c_closure.py --verify` → **45/45 artifact birebir — TAMAM**;
+  `pytest tests/test_semread_001c_closure.py` → **9 passed**; odak süiti (closure + 001c contract +
+  semantic_candidates + semantic_reader + dev-semantik + 001b closure) → **95 passed** (0,94 s);
+  001B closure `--verify` → **9/9** (dokunulmadı).
+- **§43 kabul:** 0 inference ✓ · current envelope paylaşımlı rp 1.25 ✓ · historical korundu ✓ ·
+  bütçe 32/32 ✓ · final 0/20 ✓ · §1s referansı ✓ · requal 7/8 ✓ · stop 8/8 ✓ · shared 8/8 ✓ ·
+  içerik 0/8 ✓ · elbow-VE y1=1.05 kayıtlı ✓ · attempt rewrite yok ✓ · evaluator rewrite yok ✓ ·
+  hijyen commit'i (A) ✓ · closure snapshot (B) ✓ · read-only ilanı ✓.
+- **INFERENCE BUDGET:** değişmedi — dev **32/32** (kapalı), final **0/20**; bu kayıtta canlı çağrı yok.
+- **OPEN GATE:** yok — 001C kapandı (read-only). Sıradaki experiment: SEMREAD-001D.
+- **NEXT SINGLE STEP:** SEMREAD-001D implementation — PLAN_SEMREAD_001D §41: (3) 001D plan +
+  experiment skeleton → (4) semantic-content validator → (5) observation-echo/duplicate metrikleri →
+  … (hijyen + closure #1–#2 bu kayıtlarla tamam).

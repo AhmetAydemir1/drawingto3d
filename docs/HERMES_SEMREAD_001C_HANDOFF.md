@@ -157,3 +157,26 @@ burada ve `docs/PLAN-12.md` altında yürür. 001B ve 001C ledger/klasörleri ka
 - **OPEN GATE:** §52 dev smoke (ilk 2 sayfa × V/VE = 4 çağrı).
 - **NEXT SINGLE STEP:** 001C corpus kökünü kur (`--experiment semread-001c --corpus`), dry-run'la
   4 işi doğrula, sonra `dev-plate-pocket` + `dev-flange-book` V/VE canlı koşu.
+
+---
+
+## 1h. §52 dev smoke — ilk sonuçlar + zaman aşımı düzeltmesi
+
+- **Smoke #1 `dev-plate-pocket-V`: PASS** (86,2 s). Kanıt (attempt-0001/result.json +
+  gate-results.json): `state=pass`; `done_reason=stop`, `eval_count=368` (3072 tavanının çok altında),
+  `prompt_eval_count=1687`; koordinatlar normalize (`{x0:0.67,y0:0.35,x1:0.82,y1:0.64}` — P1
+  sözleşmesi tuttu); `provenance` harness'tan (`vlm | qwen3-vl:8b-instruct` — P2); referans kapısı
+  `exact`, leakage yok; 2 aday.
+- **Smoke #2 `dev-plate-pocket-VE`: `transport_error / timeout`** — M1'de VE prompt'u (~7,6k token)
+  + uzun çıktı 300 s'lik HTTP model tavanını aştı. Bu **P4 taksonomisinin çalıştığının kanıtıdır**:
+  kesilme `transport_timeout` olarak, parse hatasıyla karışmadan kaydedildi.
+- **Düzeltme (harness politikası, donmuş zarf değil):** `MODEL_TIMEOUT_SECONDS 300 → 900`,
+  `CASE_TIMEOUT_SECONDS 600 → 1200`, `RUN_TIMEOUT_SECONDS 7200 → 14400`; `resources.json` artık
+  `protocol` bloğunu (üç tavan) taşır (§19 "timeouts kaydedilir"). Pilot dosyası üretici kimliğinde
+  **değildir** (P0R-2) — geçen V attempt'i `reuse` kalır; dry-run bunu doğruladı:
+  `skip dev-plate-pocket V (reuse)` + 3 çağrı.
+- **KURAL (yalnız 001C):** koşu elle durduruldu (dev-flange-book-V daha gönderilmeden; defterde
+  2 gönderim). 001B artefaktları `--verify` ile 9/9 birebir.
+- **BÜTÇE:** dev 2/10 gönderildi (1 pass + 1 timeout). Yeniden koşu: plate-VE + flange-V + flange-VE
+  = +3 → 5/10; §21 kapısı sonrası +4 → 9/10 (1 yedek).
+- **NEXT SINGLE STEP:** resmoke (3 çağrı) → sonuç kayıtları → §21 dev kapısı (+4).

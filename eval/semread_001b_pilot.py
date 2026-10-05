@@ -86,10 +86,13 @@ def use_experiment(name: str) -> dict:
     PREPARED_INPUT_DIR = CORPUS_DIR / "prepared-inputs"
     return {"experiment": name, "report_root": str(REPORT_ROOT)}
 
-JOB_PREFIX = "semread-001b-"
-CASE_TIMEOUT_SECONDS = 600
-RUN_TIMEOUT_SECONDS = 7200
-MODEL_TIMEOUT_SECONDS = 300
+JOB_PREFIX = "semread-001b-"    # tarihsel ad; run_live iş kimliğini EXPERIMENT_NAME'den kurar
+# 001C gözlemi: `dev-plate-pocket-VE` 12288 bağlamda 300 s'lik HTTP tavanında `transport_timeout`
+# ile kesildi (M1'de VE prompt'u ~7.6k token + uzun çıktı). Model tavanı 900 s'ye çıkarıldı;
+# iş/batch tavanları model tavanının üstünde tutulur ki kesilme değil **yanıt** kaydedilsin.
+CASE_TIMEOUT_SECONDS = 1200
+RUN_TIMEOUT_SECONDS = 14400
+MODEL_TIMEOUT_SECONDS = 900
 LIVE_CALL_LIMIT_DEV = 10
 LIVE_CALL_LIMIT_FINAL = 20
 LIVE_CALL_LIMIT_TOTAL = LIVE_CALL_LIMIT_DEV + LIVE_CALL_LIMIT_FINAL
@@ -1477,7 +1480,8 @@ def write_live_attempt(page: dict, arm: str, *, phase: str, observations=None, s
                                      "blocking_reason": reservation.get("reason")})
 
     settings = ChatSettings(**{key: value for key, value in wanted.items() if key in supported})
-    recorder = Recorder(directory / "inference-log.json", label=f"semread-001b {case_id}")
+    recorder = Recorder(directory / "inference-log.json",
+                        label=f"{EXPERIMENT_NAME} {case_id}")
     chat = RecordedChat(MODEL, settings=settings, recorder=recorder)
     forbidden = _forbidden_terms(page)
     mark_send_state(attempt_id, state_name="sending")
@@ -1528,6 +1532,9 @@ def write_live_attempt(page: dict, arm: str, *, phase: str, observations=None, s
                 "prompt_bytes": len(prompt.encode("utf-8")),
                 "response_bytes": (len(answer_text.encode("utf-8"))
                                    if isinstance(answer_text, str) else None),
+                "protocol": {"model_timeout_seconds": MODEL_TIMEOUT_SECONDS,
+                             "case_timeout_seconds": CASE_TIMEOUT_SECONDS,
+                             "run_timeout_seconds": RUN_TIMEOUT_SECONDS},
                 "rss": {"value_bytes": resource.getrusage(resource.RUSAGE_SELF).ru_maxrss,
                         "scope": "bu sürecin RSS'i; toplam sistem/model RAM'i değildir"}})
     write_json(directory / "runtime-identity.json", runtime)
@@ -2307,7 +2314,7 @@ def run_live(phase: str, split: str | None = None, arms: tuple[str, ...] = (V_AR
             continue
         planned.append({**cell, "action": "call"})
         jobs.append(Job(
-            id=f"{JOB_PREFIX}{cell['page_id']}-{cell['arm']}-{phase}",
+            id=f"{EXPERIMENT_NAME}-{cell['page_id']}-{cell['arm']}-{phase}",
             command=[sys.executable, str(ROOT / "eval/semread_001b_pilot.py"),
                      "--experiment", EXPERIMENT_NAME,
                      "--worker", "--page-id", page["page_id"], "--arm", cell["arm"],

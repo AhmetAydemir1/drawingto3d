@@ -1,6 +1,6 @@
 # SEMREAD — durum raporu (yaşam belgesi; aktif deney: SEMREAD-001D)
 
-**Tarih:** 2026-10-05 · **Aktif deney:** SEMREAD-001D · **Aktif plan:** `docs/PLAN-14.md` (SEMREAD-001D; PLAN_LATEST; bayt kopya sha256 `a027cb4a…` — "skeleton sonrası güncel plan" revizyonu; önceki revizyon `f2d249b7…` git history'de; PLAN-13 + PLAN-12 + kök PLAN.md history)
+**Tarih:** 2026-10-05 · **Aktif deney:** SEMREAD-001D · **Aktif plan:** `docs/PLAN-14.md` (SEMREAD-001D; PLAN_LATEST; bayt kopya sha256 `39cf9b84…` — "semantic-content validator sonrası güncel uygulama planı" revizyonu; önceki revizyonlar `a027cb4a…`, `f2d249b7…` git history'de; PLAN-13 + PLAN-12 + kök PLAN.md history)
 **001C durumu (aşağıdaki 001C kaydı — HISTORICAL):** §21 dev kapısı **8/8 GEÇTİ**; §37 semantik değerlendirme TAMAM (V/VE degenerate — §2b); §35 #5 requalification **KOŞULDU: §8 resmî kapı 7/8 (elbow-VE `schema_coordinate`; paylaşımlı ayar 8/8 ✓, stop 8/8 ✓, içerik 0/8 — §2c)** · **KAPANIŞ (2026-10-05): 001C final yok — READ-ONLY kapandı (Kapanış); karar: yeni experiment version = SEMREAD-001D; closure snapshot: `eval/semread_001c_closure.json`; kayıt: handoff §1t.**
 
 ---
@@ -8,14 +8,19 @@
 ## 0. Aktif deney — SEMREAD-001D (current; 2026-10-05)
 
 - **Bütçe:** dev **0/12** · final **0/20** (toplam **0/32**) — PLAN-14 §24; artış yok.
-- **Kod (current):** `semread-candidates/2` · `semread-candidate-reader/2` · `semread-001c-run-contract/1`.
-  İlk canlı 001D çağrısından **önce** `/3` + `/3` + `001d/1`'e bump edilir (PLAN-14 §10/§49).
+- **Kod (current):** `semread-candidates/3` · `semread-candidate-reader/3` · `semread-001c-run-contract/1`.
+  Şema/reader `/3` **yapıldı** (§3/§61: semantic-empty geçersiz, semantic claim ≠ evidence-only,
+  prompt semantic-first, no-guess korunur); run-contract `001d/1` kimliği bir sonraki commit'te
+  (PLAN-14 §10/§63).
 - **Tamamlanan:** skeleton (PLAN-14 izleme + bütçe deklare + gates 34/34) → **§47 ilk uygulama
   adımı: semantik-içerik sözleşmesi (0 inference)** — tek kaynak `semantic_claim_flags` /
   `candidate_has_semantic_claim` / `evidence_flags`; wire sınırında `schema_semantic_empty` reddi
-  (§3/§5/§8/§9); D yolu audit'i (§6 — D doğrudan `Candidate` kurar, wire parser'a girmez).
-- **Sıradaki (§46#3–#4):** prompt v3 + schema/reader `/3` + run-contract `001d/1` kimliği; sonra
-  static preflight (§20) + gates → Round 1 (4 çağrı; §25).
+  (§3/§5/§8/§9); D yolu audit'i (§6 — D doğrudan `Candidate` kurar, wire parser'a girmez) →
+  **§61: schema/reader `/3` + prompt v3** (0 inference) — ortak V/VE görevi semantic-first
+  (§6/§7), no-guess anti-pressure (§8), VE kanıt bölümünde satır-başına-aday yasağı (§9), şema item
+  açıklaması aynı asgari sözleşmeyi söyler (§4; `anyOf` **eklenmedi** — §5).
+- **Sıradaki (§60#2 / §63):** `semread-001d-run-contract/1` + producer identity; ardından dev rapor
+  (§17–§22), static preflight (§23–§25) + gates → Round 1 (4 çağrı; §31).
 - **External CI/status:** yok — kabul kanıtı yerel pytest + `eval/` araçlarıdır (PLAN-14 §45).
 
 ---

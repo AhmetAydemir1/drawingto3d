@@ -18,9 +18,10 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 PLAN = ROOT / "docs" / "PLAN-14.md"
-# Plan revizyonu (§47 işinin dayanağı): "Skeleton sonrası güncel plan" — bayt kopya. Önceki
-# revizyon (f2d249b7…) git history'de; sha bilinçli olarak elle pinlenir (revizyon sessizce geçmesin).
-PLAN_SHA256 = "a027cb4aa8e27cd2ed732f9b9e3f247cf8b00013a8d2c52bb3bf948788cbc22f"
+# Plan revizyonu (§61 işinin dayanağı): "Semantic-content validator sonrası güncel uygulama planı"
+# — bayt kopya. Önceki revizyonlar (a027cb4a…, f2d249b7…) git history'de; sha bilinçli olarak elle
+# pinlenir (revizyon sessizce geçmesin).
+PLAN_SHA256 = "39cf9b8483f5cbfa03e0683cebcea4dba7d47dc68a0867b8da76057e7aaf088d"
 HANDOFF = ROOT / "docs" / "HERMES_SEMREAD_001D_HANDOFF.md"
 
 

@@ -13,7 +13,9 @@ Kapsam (PLAN-12 §15.3 / §49 kontrol listesi):
 001D notu (§5 geçişi): wire sınırında semantik-içerik kuralı eklendi — yalnız `candidate_id` +
 `source.region` taşıyan gövde artık `schema_semantic_empty` ile reddedilir. Bu dosyadaki kabul
 testleri bu yüzden **tek semantic claim** taşıyan fixture kullanır; claimsiz reddin kendi kapsamı
-`tests/test_semread_001d_semantic_content.py`'dedir (şema/reader sürüm bump'ı sonraki commit'te).
+`tests/test_semread_001d_semantic_content.py`'dedir. Şema/reader `/3` bump'ı ve prompt v3 bu
+commit'te yapıldı; v3 sözleşmesinin kendi kapsamı `tests/test_semread_001d_prompt_v3.py`'dedir
+(bu dosya 001C'nin `/2` sözleşmesini değil, sürüm ilerlemesini denetler).
 
 Model çağrısı yok; yalnız şema + parser + prompt (saf fonksiyonlar).
 """
@@ -86,9 +88,15 @@ def _region_schemas() -> dict[str, dict]:
 
 
 def test_p1_versions_are_bumped():
-    """PLAN-12 §13: çıktıyı etkileyen değişiklik sürümü ilerletir."""
-    assert CANDIDATE_SCHEMA_VERSION == "semread-candidates/2"
-    assert CANDIDATE_READER_VERSION == "semread-candidate-reader/2"
+    """PLAN-12 §13: çıktıyı etkileyen değişiklik sürümü ilerletir.
+
+    001D §3/§61: semantik-içerik sözleşmesi modele de taşındığı için şema **ve** okuyucu birlikte
+    `/3`'e çıktı (001C'nin `/2`'si history'de kalır). `/3`'ün anlamı `semantic_candidates`
+    version notes'unda: semantic-empty aday geçersiz, semantic claim ≠ evidence-only,
+    prompt semantic-first, no-guess korunur.
+    """
+    assert CANDIDATE_SCHEMA_VERSION == "semread-candidates/3"
+    assert CANDIDATE_READER_VERSION == "semread-candidate-reader/3"
 
 
 def test_p1_region_schema_declares_normalized_bounds_in_all_three_places():

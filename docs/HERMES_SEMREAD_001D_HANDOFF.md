@@ -2,9 +2,9 @@
 
 **Plan:** `docs/PLAN-14.md` — SEMREAD-001D (semantic-content contract → dev proof → bağımsız
 holdout → freeze → final). PLAN_LATEST olarak izlenir (bayt kopya, sha256
-`a027cb4aa8e27cd2ed732f9b9e3f247cf8b00013a8d2c52bb3bf948788cbc22f` — "skeleton sonrası güncel plan"
-revizyonu; önceki revizyon `f2d249b7…` git history'de); PLAN-13 + PLAN-12 + kök PLAN.md history
-olarak korunur.
+`39cf9b8483f5cbfa03e0683cebcea4dba7d47dc68a0867b8da76057e7aaf088d` — "semantic-content validator
+sonrası güncel uygulama planı" revizyonu; önceki revizyonlar `a027cb4a…`, `f2d249b7…` git
+history'de); PLAN-13 + PLAN-12 + kök PLAN.md history olarak korunur.
 **Kayıt biçimi:** PLAN-12 §47 — *CURRENT HEAD / CURRENT EXPERIMENT / IMMUTABLE HISTORY / WHAT
 CHANGED / TEST EVIDENCE / INFERENCE BUDGET / OPEN GATE / NEXT SINGLE STEP*.
 **Kural:** 001C kaydı `docs/HERMES_SEMREAD_001C_HANDOFF.md` ve `out/lab/semread-001c/**`
@@ -90,3 +90,73 @@ CHANGED / TEST EVIDENCE / INFERENCE BUDGET / OPEN GATE / NEXT SINGLE STEP*.
   prompt v3 (ana kural: "Do not emit a candidate unless it contains at least one semantic claim" +
   no-guess cümlesi); §11: bump sonrası 001C closure `--verify` hâlâ 45/45 olmalı — geçmezse
   inference yok.
+
+---
+
+## 1c. §61 schema/reader `/3` + prompt v3 (0 inference) — 2026-10-05
+
+- **CURRENT HEAD:** `4777caf` (bu kayıttan önce; bu commit §61 işini taşır)
+- **CURRENT EXPERIMENT:** SEMREAD-001D. **Aktif plan revize izlendi:** `docs/PLAN-14.md` artık
+  "semantic-content validator sonrası güncel uygulama planı" revizyonu (bayt kopya, sha256
+  `39cf9b8483f5cbfa03e0683cebcea4dba7d47dc68a0867b8da76057e7aaf088d`; önceki revizyonlar
+  `a027cb4a…`, `f2d249b7…` git history'de; skeleton test pin'i güncellendi). 001C
+  **CLOSED / READ-ONLY** — closure `--verify` bu commit'te tekrar koşuldu: **45/45**.
+- **IMMUTABLE HISTORY:** değişmedi — `docs/HERMES_SEMREAD_001C_HANDOFF.md`, `docs/PLAN-13.md`,
+  `eval/semread_001b_gold/FREEZE.json`, `eval/semread_001c_closure.{py,json}`, `out/lab/semread-001c/**`.
+- **WHAT CHANGED:** §61'in tek işi (0 inference; yalnız saf fonksiyonlar + şema/prompt/parser):
+  1. **Sürüm kimliği `/3` (§3):** `semread-candidates/3` + `semread-candidate-reader/3`. `/3`
+     version notes'ta açıkça yazılı: semantic-empty aday geçersiz · semantic claim ≠ evidence-only ·
+     prompt semantic-first · no-guess korunur. Parser sürüm uyuşmazlığını (`/2` gövdesi)
+     `schema_error` ile reddeder; semantik-içerik reddi (`schema_semantic_empty`) ve boş `items`
+     abstention'ı aynen sürer.
+  2. **Şema modelin sözleşmesini görüyor (§4):** candidate item açıklaması tek kaynak sabitten gelir
+     (`SEMANTIC_CONTENT_REQUIREMENT`): "A candidate must contain at least one semantic claim. A
+     region, representation, found-circle count, target binding, observation id or uncertainty alone
+     is not a semantic claim." Kanıt-yalnız alanlar (source.region / callout_region / target.region,
+     representation.kind, count.found_circles, target.observation_id, target.state, uncertainty) tek
+     literalden (`EVIDENCE_ONLY_NOTE`) işaretlenir — şema ile parser aynı yönü gösterir.
+  3. **`anyOf` YOK (§5):** semantic zorunluluğu JSON Schema `anyOf` ile encode etmek bilinçli olarak
+     ertelendi (backend desteği kanıtlanmadan production şeması büyütülmez); önerilen sıra §5'te:
+     prompt+description → parser → sentetik uyumluluk testleri → backend kabul kanıtı → ancak gerekirse.
+  4. **Prompt v3 (§6/§7/§8/§9):** ortak V/VE görev metni semantic-first — "First identify a printed
+     semantic fact. Only then create a candidate. / A region alone is not a candidate. / A machine
+     observation row is not a semantic claim. / Do not emit a candidate unless it contains at least
+     one semantic claim."; ardından semantik claim örnekleri ve **evidence-only** kapalı listesi;
+     zorunlu no-guess anti-pressure cümleleri ("If you cannot read at least one semantic fact, emit no
+     candidate for that feature." / "Do not invent a semantic fact merely to satisfy the
+     semantic-content requirement."); 001B no-guess kuralı ("Never guess." + "A field you cannot read
+     must not delete the fields you did read.") geri çekilmedi. VE farkı **yalnız kanıt bölümü**:
+     "Observations are evidence, not candidate seeds. / Do not create one candidate per observation
+     row. / Use an observation only if it helps support a semantic claim." (± §7'nin V/VE ayrımı).
+  5. Yeni odak dosyası `tests/test_semread_001d_prompt_v3.py` (12 test): sürüm kimliği + `/2` reddi,
+     item açıklaması, kanıt-yalnız işaretleri, `anyOf`/`oneOf` yokluğu, semantic-first sırası,
+     claim/evidence ayrımı, no-guess cümleleri, anti-loop kuralları, VE yasağı, **iki kol farkının
+     yalnız kanıt bölümü olması**, sayfaya özel/gold metin yokluğu, parser katılığı. 001C contract
+     testindeki sürüm assertion'ı `/3`'e güncellendi (ret sırası değişmedi).
+  6. Kök `report.md` §0 güncellendi (kod current `/3`; sıradaki iş `001d/1` kimliği).
+- **TEST EVIDENCE:** yeni odak dosyası **12 passed**; odak süiti (prompt-v3 + semantic-content +
+  skeleton + 001c closure + 001c contract + candidates + 001c dev-semantik + 001b closure)
+  **121 passed**; hızlı SEMREAD süitleri (lifecycle + identity + gold-manifest + reference +
+  `test_semread_001b`) **119 passed** (001b değerlendirme süiti `test_semread_001b.py` **32 passed**);
+  gates dosyası tamamı **34 passed** (1049.34 s ≈ 17:29 — ağır BLAS ön-işlemeli test, süre sınıfı
+  önceki koşularla aynı); 001C closure `--verify` **45/45**; `eval/check_tables.py`
+  **21 satır / 0 tutmuyor**.
+- **§28/§29 — D regresyon kanıtı (0 inference):** `eval/semread_001c_dev_semantic_eval.py`
+  **salt-okur** koşuldu (`--write` yok; deftere/`out/lab/semread-001c/**`'a yazılmadı; VLM zinciri
+  import edilmedi). Sonuç dondurulmuş 001C kaydıyla (`out/lab/semread-001c/dev-semantic-report.json`)
+  programatik karşılaştırıldı: **12 hücrenin 12'si içerik düzeyinde birebir aynı** — `fill`, `flags`,
+  `partition`, `duplicates`, `gates`, `summary`, `result_sha256`, `parsed_sha256` ve attempt
+  `producer_identity` dahil. Tek fark V/VE hücrelerinde `dev_report_chosen` / `matches_dev_report`
+  işaretleri (eski kayıt seçimi sabitlenmeden önce yazılmıştı; şimdi donmuş `dev-report.json`
+  seçimiyle **tutarlı**: `matches_dev_report = true`). D kolu metrikleri 001C kaydıyla aynı:
+  53 aday / 53 içerikli, 2 eşleşen, yerelleştirme %9.1, alan doğruluğu %66.7, hedef bağlama %100,
+  overclaim %0, FP 9, unscorable 42; aday dağılımı (min 7 / medyan 14.5 / max 17 / toplam 53) aynı
+  ⇒ **wire semantik-içerik kuralı ve `/3` kimliği D yolunu etkilemiyor** (§28).
+- **INFERENCE BUDGET:** 001D dev **0/12**, final **0/20** (toplam **0/32**) — değişmedi; bu commit
+  **0 inference** (ledger kurulmadı, canlı çağrı yok).
+- **OPEN GATE:** §60#2 / §63 — `semread-001d-run-contract/1` kimliği + producer identity.
+- **NEXT SINGLE STEP:** §10/§63: `CONTRACT_VERSION = semread-001d-run-contract/1`, docstring current
+  durumu 001D anlatır (001C closure artifact'ında kalır); paylaşımlı envelope **değişmez**
+  (model/digest/runtime/ayarlar), producer identity değişir, dry-run manifest
+  `experiment = semread-001d` + `/3` + `/3` + `001d/1` der; bütçe 0/12 + 0/20 kalır; closure
+  `--verify` hâlâ 45/45 olmalı.

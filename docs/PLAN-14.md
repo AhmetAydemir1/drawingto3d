@@ -1,337 +1,195 @@
 # PLAN.md — drawingto3d / SEMREAD-001D
-## Skeleton sonrası güncel plan
+## Semantic-content validator sonrası güncel uygulama planı
 
-**Tarih:** 2026-10-05
-**Repo:** `AhmetAydemir1/drawingto3d`
-**Gözlenen `main` HEAD:** `074cc40c2efb094c3d06c6f70a1292a7e3985ad2`
-**Aktif deney:** `SEMREAD-001D`
-**Aktif plan:** `docs/PLAN-14.md`
-**001D bütçe:** dev `0/12`, final `0/20`, toplam `0/32`
-**001C:** CLOSED / READ-ONLY HISTORICAL
-**External CI/status:** yok
-**Current full pytest:** bu HEAD için henüz yok
-
----
-
-# 0. Durum
-
-Tamamlananlar:
-
-```text
-001C hygiene
-→ immutable closure
-→ closure verify 45/45
-→ PLAN-14 tracked
-→ 001D handoff
-→ budget 12/20 predeclared
-→ skeleton tests
-→ focused SEMREAD tests
-→ gates 34/34
-```
-
-Henüz yapılmayanlar:
-
-```text
-semantic-content validator
-schema /3
-reader /3
-001D run-contract /1
-001D dev report
-live 001D inference
-```
-
-Current code hâlâ:
-
-```text
-CANDIDATE_SCHEMA_VERSION = semread-candidates/2
-CANDIDATE_READER_VERSION = semread-candidate-reader/2
-CONTRACT_VERSION = semread-001c-run-contract/1
-```
-
-İlk canlı 001D çağrıdan önce bunlar mutlaka 001D'ye bump edilmeli.
+**Tarih:** 2026-10-05  
+**Repo:** `AhmetAydemir1/drawingto3d`  
+**Gözlenen `main` HEAD:** `4777caf609aef0e775bed9a2681eb3948e0ca278`  
+**Aktif deney:** `SEMREAD-001D`  
+**Aktif tracked plan:** `docs/PLAN-14.md` (`a027cb4a…` revizyonu)  
+**001D bütçe:** dev `0/12`, final `0/20`, toplam `0/32`  
+**001C:** CLOSED / READ-ONLY HISTORICAL  
+**001C closure:** `--verify 45/45`  
+**External CI/status:** yok  
+**Full pytest:** güncel 001D ağacı için henüz yeniden çalıştırılmadı
 
 ---
 
-# 1. Repo hijyeni invariantı
+# 0. Yönetici özeti
 
-001C artık dokunulmaz:
-
-```text
-docs/HERMES_SEMREAD_001C_HANDOFF.md
-eval/semread_001c_closure.*
-out/lab/semread-001c/**
-```
-
-Milestone'larda:
-
-```text
-001C closure --verify 45/45
-```
-
-geçmeli.
-
-001D boyunca:
-
-```text
-plan
-handoff
-report
-budget state
-contract version
-```
-
-aynı current facts'i taşımalı.
-
-Historical değerler `HISTORICAL` etiketiyle tutulmalı.
-
----
-
-# 2. Root report hijyeni
-
-Kök `report.md` hâlâ 001C faz raporu başlığını taşıyor ama aktif plan 001D.
-
-001D ilk milestone'unda iki seçenekten biri seç:
-
-```text
-A) root report'u experiment-neutral living status report yap
-B) 001D için ayrı tracked/report artifact aç
-```
-
-001C closure history rewrite edilmez.
-
----
-
-# 3. Semantic content tanımı ikiye ayrılmalı
-
-001D'nin en önemli yeni kuralı:
+Önceki plandaki ilk kritik iş artık tamam:
 
 ```text
 semantic claim != evidence-only
 ```
 
-## Semantic claim sayılacaklar
+ayrımı tek kaynak olarak kodlandı.
 
-Şunlardan en az biri:
-
-```text
-callout.text known/non-empty
-form.symbol = R veya diameter
-size.state = known
-count.printed != null
-termination = thru veya finite
-depth.state = known
-physical.kind != unknown
-```
-
-## Tek başına semantic claim SAYILMAYACAKLAR
+Repo artık:
 
 ```text
-representation.kind
-count.found_circles
-target.state
-target.observation_id
-source.region
-uncertainty
+semantic_claim_flags
+candidate_has_semantic_claim
+evidence_flags
 ```
 
-Bunlar evidence/binding metric olarak ayrı raporlanır.
+fonksiyonlarını taşıyor.
 
-Bu ayrım gate gaming'i önler.
-
----
-
-# 4. P1 — tek kaynak helper
-
-`semantic_candidates.py` içinde tek kaynak:
-
-```text
-semantic_claim_flags(candidate)
-candidate_has_semantic_claim(candidate)
-evidence_flags(candidate)
-```
-
-Aynı tanım:
-
-```text
-parser
-dev report
-final evaluator
-tests
-```
-
-tarafından reuse edilmeli.
-
-Kopya semantic-content mantığı oluşturma.
-
----
-
-# 5. P1.1 — semantic-empty wire output reddi
-
-001D model output'unda:
-
-```text
-candidate_id
-source.region
-all semantic fields unknown
-```
-
-valid candidate değildir.
-
-Yeni failure subtype:
-
-```text
-schema_semantic_empty
-```
-
-Akış:
+Wire parser:
 
 ```text
 JSON
 → structural validation
-→ semantic-claim validation
+→ semantic-content validation
 → references
 ```
 
-Sessiz tamir yok.
+sırasına geçti.
 
----
-
-# 6. Global Candidate validator'a dikkat
-
-`Candidate` deterministic D tarafından da kullanılıyor olabilir.
-
-Bu yüzden önce D path audit et.
-
-Tercih:
-
-```text
-wire-response parse boundary
-```
-
-üzerinde semantic-empty enforcement.
-
-Global Pydantic validator koyacaksan önce D regression kanıtı şart.
-
----
-
-# 7. Empty response valid kalabilir
-
-Şu response:
-
-```json
-{"schema_version":"...","items":[]}
-```
-
-genel abstention olarak valid kalabilir.
-
-Ama dev sayfalarda claim var.
-
-Bu yüzden dev gate ayrıca:
-
-```text
-semantic_claim_count >= 1
-```
-
-ister.
-
----
-
-# 8. Negatif testler
-
-Bunların her biri reddedilmeli:
-
-```text
-source.region only
-representation=circle only
-found_circles only
-target.state=bound only
-target.observation_id only
-uncertainty only
-```
-
-Failure:
+Semantic-empty candidate:
 
 ```text
 schema_semantic_empty
 ```
 
----
+ile reddediliyor.
 
-# 9. Pozitif testler
+Boş `items` ise gerçek abstention olarak geçerli kalıyor.
 
-Bunlar semantic claim'i sağlamalı:
+Bu değişiklik `0 inference` ile yapıldı.
 
-```text
-known callout text
-form=R
-form=diameter
-known size
-printed count
-termination=thru + stated
-finite + depth
-known depth
-physical non-unknown
-```
-
-Fixture'lar generic olmalı.
-
-Frozen/dev answer leakage yok.
-
----
-
-# 10. P2 — version bump
-
-İlk canlı 001D inference öncesi:
+Şimdi sıradaki darboğaz artık validator değil. Sıradaki zorunlu iş 001D producer identity oluşturmak:
 
 ```text
 semread-candidates/3
 semread-candidate-reader/3
 semread-001d-run-contract/1
+prompt v3
 ```
 
-olmalı.
-
-Attempt manifestinde:
-
-```text
-experiment = semread-001d
-schema = /3
-reader = /3
-run contract = 001d/1
-```
-
-açıkça görünmeli.
+Bunlar tamamlanmadan canlı 001D çağrı YOK.
 
 ---
 
-# 11. Run contract geçişi
+# 1. Güncel repo kanıtı
 
-Mevcut `semantic_run_contract.py` 001C closure contract'ını taşıyor.
-
-001D için aynı modül version bump ile ilerletilebilir.
-
-Ama bump sonrası:
+Tamamlanan 001D işleri:
 
 ```text
-001C closure --verify 45/45
+001C hygiene + closure
+001D skeleton
+budget predeclaration
+semantic claim definition
+evidence-only separation
+semantic-empty wire rejection
+D-path audit
+root report experiment-neutral refactor
 ```
 
-hala geçmeli.
+Test kanıtı:
 
-Geçmezse history coupling çözülmeden inference yok.
+```text
+001D semantic-content tests  32 passed
+focused suite               131 passed
+quick SEMREAD               143 passed
+001B evaluation              32 passed
+gates                        34/34
+001C closure verify          45/45
+```
+
+Inference:
+
+```text
+dev   0/12
+final 0/20
+```
 
 ---
 
-# 12. P3 — Prompt v3
+# 2. Current identity problemi
 
-Ortak V/VE task:
+Kod davranışı 001D yönüne değişmiş olsa da version identity henüz 001D değil.
+
+Current:
+
+```text
+CANDIDATE_SCHEMA_VERSION = semread-candidates/2
+CANDIDATE_READER_VERSION = semread-candidate-reader/2
+CONTRACT_VERSION         = semread-001c-run-contract/1
+```
+
+Bu haliyle canlı çağrı yapmak yasak. Çünkü attempt 001D ledger altında yazılsa bile producer contract tarihsel olarak 001C kimliği taşır.
+
+---
+
+# 3. P1 — schema/reader v3
+
+Bir sonraki commit:
+
+```text
+semread-candidates/3
+semread-candidate-reader/3
+```
+
+bump'ını yapmalı.
+
+`/3` anlamı açıkça:
+
+```text
+semantic-empty candidate invalid
+semantic claim != evidence-only
+prompt semantic-first
+no-guess retained
+```
+
+olarak version notes'ta yazılmalı.
+
+---
+
+# 4. P1.1 — JSON Schema v3 modelin contract'ı görmeli
+
+Parser'ın semantic-empty reddi var ama modelin gördüğü şema da bu yeni beklentiyi anlatmalı.
+
+Candidate item description:
+
+```text
+A candidate must contain at least one semantic claim.
+A region, representation, found-circle count, target binding,
+observation id or uncertainty alone is not a semantic claim.
+```
+
+taşımalı.
+
+Schema mümkün olduğunca model contract'ıyla parser contract'ını aynı yönde tutmalı.
+
+---
+
+# 5. JSON Schema anyOf kararı
+
+Semantic claim zorunluluğunu JSON Schema `anyOf` ile tam encode etmek teorik olarak mümkün. Fakat structured-output backend'in karmaşık nested `anyOf` desteği kanıtlanmadan bunu production schema'ya ekleme.
+
+Önerilen sıra:
+
+```text
+1. prompt + schema descriptions
+2. parser strict semantic-empty validation
+3. synthetic schema compatibility tests
+4. backend format acceptance static/probe evidence
+5. ancak gerekiyorsa anyOf
+```
+
+İlk v3 commit'i gereksiz schema karmaşıklığına dönüştürme.
+
+---
+
+# 6. P1.2 — Prompt v3
+
+Yeni ortak V/VE task'ın ilk sıraları:
 
 ```text
 First identify a printed semantic fact.
 Only then create a candidate.
 A region alone is not a candidate.
 A machine observation row is not a semantic claim.
-Do not create one candidate per observation row.
 ```
 
 Ana kural:
@@ -342,221 +200,394 @@ Do not emit a candidate unless it contains at least one semantic claim.
 
 ---
 
-# 13. No-guess korunur
+# 7. Prompt v3 — semantic claim definition
 
-Semantic-content zorunluluğu hallucination teşvik etmemeli.
+Prompt model açısından kısa ve mekanik olmalı.
 
-Prompt ayrıca:
+Semantic claim örnekleri:
 
 ```text
-If you cannot read a semantic fact, omit that candidate.
-Do not invent a value merely to satisfy the semantic-content rule.
+printed callout text
+R / Ø symbol
+printed size
+printed count
+explicit THRU
+explicit finite depth
+physical meaning explicitly supported by drawing
+```
+
+Evidence-only:
+
+```text
+circle/arc representation
+found circle count
+target box
+observation id
+source region
+uncertainty note
+```
+
+tek başına candidate üretmemeli.
+
+---
+
+# 8. Prompt v3 — no-guess anti-pressure
+
+Semantic-content gate hallucination yaratabilir. Bu yüzden prompt aynı yerde şunu söylemeli:
+
+```text
+If you cannot read at least one semantic fact, emit no candidate for that feature.
+Do not invent a semantic fact merely to satisfy the semantic-content requirement.
+```
+
+Bu cümle zorunlu.
+
+---
+
+# 9. Prompt v3 — VE echo yasağı
+
+VE common task aynı kalır; evidence section ekstra.
+
+VE section:
+
+```text
+Observations are evidence, not candidate seeds.
+Do not create one candidate per observation row.
+Use an observation only if it helps support a semantic claim.
 ```
 
 demeli.
 
 ---
 
-# 14. VE observation table
+# 10. P2 — run-contract 001D/1
 
-Observation table:
-
-```text
-optional evidence
-```
-
-olarak kalır.
-
-Yasak:
+Schema/reader v3 commitinden hemen sonra:
 
 ```text
-row box → empty candidate
+CONTRACT_VERSION = semread-001d-run-contract/1
 ```
 
-Ama observation text'i gerçekten callout okumaya yardımcı oluyorsa kullanılabilir.
+olmalı.
 
-Bu evidence etkisinin kendisidir.
+Docstring current state'i 001D olarak anlatmalı; 001C history closure artifact'ında kalır.
 
 ---
 
-# 15. P4 — echo metriği v2
+# 11. 001D generation envelope
 
-VE için iki ayrı sınıf:
+Başlangıçta 001C'nin kanıtlanmış shared envelope'u reuse edilir:
 
 ```text
-empty_echo
-contentful_observation_supported
+model          qwen3-vl:8b-instruct
+digest         0533d743...
+runtime        0.32.1
+num_ctx        22528
+num_predict    8192
+temperature    0.0
+repeat_penalty 1.25
+repeat_last_n  512
+maxItems       32
+image_max_side 1280
 ```
 
-`empty_echo` hata/degeneracy.
-
-`contentful_observation_supported` otomatik hata değildir; gold evaluator karar verir.
+Identity 001D olur çünkü prompt/schema/parser semantics değişti.
 
 ---
 
-# 16. P4.1 — duplicate metriği
+# 12. Generation settings'e dokunma
 
-Ölç:
+001D hipotezi:
 
 ```text
-exact region duplicate
-near-region duplicate
-same semantic signature + same target
-same callout repeated
-duplicate_rate
-maxItems_hit
+semantic-content-aware contract
 ```
 
-Parser silent dedupe yapmaz.
+olmalı.
+
+Aynı anda temperature/repeat penalty/context/predict/image resize değiştirme. Aksi halde semantic-content değişikliğinin etkisini ayıramayız.
 
 ---
 
-# 17. maxItems
+# 13. V/VE causal invariant
 
-`maxItems=32` safety rail olarak kalabilir.
-
-Ama ana çözüm bu olmamalı.
-
-Ana çözüm:
+Zorunlu:
 
 ```text
-semantic-empty candidate rejection
+generation_settings(V) == generation_settings(VE)
 ```
 
-Candidate count sürekli 32'ye dayanıyorsa degeneracy sinyali.
+Tek izin verilen fark:
+
+```text
+evidence_mode
+overlay
+observation table
+evidence prompt section
+image count
+```
 
 ---
 
-# 18. P5 — 001D dev report
+# 14. Producer identity
 
-Yeni salt-okur rapor:
+`producer_identity()` current producer sources'ı hash'lemeye devam etmeli. Version metadata ayrıca attempt manifestinde açıkça okunabilmeli.
+
+---
+
+# 15. Attempt manifest acceptance
+
+İlk canlı call öncesi dry-run manifest:
 
 ```text
-formal validity
+experiment = semread-001d
+schema_version = semread-candidates/3
+reader_version = semread-candidate-reader/3
+contract_version = semread-001d-run-contract/1
+phase = dev
+```
+
+taşımalı.
+
+Bunlardan biri yanlışsa gönderim bloklanmalı.
+
+---
+
+# 16. 001C closure coupling testi
+
+Version bump sonrası:
+
+```text
+eval/semread_001c_closure.py --verify
+```
+
+sonuç:
+
+```text
+45/45
+```
+
+olmalı.
+
+Geçmezse canlı inference yok.
+
+---
+
+# 17. P3 — 001D dev metrics
+
+Semantic helper artık var. 001D dev report bunu doğrudan reuse etmeli.
+
+Yeni salt-okur araç:
+
+```text
+eval/semread_001d_dev_report.py
+```
+
+veya versioned ortak rapor katmanı.
+
+Kopya semantic logic yok.
+
+---
+
+# 18. Dev report formal metrics
+
+Her cell:
+
+```text
+attempt state
+parse valid
+done_reason
+coordinate valid
+reference valid
+leak clean
+shared settings
+producer identity
+candidate count
+```
+
+---
+
+# 19. Dev report semantic metrics
+
+Her cell:
+
+```text
 semantic_claim_count
 semantic_candidate_rate
+semantic claim fields
 evidence_only_count
-empty_echo
-contentful observation-supported
-duplicates
-maxItems hit
-gold matches
+gold matched claims
 field accuracy
 abstention
 overclaim
 ```
 
-D/V/VE aynı semantic evaluator'u kullanmalı.
+---
+
+# 20. Echo metriği v2
+
+VE için iki tür:
+
+### empty_echo
+
+```text
+observation region echoed
+semantic claim yok
+```
+
+001D parser yüzünden normal valid result içinde olmamalı.
+
+### contentful_observation_supported
+
+```text
+observation region matched
+AND semantic claim exists
+```
+
+Bu otomatik hata değildir. Gold doğruluğu belirler.
 
 ---
 
-# 19. Attempt selection
+# 21. Duplicate metriği v2
 
-001D dev report yalnız:
-
-```text
-current 001D producer identity
-```
-
-altındaki attemptleri seçmeli.
-
-001C pass'e fallback yasak.
-
-Geçerli 001D attempt yoksa:
+Ayrı say:
 
 ```text
-missing / failed
+exact region duplicate
+near region duplicate
+same semantic signature + same target
+same callout repeated
 ```
 
-raporla.
+Parser dedupe etmez; raporlar.
 
 ---
 
-# 20. Static preflight — 0 inference
+# 22. maxItems metriği
 
-Canlı çağrıdan önce doğrula:
+```text
+candidate_count == 32
+```
+
+ise `max_items_hit = true` raporlanmalı. Bu doğrudan failure değildir ama sürekli 32 degeneracy warning olur.
+
+---
+
+# 23. P4 — static preflight
+
+0 inference.
+
+Kontrol:
 
 ```text
 schema /3
 reader /3
 run-contract 001d/1
+budget dev 0/12
+budget final 0/20
+001D attempt root
+producer identity
+evaluation identity
 V==VE settings
-budget 0/12
-final 0/20
-001D ledger path
-001C closure 45/45
-prompt size
-ctx headroom
-model tag
-digest
-runtime
-```
-
-Dry-run yalnız 4 Round-1 job göstermeli.
-
----
-
-# 21. İlk inference öncesi test paketi
-
-Minimum:
-
-```text
-semantic_candidates
-semantic_candidate_reader
-001d skeleton
-001d semantic-content tests
-identity/lifecycle
-gates relevant subset
+prompt identity
+model tag/digest/runtime
+context headroom
 001C closure verify
 ```
 
-Ayrıca 4 dev D page offline regression.
+---
+
+# 24. Prompt-size preflight
+
+Round 1 dört cell için model çağırmadan prompt serialize et ve context ölç.
+
+001C'de context sorunları yaşandığı için:
+
+```text
+prompt + num_predict <= num_ctx
+```
+
+headroom kontrolü zorunlu.
 
 ---
 
-# 22. Full gates
+# 25. Context policy
 
-Gates dosyası şu an:
+001D semantic prompt uzayacak. Aynı `22528/8192` otomatik güvenli varsayılmamalı.
+
+İlk çözüm num_ctx artırmak değil; static measurement.
+
+Sığmıyorsa live call yok ve plan revizyonu gerekir.
+
+---
+
+# 26. P5 — ilk inference öncesi tests
+
+Zorunlu:
 
 ```text
-34 passed / ~990 s
+test_semread_001d_semantic_content.py
+candidate tests
+candidate reader tests
+001d skeleton
+identity/lifecycle
+001d dev report tests
+relevant gates
+001C closure verify
 ```
 
-Semantic contract v3 sonrası ilk live call öncesi tekrar:
+---
+
+# 27. Gates
+
+Son kanıt:
 
 ```text
 34/34
+~16:54
 ```
 
-koşmak mantıklı.
+v3 identity değişikliklerinden sonra tekrar koşulmalı.
 
-Yanlış contract ile inference harcamaktan ucuz.
+İlk inference öncesi 34/34 yeniden şart.
 
 ---
 
-# 23. Full pytest
+# 28. D regression
 
-Current 001D HEAD için full-suite kanıt yok.
+4 dev page D kolunu offline doğrula.
 
-Zamanlama:
+Amaç:
 
 ```text
-ilk 4 call öncesi:
-focused + gates + closure
-
-primary 8 call başarıyla bittikten sonra:
-full pytest -q
+wire semantic-empty rule D'yi etkilemiyor
 ```
 
-Holdout/freeze'e full suite olmadan geçme.
+kanıtı.
 
 ---
 
-# 24. Bütçe değişmez
+# 29. Full pytest zamanlaması
+
+İlk 4 call öncesi full suite zorunlu değil.
+
+İlk çağrı öncesi:
 
 ```text
-dev = 12
-final = 20
+focused + gates + closure + D regression
+```
+
+yeterli.
+
+Primary 8 tamamlandığında full pytest zorunlu.
+
+---
+
+# 30. Dev budget — kilitli
+
+```text
+dev max = 12
+final max = 20
 total = 32
 ```
 
@@ -564,9 +595,9 @@ Artış yok.
 
 ---
 
-# 25. Dev Round 1
+# 31. Round 1
 
-İlk dört call:
+İlk 4 gerçek call:
 
 ```text
 dev-plate-pocket V
@@ -575,31 +606,27 @@ dev-flange-book V
 dev-flange-book VE
 ```
 
-Toplam:
-
-```text
-4
-```
+Sıralı tercih edilir; Ollama queue/memory etkisini azaltır.
 
 ---
 
-# 26. Round 1 formal gate
+# 32. Round 1 formal gate
 
-4/4:
+Her cell 4/4:
 
 ```text
-valid JSON
-stop
+state = pass
+done_reason = stop
 coordinate valid
 refs valid
 leak clean
 shared settings
-current 001D identities
+current 001D producer identity
 ```
 
 ---
 
-# 27. Round 1 semantic gate
+# 33. Round 1 semantic gate
 
 Her cell:
 
@@ -607,189 +634,255 @@ Her cell:
 semantic_claim_count >= 1
 ```
 
-Ek aggregate gate:
+Aggregate:
 
 ```text
-V: en az 1 gold-matched semantic claim
-VE: en az 1 gold-matched semantic claim
-V semantic field accuracy > 0
-VE semantic field accuracy > 0
-```
-
-Bu önceden ilan edilmiş düşük sanity gate'tir.
-
----
-
-# 28. Round 1 başarısızsa
-
-Reserve en fazla:
-
-```text
-4 calls
-```
-
-kullanılabilir.
-
-Kurallar:
-
-```text
-önce offline diagnosis
-yalnız bir contract revision
-4 Round-1 cell'in tamamı aynı yeni contract ile tekrar
-```
-
-Tek hücre retry/cherry-pick yok.
-
-Revision sonrası contract freeze.
-
----
-
-# 29. Round 1 ikinci kez de geçmezse
-
-001D kapanır.
-
-```text
-Round 2 yok
-final yok
-budget artışı yok
-```
-
-Yeni architecture experiment gerekir.
-
----
-
-# 30. Round 2
-
-Round 1 geçtikten sonra aynı frozen contract:
-
-```text
-flange-elbow V
-flange-elbow VE
-drawing-2 V
-drawing-2 VE
-```
-
-4 calls.
-
-Round 2 sırasında contract değişikliği yok.
-
----
-
-# 31. Round 2 fail olursa
-
-```text
-no tuning
-no retry to pass
-```
-
-001D dev sonucu olarak kaydedilir.
-
-Reserve Round 2'yi kurtarmak için kullanılmaz.
-
----
-
-# 32. Primary 8 acceptance
-
-Holdout'a geçmek için:
-
-```text
-formal valid 8/8
-semantic_claim_count >=1 8/8
-shared settings 8/8
-stop 8/8
-coordinate 8/8
-refs 8/8
-leak 0
-V field accuracy >0
-VE field accuracy >0
-```
-
-Ek:
-
-```text
-not all outputs maxItems
-not all VE outputs empty echoes
+V >=1 gold-matched semantic claim
+VE >=1 gold-matched semantic claim
+V field accuracy > 0
+VE field accuracy > 0
 ```
 
 ---
 
-# 33. Overclaim gate
+# 34. Semantic-valid output rate
 
-Semantic-content baskısı hallucination üretebilir.
+Yeni ana metric:
 
-Özellikle say:
+```text
+semantic_valid_output = formal valid AND semantic_claim_count >= 1
+```
+
+Round 1 gate: 4/4.
+
+---
+
+# 35. Overclaim gate
+
+Ayrıca:
 
 ```text
 invented size
 invented count
 invented THRU
 invented depth
-physical overclaim
+unsupported physical interpretation
 ```
 
-Content artıp overclaim patlarsa başarı sayma.
+ayrı raporla.
+
+Semantic-content artışı hallucination artışı olursa başarı sayma.
 
 ---
 
-# 34. Üç dev sonucu
+# 36. Round 1 failure policy
 
-## A — V ve VE semantic üretir
-Holdout'a geç.
+Round 1 geçmezse önce 0-inference offline diagnosis.
 
-## B — yalnız bir kol semantic üretir
-Causal soru eksik kalır; önce analiz et.
-
-## C — ikisi de yine sıfır/yanlış
-001D final yok.
-
----
-
-# 35. Architecture shift gerekirse
-
-Sonraki deney adayları:
+Reserve 4 call var ama yalnız:
 
 ```text
-crop-first
-detect→read staged
-OCR-first proposal
-one-callout-per-query
-typed extraction questions
-smaller structured task
+ONE contract revision
 ```
 
-Bunları 001D içine sıkıştırma.
+izinli.
+
+Sonra aynı 4 Round-1 cell yeni contract ile tekrar koşulur.
+
+Tek hücre cherry-pick redo yok.
 
 ---
 
-# 36. Holdout
+# 37. Reserve kullanım kuralı
 
-Primary 8 + full pytest sonrası kullanıcıdan:
+Reserve şu işler için kullanılamaz:
 
 ```text
-12–20 yeni technical drawing
+bir tane daha deneyelim
+sadece V'yi tekrar koş
+sadece kötü hücreyi kurtar
+sampling taraması
+hyperparameter search
 ```
 
-tercih edilir.
-
-10 final page model output görülmeden seçilir.
+Yalnız tek hipotez + tam 4-cell requalification.
 
 ---
 
-# 37. Holdout eligibility
+# 38. Round 1 ikinci kez başarısızsa
+
+001D kapanır:
 
 ```text
-repo tarihinde yok
+Round 2 yok
+holdout yok
+final yok
+budget artışı yok
+```
+
+Yeni experiment gerekir.
+
+---
+
+# 39. Round 2
+
+Round 1 geçerse contract kilitlenir.
+
+Sonra:
+
+```text
+dev-flange-elbow V
+dev-flange-elbow VE
+dev-drawing-2 V
+dev-drawing-2 VE
+```
+
+4 call.
+
+---
+
+# 40. Round 2'de tuning yok
+
+Round 2 sırasında prompt/schema/generation/parser semantics değişmez.
+
+Failure 001D sonucu olarak kalır.
+
+---
+
+# 41. Primary 8 acceptance
+
+Holdout'a geçmek için:
+
+```text
+formal valid 8/8
+semantic-valid 8/8
+stop 8/8
+coordinate 8/8
+refs 8/8
+leak clean 8/8
+shared settings 8/8
+```
+
+Semantic aggregate:
+
+```text
+V field accuracy > 0
+VE field accuracy > 0
+```
+
+---
+
+# 42. Degeneracy blockers
+
+Holdout yok eğer:
+
+```text
+all outputs maxItems
+all VE candidates observation echoes
+duplicate flood dominates
+semantic claims mostly fabricated
+one arm semantic claim rate = 0
+```
+
+---
+
+# 43. Primary 8 sonrası full pytest
+
+Şart:
+
+```bash
+.venv/bin/python -m pytest -q
+```
+
+Kayıt:
+
+```text
+passed
+failed
+runtime
+collection count
+```
+
+0 fail.
+
+---
+
+# 44. CI
+
+Current HEAD için external status yok.
+
+Raporda açıkça:
+
+```text
+External CI: none
+Acceptance evidence: local pytest + eval artifacts
+```
+
+yaz.
+
+CI kurmak holdout'u geciktiren yan proje olmasın.
+
+---
+
+# 45. Repo hijyeni
+
+Her milestone sonrası:
+
+```text
+docs/PLAN-14.md veya yeni PLAN history
+HERMES_SEMREAD_001D_HANDOFF.md
+report.md
+budget state
+run contract
+```
+
+aynı current facts'i taşımalı.
+
+---
+
+# 46. Plan history
+
+Tracked plan değiştikçe yeni sha handoff/report'ta güncellenmeli. Eski revision git history'de kalmalı.
+
+---
+
+# 47. 001C immutable invariant
+
+001D hiçbir adım `out/lab/semread-001c/**` yazmamalı.
+
+Closure verify bozulursa inference block.
+
+---
+
+# 48. Holdout girişi
+
+Primary 8 + full pytest geçmeden yeni çizimlerde inference yapma.
+
+Tercih:
+
+```text
+12–20 yeni çizim
+```
+
+Bunlardan deterministic selection ile 10 final page.
+
+---
+
+# 49. Holdout eligibility
+
+```text
+repo history'de yok
 001B/001C/001D dev'de yok
 duplicate değil
 technical drawing
-SEMREAD scope claim içeriyor
+SEMREAD scope callout içeriyor
 ```
 
 Hash + group id.
 
 ---
 
-# 38. Holdout diversity
+# 50. Holdout diversity
 
 Mümkünse:
 
@@ -807,62 +900,56 @@ count
 THRU
 finite depth
 unknown termination
-rotated text
-multi-view
+rotated callout
 crowded leaders
-low-res raster
+multi-view
+low resolution
 clean vector
 ```
 
 ---
 
-# 39. Gold
+# 51. Holdout gold
 
 V/VE output görülmeden.
 
 Reuse:
 
 ```text
-tracked spec
-vision checked
+tracked specs
+vision_checked
 source evidence
 target reason
 independent corroboration
 cycle validation
 stable identity
-atomic regeneration
+atomic freeze
 ```
 
 ---
 
-# 40. D baseline
+# 52. D baseline
 
-Yeni holdout D:
-
-```text
-V/VE finalden önce
-```
-
-deterministic koşulur.
-
-Page selection değişmez.
+Holdout D, V/VE finalden önce deterministic çalışır. Page selection D sonucuna göre değiştirilmez.
 
 ---
 
-# 41. Freeze blockers
+# 53. Freeze blockers
 
 ```text
-001D schema/reader/contract final
-primary 8 pass
-semantic sanity pass
+schema /3
+reader /3
+001d-run-contract/1
+primary 8 dev pass
+semantic sanity
 full pytest 0 fail
 holdout 10/10
 D baseline
 final 0/20
-raw V/VE equality
-shared settings
-model/digest/runtime exact
+model/digest/runtime
 context preflight
+V/VE raw page invariant
+shared settings
 leak audit
 clean clone
 001C closure verify
@@ -870,44 +957,31 @@ clean clone
 
 ---
 
-# 42. Final
+# 54. Final inference
 
 ```text
-10 pages × V/VE = 20 calls
+10 page × V/VE = 20
 retry = 0
 ```
 
-Final sırasında:
-
-```text
-prompt tuning
-schema change
-sampling change
-repair
-```
-
-yok.
+Finalde prompt tune/schema change/sampling change/parser repair yasak.
 
 ---
 
-# 43. Final primary metric
+# 55. Final metrics
+
+Önce:
 
 ```text
+formal_valid_output_rate
 semantic_valid_output_rate
-```
-
-Tanım:
-
-```text
-formal valid
-AND
->=1 semantic claim
 ```
 
 Sonra:
 
 ```text
 localization
+callout text
 form
 size
 count
@@ -921,144 +995,202 @@ abstention
 
 ---
 
-# 44. VE evidence analizi
-
-Ayrı raporla:
+# 56. VE evidence metrics
 
 ```text
-empty echo
-contentful observation-supported
+empty_echo
+contentful_observation_supported
 non-observation-supported
+duplicate rate
 ```
 
-VE'nin başarısını yalnız table-copy oranıyla karıştırma.
+raporlanmalı.
 
 ---
 
-# 45. Repo hijyeni checklist
+# 57. Latency / resource
 
-Her milestone:
-
-- [ ] 001C READ-ONLY
-- [ ] closure verify gerektiğinde 45/45
-- [ ] 001D handoff current HEAD
-- [ ] 001D budget current
-- [ ] schema/reader/contract versions current
-- [ ] root report stale current-state taşımıyor
-- [ ] historical facts labelled
-- [ ] state/contract/attempt source-of-truth
-- [ ] CI yoksa açıkça yazıyor
-
----
-
-# 46. Commit sırası
+V ve VE ayrı:
 
 ```text
-1. semantic claim definition + tests
-2. semantic-empty wire rejection
-3. schema/reader v3 + prompt v3
-4. run-contract 001d/1 + identity
-5. echo/duplicate/dev-report
-6. static preflight + gates
-7. Round 1 four calls
-8. Round 1 semantic evaluation
-9. optional ONE revision + 4-call requalification
-10. Round 2 four calls
-11. dev report + full pytest
-12. holdout intake
-13. holdout selection/gold
-14. D baseline + clean clone
-15. freeze
-16. final 20
-17. immutable final report
+prompt tokens
+eval tokens
+latency
+candidate count
+semantic candidate count
+maxItems hit
 ```
 
 ---
 
-# 47. ŞİMDİKİ TEK İŞ
+# 58. Karar ağacı
 
-**Canlı model çağrısı YOK.**
+## V ve VE ikisi de semantic olarak faydalı
+001D final'e değer.
 
-Şimdi yalnız:
+## V iyi, VE kötü
+Evidence representation zararlı olabilir.
+
+## VE iyi, V kötü
+Deterministic observation evidence kritik olabilir.
+
+## İkisi de yine semantic üretmiyor
+Full-page single-shot architecture uygun değil.
+
+Sonraki experiment:
 
 ```text
-semantic_claim_flags
-candidate_has_semantic_claim
-semantic-empty wire rejection
-schema_semantic_empty failure kind
-focused unit tests
+crop-first
+detect→read
+OCR-first
+one-callout-per-query
+typed subquestions
 ```
-
-yap.
-
-Prompt/schema/run-contract bump bir sonraki committe.
 
 ---
 
-# 48. İlk commit acceptance
+# 59. 001D içinde yapma
+
+```text
+crop pipeline
+multi-stage reader
+OCR-first rewrite
+new model family search
+sampling sweep
+automatic coordinate repair
+semantic-empty candidate repair
+silent dedupe
+retry-until-pass
+budget increase
+```
+
+---
+
+# 60. Commit planı
+
+Current HEAD sonrası:
+
+```text
+1. schema/reader /3 + prompt v3
+2. 001d run-contract /1 + producer identity
+3. 001d dev-report echo/duplicate metrics
+4. static preflight + identity/closure/gates evidence
+5. Round 1 four live calls
+6. Round 1 semantic evaluation
+7. optional ONE contract revision + full four-call requalification
+8. Round 2 four live calls
+9. primary dev report + full pytest
+10. holdout intake/selection
+11. holdout gold
+12. D baseline + clean clone
+13. freeze
+14. final 20
+15. immutable final report
+```
+
+---
+
+# 61. ŞİMDİKİ TEK SOMUT İŞ
+
+**Inference YOK.**
+
+Bir sonraki commit:
+
+```text
+semread-candidates/3
+semread-candidate-reader/3
+prompt v3
+```
+
+olmalı.
+
+İçerik:
+
+```text
+semantic-first instructions
+region-alone-is-not-candidate
+observation-row-is-not-claim
+no one-row-one-candidate
+if no semantic fact → omit candidate
+do not invent fact to satisfy gate
+```
+
+---
+
+# 62. Bu commit acceptance
 
 - [ ] 0 inference
-- [ ] semantic definition tek kaynak
-- [ ] representation-only semantic sayılmıyor
-- [ ] target-only semantic sayılmıyor
-- [ ] found_circles-only semantic sayılmıyor
-- [ ] source-only rejected
-- [ ] callout accepted
-- [ ] R/Ø accepted
-- [ ] size accepted
-- [ ] printed count accepted
-- [ ] THRU/depth accepted
-- [ ] empty response valid abstention
-- [ ] failure kind schema_semantic_empty
-- [ ] D regression audited
+- [ ] schema version /3
+- [ ] reader version /3
+- [ ] prompt semantic-first
+- [ ] prompt evidence-only ayrımını anlatıyor
+- [ ] prompt no-guess anti-pressure içeriyor
+- [ ] V ve VE common task byte-identical
+- [ ] VE farkı yalnız evidence section
+- [ ] parser semantic-empty strict kalıyor
+- [ ] empty `items` valid abstention
+- [ ] no page-specific text
+- [ ] no gold value
 - [ ] focused tests green
-- [ ] 001C untouched
+- [ ] 001C closure 45/45
 
 ---
 
-# 49. İlk live call için absolute blockers
+# 63. Sonraki commit acceptance — run-contract
 
-Aşağıdakilerden biri doğruysa inference YOK:
+- [ ] `semread-001d-run-contract/1`
+- [ ] current docstring 001D
+- [ ] shared envelope unchanged
+- [ ] V==VE settings
+- [ ] model/digest/runtime unchanged
+- [ ] producer identity changed
+- [ ] dry-run manifest says semread-001d
+- [ ] budget remains 0/12 + 0/20
+- [ ] closure 45/45
+
+---
+
+# 64. İlk canlı çağrı için absolute blockers
+
+Aşağıdakilerden biri varsa canlı inference YOK:
 
 ```text
-schema still /2
-reader still /2
-run contract still 001c/1
-budget != 0/12
-closure verify broken
-shared settings broken
-semantic-empty tests missing
+schema != /3
+reader != /3
+contract != 001d/1
 prompt v3 missing
+budget != 0/12
+001C closure != 45/45
+gates != 34/34
+V/VE settings differ
+model digest mismatch
+runtime mismatch
+context preflight fails
+manifest identity wrong
 ```
 
 ---
 
-# 50. Son yön
+# 65. Son yön
 
-Şu an darboğaz:
+Semantic validator artık yapıldı.
+
+Şimdi doğru rota:
 
 ```text
-JSON format
+semantic contract'ı modelin gördüğü prompt/schema kimliğine taşı
+→ 001D producer identity'yi ayır
+→ inference öncesi statik kanıt
+→ yalnız sonra 4-call Round 1
 ```
 
-değil.
-
-Darboğaz:
+Kısa rota:
 
 ```text
-semantic claim üretimi
-```
-
-Doğru rota:
-
-```text
-semantic claim contract
-→ v3 identity
-→ static tests
-→ 4-call Round 1
-→ semantic gate
-→ contract freeze
-→ 4-call Round 2
-→ full pytest
-→ new holdout
+/3 prompt+schema
+→ 001d/1 contract
+→ dev report
+→ preflight
+→ 4 live calls
+→ semantic evaluation
 ```

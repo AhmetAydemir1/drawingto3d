@@ -1,5 +1,20 @@
 """SEMREAD-001B — **dar** semantic aday sözleşmesi (ayrı sürüm).
 
+Sürüm **/3** (SEMREAD-001D, PLAN-14 §3/§4/§6/§61): `CANDIDATE_READER_VERSION` de `/3`'e çıkar.
+Bump'ın anlamı:
+
+  * **semantic-empty aday geçersiz**: yalnız kanıt/bölge alanları taşıyan aday bu sözleşmede yoktur
+    (wire'da `schema_semantic_empty` ile reddedilir — §5; sessiz tamir yok);
+  * **semantic claim ≠ evidence-only**: ayrımın tek kaynağı yine `semantic_claim_flags` /
+    `candidate_has_semantic_claim` / `evidence_flags`;
+  * ortak görev metni **semantic-first**: önce basılı semantik olgu, sonra aday; bölge tek başına
+    aday değildir, makine gözlem satırı semantik claim değildir (§6/§7);
+  * **no-guess korunur**: okunamayan olgu için aday üretilmez, semantik-içerik kapısını doyurmak
+    için olgu uydurulmaz (§8);
+  * şema, aynı zorunluluğu **item açıklamasında** modelin gördüğü sözleşmeye taşır (§4);
+    yapısal zorlama (`anyOf`) bilinçli olarak **eklenmedi** (§5: backend desteği kanıtlanmadan
+    production şeması karmaşıklaştırılmaz).
+
 Sürüm **/2** (SEMREAD-001C P1, PLAN-12 §15): bölge alanları şemada `minimum: 0, maximum: 1`
 taşır ve ortak görev metni normalize koordinat kuralını açıkça öğretir; koordinat konvansiyonu
 V ve VE kollarında **aynı** metinden ve **aynı** şema nesnesinden gelir (kopya literal yok).
@@ -53,8 +68,8 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, Field, ValidationError, field_validator, model_validator
 
-CANDIDATE_SCHEMA_VERSION = "semread-candidates/2"
-CANDIDATE_READER_VERSION = "semread-candidate-reader/2"
+CANDIDATE_SCHEMA_VERSION = "semread-candidates/3"
+CANDIDATE_READER_VERSION = "semread-candidate-reader/3"
 CANDIDATE_RESPONSE_SCHEMA = "semread-candidate-response/1"
 
 # ----------------------------------------------------------------- kapalı sözlükler
@@ -306,6 +321,17 @@ class CandidateResponse(BaseModel):
 
 # ----------------------------------------------------------------- model şeması
 
+# Modelin gördüğü şemada **kanıt-yalnız** alanların işareti (001D §4/§7): bu alanların varlığı adayı
+# geçerli kılmaz. Metin tek yerde durur, alan açıklamaları buradan türetilir (kopya literal yok).
+EVIDENCE_ONLY_NOTE = " Evidence only: on its own this is not a semantic claim."
+
+# Modelin gördüğü asgari sözleşme: parser'ın `schema_semantic_empty` reddiyle **aynı yönü** gösterir
+# (§4). Yapısal zorlama (`anyOf`) bilinçli olarak eklenmez (§5).
+SEMANTIC_CONTENT_REQUIREMENT = (
+    "A candidate must contain at least one semantic claim. A region, representation, "
+    "found-circle count, target binding, observation id or uncertainty alone is not a semantic "
+    "claim.")
+
 
 def candidate_json_schema() -> dict:
     """Modele verilen yanıt şeması: kapalı anahtarlar, alan bazında `status`, kimlik listesi yok.
@@ -318,7 +344,8 @@ def candidate_json_schema() -> dict:
     region = {
         "type": "object",
         "description": ("Normalized page coordinates in [0,1]. (0,0)=top-left, "
-                        "(1,1)=bottom-right. Never use pixel coordinates."),
+                        "(1,1)=bottom-right. Never use pixel coordinates."
+                        + EVIDENCE_ONLY_NOTE),
         "properties": {key: {"type": "number", "minimum": 0.0, "maximum": 1.0}
                        for key in ("x0", "y0", "x1", "y1")},
         "required": ["x0", "y0", "x1", "y1"],
@@ -343,6 +370,8 @@ def candidate_json_schema() -> dict:
                 "items": {
                     "type": "object",
                     "additionalProperties": False,
+                    # §4: parser'ın semantik-içerik reddiyle aynı yönü gösteren asgari sözleşme.
+                    "description": SEMANTIC_CONTENT_REQUIREMENT,
                     "required": ["candidate_id", "source"],
                     "properties": {
                         "candidate_id": {"type": "string", "minLength": 1,
@@ -361,7 +390,8 @@ def candidate_json_schema() -> dict:
                             "type": "object", "additionalProperties": False,
                             "properties": {
                                 "kind": {"enum": list(REPRESENTATION_CLASSES),
-                                         "description": "çizimde ne var: circle/arc/other/unknown"},
+                                         "description": ("çizimde ne var: circle/arc/other/unknown"
+                                                         + EVIDENCE_ONLY_NOTE)},
                                 "diameter_px": {"type": ["number", "null"]},
                             },
                         },
@@ -389,7 +419,8 @@ def candidate_json_schema() -> dict:
                                             "description": "callout'ta yazılı adet (ör. 4xØ8)",
                                             "minimum": 1},
                                 "found_circles": {"type": ["integer", "null"],
-                                                  "description": "senin gördüğün circle sayısı",
+                                                  "description": ("senin gördüğün circle sayısı"
+                                                                  + EVIDENCE_ONLY_NOTE),
                                                   "minimum": 0},
                                 "state": {"enum": ["known", "unknown", "not_stated"], "default": "unknown"},
                             },
@@ -411,8 +442,12 @@ def candidate_json_schema() -> dict:
                                            "description": region["description"]
                                            + " Target region the callout points at."},
                                 "observation_id": {"type": ["string", "null"],
-                                                   "description": "hedefteki gözlem kimliği; yoksa null"},
-                                "state": {"enum": ["bound", "unknown"], "default": "unknown"},
+                                                   "description": ("hedefteki gözlem kimliği; "
+                                                                   "yoksa null"
+                                                                   + EVIDENCE_ONLY_NOTE)},
+                                "state": {"enum": ["bound", "unknown"], "default": "unknown",
+                                          "description": ("callout→hedef bağlaması"
+                                                          + EVIDENCE_ONLY_NOTE)},
                             },
                         },
                         "source": {
@@ -430,6 +465,7 @@ def candidate_json_schema() -> dict:
                         },
                         "uncertainty": {
                             "type": "object", "additionalProperties": False,
+                            "description": "belirsizlik notu" + EVIDENCE_ONLY_NOTE,
                             "properties": {
                                 "fields": {"type": "object", "additionalProperties": {"type": "string"},
                                            "description": "alan adı -> neden belirsiz"},
@@ -446,9 +482,35 @@ def candidate_json_schema() -> dict:
 # ----------------------------------------------------------------- görev metni
 
 TASK_INSTRUCTIONS = """\
-You read ONE mechanical drawing page and report only the callouts/features you can actually see.
+You read ONE mechanical drawing page and report only the callouts/features you can actually read.
+
+First identify a printed semantic fact. Only then create a candidate.
+A region alone is not a candidate.
+A machine observation row is not a semantic claim.
+Do not emit a candidate unless it contains at least one semantic claim.
+
+A semantic claim is something the drawing prints or states. Examples:
+  * printed callout text;
+  * an R (radius) or a Ø (diameter) symbol;
+  * a printed size;
+  * a printed count (for example the 4 in "4xØ8");
+  * an explicit THRU;
+  * an explicit finite depth;
+  * a physical meaning the drawing explicitly supports.
+
+These are evidence only. On their own they never make a candidate:
+  * a circle/arc representation;
+  * a found-circle count;
+  * a target box;
+  * an observation id;
+  * a source region;
+  * an uncertainty note.
+
+If you cannot read at least one semantic fact, emit no candidate for that feature.
+Do not invent a semantic fact merely to satisfy the semantic-content requirement.
 
 Report, for every dimension callout that points at a feature:
+  * the printed callout text exactly as printed, if you can read it;
   * what is drawn there (circle / arc / other / unknown);
   * the physical meaning ONLY if the drawing states it (hole / pocket / slot / not_hole / unknown).
     A drawn circle does not by itself mean a hole: leave `physical.kind` as unknown unless the
@@ -497,6 +559,10 @@ def candidate_prompt(image_ids: list[str], *, observations: list[dict] | None = 
             "A first pass over the same page produced these machine observations. They can be wrong "
             "or incomplete: question them instead of trusting them. They carry no interpretation, "
             "only what was measured.",
+            "",
+            "Observations are evidence, not candidate seeds.",
+            "Do not create one candidate per observation row.",
+            "Use an observation only if it helps support a semantic claim.",
             "",
             "observation_id | kind | text | value | unit | region(x0,y0,x1,y1 normalized)",
         ]
@@ -749,9 +815,11 @@ __all__ = [
     "ALLOWED_CANDIDATE_KEYS", "ALLOWED_RESPONSE_KEYS", "CANDIDATE_READER_VERSION",
     "CANDIDATE_RESPONSE_SCHEMA", "CANDIDATE_SCHEMA_VERSION", "CalloutText", "Candidate",
     "CandidateParseError", "CandidateReferenceError", "CandidateResponse", "CountField",
-    "DepthField", "EVIDENCE_SOURCES", "FIELD_STATES", "FORBIDDEN_FIELDS", "FORM_SYMBOLS", "FormField",
+    "DepthField", "EVIDENCE_ONLY_NOTE", "EVIDENCE_SOURCES", "FIELD_STATES", "FORBIDDEN_FIELDS",
+    "FORM_SYMBOLS", "FormField",
     "Num", "PHYSICAL_CLASSES", "PROVENANCE_KINDS", "PhysicalField", "ProvenanceField",
     "REPRESENTATION_CLASSES", "Region", "RepresentationField", "SEMANTIC_CLAIM_SOURCES",
+    "SEMANTIC_CONTENT_REQUIREMENT",
     "SourceField", "TERMINATIONS", "TASK_INSTRUCTIONS", "TargetField", "TerminationField", "UNITS",
     "UncertaintyField", "candidate_fingerprint", "candidate_has_semantic_claim",
     "candidate_json_schema", "candidate_prompt", "check_candidate_references", "evidence_flags",

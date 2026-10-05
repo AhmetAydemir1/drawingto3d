@@ -67,7 +67,10 @@ NUM_PREDICT = 8192
 SETTINGS = {"num_ctx": 22528, "temperature": 0.0,
             "num_predict": NUM_PREDICT, "keep_alive": "5m", "image_max_side": IMAGE_MAX_SIDE,
             "images_layout": IMAGES_LAYOUT, "image_label_prefix": IMAGE_LABEL_PREFIX,
-            "raw_page_strategy": RAW_PAGE_STRATEGY}
+            "raw_page_strategy": RAW_PAGE_STRATEGY,
+            # VLM döngü kırıcı (dev kanıtı: elbow-V 64 özdeş aday üretti; varsayılan ceza penceresi
+            # 64 token, item ~230 token olduğundan ceza hiç ateşlemiyordu): pencere 512, katsayı 1.25.
+            "repeat_penalty": 1.25, "repeat_last_n": 512}
 
 # Görüntü hazırlama sözleşmesi (preprocessing identity): hazırlama kodu bu dosyalarda yaşar.
 PREPROCESSING_FILES = ("src/drawingto3d/semantic_images.py",

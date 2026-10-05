@@ -180,6 +180,8 @@ def _ollama_chat(
     image_labels: list[str] | None = None,
     images_layout: str = "single_message",
     image_label_prefix: str = "",
+    repeat_penalty: float | None = None,
+    repeat_last_n: int | None = None,
 ) -> str:
     """One chat call. `image_png` and `images` are alternatives: giving both is an error, not a merge.
 
@@ -200,7 +202,9 @@ def _ollama_chat(
                                    response_format=response_format, image_max_side=image_max_side,
                                    timeout=timeout, image_labels=image_labels,
                                    images_layout=images_layout,
-                                   image_label_prefix=image_label_prefix)
+                                   image_label_prefix=image_label_prefix,
+                                   repeat_penalty=repeat_penalty,
+                                   repeat_last_n=repeat_last_n)
     if trace is not None:
         trace.clear()
         trace.update(manifest)
@@ -273,7 +277,9 @@ def _chat_request(*, model: str, prompt: str, images: list[bytes], temperature: 
                   response_format: dict | str | None, image_max_side: int | None,
                   timeout: float, image_labels: list[str] | None = None,
                   images_layout: str = "single_message",
-                  image_label_prefix: str = "") -> tuple[bytes, dict]:
+                  image_label_prefix: str = "",
+                  repeat_penalty: float | None = None,
+                  repeat_last_n: int | None = None) -> tuple[bytes, dict]:
     """The one place a request is prepared: HTTP body and actual-request record from the same data.
 
     The declared `image_max_side` is applied here, not merely recorded — a setting that is written
@@ -358,6 +364,14 @@ def _chat_request(*, model: str, prompt: str, images: list[bytes], temperature: 
         message["images"] = list(encoded)
         messages = [message]
         layout_record = [{"index": 0, "image_ids": list(image_labels or [])}]
+    options = {"temperature": temperature, "num_predict": num_predict, "num_ctx": num_ctx}
+    # Tekrar cezası yalnızca gerçekten verilmişse gönderilir: None = sunucu varsayılanı, ve kayıtta
+    # öyle görünür. (VLM döngüsü: pencere item'dan kısa kalınca ceza hiç ateşlemez — repeat_last_n
+    # bu yüzden ayarlanabilir olmalı.)
+    if repeat_penalty is not None:
+        options["repeat_penalty"] = repeat_penalty
+    if repeat_last_n is not None:
+        options["repeat_last_n"] = repeat_last_n
     payload = {
         "model": model,
         "stream": False,
@@ -365,7 +379,7 @@ def _chat_request(*, model: str, prompt: str, images: list[bytes], temperature: 
         "keep_alive": keep_alive,
         # num_ctx must be set: Ollama's default 4096 is smaller than one whole-sheet image, and the
         # 400 it returns ("exceeds the available context size") is not a model failure.
-        "options": {"temperature": temperature, "num_predict": num_predict, "num_ctx": num_ctx},
+        "options": options,
     }
     if response_format is not None:
         # Constrained decoding: the answer's *shape* is the product contract (a versioned plan), not a
@@ -590,6 +604,10 @@ class ChatSettings:
     image_max_side: int | None = None
     images_per_call: int = 1
     response_format: str | None = None
+    # Tekrar ceza ayarları: VLM'in aynı adayı sonsuz tekrarladığı döngüleri kırar (elbow-V: 64 özdeş
+    # aday). None = sunucu varsayılanı; verilirse istek gövdesine gerçekten konur (uydurma kayıt yok).
+    repeat_penalty: float | None = None
+    repeat_last_n: int | None = None
     # Multimodal çerçeveleme de çağrının cevabını değiştirebilir: kayıtta adı geçmeli.
     images_layout: str = "single_message"
 
@@ -604,6 +622,8 @@ class ChatSettings:
             "image_max_side": self.image_max_side,
             "images_per_call": self.images_per_call,
             "response_format": self.response_format or "text",
+            "repeat_penalty": self.repeat_penalty,
+            "repeat_last_n": self.repeat_last_n,
             "images_layout": self.images_layout,
         }
 
@@ -662,6 +682,8 @@ class OllamaChat:
             image_labels=image_labels,
             images_layout=(self.settings.images_layout if images_layout is None else images_layout),
             image_label_prefix=image_label_prefix,
+            repeat_penalty=self.settings.repeat_penalty,
+            repeat_last_n=self.settings.repeat_last_n,
         )
 
     def unload(self) -> None:

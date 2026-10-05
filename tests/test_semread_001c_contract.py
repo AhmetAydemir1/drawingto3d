@@ -392,6 +392,8 @@ def test_p5_run_contract_envelope_is_001c_and_measured():
     assert NUM_PREDICT == 8192 and SETTINGS["num_predict"] == NUM_PREDICT
     assert SETTINGS["num_ctx"] == 22528
     assert 14121 + SETTINGS["num_predict"] <= SETTINGS["num_ctx"]
+    # VLM döngü kırıcı: elbow-V 64 özdeş adayla kanıtlandı; pencere item'dan (~230 token) büyük.
+    assert SETTINGS["repeat_penalty"] == 1.25 and SETTINGS["repeat_last_n"] == 512
     assert SETTINGS["temperature"] == 0.0
 
 

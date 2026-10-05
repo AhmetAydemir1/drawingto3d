@@ -216,6 +216,33 @@ def test_the_schema_forbids_an_empty_candidate_id_like_the_parser():
     assert item_schema["properties"]["candidate_id"].get("minLength") == 1
 
 
+def test_plan13_items_are_bounded_and_the_parser_stays_strict():
+    """PLAN-13 §5: şema `maxItems=32` der; ayrıştırıcı fazlasını **kırpmaz** — sözleşme dışı gövde
+    reddedilir (silent dedupe / truncated JSON repair yasak)."""
+    schema = candidate_json_schema()
+    assert schema["properties"]["items"]["maxItems"] == 32
+    filled = [item(candidate_id=f"c{index}") for index in range(32)]
+    assert len(parse_candidate_json(body(*filled)).items) == 32
+    overflowing = [item(candidate_id=f"c{index}") for index in range(33)]
+    with pytest.raises(CandidateParseError) as excinfo:
+        parse_candidate_json(body(*overflowing))
+    assert excinfo.value.kind == "schema_error"
+
+
+def test_plan13_prompt_carries_the_shared_anti_loop_rules():
+    """Tekrar-loop kuralları **ortak** görev metnindedir: iki kol aynı üç cümleyi taşır (kol farkı
+    yalnız gözlem girdisidir)."""
+    rules = ("Emit at most one candidate for the same visible callout→target pair.",
+             "Do not repeat a candidate with a new candidate_id.",
+             "When all supported visible callouts are reported, close the items array.")
+    plain = candidate_prompt(["image-1"])
+    with_table = candidate_prompt(["image-1"], observations=[
+        {"id": "t-1", "kind": "text", "text": "4xØ8", "value": None, "unit": None,
+         "region": [0.10, 0.20, 0.30, 0.40]}])
+    for prompt in (plain, with_table):
+        assert all(rule in prompt for rule in rules)
+
+
 # ----------------------------------------------------------- karşılaştırma yardımcıları
 
 

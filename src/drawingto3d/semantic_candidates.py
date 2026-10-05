@@ -71,6 +71,11 @@ ALLOWED_CANDIDATE_KEYS = ("candidate_id", "callout", "representation", "physical
                          "count", "termination", "depth", "target", "source", "uncertainty")
 ALLOWED_RESPONSE_KEYS = ("schema_version", "items")
 
+# PLAN-13 §5 — yapısal anti-loop: yanıt listesi sınırlıdır (pilot limiti; ürünün nihai kapasitesi
+# değil). Şema ve ayrıştırıcı **aynı sözü verir**: 32'nin üzeri ne sessizce kırpılır ne tamir edilir
+# (silent dedupe / truncated JSON repair yasak) — sözleşme dışı gövde `CandidateParseError` olur.
+MAX_ITEMS = 32
+
 
 class CandidateParseError(ValueError):
     """Yanıt gövdesi sözleşmeye uymuyor. Bilinçli olarak **tamir yolu yoktur**.
@@ -275,7 +280,8 @@ class Candidate(BaseModel):
 
 class CandidateResponse(BaseModel):
     schema_version: str = CANDIDATE_SCHEMA_VERSION
-    items: list[Candidate] = Field(default_factory=list)
+    # PLAN-13 §5: üst sınır şemada ve ayrıştırıcıda ortaktır (`MAX_ITEMS`).
+    items: list[Candidate] = Field(default_factory=list, max_length=MAX_ITEMS)
 
 
 # ----------------------------------------------------------------- model şeması
@@ -313,6 +319,7 @@ def candidate_json_schema() -> dict:
             "schema_version": {"const": CANDIDATE_SCHEMA_VERSION},
             "items": {
                 "type": "array",
+                "maxItems": MAX_ITEMS,
                 "items": {
                     "type": "object",
                     "additionalProperties": False,
@@ -448,6 +455,9 @@ Rules:
   * Use only the image ids you were given. `source.image_id` must be one of them.
   * `target.observation_id` may be null; a candidate that shows a valid region but no observation id
     is allowed.
+  * Emit at most one candidate for the same visible callout→target pair.
+  * Do not repeat a candidate with a new candidate_id.
+  * When all supported visible callouts are reported, close the items array.
   * Do not output CAD code, do not decide what should be modelled, do not mark anything as
     supported/confirmed/rejected. You report observations, not decisions.
   * Reply with JSON only, matching the given schema.

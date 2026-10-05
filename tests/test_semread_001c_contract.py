@@ -10,6 +10,11 @@ Kapsam (PLAN-12 §15.3 / §49 kontrol listesi):
 * piksel koordinatlı örnek şema/Pydantic tarafından **reddedilir**; normalize örnek kabul edilir;
 * prompt'ta gold/sayfaya özel metin yok.
 
+001D notu (§5 geçişi): wire sınırında semantik-içerik kuralı eklendi — yalnız `candidate_id` +
+`source.region` taşıyan gövde artık `schema_semantic_empty` ile reddedilir. Bu dosyadaki kabul
+testleri bu yüzden **tek semantic claim** taşıyan fixture kullanır; claimsiz reddin kendi kapsamı
+`tests/test_semread_001d_semantic_content.py`'dedir (şema/reader sürüm bump'ı sonraki commit'te).
+
 Model çağrısı yok; yalnız şema + parser + prompt (saf fonksiyonlar).
 """
 
@@ -59,6 +64,18 @@ def _candidate_body(region: dict) -> str:
     })
 
 
+def _semantic_candidate_body(region: dict) -> str:
+    """Kabul fixture'ı: zorunlu alanlar + **bir** semantic claim (callout metni, 001D §5).
+
+    Claimsiz gövde (`_candidate_body`) artık wire'dan geçmez; onu yalnız yapısal ret yolları
+    (koordinat/anahtar/no-guess) kullanır — semantik ret o yolları **ezmez** çünkü yapısal
+    doğrulama önce karara bağlanır.
+    """
+    payload = json.loads(_candidate_body(region))
+    payload["items"][0]["callout"] = {"text": "Ø8", "state": "known"}
+    return json.dumps(payload)
+
+
 def _region_schemas() -> dict[str, dict]:
     items = candidate_json_schema()["properties"]["items"]["items"]["properties"]
     return {
@@ -101,7 +118,8 @@ def test_p1_pixel_coordinates_are_rejected_not_repaired():
 def test_p1_normalized_example_is_accepted():
     region = Region(**NORMALIZED_REGION)
     assert region.as_list() == [0.10, 0.20, 0.30, 0.40]
-    response = parse_candidate_json(_candidate_body(NORMALIZED_REGION))
+    # 001D §5: kabul fixture'ı tek semantic claim taşır (claimsiz gövde wire'dan geçmez).
+    response = parse_candidate_json(_semantic_candidate_body(NORMALIZED_REGION))
     assert response.items[0].source.region.as_list() == [0.10, 0.20, 0.30, 0.40]
 
 
@@ -143,7 +161,12 @@ def test_p1_prompt_carries_no_gold_or_page_specific_text():
 
 
 def _minimal_body() -> str:
-    """Yalnız zorunlu alanlar: candidate_id + source{image_id, region}."""
+    """Yalnız zorunlu alanlar: candidate_id + source{image_id, region}.
+
+    001D §5 notu: bu gövde artık **semantik-içeriksizdir** ve kabul yollarında kullanılmaz —
+    yalnız yapısal ret örneklerinde (anahtar/koordinat/no-guess) kullanılır. Kabul fixture'ı
+    `_semantic_candidate_body`; claimsiz reddin kapsamı `tests/test_semread_001d_semantic_content.py`.
+    """
     return _candidate_body(NORMALIZED_REGION)
 
 
@@ -185,9 +208,10 @@ def _tiny_png(width: int = 8, height: int = 6) -> bytes:
 
 
 def test_p2_optional_defaults_are_deterministic():
-    first = parse_candidate_json(_minimal_body())
+    """001D §5: gövde tek semantic claim (callout metni) taşır; kalan opsiyoneller varsayılan kalır."""
+    first = parse_candidate_json(_semantic_candidate_body(NORMALIZED_REGION))
     candidate = first.items[0]
-    assert candidate.callout.state == "unknown" and candidate.callout.text == ""
+    assert candidate.callout.state == "known" and candidate.callout.text == "Ø8"
     assert candidate.representation.kind == "unknown"
     assert candidate.physical.kind == "unknown"
     assert candidate.form.symbol == "unknown"
@@ -197,7 +221,7 @@ def test_p2_optional_defaults_are_deterministic():
     assert candidate.depth.state == "not_stated" and candidate.depth.value is None
     assert candidate.target.state == "unknown" and candidate.target.region is None
     assert candidate.uncertainty.fields == {}
-    second = parse_candidate_json(_minimal_body())
+    second = parse_candidate_json(_semantic_candidate_body(NORMALIZED_REGION))
     assert second == first, "aynı gövde aynı varsayılanları vermeli"
 
 
@@ -221,7 +245,8 @@ def test_p2_prompt_asks_to_omit_default_only_optional_fields():
 
 
 def test_p2_read_page_injects_harness_owned_provenance():
-    outcome = read_page(_FakeChat(_minimal_body()), _bundle(), forbidden=[])
+    outcome = read_page(_FakeChat(_semantic_candidate_body(NORMALIZED_REGION)), _bundle(),
+                        forbidden=[])
     assert outcome["parse"]["ok"] is True
     provenance = outcome["parsed"]["items"][0]["provenance"]
     assert provenance["kind"] == "vlm"

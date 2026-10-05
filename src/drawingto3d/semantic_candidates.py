@@ -13,6 +13,10 @@ Sürüm **/2** notları (SEMREAD-001C):
     (§16.3 değerlendirmesi; kaldırmak kapsam kontrolünü karmaşıklaştırırdı).
   * P4 (§18): ayrıştırma hataları alt tür taşır (`kind`): `invalid_json`, `schema_error`,
     `schema_coordinate`, `schema_no_guess`.
+  * 001D (PLAN-14 §3/§5): "semantic claim ≠ evidence-only" ayrımı **tek kaynak** fonksiyonlarla
+    (`semantic_claim_flags` / `candidate_has_semantic_claim` / `evidence_flags`) tanımlanır ve wire
+    sınırında uygulanır: yalnız kanıt/bölge alanları taşıyan aday `schema_semantic_empty` alt
+    türüyle reddedilir (sessiz tamir yok). Şema/reader sürüm bump'ı 001D kimlik commit'indedir.
 
 Kapsam bilinçli olarak küçüktür: bir aday, bir **callout/hedef** hakkında yalnız şu alanları taşır:
 
@@ -34,6 +38,9 @@ Tasarım kuralları (001B goal'i, bölüm 2):
 5. **Boş/bozuk gövde onarılmaz**: `parse_candidate_json` `CandidateParseError` fırlatır.
 6. **Model ürün kararı vermez**: `supported`/`confirmed`/`source=user` gibi alanlar şemada yoktur;
    şema bunları taşıyamaz (kapalı anahtar listesi, testle bağlı).
+7. **Semantik içerik zorunlu (001D)**: yalnız kanıt/bölge alanları taşıyan aday bu sözleşmede
+   geçerli değildir. Tanımın tek kaynağı `semantic_claim_flags`; boş `items` listesi ise geçerli bir
+   **abstention** olarak kalır (dev sayfalarda içerik kapısı ayrıca aranır — PLAN-14 §7/§27).
 """
 
 from __future__ import annotations
@@ -41,6 +48,7 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+from collections.abc import Mapping
 from typing import Any, Literal
 
 from pydantic import BaseModel, Field, ValidationError, field_validator, model_validator
@@ -76,13 +84,25 @@ ALLOWED_RESPONSE_KEYS = ("schema_version", "items")
 # (silent dedupe / truncated JSON repair yasak) — sözleşme dışı gövde `CandidateParseError` olur.
 MAX_ITEMS = 32
 
+# 001D §3 (PLAN-14 "semantic claim ≠ evidence-only") — **tek kaynak** ayrım. Bir aday ancak
+# aşağıdaki kaynaklardan en az birini taşıyorsa semantik içeriklidir; liste kapalıdır ve parser,
+# dev raporu, final değerlendirici ile testler aynı tanımı reuse eder (kopya mantık yasak).
+# Geri kalan alanlar (representation, found_circles, target.state/observation_id, source.region,
+# uncertainty) kanıt/bağlama metriğidir: tek başına adayı geçerli saymaz — bu ayrım gate gaming'i
+# önler (yalnız gözlem satırı kopyalayan aday semantik sayılmaz).
+SEMANTIC_CLAIM_SOURCES = ("callout_text", "form_symbol", "size", "count_printed", "termination",
+                          "depth", "physical")
+EVIDENCE_SOURCES = ("representation", "found_circles", "target_state", "target_observation_id",
+                    "source_region", "uncertainty")
+
 
 class CandidateParseError(ValueError):
     """Yanıt gövdesi sözleşmeye uymuyor. Bilinçli olarak **tamir yolu yoktur**.
 
     `kind` (P4 §18) hatanın alt türünü taşır: `invalid_json` (JSON katmanı), `schema_error`
     (sözleşme/doğrulama), `schema_coordinate` (0..1 dışı bölge), `schema_no_guess`
-    (kanıtsız termination iddiası). Taşıma/sınıflandırma bu türü **okur**, mesajı ayrıştırmaz.
+    (kanıtsız termination iddiası), `schema_semantic_empty` (001D §5: hiçbir semantic claim
+    taşımayan aday). Taşıma/sınıflandırma bu türü **okur**, mesajı ayrıştırmaz.
     """
 
     def __init__(self, message: str, *, kind: str = "invalid_json") -> None:
@@ -492,6 +512,113 @@ def candidate_prompt(image_ids: list[str], *, observations: list[dict] | None = 
     return "\n".join(lines)
 
 
+# ----------------------------------------------------------------- semantik içerik (001D)
+
+
+def _block(candidate: Any, name: str) -> Any:
+    """Alt blok okuyucu: `Candidate` nesnesi ya da düz sözlük (kayıtlı `response-parsed.json`).
+
+    Tanım hem parse edilmiş nesnelerde hem depodan okunan JSON sözlüklerinde çalışır; dev raporu ve
+    final değerlendirici aynı fonksiyonu sözlüklerle çağırır (kopya semantic-content mantığı yok).
+    """
+    if isinstance(candidate, Mapping):
+        return candidate.get(name)
+    return getattr(candidate, name, None)
+
+
+def _value(block: Any, name: str, default: Any = None) -> Any:
+    """Blok alanı: sözlükte `.get`, modelde `getattr`; alan/blok yoksa ya da `None` ise `default`."""
+    if block is None:
+        return default
+    value = block.get(name) if isinstance(block, Mapping) else getattr(block, name, None)
+    return default if value is None else value
+
+
+def semantic_claim_flags(candidate: "Candidate | Mapping[str, Any]") -> dict[str, bool]:
+    """Adayın taşıdığı **semantic claim** kaynakları — kapalı bayrak sözlüğü (001D §3, tek kaynak).
+
+    Kural: **semantic claim ≠ evidence-only**. Bayraklardan en az biri true ise aday semantik
+    içeriklidir. Şema tutarlılık kuralları burada tekrarlanmaz (onlar `Candidate` validator'ında;
+    ör. `thru` için `stated=True` şartı): bayraklar yalnız *ne iddia edildiğini* sayar.
+
+      * `callout_text`  — callout metni dolu (şema `state=known` iken boş metni zaten reddeder);
+      * `form_symbol`   — `form.symbol` R ya da çap (Ø); `none`/`unknown` sayılmaz;
+      * `size`          — `size.state == known` (yazılı ölçü);
+      * `count_printed` — `count.printed` var (yazılı adet, ör. `4xØ8`'in 4'ü);
+      * `termination`   — `thru` ya da `finite` (şema `thru`yu yalnız `stated`, `finite`i yalnız
+                          yazılı derinlikle kabul eder; ikisi de gerçek içerik iddiasıdır);
+      * `depth`         — `depth.state == known` (yazılı derinlik);
+      * `physical`      — `physical.kind != unknown` (`not_hole` dahil: "delik değil" de kanıtlı
+                          bir fiziksel yorumdur).
+
+    Girdi `Candidate` ya da düz sözlük olabilir (sözlük şema doğrulamasından geçmemişse eksik alan
+    `unknown`/yok varsayılır). Anahtar sırası `SEMANTIC_CLAIM_SOURCES` ile birebir aynıdır.
+    """
+    callout = _block(candidate, "callout")
+    form = _block(candidate, "form")
+    size = _block(candidate, "size")
+    count = _block(candidate, "count")
+    termination = _block(candidate, "termination")
+    depth = _block(candidate, "depth")
+    physical = _block(candidate, "physical")
+    return {
+        "callout_text": bool(str(_value(callout, "text", "")).strip()),
+        "form_symbol": _value(form, "symbol", "unknown") in ("R", "diameter"),
+        "size": _value(size, "state", "unknown") == "known",
+        "count_printed": _value(count, "printed") is not None,
+        "termination": _value(termination, "kind", "unknown") in ("thru", "finite"),
+        "depth": _value(depth, "state", "not_stated") == "known",
+        "physical": _value(physical, "kind", "unknown") != "unknown",
+    }
+
+
+def candidate_has_semantic_claim(candidate: "Candidate | Mapping[str, Any]") -> bool:
+    """Aday semantik içerik taşıyor mu: bayraklardan **en az biri** (001D §3/§5)."""
+    return any(semantic_claim_flags(candidate).values())
+
+
+def evidence_flags(candidate: "Candidate | Mapping[str, Any]") -> dict[str, bool]:
+    """Semantic claim **sayılmayan** kanıt/bağlama sinyalleri (001D §3) — ayrı raporlanır.
+
+    Bunların varlığı adayı geçerli kılmaz; yalnız yerelleştirme, gözlem-yankısı, hedef bağlama ve
+    belirsizlik metriklerinin girdisidir:
+
+      * `representation`        — çizilmiş temsil biliniyor (kind ≠ unknown; fiziksel yorum değil);
+      * `found_circles`         — bulunan circle sayısı verilmiş (`count.found_circles`);
+      * `target_state`          — hedef `bound` işaretli;
+      * `target_observation_id` — hedefe gerçek gözlem kimliği bağlanmış;
+      * `source_region`         — kaynak bölge kutusu var;
+      * `uncertainty`           — belirsizlik notu/alanı var (`fields` ya da `reason`).
+
+    Anahtar sırası `EVIDENCE_SOURCES` ile birebir aynıdır.
+    """
+    representation = _block(candidate, "representation")
+    count = _block(candidate, "count")
+    target = _block(candidate, "target")
+    source = _block(candidate, "source")
+    uncertainty = _block(candidate, "uncertainty")
+    return {
+        "representation": _value(representation, "kind", "unknown") != "unknown",
+        "found_circles": _value(count, "found_circles") is not None,
+        "target_state": _value(target, "state", "unknown") == "bound",
+        "target_observation_id": _value(target, "observation_id") is not None,
+        "source_region": _value(source, "region") is not None,
+        "uncertainty": bool(_value(uncertainty, "fields", {}) or {})
+        or bool(str(_value(uncertainty, "reason", "")).strip()),
+    }
+
+
+def _reject_semantic_empty(response: CandidateResponse) -> None:
+    """001D §5/§20 — wire sınırı: semantik-içeriksiz aday **sessizce tamir edilmez**, reddedilir."""
+    for item in response.items:
+        if not candidate_has_semantic_claim(item):
+            raise CandidateParseError(
+                f"semantik-içeriksiz aday reddedildi (candidate_id={item.candidate_id!r}): callout "
+                "metni, form R/Ø, ölçü, basılı adet, sonlanma, derinlik ve fiziksel yorum "
+                "alanlarından hiçbiri dolu değil — yalnız kanıt/bölge alanları taşıyan aday bu "
+                "sözleşmede geçerli değildir", kind="schema_semantic_empty")
+
+
 # ----------------------------------------------------------------- ayrıştırma / doğrulama
 
 
@@ -506,7 +633,12 @@ def _schema_error_kind(exc: ValidationError) -> str:
 
 
 def parse_candidate_json(text: str) -> CandidateResponse:
-    """Yanıt gövdesini **tamir etmeden** ayrıştır. Bozuksa `CandidateParseError` fırlatır."""
+    """Yanıt gövdesini **tamir etmeden** ayrıştır. Bozuksa `CandidateParseError` fırlatır.
+
+    001D §5 akışı: JSON → yapısal doğrulama → **semantik-içerik doğrulaması** → referanslar
+    (referans kontrolü çağıranda, `check_candidate_references`). Semantik-içeriksiz aday
+    `schema_semantic_empty` alt türüyle reddedilir; boş `items` listesi geçerli abstention'dır.
+    """
     if text is None or not str(text).strip():
         raise CandidateParseError("boş yanıt gövdesi")
     raw = str(text).strip()
@@ -537,10 +669,14 @@ def parse_candidate_json(text: str) -> CandidateResponse:
                     raise CandidateParseError(f"ürün kararı alanı yasak: {forbidden}",
                                               kind="schema_error")
     try:
-        return CandidateResponse.model_validate(payload)
+        response = CandidateResponse.model_validate(payload)
     except ValidationError as exc:
         raise CandidateParseError(f"şema doğrulaması düştü: {exc.errors()[:3]}",
                                   kind=_schema_error_kind(exc)) from exc
+    # Yapısal doğrulama geçtikten **sonra**: semantik-içerik kuralı (001D §5/§20). Sessiz tamir
+    # yok — tek bir içeriksiz aday bile yanıtın tümünü reddettirir.
+    _reject_semantic_empty(response)
+    return response
 
 
 def check_candidate_references(response: CandidateResponse, sent_image_ids: list[str],
@@ -613,10 +749,11 @@ __all__ = [
     "ALLOWED_CANDIDATE_KEYS", "ALLOWED_RESPONSE_KEYS", "CANDIDATE_READER_VERSION",
     "CANDIDATE_RESPONSE_SCHEMA", "CANDIDATE_SCHEMA_VERSION", "CalloutText", "Candidate",
     "CandidateParseError", "CandidateReferenceError", "CandidateResponse", "CountField",
-    "DepthField", "FIELD_STATES", "FORBIDDEN_FIELDS", "FORM_SYMBOLS", "FormField", "Num",
-    "PHYSICAL_CLASSES", "PROVENANCE_KINDS", "PhysicalField", "ProvenanceField", "REPRESENTATION_CLASSES",
-    "Region", "RepresentationField", "SourceField", "TERMINATIONS", "TASK_INSTRUCTIONS", "TargetField",
-    "TerminationField", "UNITS", "UncertaintyField", "candidate_fingerprint", "candidate_json_schema",
-    "candidate_prompt", "check_candidate_references", "numeric_tolerance", "parse_candidate_json",
-    "regions_match",
+    "DepthField", "EVIDENCE_SOURCES", "FIELD_STATES", "FORBIDDEN_FIELDS", "FORM_SYMBOLS", "FormField",
+    "Num", "PHYSICAL_CLASSES", "PROVENANCE_KINDS", "PhysicalField", "ProvenanceField",
+    "REPRESENTATION_CLASSES", "Region", "RepresentationField", "SEMANTIC_CLAIM_SOURCES",
+    "SourceField", "TERMINATIONS", "TASK_INSTRUCTIONS", "TargetField", "TerminationField", "UNITS",
+    "UncertaintyField", "candidate_fingerprint", "candidate_has_semantic_claim",
+    "candidate_json_schema", "candidate_prompt", "check_candidate_references", "evidence_flags",
+    "numeric_tolerance", "parse_candidate_json", "regions_match", "semantic_claim_flags",
 ]

@@ -1,9 +1,28 @@
-# SEMREAD-001C — Faz Raporu
+# SEMREAD — durum raporu (yaşam belgesi; aktif deney: SEMREAD-001D)
 
-**Tarih:** 2026-10-05 · **Aktif plan:** `docs/PLAN-14.md` (SEMREAD-001D; PLAN_LATEST; bayt kopya, sha256 `f2d249b7…`; PLAN-13 + PLAN-12 + kök PLAN.md history)
-**Durum:** §21 dev kapısı **8/8 GEÇTİ**; §37 semantik değerlendirme TAMAM (V/VE degenerate — §2b); §35 #5 requalification **KOŞULDU: §8 resmî kapı 7/8 (elbow-VE `schema_coordinate`; paylaşımlı ayar 8/8 ✓, stop 8/8 ✓, içerik 0/8 — §2c)** · **KAPANIŞ (2026-10-05): 001C final yok — READ-ONLY kapandı (Kapanış); karar: yeni experiment version = SEMREAD-001D; closure snapshot: `eval/semread_001c_closure.json`; kayıt: handoff §1t.**
+**Tarih:** 2026-10-05 · **Aktif deney:** SEMREAD-001D · **Aktif plan:** `docs/PLAN-14.md` (SEMREAD-001D; PLAN_LATEST; bayt kopya sha256 `a027cb4a…` — "skeleton sonrası güncel plan" revizyonu; önceki revizyon `f2d249b7…` git history'de; PLAN-13 + PLAN-12 + kök PLAN.md history)
+**001C durumu (aşağıdaki 001C kaydı — HISTORICAL):** §21 dev kapısı **8/8 GEÇTİ**; §37 semantik değerlendirme TAMAM (V/VE degenerate — §2b); §35 #5 requalification **KOŞULDU: §8 resmî kapı 7/8 (elbow-VE `schema_coordinate`; paylaşımlı ayar 8/8 ✓, stop 8/8 ✓, içerik 0/8 — §2c)** · **KAPANIŞ (2026-10-05): 001C final yok — READ-ONLY kapandı (Kapanış); karar: yeni experiment version = SEMREAD-001D; closure snapshot: `eval/semread_001c_closure.json`; kayıt: handoff §1t.**
 
 ---
+
+## 0. Aktif deney — SEMREAD-001D (current; 2026-10-05)
+
+- **Bütçe:** dev **0/12** · final **0/20** (toplam **0/32**) — PLAN-14 §24; artış yok.
+- **Kod (current):** `semread-candidates/2` · `semread-candidate-reader/2` · `semread-001c-run-contract/1`.
+  İlk canlı 001D çağrısından **önce** `/3` + `/3` + `001d/1`'e bump edilir (PLAN-14 §10/§49).
+- **Tamamlanan:** skeleton (PLAN-14 izleme + bütçe deklare + gates 34/34) → **§47 ilk uygulama
+  adımı: semantik-içerik sözleşmesi (0 inference)** — tek kaynak `semantic_claim_flags` /
+  `candidate_has_semantic_claim` / `evidence_flags`; wire sınırında `schema_semantic_empty` reddi
+  (§3/§5/§8/§9); D yolu audit'i (§6 — D doğrudan `Candidate` kurar, wire parser'a girmez).
+- **Sıradaki (§46#3–#4):** prompt v3 + schema/reader `/3` + run-contract `001d/1` kimliği; sonra
+  static preflight (§20) + gates → Round 1 (4 çağrı; §25).
+- **External CI/status:** yok — kabul kanıtı yerel pytest + `eval/` araçlarıdır (PLAN-14 §45).
+
+---
+
+> **Aşağıdaki §1–§7 + Kapanış bölümü: SEMREAD-001C faz kaydı (HISTORICAL).** 001C READ-ONLY
+> (closure `--verify` 45/45: `eval/semread_001c_closure.json`); kapanış kaydı sonraki sürüm
+> düzenlemelerinden etkilenmez (yaşayan report/handoff ayrımı).
 
 ## 1. Ne yapıldı (P0–P6 + araçlar)
 

@@ -402,5 +402,20 @@ burada ve `docs/PLAN-12.md` altında yürür. 001B ve 001C ledger/klasörleri ka
 - **INFERENCE BUDGET:** 24/32 kullanıldı; değişmedi (yeni çağrı yok).
 - **OPEN GATE:** §35 #5 — **8-hücre shared-envelope requalification** (4 dev sayfa × V/VE = 8 çağrı;
   §8 ölçütü: 8/8 stop+koord+refs+sızıntı + paylaşımlı ayarlar) → #6 semantic sanity + tam pytest.
-- **NEXT SINGLE STEP:** requalification koşusunu başlat (8 iş tek batch; elle kill yok §36) ve
-  tamamlanınca `dev-report` + `dev-semantic-report` tazele.
+- **NEXT SINGLE STEP:** requalification koşusu **BAŞLATILDI** (aşağıda §1r'de sonuçlanır).
+
+---
+
+## 1r. §35 #5 requalification — BAŞLATILDI (2026-10-05 ~14:10)
+
+- **Koşu:** `--experiment semread-001c --live --split dev --phase dev` (LabRunner kuyruğu,
+  `heavy_jobs=1` → sıralı; iş başına case tavanı 5400 s). 8 iş = 4 dev sayfa × V/VE, **paylaşımlı
+  zarf** (ortak `repeat_penalty 1.25` + `maxItems=32` + kopya kuralı; §35 #2–#3 commit'leri).
+- **Ön deklare:** dry-run doğrulandı — `planned_real_calls: 8`, `remaining_phase_budget: 8`,
+  `over_budget: false`. Bütçe 24→32 **çağrılardan önce** state'e yazıldı (§7; BÜTÇE DÜZELTMESİ #6).
+- **Log:** `~/.hermes/cache/scratch/semread-001c-requal.log` · ilerleme: `state.json` `live_calls`
+  + yeni attempt dizinleri (`out/lab/semread-001c/attempts/<hücre>/attempt-000N+1`).
+- **Kurallar:** elle kill YOK (§36); bekleyen iş kuyrukta bırakılır; tamamlanınca §21 kapısı yeniden +
+  §8 paylaşımlı-ayar denetimi (V/VE `request_options` eşitliği 8/8) + `dev-report` ve
+  `dev-semantic-report` tazeleme → §1s.
+- **Beklenen süre:** 2–4 saat (iş başına ~15–25 dk, sıralı; ilk iş model yüklemesiyle ≈ +2 dk).

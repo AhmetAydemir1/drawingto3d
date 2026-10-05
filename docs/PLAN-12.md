@@ -2000,10 +2000,10 @@ işine geçme.
 
 # 51. P4/P5 acceptance checklist
 
-- [ ] truncation is separate failure kind
-- [ ] done_reason length never semantic-valid
-- [ ] transport subtype preserved
-- [ ] schema subtype preserved
+- [x] truncation is separate failure kind
+- [x] done_reason length never semantic-valid
+- [x] transport subtype preserved
+- [x] schema subtype preserved
 - [ ] candidate output headroom measured
 - [ ] selected num_predict justified
 - [ ] selected num_ctx justified

@@ -169,18 +169,31 @@ def read_page(chat, bundle: dict, *, forbidden: list[str], num_predict: int | No
     outcome["outcome"] = "answered"
     done_reason = stats.get("done_reason")
     metadata_complete = stats.get("eval_count") is not None and stats.get("prompt_eval_count") is not None
+    # P4 §18: sıra **önce** bütünlük denetimi, sonra ayrıştırma. Kesilmiş/eksik-metadata yanıt
+    # tam sayılmaz: semantik ayrıştırıcı çağrılmaz, ham yanıt saklanır, sınıflandırma üst katmana
+    # aittir (`truncated_output` / `incomplete_metadata`).
     if done_reason == "stop" and metadata_complete:
-        state = "complete"
-    elif done_reason is None:
-        state = "unknown"
+        state, parse_eligible = "complete", True
+    elif done_reason == "length":
+        state, parse_eligible = "truncated", False
     else:
-        state = "truncated"
+        state, parse_eligible = "unknown", False
     outcome["truncated"] = {"done_reason": done_reason, "state": state,
-                            "metadata_complete": bool(metadata_complete)}
+                            "metadata_complete": bool(metadata_complete),
+                            "parse_eligible": parse_eligible}
+    if not parse_eligible:
+        kind = "truncated_output" if done_reason == "length" else "incomplete_metadata"
+        outcome["failure_kind"] = kind
+        outcome["parse"] = {"ok": False, "kind": kind,
+                            "error": (f"done_reason={done_reason!r}: yanıt tamamlanmadı; "
+                                      "ayrıştırıcı çağrılmadı")}
+        outcome["leakage"] = leak_check(prompt + str(trace) + str(answer), forbidden)
+        return outcome
     try:
         response = parse_candidate_json(answer)
     except CandidateParseError as exc:
-        outcome["parse"] = {"ok": False, "error": str(exc)}
+        outcome["failure_kind"] = exc.kind
+        outcome["parse"] = {"ok": False, "kind": exc.kind, "error": str(exc)}
         outcome["leakage"] = leak_check(prompt + str(trace) + str(answer), forbidden)
         return outcome
     # P2 §16.2: `provenance` harness'a aittir — model onu yazmaz (şemada yok). Burada kanıtlanabilir

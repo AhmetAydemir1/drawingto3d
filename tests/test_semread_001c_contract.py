@@ -150,13 +150,15 @@ def _minimal_body() -> str:
 class _FakeChat:
     """Taşıma sınırında duran taklit: ağ yok; stats/trace/raw_response doldurulur."""
 
-    def __init__(self, answer: str, *, done_reason: str = "stop") -> None:
+    def __init__(self, answer: str, *, done_reason: str = "stop",
+                 metadata_complete: bool = True) -> None:
         self.answer = answer
         self.done_reason = done_reason
+        self.metadata_complete = metadata_complete
 
     def complete(self, prompt, **kwargs):
         kwargs["stats"].update({"done_reason": self.done_reason, "eval_count": 12,
-                                "prompt_eval_count": 40})
+                                "prompt_eval_count": 40 if self.metadata_complete else None})
         kwargs["trace"].update({"model": "fake-model:1b", "options": {"temperature": 0.0},
                                 "messages": [{"role": "user", "content": prompt}]})
         kwargs["raw_response"].update({"done": True})
@@ -321,3 +323,57 @@ def _write_page_png(tmp_path, width: int = 400, height: int = 300):
     assert ok
     path.write_bytes(buffer.tobytes())
     return path
+
+
+# ---------------------------------------------------------------- P4: truncation first-class
+
+
+def test_p4_length_done_reason_is_truncated_output_and_never_parsed():
+    valid_body = _candidate_body(NORMALIZED_REGION)
+    outcome = read_page(_FakeChat(valid_body, done_reason="length"), _bundle(), forbidden=[])
+    assert outcome["failure_kind"] == "truncated_output"
+    assert outcome["parse"]["ok"] is False and outcome["parse"]["kind"] == "truncated_output"
+    assert outcome.get("parsed") is None, "kesilmiş yanıt semantik-geçerli olamaz"
+    assert outcome["raw_response"] == valid_body, "ham yanıt korunur"
+    assert outcome["truncated"] == {"done_reason": "length", "state": "truncated",
+                                    "metadata_complete": True, "parse_eligible": False}
+
+
+def test_p4_stop_with_incomplete_metadata_fails_closed():
+    outcome = read_page(_FakeChat(_candidate_body(NORMALIZED_REGION), metadata_complete=False),
+                        _bundle(), forbidden=[])
+    assert outcome["failure_kind"] == "incomplete_metadata"
+    assert outcome["parse"]["ok"] is False and outcome.get("parsed") is None
+    assert outcome["truncated"]["state"] == "unknown"
+    assert outcome["truncated"]["metadata_complete"] is False
+
+
+def test_p4_parse_error_subtypes_survive_the_transport():
+    broken = read_page(_FakeChat("bu JSON değil"), _bundle(), forbidden=[])
+    assert broken["failure_kind"] == "invalid_json"
+    assert broken["parse"]["kind"] == "invalid_json"
+    coordinate = read_page(_FakeChat(_candidate_body(PIXEL_REGION)), _bundle(), forbidden=[])
+    assert coordinate["failure_kind"] == "schema_coordinate"
+    body = json.loads(_candidate_body(NORMALIZED_REGION))
+    body["items"][0]["termination"] = {"kind": "finite", "stated": True}
+    guessed = read_page(_FakeChat(json.dumps(body)), _bundle(), forbidden=[])
+    assert guessed["failure_kind"] == "schema_no_guess"
+
+
+def test_p4_attempt_state_keeps_truncation_apart_from_parse_error():
+    pilot = _load_pilot()
+    answered = {"outcome": "answered"}
+    assert pilot.attempt_state({**answered, "failure_kind": "truncated_output"},
+                               {"parsed": False}) == "truncated_output"
+    assert pilot.attempt_state({**answered, "failure_kind": "incomplete_metadata"},
+                               {"parsed": False}) == "incomplete_metadata"
+    assert pilot.attempt_state({**answered, "failure_kind": "invalid_json"},
+                               {"parsed": False}) == "parse_error"
+    assert pilot.attempt_state({**answered, "failure_kind": None},
+                               {"parsed": True, "gates_ok": True}) == "pass"
+    assert pilot.attempt_state({**answered, "failure_kind": None},
+                               {"parsed": True, "gates_ok": False}) == "failed_gates"
+    assert pilot.attempt_state({"outcome": "error", "failure_kind": "http_error"},
+                               {"parsed": False}) == "transport_error"
+    assert {"truncated_output", "incomplete_metadata"} <= set(pilot.FINALIZED_STATES)
+    assert {"truncated_output", "incomplete_metadata"} <= set(pilot.DISPATCHED_ATTEMPT_STATES)

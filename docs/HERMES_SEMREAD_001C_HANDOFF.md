@@ -112,3 +112,27 @@ burada ve `docs/PLAN-12.md` altında yürür. 001B ve 001C ledger/klasörleri ka
 - **NEXT SINGLE STEP:** P4 (§18): `read_page` sırası — `done_reason=length` → `truncated_output`
   (parser **çağrılmaz**, ham saklanır); `stop`+tam metadata → parse; eksik metadata → fail-closed
   teşhis; parse hata alt türleri (`kind`) taşımaya ve pilot attempt durumuna bağlanır.
+
+---
+
+## 1f. PLAN-12 §18 (P4) — truncation first-class failure ✓
+
+- **CURRENT HEAD:** `e039ae1` (P3; P4 commit'i ilerletir).
+- **WHAT CHANGED:** `read_page`: sıra artık **önce bütünlük, sonra ayrıştırma**. `done_reason=length`
+  → `failure_kind=truncated_output`, ayrıştırıcı **çağrılmaz**, ham yanıt korunur; `stop` + eksik
+  metadata (veya tanınmayan done_reason) → `incomplete_metadata` (fail-closed teşhis); yalnız
+  `stop`+tam metadata parse'a girer. Parse hataları alt türüyle akar (`invalid_json`,
+  `schema_error`, `schema_coordinate`, `schema_no_guess`) → `failure_kind` + `parse.kind` +
+  `response-error.json`. `truncated` bloğuna `parse_eligible` eklendi. Pilot:
+  `attempt_state(outcome, gates)` yardımcı fonksiyonu (kesilme/eksik-metadata ayrı attempt durumu);
+  `FINALIZED_STATES`/`DISPATCHED_ATTEMPT_STATES`/disposition `failed_attempt` listesi genişletildi;
+  `outcome_totals` sayaçları (`truncated_output_count`, `incomplete_metadata_count`) eklendi.
+- **TEST EVIDENCE:** `pytest tests/test_semread_001c_contract.py tests/test_semantic_candidates.py
+  tests/test_semantic_reader.py` → **66 passed** (0,47 s). Vakalar: length+geçerli gövde →
+  truncated (parse yok, ham var); stop+eksik metadata → incomplete; bozuk JSON/koordinat/no-guess
+  alt türleri; attempt_state eşlemesi.
+- **INFERENCE BUDGET:** 001C **0/30** (çağrı yok).
+- **OPEN GATE:** P5/P6 — run-contract/generation envelope + dev smoke.
+- **NEXT SINGLE STEP:** P5/P6 (§19/§20): `CONTRACT_VERSION` → `semread-001c-run-contract/1`,
+  `NUM_PREDICT`/`num_ctx` kararı (3072/4096 adayı, done_reason=stop acceptance), 001C ledger
+  (`out/lab/semread-001c`) + dev smoke (ilk 2 sayfa × V/VE = 4 çağrı).

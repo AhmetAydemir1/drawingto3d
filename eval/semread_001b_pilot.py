@@ -82,11 +82,13 @@ FINAL_VLM_CELLS = 20                       # 10 sayfa × V/VE
 FINALIZED_STATES = ("local_error_source", "local_error_observe", "local_error_preparation",
                     "blocked_budget", "blocked_model_discovery", "blocked_model_mismatch",
                     "blocked_runtime_mismatch", "blocked_unsupported_setting", "sending",
-                    "transport_error", "parse_error", "failed_gates", "pass")
+                    "transport_error", "parse_error", "truncated_output", "incomplete_metadata",
+                    "failed_gates", "pass")
 
 # Gerçekten gönderilmiş (ya da gönderim durumu belirsiz kalmış) attempt durumları: attempt defterinde
 # "çağrı yapıldı" tarafında sayılanlar.
-DISPATCHED_ATTEMPT_STATES = ("sending", "transport_error", "parse_error", "failed_gates", "pass")
+DISPATCHED_ATTEMPT_STATES = ("sending", "transport_error", "parse_error", "truncated_output",
+                             "incomplete_metadata", "failed_gates", "pass")
 
 # Eski (P0R-FINAL-B öncesi) sürüm gönderilmeyen bir isteği de **bütçe** defterine yazıyordu. Bu
 # kayıtlar silinmez (kanıt), ama artık inference sayılmaz: yalnız raporlanır.
@@ -550,6 +552,8 @@ def outcome_totals() -> dict:
         "dispatched_attempts": sum(1 for state in states if state in DISPATCHED_ATTEMPT_STATES),
         "transport_failure_count": states.count("transport_error"),
         "parse_failure_count": states.count("parse_error"),
+        "truncated_output_count": states.count("truncated_output"),
+        "incomplete_metadata_count": states.count("incomplete_metadata"),
         "failed_gates_count": states.count("failed_gates"),
         "local_error_count": sum(1 for state in states if state.startswith("local_error")),
         "blocked_count": sum(1 for state in states if state.startswith("blocked")),
@@ -558,6 +562,8 @@ def outcome_totals() -> dict:
     counts["inference_calls_used"] = budget_report()["total_used"]
     counts["failed_attempt_total"] = (counts["transport_failure_count"]
                                       + counts["parse_failure_count"]
+                                      + counts["truncated_output_count"]
+                                      + counts["incomplete_metadata_count"]
                                       + counts["failed_gates_count"]
                                       + counts["local_error_count"])
     return counts
@@ -1330,6 +1336,25 @@ def write_d_attempt(page: dict, *, observations=None, source=None) -> dict:
             "evidence": result["evidence"], "response": payload}
 
 
+def attempt_state(outcome: dict, gates: dict) -> str:
+    """Attempt durumu (P4 §18): kesilme/eksik-metadata **ayrı** durumdur; parse_error'a gömülmez.
+
+    Parse hatalarının alt türü (`invalid_json`, `schema_coordinate`, `schema_no_guess`, …) attempt
+    kaydının `failure_kind` alanında ve `response-error.json`'da korunur; durum adı `parse_error`
+    kalır çünkü matris/tespit kuralları o sınıfa göre yazılmıştır (PLAN-12 §5/§6).
+    """
+    if outcome.get("outcome") != "answered":
+        return "transport_error"
+    kind = outcome.get("failure_kind")
+    if kind == "truncated_output":
+        return "truncated_output"
+    if kind == "incomplete_metadata":
+        return "incomplete_metadata"
+    if not gates.get("parsed"):
+        return "parse_error"
+    return "pass" if all(gates.values()) else "failed_gates"
+
+
 def write_live_attempt(page: dict, arm: str, *, phase: str, observations=None, source=None) -> dict:
     """V/VE attempt'i: yerel preflight → gönderim rezervasyonu → tek çağrı → kanıt yazımı (P0R-FINAL-B).
 
@@ -1492,14 +1517,7 @@ def write_live_attempt(page: dict, arm: str, *, phase: str, observations=None, s
         "no_leakage": not (outcome.get("leakage") or []),
     }
     verdict = "pass" if all(gates.values()) else "fail"
-    if outcome.get("outcome") != "answered":
-        state = "transport_error"
-    elif not gates["parsed"]:
-        state = "parse_error"
-    elif verdict == "pass":
-        state = "pass"
-    else:
-        state = "failed_gates"
+    state = attempt_state(outcome, gates)
     finalized = finalize_attempt(
         attempt_id=attempt_id, directory=directory, page=page, arm=arm, phase=phase, state=state,
         verdict=verdict, send_attempted=True, inference_calls=1, gates=gates, seconds=seconds,
@@ -2172,8 +2190,8 @@ def matrix_dispositions(cells: list[dict]) -> dict:
         if attempt_state.startswith("blocked"):
             rows.append({**entry, "disposition": "blocked", "reason": attempt_state})
         elif attempt_state in ("sending", "transport_error", "parse_error", "failed_gates",
-                               "local_error_source", "local_error_observe",
-                               "local_error_preparation"):
+                               "truncated_output", "incomplete_metadata", "local_error_source",
+                               "local_error_observe", "local_error_preparation"):
             rows.append({**entry, "disposition": "failed_attempt", "reason": attempt_state})
         else:
             rows.append({**entry, "disposition": pending,

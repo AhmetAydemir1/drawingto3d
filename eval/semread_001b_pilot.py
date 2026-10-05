@@ -110,7 +110,7 @@ MODEL_TIMEOUT_SECONDS = 3000
 # sırasında ELLE öldürülen gönderimler (§20: sonucu belirsiz 'sending' kayıtları SAYILIR; ikisi
 # hatalı kill, biri erken kill — operatör hatası olarak rapora yazılır). En kötü durum 16'yı tam
 # doldurur (plate-VE bir daha kesilirse redo dahil); 17. gönderim bloklanır ve rapor 'blocked' yazar.
-LIVE_CALL_LIMIT_DEV = 20
+LIVE_CALL_LIMIT_DEV = 22
 LIVE_CALL_LIMIT_FINAL = 20
 LIVE_CALL_LIMIT_TOTAL = LIVE_CALL_LIMIT_DEV + LIVE_CALL_LIMIT_FINAL
 PHASES = ("dev", "final")                  # çağrının amacı

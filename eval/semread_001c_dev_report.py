@@ -143,6 +143,7 @@ def build_report() -> dict:
     all_attempts = [r for recs in records.values() for r in recs]
     state = read_json(LAB / "state.json") or {}
     calls = state.get("live_calls") or []
+    stored_budget = state.get("budget") or {}
     dispatched = [c for c in calls if c.get("send_state") not in
                   ("not_sent_model_mismatch", "not_sent_runtime_mismatch",
                    "not_sent_unsupported_setting")]
@@ -163,9 +164,10 @@ def build_report() -> dict:
         "valid_cells": sum(1 for r in rows if r["valid"]),
         "valid_output_rate": round(sum(1 for r in rows if r["valid"]) / len(rows), 4),
         "budget": {"dev_used": sum(1 for c in dispatched if c.get("phase") == "dev"),
-                   "dev_limit": 12, "final_used": sum(1 for c in dispatched
-                                                      if c.get("phase") == "final"),
-                   "final_limit": 20},
+                   "dev_limit": stored_budget.get("dev", 0),
+                   "final_used": sum(1 for c in dispatched
+                                      if c.get("phase") == "final"),
+                   "final_limit": stored_budget.get("final", 0)},
     }
     return {"schema": "semread-001c-dev-report/1", "cells": cells, "rows": rows,
             "gate": gate, "metrics": metrics}

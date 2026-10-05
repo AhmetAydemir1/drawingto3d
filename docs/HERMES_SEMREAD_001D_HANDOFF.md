@@ -402,3 +402,57 @@ CHANGED / TEST EVIDENCE / INFERENCE BUDGET / OPEN GATE / NEXT SINGLE STEP*.
   structured-output + dry-run manifest alanları) → §53–§55 pre-live gate → Round 1 (4 çağrı).
 - **NEXT SINGLE STEP:** §42: static preflight — `planned_real_calls 4` hazır; preflight kapıları
   geçmeden Round 1 gönderimi yok (§94 blocker listesi).
+
+---
+
+## 1i. §32–§41 static preflight — 0 inference; tek kırmızı: context headroom — 2026-10-06
+
+- **CURRENT HEAD:** `857fe13` (bu kayıttan önce; bu commit §32–§41 static preflight işini taşır)
+- **CURRENT EXPERIMENT:** SEMREAD-001D. **Yeni plan entry izlendi:** `docs/PLAN-18.md` bayt kopya
+  (sha256 `ec49e985671b…`; PLAN-18 §3: yeni history entry — taslağın beyan ettiği slotlar doluydu
+  (PLAN-16 `b2e1218` · PLAN-17 `7097288`), sıradaki serbest numara verildi; PLAN-17 **rewrite
+  edilmedi**, son izlenen revizyonuyla (`1bdd4987…`) geçmişe pinlendi; PLAN-16 `73f81009…` ·
+  PLAN-15 `909e46cb…` · PLAN-14 `39cf9b84…`). Skeleton pin'i güncellendi + yeni geçmiş-pin testi
+  (`test_plan17_history_is_preserved`). 001C **CLOSED / READ-ONLY**.
+- **IMMUTABLE HISTORY:** değişmedi — `eval/semread_001b_gold/FREEZE.json`,
+  `eval/semread_001c_closure.{py,json}`, `out/lab/semread-001c/**`; closure `--verify` bu commit'te
+  tekrar koşuldu: **45/45**.
+- **WHAT CHANGED (0 inference — canlı çağrı yok, ledger kurulmadı):**
+  1. **`eval/semread_001d_preflight.py`** (yeni; §33–§40): on kapı tek koşuda — kimlik (current
+     sürümler + producer/preprocessing; `contract_identity_block` boş), dry-run (`--pages` Round-1
+     filtresiyle `planned_real_calls 4`; dört hücre `call`), bütçe (0/12 · 0/20), runtime (model/
+     digest/`0.32.1`; yerel metadata — inference değil), paylaşımlı ayar (V==VE), prompt-context
+     (§37 ölçümü: prompt byte/tahmin + görüntü byte + gözlem satırı; kapı `tahmin + NUM_PREDICT
+     <= NUM_CTX`), istek `options` imzası (tek kurucu `_chat_request`; gövde kurulur, gönderilmez;
+     dört hücrede aynı), structured-output (`format` json-schema; `anyOf`/birleşim anahtarı yok),
+     girdi güncelliği (prepared-input cache == yeniden türetim; V/VE ham byte aynı; VE kanıtı ayrı
+     hash; sayfa PNG == kayıt), 001C closure (alt süreç).
+  2. **Salt-okur koşu + dürüst kayıt:** `--write` yalnız `corpus/static-preflight.json` yazar
+     (`ok=false` — tek kırmızı context); varsayılan koşu diske hiçbir şey yazmaz (test pinli).
+  3. **Yeni test dosyası `tests/test_semread_001d_preflight.py` (13 test):** yeşil yol (dört hücre,
+     dokuz kapı); context kapısı düşünce §49 kanıtı (hücre/tahmin/gerekli/mevcut/eksik); bayat
+     sözleşme kimliği; bütçe sapması; runtime uyuşmazlığı/erişilemezlik; `anyOf` enjeksiyonu; bayat
+     cache; eksik PNG; gold/taşıma yasağı + 0-inference trap'i; `--write` kapsamı; kalibrasyon
+     pin'i (0.816 / 664); ölçüm byte-kararlılığı; Round-1 deklarasyon drifti.
+- **§37 ölçümü (model çağrılmadan; `0.816 tok/byte + 664` kalibrasyonu):** plate-pocket-V 3.364 B →
+  **3.409** (pay +10.927) · plate-pocket-VE 7.574 B → **6.844** (+7.492) · flange-book-V 3.364 B →
+  **3.409** (+10.927) · **flange-book-VE 17.868 B → 15.244** →
+  `15.244 + 8.192 = 23.436 > 22.528` → **context kapısı KIRMIZI**. §49 kanıtı: hücre
+  `dev-flange-book-VE` · tahmin ~15.244 token · gerekli **23.436** · mevcut **22.528** · **eksik
+  908**. Kıyas: 001C ölçümü aynı hücrede **14.167** (prompt 16.707 B) → v3 prompt'u **+1.161 B**
+  büyüdü; arıza yok — kapı görevini yaptı. **Kör `num_ctx` artışı yok (§39).**
+- **DİĞER DOKUZ KAPI YEŞİL:** kimlik / dry-run / bütçe / runtime / paylaşımlı ayar / istek imzası /
+  structured-output / girdi güncelliği / closure (45/45) — kayıt:
+  `out/lab/semread-001d/corpus/static-preflight.json` (kanıt kopyası:
+  `~/.hermes/cache/scratch/semread-001d-preflight-evidence.json`).
+- **TEST EVIDENCE:** odak süiti **154 passed**; hızlı SEMREAD (lifecycle + identity + gold-manifest
+  + reference + `test_semread_001b`) **119 passed**; 001C closure `--verify` **45/45**; check_tables
+  **21 / 0**. Loglar: `~/.hermes/cache/scratch/semread-001d-{focused,hizli,closure,tables}.log`.
+- **INFERENCE BUDGET:** 001D dev **0/12**, final **0/20** (toplam **0/32**) — değişmedi; bu commit
+  **0 inference** (canlı çağrı yok; ledger kurulmadı; `out/lab/semread-001d/` yalnız `corpus/`).
+- **OPEN GATE:** §38/§39 context headroom — `dev-flange-book-VE` `num_ctx 22.528`e sığmıyor
+  (tahmin 23.436; eksik 908). §74 listesi: bu bloker kapanmadan ilk canlı çağrı yok.
+- **NEXT SINGLE STEP:** karar noktası (üretim zarfı değişikliği operatör onayı ister):
+  (a) **önerilen:** kanıtlı `num_ctx` revizyonu (22.528 → 24.576; ~1,1k pay) ayrı bir
+  deklerasyon/sapma olarak kaydedilir → preflight tekrarı → Round 1 (4 çağrı);
+  (b) envelope dondurulur → Round 1 açılmaz; plan revizyonu (yeni plan entry) gerekir.

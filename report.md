@@ -1,13 +1,13 @@
 # SEMREAD — durum raporu (yaşam belgesi; aktif deney: SEMREAD-001D)
 
-**Tarih:** 2026-10-05 · **Aktif deney:** SEMREAD-001D · **Aktif plan:** `docs/PLAN-17.md` (SEMREAD-001D; PLAN_LATEST; bayt kopya sha256 `1bdd4987…` — "`001d/1` producer identity sonrası: dev-report → 001D dev input kurulumu → static preflight → Round 1 semantic proof" planı; PLAN-17 §4: yeni history entry — taslağın beyan ettiği PLAN-16 slotu zaten doluydu (b2e1218), sıradaki serbest numara verildi; PLAN-16 **rewrite edilmedi**, son izlenen revizyonuyla `73f81009…` geçmişte donar; PLAN-15 `909e46cb…`; PLAN-14 son izlenen revizyonuyla `39cf9b84…` (+ önceki `a027cb4a…`, `f2d249b7…`) geçmiş olarak korunur; PLAN-13 + PLAN-12 + kök PLAN.md history)
+**Tarih:** 2026-10-06 · **Aktif deney:** SEMREAD-001D · **Aktif plan:** `docs/PLAN-18.md` (SEMREAD-001D; PLAN_LATEST; bayt kopya sha256 `ec49e985…` — "Güncel rota: dev-report → dev input kurulumu → static preflight → Round 1 semantic proof" planı; PLAN-18 §3: yeni history entry — taslağın beyan ettiği slotlar doluydu (PLAN-16 `b2e1218` · PLAN-17 `7097288`), sıradaki serbest numara verildi; PLAN-17 **rewrite edilmedi**, son izlenen revizyonuyla `1bdd4987…` geçmişte donar; PLAN-16 `73f81009…`; PLAN-15 `909e46cb…`; PLAN-14 son izlenen revizyonuyla `39cf9b84…` (+ önceki `a027cb4a…`, `f2d249b7…`) geçmiş olarak korunur; PLAN-13 + PLAN-12 + kök PLAN.md history)
 **001C durumu (aşağıdaki 001C kaydı — HISTORICAL):** §21 dev kapısı **8/8 GEÇTİ**; §37 semantik değerlendirme TAMAM (V/VE degenerate — §2b); §35 #5 requalification **KOŞULDU: §8 resmî kapı 7/8 (elbow-VE `schema_coordinate`; paylaşımlı ayar 8/8 ✓, stop 8/8 ✓, içerik 0/8 — §2c)** · **KAPANIŞ (2026-10-05): 001C final yok — READ-ONLY kapandı (Kapanış); karar: yeni experiment version = SEMREAD-001D; closure snapshot: `eval/semread_001c_closure.json`; kayıt: handoff §1t.**
 
 ---
 
-## 0. Aktif deney — SEMREAD-001D (current; 2026-10-05)
+## 0. Aktif deney — SEMREAD-001D (current; 2026-10-06)
 
-- **Bütçe:** dev **0/12** · final **0/20** (toplam **0/32**) — PLAN-17 başlığı; artış yok; ledger
+- **Bütçe:** dev **0/12** · final **0/20** (toplam **0/32**) — PLAN-18 başlığı; artış yok; ledger
   (`out/lab/semread-001d/`) henüz kurulmadı (ilk dev çağrısında kurulur).
 - **Kod (current):** `semread-candidates/3` · `semread-candidate-reader/3` ·
   **`semread-001d-run-contract/1`**. Şema/reader `/3` (§3/§61: semantic-empty geçersiz, semantic
@@ -37,6 +37,20 @@
   (§32/§82).
 - **§41 dry-run kanıtı (current):** `--dry-run --phase dev` Round 1 için `planned_real_calls 4`
   (dört hücre `call`); bütçe dev **0/12** · final **0/20**; ledger kurulmadı.
+- **§32–§41 statik preflight (current; 0 inference):** `eval/semread_001d_preflight.py` (+13 test) —
+  on kapı tek koşuda: kimlik / dry-run (`planned_real_calls 4`) / bütçe (`0/12`·`0/20`) / runtime
+  (`0.32.1` + digest birebir; yerel metadata) / paylaşımlı ayar / istek `options` imzası /
+  structured-output (`format` json-schema; `anyOf` yok; gövde kurulur, gönderilmez) / girdi
+  güncelliği (prepared-input cache == yeniden türetim; V/VE ham byte aynı; VE kanıtı ayrı hash) /
+  001C closure **45/45**. §37 ölçümü (model çağrılmadan; kalibrasyon 0.816 tok/byte + 664):
+  plate-pocket V 3.364 B→**3.409** · VE 7.574 B→**6.844** · flange-book V 3.364 B→**3.409** ·
+  **flange-book VE 17.868 B→15.244**.
+- **R1 bloğu — context kapısı KIRMIZI (current):** `dev-flange-book-VE` →
+  `15.244 + 8.192 = 23.436` > `num_ctx 22.528`; §49 kanıtı: hücre · prompt ~15.244 token · gerekli
+  **23.436** · mevcut **22.528** · **eksik 908**. Diğer dokuz kapı yeşil; kayıt
+  `out/lab/semread-001d/corpus/static-preflight.json` (`ok=false` — dürüst). 001C ölçümü aynı
+  hücrede 14.167 idi (prompt 16.707 B); v3 prompt'u 17.868 B. **Round 1 açılmadı; kör `num_ctx`
+  artışı yok (§39).** §74: bu bloker kapanmadan canlı çağrı yok.
 - **Tamamlanan:** skeleton (PLAN-14 izleme + bütçe deklare + gates 34/34) → **§47 ilk uygulama
   adımı: semantik-içerik sözleşmesi (0 inference)** — tek kaynak `semantic_claim_flags` /
   `candidate_has_semantic_claim` / `evidence_flags`; wire sınırında `schema_semantic_empty` reddi
@@ -46,13 +60,14 @@
   açıklaması aynı asgari sözleşmeyi söyler (§4; `anyOf` **eklenmedi** — §5) → acceptance
   ölçüm-kapısı düzeltmesi (§5/§6) → **§60/§61: run-contract `001d/1` + producer identity**
   (0 inference; §9–§15).
-- **Sıradaki (§42–§52):** 001D static preflight (identity/budget/runtime/paylaşımlı ayar/
-  prompt-context/structured-output) → pre-live gate (§53–§55) → Round 1 (4 çağrı). Dev-report
-  kapandı; input prep, evaluator geliştirmeyle paralelleştirilmez (§93).
+- **Sıradaki (§39 kararı → §42–§45 → §46+):** statik preflight koştu — tek kırmızı context
+  headroom (yukarıdaki R1 bloğu). Karar: kanıtlı `num_ctx` revizyonu (öneri 22.528 → 24.576;
+  ~1,1k pay) → preflight tekrarı → pre-live gate (focused/gates 34/34/closure/D regression) →
+  Round 1 (4 çağrı); envelope dondurulursa Round 1 yerine plan revizyonu gerekir.
 - **Bonus koşu bulgusu (0 inference, §1d/§1e):** 001B acceptance süiti ölçümsüz kapanabilen bir rapor
   kapısı gösterdi (`report_evidence.measured` sıfır satırlı `vs_d`'yi ölçüm sayıyordu) — tek kaynak
   `arms_with_measurement()` ile düzeltildi + pin testi; süit tamamı **27 passed** (31:48).
-- **External CI/status:** yok — kabul kanıtı yerel pytest + `eval/` araçlarıdır (PLAN-17 §45).
+- **External CI/status:** yok — kabul kanıtı yerel pytest + `eval/` araçlarıdır (PLAN-18 §5).
 
 ---
 

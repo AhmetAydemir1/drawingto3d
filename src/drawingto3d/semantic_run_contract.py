@@ -50,9 +50,12 @@ IMAGES_LAYOUT = "per_image_message_labeled"
 IMAGE_LABEL_PREFIX = "Image ID: "
 
 IMAGE_MAX_SIDE = 1280          # development'ta sabitlenir; final koşuya kadar değişmez
-# PLAN-12 §19: 2048 körlemesine yükseltilmedi; 001B'nin ölçülen kesilme tavanına göre 3072 seçildi.
-# Kabul yalnız `done_reason == stop` ile verilir; hedef: başarılı eval_count ≤ 0.8 × num_predict.
-NUM_PREDICT = 3072
+# PLAN-12 §19: 2048 körlemesine yükseltilmedi; 001B'nin ölçülen kesilme tavanına göre 3072 seçildi,
+# sonra 001C dev'de ölçüm 4096'ya çıkardı: `dev-plate-pocket-VE` 25 satırlık tabloda 3072'nin
+# tamamını kullanıp **son adayın ortasında** kesildi (state=truncated_output; ~7,7 tok/s M1'de
+# 4096'nın en kötü karşılığı ~530 s < 900 s model tavanı). Kabul yalnız `done_reason == stop`;
+# hedef: başarılı eval_count ≤ 0.8 × num_predict (4096 → 3277).
+NUM_PREDICT = 4096
 
 # Üretim ayarları: taşıma katmanı bu değerlerden kurulur (kopyası tutulmaz).
 #

@@ -386,8 +386,9 @@ def test_p5_run_contract_envelope_is_001c_and_measured():
     from drawingto3d.semantic_run_contract import CONTRACT_VERSION, NUM_PREDICT, SETTINGS
 
     assert CONTRACT_VERSION == "semread-001c-run-contract/1"
-    assert NUM_PREDICT == 3072 and SETTINGS["num_predict"] == NUM_PREDICT
-    # 001B kanıtı: en kötü VE prompt'u 7593; 7593 + 3072 = 10665 < 12288. 8192 kanıtlı biçimde yetmiyor.
+    # Dev ölçümü zarfı ilerletti: 3072'de `dev-plate-pocket-VE` son adayın ortasında kesildi → 4096.
+    assert NUM_PREDICT == 4096 and SETTINGS["num_predict"] == NUM_PREDICT
+    # Bağlam kanıtı: en kötü ölçülen VE prompt'u 7593; 7593 + 4096 = 11689 < 12288.
     assert SETTINGS["num_ctx"] == 12288
     assert SETTINGS["num_predict"] + 7593 <= SETTINGS["num_ctx"]
     assert SETTINGS["temperature"] == 0.0

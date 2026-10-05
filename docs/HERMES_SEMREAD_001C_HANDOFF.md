@@ -380,3 +380,27 @@ burada ve `docs/PLAN-12.md` altında yürür. 001B ve 001C ledger/klasörleri ka
 - **NEXT SINGLE STEP:** §35 #2 — `semantic_run_contract.py`: `REPEAT_PENALTY_BY_ARM` yerine ortak
   `REPEAT_PENALTY`; `generation_settings(V) == generation_settings(VE)` invariant testi; pilot'ta
   kol-özel rp dalını kaldırma.
+
+---
+
+## 1q. §35 #2–#4 kod işleri ✓ — paylaşımlı zarf + maxItems/kopya + dev tavanı 32 (2026-10-05 ~14:00)
+
+- **WHAT CHANGED (PLAN-13 §35 commit sırası #2–#4, hepsi kod; canlı çağrı yok):**
+  1. **#2 shared generation invariant** (`d08e8c3`): `REPEAT_PENALTY_BY_ARM = {V:1.4, VE:1.25}`
+     kaldırıldı → ortak `REPEAT_PENALTY = 1.25` + `REPEAT_LAST_N = 512` sabit; `generation_settings(arm)`
+     üretim ayarlarının tek kaynağı oldu; pilot istek zarfını ondan kurar (kol-özel dal yok).
+     Invariant testi: `generation_settings(V) == generation_settings(VE)` + `REPEAT_PENALTY_BY_ARM`
+     yokluğu (§4/§8/§39).
+  2. **#3 maxItems + kopya kuralı** (`f9b417f`): `items.maxItems = 32` hem gönderilen şemada hem
+     pydantic ayrıştırıcısında (33 öğe → `schema_error`; sessiz kırpma/tamir yok — §5/§36). Ortak
+     görev metnine üç anti-loop cümlesi eklendi (V ve VE aynı metni taşır).
+  3. **#4 dev tavanı 32** (bu commit): `LIVE_CALL_LIMIT_DEV 24→32`; `state.json` bütçesi çağrılardan
+     ÖNCE deklare edildi → `{"dev": 32, "final": 20, "total": 52}` + gerekçe notu (#6). Kullanım:
+     **24/32**; bu bölümde hiç canlı çağrı yok.
+- **TEST EVIDENCE:** odak süiti (001c contract + semantic_candidates + dev-semantik aracı) **58 passed**;
+  `dev-report` hâlâ **8/8 kapı**, bütçe satırı `dev 24/32 · final 0/20`. 001B closure 9/9 (§1p).
+- **INFERENCE BUDGET:** 24/32 kullanıldı; değişmedi (yeni çağrı yok).
+- **OPEN GATE:** §35 #5 — **8-hücre shared-envelope requalification** (4 dev sayfa × V/VE = 8 çağrı;
+  §8 ölçütü: 8/8 stop+koord+refs+sızıntı + paylaşımlı ayarlar) → #6 semantic sanity + tam pytest.
+- **NEXT SINGLE STEP:** requalification koşusunu başlat (8 iş tek batch; elle kill yok §36) ve
+  tamamlanınca `dev-report` + `dev-semantic-report` tazele.

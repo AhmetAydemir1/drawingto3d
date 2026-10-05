@@ -435,8 +435,9 @@ def test_p6_experiment_switch_moves_only_the_ledger(tmp_path, monkeypatch):
     assert pilot.state_path() != original_state
     fresh = pilot.load_state()
     assert fresh["experiment"] == "semread-001c"
-    # Bütçe düzeltmeleri (PLAN-12 §20 sapmaları, gerekçe handoff/rapor): dev 10→12→16→18→20→22→24, toplam 44.
-    assert fresh["budget"] == {"dev": 24, "final": 20, "total": 44}, "001C kendi defteri"
+    # Bütçe geçmişi (gerekçe handoff/rapor): dev 10→12→16→18→20→22→24 (PLAN-12 §20 sapmaları);
+    # PLAN-13 §7 çağrılardan ÖNCE tek seferlik 24→32 (paylaşımlı zarf requalification'ı, 8 çağrı) → 52.
+    assert fresh["budget"] == {"dev": 32, "final": 20, "total": 52}, "001C kendi defteri"
     # Geri dönüş: 001B adı yine 001B köküne çözülür; varsayılan kayıt yolu sabittir.
     pilot.use_experiment("semread-001b")
     assert pilot.EXPERIMENT_NAME == "semread-001b"

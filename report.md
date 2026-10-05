@@ -18,7 +18,8 @@
 | P5/P6 | fa7b6a3 | `semread-001c-run-contract/1`; kabul: stop + eval ≤ 0.8×predict; ayrı defter |
 | araç | 6555e62 | `eval/semread_001c_dev_report.py` (§21 kapısı + §19/§43 ölçüm) |
 | kapanış | 1f5977a | report.md + handoff §1o |
-| §37 | bu commit | Offline dev semantik değerlendirme (0 inference) + D kolu (4 sayfa) + PLAN-13 izlendi |
+| §37 | 21e0691 | Offline dev semantik değerlendirme (0 inference) + D kolu (4 sayfa) + PLAN-13 izlendi |
+| §35 #2–#4 | d08e8c3 · f9b417f · bu commit | Paylaşımlı zarf (ortak rp + `generation_settings` invariantı) · `maxItems=32` + kopya kuralı · dev tavanı 32 deklare (24/32) |
 
 Ek tanı araçları: `eval/semread_001c_measure_prompts.py` (çağrısız prompt ölçümü),
 `eval/semread_001c_probe_big.py` (`--ctx/--predict/--format/--repeat-penalty/--labeled/--dump`).
@@ -72,8 +73,8 @@ değil) · elbow 17 · drawing-2 17 — 001B D adetleriyle birebir aynı (7/12/1
    içerikli → "aşırı bastırma gerçek içeriği kesti" okuması veriyle desteklenmiyor (§28).
 4. **plate-VE 41 aday:** 0 eşleşme, 41 unscorable (kapsam dışı), 4 yakın kopya, 41/41 yankı (§27).
 
-**Sonuç:** freeze'e bu çıktıyla geçilemez. Sıradaki iş: PLAN-13 §35 #2–#5 (shared generation
-invariant → maxItems + kopya kuralı → dev tavanı 32 → 8-hücre requalification).
+**Sonuç:** freeze'e bu çıktıyla geçilemez. Sıradaki iş: PLAN-13 §35 #5 — 8-hücre shared-envelope
+requalification (#2–#4 tamam; bkz. §6).
 
 ## 3. Zarf revizyonları (hepsi ölçümle)
 
@@ -121,10 +122,11 @@ Her artış `state.json` notu + handoff §1i/§1l/§1n + test assertion'ı ile k
 
 ## 6. Kalan işler
 
-- **Sıradaki (PLAN-13 §35 #2–#5):** shared generation invariant (kol-başına `repeat_penalty` kaldır →
-  ortak rp + `generation_settings(V) == generation_settings(VE)` testi) → maxItems=32 + kopya kuralı →
-  dev bütçe tavanı 32 → 8-hücre shared-envelope requalification. §37 bulgusu (V/VE içeriksiz; §2b)
-  final freeze'i bloklar; bu adımlar PLAN-13 §35 commit sırasındadır.
+- **PLAN-13 §35 #2–#4 TAMAM** (d08e8c3 / f9b417f / bu commit): ortak üretim zarfı (`REPEAT_PENALTY=1.25`,
+  `generation_settings(V) == generation_settings(VE)` invariant testi), `items.maxItems=32` + kopya
+  kuralı (şema + parser aynı sözü verir; sessiz kırpma/tamir yok), dev tavanı 24→32 çağrılardan önce
+  deklare edildi (state notu; kullanım 24/32). **Sıradaki: §35 #5 requalification (8 çağrı)** →
+  #6 semantic sanity + tam pytest. §37 bulgusu (V/VE içeriksiz; §2b) final freeze'i bloklar.
 - **P7 (§23) — YENİ BAĞIMSIZ HOLDOUT: kullanıcı girdisi gerekli.** Repoda görülmemiş bir sayfa yok;
   final fazının kilitleneceği yeni çizim(ler) sağlanmalı. P8 (freeze) → P9/P10 (20 final çağrı +
   değerlendirme) buna bağlıdır.

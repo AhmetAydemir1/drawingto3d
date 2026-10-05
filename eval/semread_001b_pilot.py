@@ -111,7 +111,12 @@ MODEL_TIMEOUT_SECONDS = 3000
 # sırasında ELLE öldürülen gönderimler (§20: sonucu belirsiz 'sending' kayıtları SAYILIR; ikisi
 # hatalı kill, biri erken kill — operatör hatası olarak rapora yazılır). En kötü durum 16'yı tam
 # doldurur (plate-VE bir daha kesilirse redo dahil); 17. gönderim bloklanır ve rapor 'blocked' yazar.
-LIVE_CALL_LIMIT_DEV = 24
+# PLAN-13 §7 — BÜTÇE DÜZELTMESİ #6 (sapma değil; requalification çağrılarından ÖNCE deklare edilen
+# tavan): dev 24 → 32 (toplam 44 → 52). Gerekçe: paylaşımlı zarfın (ortak repeat_penalty 1.25 +
+# maxItems=32 + kopya kuralı) causal requalification'ı = 4 dev sayfa × V/VE = 8 yeni çağrı (§8).
+# Bu 8 çağrıdan sonra dev tuning biter; 32 aşılırsa 001C final yok → yeni experiment version (§7).
+# Çağrı-çağrı bütçe artışı yok (§36).
+LIVE_CALL_LIMIT_DEV = 32
 LIVE_CALL_LIMIT_FINAL = 20
 LIVE_CALL_LIMIT_TOTAL = LIVE_CALL_LIMIT_DEV + LIVE_CALL_LIMIT_FINAL
 PHASES = ("dev", "final")                  # çağrının amacı

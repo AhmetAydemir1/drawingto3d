@@ -56,7 +56,7 @@ IMAGE_MAX_SIDE = 1280          # development'ta sabitlenir; final koşuya kadar 
 # tamamını kullanıp **son adayın ortasında** kesildi (state=truncated_output; ~7,7 tok/s M1'de
 # 4096'nın en kötü karşılığı ~530 s < 900 s model tavanı). Kabul yalnız `done_reason == stop`;
 # hedef: başarılı eval_count ≤ 0.8 × num_predict (4096 → 3277).
-NUM_PREDICT = 5120
+NUM_PREDICT = 8192
 
 # Üretim ayarları: taşıma katmanı bu değerlerden kurulur (kopyası tutulmaz).
 #
@@ -64,7 +64,7 @@ NUM_PREDICT = 5120
 # `_chat_request`) bu iki seçeneği Ollama `options` gövdesine koymuyor. Donmuş sözleşmeye yazıp
 # göndermemek, kaydetmenin gerçeği anlatması kuralını çiğnerdi. Desteklenmeyen bir donmuş ayar
 # eklenirse `write_live_attempt()` gönderimi durdurur (`blocking_kind=unsupported_frozen_setting`).
-SETTINGS = {"num_ctx": 20480, "temperature": 0.0,
+SETTINGS = {"num_ctx": 22528, "temperature": 0.0,
             "num_predict": NUM_PREDICT, "keep_alive": "5m", "image_max_side": IMAGE_MAX_SIDE,
             "images_layout": IMAGES_LAYOUT, "image_label_prefix": IMAGE_LABEL_PREFIX,
             "raw_page_strategy": RAW_PAGE_STRATEGY}

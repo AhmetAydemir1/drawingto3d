@@ -274,3 +274,28 @@ burada ve `docs/PLAN-12.md` altında yürür. 001B ve 001C ledger/klasörleri ka
 - **A3 ilerlemesi:** `plate-VE/attempt-0005` gönderildi (05:10:20); sonuç bekleniyor. A3'ün 2. işi
   flange-VE redo olacak; ardından B3 (elbow V/VE + drawing-2 V/VE) taze süreç olarak limit=16 ile.
 - **NEXT SINGLE STEP:** attempt-0005 sonucu → flange-VE redo → B3 → §21 kapısı → rapor.
+
+---
+
+## 1m. KÖK NEDEN: LabRunner 600 s tavanı + zarf düzeltmesi #4 + bütçe #3 (dev 18)
+
+- **Keşif:** `out/lab/settings.json` (2026-09-29'da ilk kullanımda yazıldı) `case_timeout_seconds: 600`,
+  `run_timeout_seconds: 7200` içeriyordu. LabRunner her işin süresini tavanla sınırlar ("a case may
+  ask for less than the ceiling, never more") → pilot 1200 s istese de **600 s** uygulanır ve süre
+  dolunca **süreç grubu öldürülür**. Ölü işçi `result.json` YAZMAZ → kayıt "sending" kalır.
+- **Bu, 04:19'dan beri görülen "kamaların" ana açıklaması:** plate-VE/0003 (04:19+600=04:29 ölüm;
+  runner'ın flange-VE/0002'yi 04:33'te başlatması ✓), flange-VE/0002 (04:33+600=04:43; batchB'nin
+  elbow-V/0001'i 04:40'ta başlatması ✓), plate-VE/0005 (05:10:19+600=05:20:19 ölüm; flange-VE/0003
+  send 05:24:12 ✓). Format-kısıtlı VE üretimi 530–900+ s sürüyor → 600 s'ye sığmıyor.
+- **Düzeltme #4 (out/lab/settings.json — "budget is a decision"):** case 600→**3600**, run 7200→
+  **14400** (+ `amended_at`/`amendment_reason` alanları). Pilot: MODEL 900→**1800**, CASE 1200→
+  **2400**, RUN 14400 (tavanla eşit). `NUM_PREDICT` 4096→**5120** (4096 sınırda kalıyordu; flange'da
+  14121+5120=19241 ≤ 20480 ✓). MODEL < CASE < RUN hiyerarşisi korunur.
+- **BÜTÇE #3:** dev 16→**18** (toplam 38). Gerekçe: #11 flange-VE/0003 de tavan kurbanı olacak;
+  kalan gerçek ihtiyaç: B3×4 + C3×2 (plate-VE redo, flange-VE redo) = 17; 1 yedekle 18.
+- **Geçiş:** A3 (flange-VE/0003 ölümüyle) → B3 (elbow V/VE + drawing-2 V/VE) **taze süreç olarak
+  yeni ayarları okur** → C3 (plate-VE + flange-VE redo) B3 sonrası elle başlatılır.
+- **Risk notu:** flange-VE tablosu ~160 satır; model satır-başına öğe üretirse yanıt >6359 (ctx üst
+  sınırı) olur → hücre zarf-sınırlı kalır. C3 sonucu bunu ölçecek; gerekirse raporda "envelope-limited"
+  olarak kaydedilir (prompt değiştirilmez — V hücrelerini bayatlatır).
+- **NEXT SINGLE STEP:** B3 izleme (elbow-V ilk iş; tamamlanmalı) → C3 → kapı → rapor.

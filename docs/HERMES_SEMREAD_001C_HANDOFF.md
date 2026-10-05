@@ -299,3 +299,23 @@ burada ve `docs/PLAN-12.md` altında yürür. 001B ve 001C ledger/klasörleri ka
   sınırı) olur → hücre zarf-sınırlı kalır. C3 sonucu bunu ölçecek; gerekirse raporda "envelope-limited"
   olarak kaydedilir (prompt değiştirilmez — V hücrelerini bayatlatır).
 - **NEXT SINGLE STEP:** B3 izleme (elbow-V ilk iş; tamamlanmalı) → C3 → kapı → rapor.
+
+---
+
+## 1n. Zarf #5 (final) + kuyruk mekaniği + D zinciri
+
+- **Kuyruk mekaniği (ölçüm):** Öldürülen bir istek ollama'da ÜRETİLMEYE DEVAM EDER (istemci ölse
+  bile); sunucu tek sırada çalıştığı için SONRAKİ istekler o "zombi üretim" bitene kadar bekler.
+  Bu yüzden "kama" gibi görünen beklemeler aslında kuyruk gecikmesiydi. **Kural: bekleyen işi
+  öldürme; kuyruk kendi kendine boşalır.**
+- **elbow-V dersi:** 5120'de kesildi; kesik hamda **40 tam aday** (c0..c39) + 41.'nin ortası; tam
+  ihtiyaç ≈ 5,5–6,5k token. Bu sayfa için NE değil NEDEN: çizim 4 görünüşlü ve aday sayısı yüksek.
+- **ZARF #5 (kilitli):** `NUM_PREDICT` = **8192**, `num_ctx` = **22528** (flange 14121+8192=22313 ≤
+  22528), MODEL 3000 s / CASE 5400 s / RUN 14400 s; lab `case_timeout_seconds` tavanı **7200**.
+  MODEL < CASE < RUN zinciri korunur.
+- **BÜTÇE #4:** dev 18→**20** (toplam 40). Sınıflar: platform kurbanı (600 s tavanı: 5 kayıt),
+  operatör kill'leri (4 kayıt), zarf kaynaklı redo'lar. 13 kullanıldı; D zinciri 6 çağrı → 19 ≤ 20.
+- **D zinciri (başlatıldı 05:49):** D1 = elbow V,VE; D2 = drawing-2 V,VE; D3 = plate-VE, flange-VE.
+  Her koşu 2 iş (kuyruk gecikmesini sınırlamak için). Beklenen süre ~2,5–3,5 saat; sonuç bekleniyor.
+- **Bekleme kuralı:** hiçbir işçi elle öldürülmeyecek; ilerleme `infResult.json` mtime'ları ve
+  `state.json` üzerinden izlenir; tamamlanınca §21 kapısı → rapor → push.

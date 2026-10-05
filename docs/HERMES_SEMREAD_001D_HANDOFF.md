@@ -1,9 +1,10 @@
 # HERMES — SEMREAD-001D handoff günlüğü
 
-**Plan:** `docs/PLAN-15.md` — SEMREAD-001D ("`/3` prompt/schema sonrası: producer identity →
-dev-report → static preflight → Round 1 semantic proof"). PLAN_LATEST olarak izlenir (bayt kopya,
-sha256 `909e46cb67aac205b0e270861a364ad79e69eaa2a1b74aa8cf2a4d572109144e`). PLAN-15 §48: **yeni
-history entry** — PLAN-14 son izlenen revizyonuyla (`39cf9b84…`; önceki revizyonlar `a027cb4a…`,
+**Plan:** `docs/PLAN-16.md` — SEMREAD-001D ("`001d/1` producer identity sonrası: dev-report → 001D
+dev input kurulumu → static preflight → Round 1 semantic proof"). PLAN_LATEST olarak izlenir (bayt
+kopya, sha256 `73f81009dfad29eed1eca73090e3c94a2ade6e10635677a738e3a64f7b9ea437`). PLAN-16 §80:
+**yeni history entry** — PLAN-15 rewrite edilmedi, son izlenen revizyonuyla (`909e46cb…`) geçmişte
+donar; PLAN-14 son izlenen revizyonuyla (`39cf9b84…`; önceki revizyonlar `a027cb4a…`,
 `f2d249b7…`) geçmiş olarak korunur; PLAN-13 + PLAN-12 + kök PLAN.md history olarak korunur.
 **Kayıt biçimi:** PLAN-12 §47 — *CURRENT HEAD / CURRENT EXPERIMENT / IMMUTABLE HISTORY / WHAT
 CHANGED / TEST EVIDENCE / INFERENCE BUDGET / OPEN GATE / NEXT SINGLE STEP*.
@@ -278,3 +279,62 @@ CHANGED / TEST EVIDENCE / INFERENCE BUDGET / OPEN GATE / NEXT SINGLE STEP*.
   current kimlikli attempt'ler; attempt yoksa `missing` (001B/001C fallback yok); formal (§18) +
   semantik (§19; `semantic_claim_flags` reuse) + echo v2 (§20) + duplicate (§21) metrikleri; gerçek
   ölçüm kapısı (§22) — sıfır-satır `vs_d` ölçüm sayılmaz.
+
+---
+
+## 1g. §94/§95 — 001D dev rapor katmanı (0 inference) — 2026-10-05
+
+- **CURRENT HEAD:** `b2e1218` (bu kayıttan önce; bu commit §94/§95 dev-report işini taşır)
+- **CURRENT EXPERIMENT:** SEMREAD-001D. **Yeni plan entry izlendi:** `docs/PLAN-16.md` bayt kopya
+  (sha256 `73f81009dfad29eed1eca73090e3c94a2ade6e10635677a738e3a64f7b9ea437`; PLAN-16 §80: yeni
+  history entry — PLAN-15 **rewrite edilmedi**, son izlenen revizyonuyla `909e46cb…` geçmişe
+  pinlendi; skeleton pin'i + yeni geçmiş-pin testi (`test_plan15_history_is_preserved`) güncellendi).
+  001C **CLOSED / READ-ONLY** — closure `--verify` bu commit'te tekrar koşuldu: **45/45**.
+- **IMMUTABLE HISTORY:** değişmedi — `docs/HERMES_SEMREAD_001C_HANDOFF.md`, `docs/PLAN-13.md`,
+  `eval/semread_001b_gold/FREEZE.json`, `eval/semread_001c_closure.{py,json}`, `out/lab/semread-001c/**`.
+- **WHAT CHANGED:** §94'ün tek somut işi (0 inference; salt-okur rapor katmanı):
+  1. **Yeni araç `eval/semread_001d_dev_report.py`** (§13/§27): yalnız **current 001D kimlikli**
+     attempt'ler eligible — experiment `semread-001d`, schema `/3`, reader `/3`, contract `001d/1`,
+     producer identity current (§14); 001B/001C attempt'e **fallback yok** — uygun attempt yoksa
+     hücre `missing`, ölçüm ve semantik-valid `false` (§15). Kök yokken bile dürüstçe çalışır;
+     defter **kurmaz/yazmaz** — `--write` yalnız `dev-report.{json,md}` yazar (§27).
+  2. **Hücre katmanları:** formal (§16 — 12 zorunlu metrik: attempt_id/state, send_attempted,
+     done_reason, aday sayısı, parse/koordinat/referans/sızıntı kapıları, paylaşımlı ayar, producer
+     eşleşmesi, maxItems + attempt hash'leri), semantik (§17 — tek kaynak `semantic_claim_flags` /
+     `candidate_has_semantic_claim` / `evidence_flags`; claim/candidate sayıları, oran, alan
+     dolumu, evidence-only), gold (§18 — 001B dondurulmuş dev gold'u; FREEZE sha fail-closed;
+     eşleşme/yerelleştirme/alan doğrulukları/bağlama/abstention/overclaim/FP/unscorable),
+     `semantic_valid_output` (§21; boş `items` §22 davranışı), echo v2 (§23), kopya (§24), maxItems
+     sinyali (§25), overclaim (§26).
+  3. **Gerçek ölçüm kapısı (§19):** `measured` yalnız objektif puanlanmış hedef varsa
+     (`scorable_target_count > 0`); sıfır-satırlı karşılaştırma ölçüm değildir — 001B
+     `arms_with_measurement` ile aynı prensip, süitte parity pinli. Rapor `complete` ancak eligible
+     + ölçülü + semantik-valid hücrelerle der (§20).
+  4. **Round kapıları (§57/§72):** Round 1 (plate-pocket/flange-book × V/VE) ve Round 2
+     (flange-elbow/drawing-2 × V/VE) — dört hücrenin tamamı formal + semantik-valid ve kol başına
+     ≥1 gold-eşleşmeli semantik claim + alan doğruluğu > 0 ise GEÇTİ; aksi açık gerekçeleriyle.
+  5. **Yeni test dosyası `tests/test_semread_001d_dev_report.py` (23 test):** §28'in zorunlu
+     listesinin tamamı (missing / 001C attempt ignored / wrong producer / wrong contract / formal+0
+     → false / formal+1 → true / zero-row → measured=false / scorable → true / empty echo /
+     contentful echo / kopya sınıfları / maxItems) + no-fallback seçimi, gold fail-closed,
+     defter-yazmama + `--write` sınırı, 0-inference trap'i (gönderim yolu) ve Round 1 pozitif kapı
+     testi.
+- **TEST EVIDENCE:** yeni odak dosyası **23 passed**; odak süiti (identity + skeleton + prompt_v3 +
+  semantic_content + 001c closure + 001c contract + dev-semantik + 001b closure + dev_report)
+  **125 passed**; hızlı SEMREAD süitleri (lifecycle + identity + gold-manifest + reference +
+  `test_semread_001b`) **119 passed** (birleşik son koşu: **244 passed**); gates dosyası tamamı
+  **34 passed (1017.84 s ≈ 16:57)**; 001C closure `--verify` **45/45**; `eval/check_tables.py`
+  **21 satır / 0 tutmuyor**. Yapısal fallback-yokluk canlı gözlemi: gerçek kökte araç `eligible 0/8`
+  der — 001B'de 35 eski-kimlikli attempt ve 001C ledger'ı yerinde dururken (araç yalnız 001D
+  attempt kökünü okur).
+- **§95 BÜTÇE/DRY-RUN KANITI (0 inference):** `--budget` → dev **0/12** · final **0/20** (toplam
+  **0/32**), attempt defteri 0; `--dry-run --phase dev` → `planned_real_calls 0` ·
+  `remaining_phase_budget 12`; `out/lab/semread-001d` **kurulmadı**; araç salt-okur koşusu hiçbir
+  defter dosyası yaratmadı. Log: `~/.hermes/cache/scratch/semread-001d-dev-report-evidence.log`
+  (+ `semread-001d-budget.json`, `semread-001d-dryrun.json`).
+- **INFERENCE BUDGET:** 001D dev **0/12**, final **0/20** (toplam **0/32**) — değişmedi; bu commit
+  **0 inference** (canlı çağrı yok, ledger kurulmadı).
+- **OPEN GATE:** §96 — 001D dev input/corpus PNG materialization (raw-page identity); ardından
+  static preflight + Round 1 (4 çağrı).
+- **NEXT SINGLE STEP:** §96: 001D dev corpus sayfa PNG'lerinin kurulumu + corpus/raw-page kimliği
+  (dev-report kapandı; input prep, evaluator geliştirmeyle **paralelleştirilmez**).

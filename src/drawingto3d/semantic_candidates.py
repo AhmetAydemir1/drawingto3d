@@ -318,8 +318,8 @@ def candidate_json_schema() -> dict:
                     "additionalProperties": False,
                     "required": ["candidate_id", "source"],
                     "properties": {
-                        "candidate_id": {"type": "string",
-                                         "description": "bu adaya verdiğin kısa kimlik (ör. c1)"},
+                        "candidate_id": {"type": "string", "minLength": 1,
+                                         "description": "bu adaya verdiğin kısa kimlik (ör. c1); boş olamaz"},
                         "callout": {
                             "type": "object", "additionalProperties": False,
                             "properties": {

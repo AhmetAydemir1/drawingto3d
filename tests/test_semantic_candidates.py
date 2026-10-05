@@ -208,6 +208,14 @@ def test_the_schema_gives_the_same_options_for_every_image():
     assert "hole" in schema and "unknown" in schema
 
 
+def test_the_schema_forbids_an_empty_candidate_id_like_the_parser():
+    """Şema ile ayrıştırıcı aynı sözü vermeli: ayrıştırıcı boş kimliği reddediyorsa şema da
+    yasaklamalı (elbow-V kanıtı: model tekrar cezasından kaçmak için boş candidate_id üretti;
+    şema izin verdiği için dilbilgisi de izin verdi, ayrıştırıcı düştü — parse_error)."""
+    item_schema = candidate_json_schema()["properties"]["items"]["items"]
+    assert item_schema["properties"]["candidate_id"].get("minLength") == 1
+
+
 # ----------------------------------------------------------- karşılaştırma yardımcıları
 
 

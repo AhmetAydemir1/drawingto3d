@@ -2,7 +2,7 @@
 
 Salt-okur araç; **hiçbir model çağrısı yapmaz** (0 inference). Defterden
 (`out/lab/semread-001d`) yalnız **güncel 001D kimliğini** taşıyan attempt'leri seçer
-(§14: experiment = `semread-001d`, schema/reader `/3`, contract `001d/1`, producer identity
+(§14: experiment = `semread-001d`, schema/reader `/3`, contract `001d/2`, producer identity
 current); 001B/001C attempt'lerine fallback **yoktur** — uygun attempt yoksa hücre `missing`'dir
 (§15). Eski kimlikli attempt'ler yok sayılır ve `ignored_attempts` altında gerekçesiyle görünür.
 

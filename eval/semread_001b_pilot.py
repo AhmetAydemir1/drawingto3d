@@ -93,7 +93,7 @@ def use_experiment(name: str) -> dict:
 # run-contract eşlemesi yalnız canlı deney için tutulur (001B/001C READ-ONLY kapalıdır; §47);
 # eşlemede olmayan adlarda beklenti yoktur (sandbox/test deneyleri etkilenmez). 001D attempt
 # manifesti eski `semread-001c-run-contract/1` kimliğini taşıyorsa gönderim bloklanır.
-ACTIVE_EXPERIMENT_CONTRACTS = {"semread-001d": "semread-001d-run-contract/1"}
+ACTIVE_EXPERIMENT_CONTRACTS = {"semread-001d": "semread-001d-run-contract/2"}
 
 
 def contract_identity_block() -> dict | None:

@@ -43,7 +43,7 @@ tool = _load_tool()
 FAKE_IDENTITIES = {"experiment": "semread-001d",
                    "schema_version": "semread-candidates/3",
                    "reader_version": "semread-candidate-reader/3",
-                   "contract_version": "semread-001d-run-contract/1",
+                   "contract_version": "semread-001d-run-contract/2",
                    "producer_identity": "p" * 64,
                    "preprocessing_identity": "q" * 64,
                    "evaluation_identity": "r" * 64}

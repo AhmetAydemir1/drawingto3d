@@ -8,12 +8,17 @@ Kural: buradaki bir değeri değiştirmek ham tahmini geçersiz kılar. Değerle
 rapor üretimi ve referans doğrulaması bu dosyada **yaşamaz** — onlar `evaluation_identity()`ye girer.
 Böylece yalnız evaluator/gold düzeltmesi geçerli ham tahmini yeniden üretmeyi gerektirmez.
 
-Sürüm `/1` (SEMREAD-001D, PLAN-15 §9/§12): bu deney **semantic-content-aware full-page V/VE**
-davranışını test eder — şema/reader `/3` + prompt v3 (semantic-empty aday geçersiz ·
+Sürüm `/2` (SEMREAD-001D, PLAN-15 §9/§12 + ölçümlü pre-inference revizyon): bu deney
+**semantic-content-aware full-page V/VE** davranışını test eder — şema/reader `/3` + prompt v3
+(semantic-empty aday geçersiz ·
 semantic claim ≠ evidence-only · prompt semantic-first · no-guess korunur; tanım
-`semantic_candidates.py` version notes'unda). Üretim zarfı (model/digest/runtime/ayarlar) **001C
-kapanış zarfından birebir devralınmıştır ve değişmez** (PLAN-15 §10): 001D'nin tek bağımsız
-değişkeni semantik sözleşmedir.
+`semantic_candidates.py` version notes'unda). Üretim zarfı (model/digest/runtime/ayarlar)
+**001C kapanış zarfından devralınmıştır** (PLAN-15 §10): 001D'nin tek bağımsız değişkeni semantik
+sözleşmedir. Tek sapma, ilk canlı çağrıdan **önce** yapılan ölçümlü `num_ctx` 22.528 → **24.576**
+revizyonudur (`/1` → `/2`): statik preflight dört Round-1 hücresini model çağırmadan ölçtü
+(§38/§39) ve `dev-flange-book-VE` tahminini 15.244 token buldu — 15.244 + 8.192 = 23.436 > 22.528
+(eksik 908) → Round 1 açılmadı; artış körlemesine değil ölçümle yapıldı ve bu revizyondan önce
+**hiç canlı çağrı yapılmadı** (0 inference).
 
 **HISTORICAL — 001C (READ-ONLY kapalı):** 001C'nin iki katmanlı revizyon tarihi (ölçümlü dev zarf
 revizyonları + paylaşımlı requalification zarfı) ve kapanış kaydı `eval/semread_001c_closure.json`
@@ -38,8 +43,10 @@ kimliğidir.
 from __future__ import annotations
 
 # PLAN-15 §9/§12: 001D run-contract kimliği. Bump, `producer_identity()`yi de yeniler (dosya
-# hash'i kimliğe girer); üretim zarfı sabitleri DEĞİŞMEZ (§10).
-CONTRACT_VERSION = "semread-001d-run-contract/1"
+# hash'i + SETTINGS kimliğe girer). `/1` → `/2` (2026-10-06): ölçümlü pre-inference `num_ctx`
+# revizyonu — static preflight `dev-flange-book-VE`de 23.436 > 22.528 (eksik 908) buldu; kör
+# artış yok (§39). Diğer zarf sabitleri 001C kapanışından birebir (§10).
+CONTRACT_VERSION = "semread-001d-run-contract/2"
 
 MODEL = "qwen3-vl:8b-instruct"
 EXPECTED_DIGEST = "0533d74300e4f9bc367d675d4e64ffd073d50ff16a2b4096cc2e8a1cf8c96319"
@@ -82,7 +89,9 @@ NUM_PREDICT = 8192
 # `_chat_request`) bu iki seçeneği Ollama `options` gövdesine koymuyor. Donmuş sözleşmeye yazıp
 # göndermemek, kaydetmenin gerçeği anlatması kuralını çiğnerdi. Desteklenmeyen bir donmuş ayar
 # eklenirse `write_live_attempt()` gönderimi durdurur (`blocking_kind=unsupported_frozen_setting`).
-SETTINGS = {"num_ctx": 22528, "temperature": 0.0,
+# num_ctx 22.528 → 24.576 (2026-10-06, sürüm `/2`): ölçümlü §39 kanıtı — flange-book-VE tahmini
+# 15.244 + 8.192 = 23.436 > 22.528 (eksik 908); artış kör değil, ölçümle (0 inference revizyon).
+SETTINGS = {"num_ctx": 24576, "temperature": 0.0,
             "num_predict": NUM_PREDICT, "keep_alive": "5m", "image_max_side": IMAGE_MAX_SIDE,
             "images_layout": IMAGES_LAYOUT, "image_label_prefix": IMAGE_LABEL_PREFIX,
             "raw_page_strategy": RAW_PAGE_STRATEGY}

@@ -4,8 +4,9 @@ Canlı inference öncesi **0 inference** ile kapanan statik kapı (dördüncü a
 
 * §33 kimlik: dört Round-1 hücresinin statik manifesti current kimlikleri taşımalı —
   experiment `semread-001d`, schema `semread-candidates/3`, reader `semread-candidate-reader/3`,
-  contract `semread-001d-run-contract/1` + current producer/preprocessing identity; eski kimlikle
-  gönderim bloğu (`contract_identity_block`) boş olmalı.
+  contract `semread-001d-run-contract/2` (ölçümlü pre-inference `num_ctx` revizyonu; `/1`e karşı
+  bu kapı KIRMIZI verdi: flange-book-VE 23.436 > 22.528 — eksik 908) + current producer/preprocessing
+  identity; eski kimlikle gönderim bloğu (`contract_identity_block`) boş olmalı.
 * §34 bütçe: dev `0/12`, final `0/20` — Round 1 öncesi tam olarak sıfır.
 * §35 runtime: model etiketi, digest ve runtime sürümü beklenenle birebir (yerel Ollama meta
   verisi: `/api/version` + `/api/tags`; **inference değildir** — kapı zaten gönderim öncesi aynı
@@ -72,7 +73,7 @@ RECORD_NAME = "static-preflight.json"
 PLAN_PATH = ROOT / "docs" / "PLAN-18.md"
 
 # PLAN-18 §33 beyanı: bu beklenen kimlikler burada **bilinçli olarak** pinlidir (sessizce geçmesin).
-EXPECTED_VERSIONS = {"contract_version": "semread-001d-run-contract/1",
+EXPECTED_VERSIONS = {"contract_version": "semread-001d-run-contract/2",
                      "schema_version": "semread-candidates/3",
                      "reader_version": "semread-candidate-reader/3"}
 
@@ -195,6 +196,7 @@ def build_cell(page: dict, arm: str, *, bundle: dict, prompt: str) -> dict:
         "prediction_input_cache_key": pilot.prediction_input_cache_key(page, arm),
         "cached_input_key_matches": cached is not None and cached.get("key") == pilot.prediction_input_cache_key(page, arm),
         "cached_record_matches_rebuild": cached_record == derived_record,
+        "cached_contract_version": (cached_record or {}).get("contract_version"),
         "generation_signature": _sha256_json(generation),
         "generation_settings": generation,
         "prompt": {"bytes": prompt_bytes, "chars": len(prompt),
@@ -364,16 +366,19 @@ def run_preflight() -> dict:
                                               and recorded.get("raw_page", {}).get("sha256")
                                               == _sha256_bytes(page_png.read_bytes())),
         })
-    inputs_current = (all(row["v_ve_raw_bytes_identical"] for row in raw_pages)
-                      and all(row["raw_png_sha256_matches_record"] for row in raw_pages)
-                      and all(cell["cached_record_matches_rebuild"] for cell in cells)
-                      and all(cell["cached_input_key_matches"] for cell in cells))
+    pieces = (("V/VE ham byte aynı", all(row["v_ve_raw_bytes_identical"] for row in raw_pages)),
+              ("sayfa PNG == kayıt", all(row["raw_png_sha256_matches_record"] for row in raw_pages)),
+              ("cache == yeniden türetim", all(cell["cached_record_matches_rebuild"]
+                                               for cell in cells)),
+              ("cache anahtarı == producer identity", all(cell["cached_input_key_matches"]
+                                                          for cell in cells)))
+    inputs_current = all(ok for _, ok in pieces)
     add("inputs_current", inputs_current,
-        "V/VE ham byte aynı · VE kanıtı ayrı hash'li · cache == yeniden türetim · kayıt hash'i "
-        "diskteki PNG ile aynı", pages=raw_pages,
+        " · ".join(f"{'✓' if ok else '✗'} {name}" for name, ok in pieces), pages=raw_pages,
         rebuild=[{"cell": f"{cell['page_id']}-{cell['arm']}",
                   "cached_matches": cell["cached_record_matches_rebuild"],
-                  "key_matches": cell["cached_input_key_matches"]} for cell in cells])
+                  "key_matches": cell["cached_input_key_matches"],
+                  "cached_contract_version": cell["cached_contract_version"]} for cell in cells])
 
     # §52 closure.
     closure = closure_verify()

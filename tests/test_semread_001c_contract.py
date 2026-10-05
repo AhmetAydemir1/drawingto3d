@@ -420,15 +420,16 @@ def test_p5_run_contract_envelope_is_001d_and_measured():
                                                    REPEAT_LAST_N, REPEAT_PENALTY,
                                                    SETTINGS)
 
-    # PLAN-15 §9/§10: kimlik 001D'ye ilerledi; **zarf ölçümü ve değerleri 001C kapanışından
-    # birebir devralındı** — bu commit'te hiçbir üretim ayarı değişmedi.
-    assert CONTRACT_VERSION == "semread-001d-run-contract/1"
+    # PLAN-15 §9/§10 + ölçümlü pre-inference revizyon (`/1` → `/2`): kimlik 001D'de; zarf ölçümle
+    # ilerler — kör artış yok. 001D adımı (§38/§39 static preflight): flange-book-VE v3 tahmini
+    # 15.244 → 15.244+8.192 = 23.436 > 22.528 (eksik 908) → kanıtlı num_ctx 22.528 → 24.576.
+    assert CONTRACT_VERSION == "semread-001d-run-contract/2"
     # Dev ölçümü zarfı dört kez ilerletti: plate-VE 3072'de kesildi → 4096 → 5120 (sınırda);
     # elbow-V 5120'de kesildi (≥41 aday!) → 8192; flange-VE 14.121 tok promptla 12288'de 400 aldı
-    # → 20480 → 22528 (flange 14.121+8.192=22.313 ≤ 22.528).
+    # → 20480 → 22528 (flange 14.121+8.192=22.313 ≤ 22.528); 001D: 23.436 ≤ 24.576.
     assert NUM_PREDICT == 8192 and SETTINGS["num_predict"] == NUM_PREDICT
-    assert SETTINGS["num_ctx"] == 22528
-    assert 14121 + SETTINGS["num_predict"] <= SETTINGS["num_ctx"]
+    assert SETTINGS["num_ctx"] == 24576
+    assert 15244 + SETTINGS["num_predict"] <= SETTINGS["num_ctx"]
     # PLAN-13 §4/§6: kol-başına repeat_penalty KALDIRILDI (zarf #7 → ortak zarf başlangıcı);
     # döngü sampling ile değil yapısal sözleşmeyle (maxItems + kopya kuralı) sınırlanır.
     # Ölçüm geçmişi (V 1.25 döngü / 1.6 boşalttı / 1.4 VE'yi kıstı) semantic_run_contract'ta.

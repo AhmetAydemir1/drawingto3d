@@ -10,16 +10,17 @@
 - **Bütçe:** dev **0/12** · final **0/20** (toplam **0/32**) — PLAN-18 başlığı; artış yok; ledger
   (`out/lab/semread-001d/`) henüz kurulmadı (ilk dev çağrısında kurulur).
 - **Kod (current):** `semread-candidates/3` · `semread-candidate-reader/3` ·
-  **`semread-001d-run-contract/1`**. Şema/reader `/3` (§3/§61: semantic-empty geçersiz, semantic
-  claim ≠ evidence-only, prompt semantic-first, no-guess korunur) ve **§60/§61 run-contract
-  `001d/1` kimliği + producer identity** yapıldı (PLAN-15 §9–§15, 0 inference): docstring current'i
+  **`semread-001d-run-contract/2`**. Şema/reader `/3` (§3/§61: semantic-empty geçersiz, semantic
+  claim ≠ evidence-only, prompt semantic-first, no-guess korunur) ve **run-contract `001d/2` kimliği
+  + yenilenmiş producer identity** yürürlükte (PLAN-15 §9–§15, 0 inference): docstring current'i
   001D anlatır; attempt manifesti experiment/schema_version/reader_version/producer/preprocessing
   kimliklerini açıkça taşır (§12); dry-run manifesti 4 Round-1 hücresinde current kimlik verir
-  (§13); eski kimlikle gönderim `blocked_contract_identity` ile durur. **Üretim zarfı DEĞİŞMEDİ** —
-  model/digest/runtime/ayarlar 001C kapanışından birebir devralındı (§10).
+  (§13); eski kimlikle gönderim `blocked_contract_identity` ile durur. **Üretim zarfı:** tek sapma
+  ölçümlü `num_ctx` revizyonudur — 22.528 → **24.576** (`/1` → `/2`, aşağıdaki R1 bullet'ı);
+  model/digest/runtime ve diğer ayarlar 001C kapanışından devralındı (§10).
 - **§94/§95 tamam (current): 001D dev rapor katmanı** (0 inference) —
   `eval/semread_001d_dev_report.py` + `tests/test_semread_001d_dev_report.py` (23 test): yalnız
-  current kimlikli 001D attempt'leri seçilir (experiment / `/3` / `/3` / `001d/1` + producer
+  current kimlikli 001D attempt'leri seçilir (experiment / `/3` / `/3` / `001d/2` + producer
   identity); eski 001B/001C attempt'e fallback **yok** — attempt yoksa hücre `missing`, ölçüm ve
   semantik-valid `false`. Hücre başına formal (§16) + semantik (§17; `semantic_claim_flags` reuse)
   + dondurulmuş gold (§18; FREEZE sha fail-closed) + **gerçek ölçüm kapısı** (§19; sıfır-satır
@@ -45,12 +46,19 @@
   001C closure **45/45**. §37 ölçümü (model çağrılmadan; kalibrasyon 0.816 tok/byte + 664):
   plate-pocket V 3.364 B→**3.409** · VE 7.574 B→**6.844** · flange-book V 3.364 B→**3.409** ·
   **flange-book VE 17.868 B→15.244**.
-- **R1 bloğu — context kapısı KIRMIZI (current):** `dev-flange-book-VE` →
-  `15.244 + 8.192 = 23.436` > `num_ctx 22.528`; §49 kanıtı: hücre · prompt ~15.244 token · gerekli
-  **23.436** · mevcut **22.528** · **eksik 908**. Diğer dokuz kapı yeşil; kayıt
-  `out/lab/semread-001d/corpus/static-preflight.json` (`ok=false` — dürüst). 001C ölçümü aynı
-  hücrede 14.167 idi (prompt 16.707 B); v3 prompt'u 17.868 B. **Round 1 açılmadı; kör `num_ctx`
-  artışı yok (§39).** §74: bu bloker kapanmadan canlı çağrı yok.
+- **R1 bloğu → pre-inference ölçümlü revizyon `/1` → `/2` (current):** preflight `/1`e karşı
+  KIRMIZI verdi — `dev-flange-book-VE` → `15.244 + 8.192 = 23.436 > 22.528` (§49 kanıtı: gerekli
+  **23.436** · mevcut **22.528** · **eksik 908**; kırmızı kayıtlar scratch'te tarihsel:
+  `...contract-1-red.json` + `...contract-2-stale-inputs-red.json`). Karar: kör artış değil (§39)
+  **kanıtlı sözleşme revizyonu** — `num_ctx` 22.528 → **24.576**, `CONTRACT_VERSION`
+  `semread-001d-run-contract/2`, producer identity yenilendi; diğer üretim ayarları değişmedi;
+  revizyon **ilk canlı çağrıdan önce** yapıldı (0 attempt → geçersizleşen veri yok). Preflight
+  `/2` ile **10/10 yeşil**: flange-book-VE headroom **+1.140** (diğerleri +9.540/+12.975/+12.975);
+  dört hücre `call`; `planned_real_calls 4`. Revizyon girdi katmanını da bilinçli yeniledi:
+  producer-bound cache geçersizleşti (preflight `inputs_current` KIRMIZI yakaladı) →
+  `eval/semread_001d_inputs.py --write` yeniden kurdu (sayfa PNGleri byte-kararlı, 0 yeni yazım) →
+  salt-okur `--check` **ok** (4 sayfa, 0 problem; 001B/001C byte cross-check aynı). Kayıtlar:
+  `corpus/static-preflight.json` (`ok=true`), `corpus/input-identity.json` (`/2`).
 - **Tamamlanan:** skeleton (PLAN-14 izleme + bütçe deklare + gates 34/34) → **§47 ilk uygulama
   adımı: semantik-içerik sözleşmesi (0 inference)** — tek kaynak `semantic_claim_flags` /
   `candidate_has_semantic_claim` / `evidence_flags`; wire sınırında `schema_semantic_empty` reddi
@@ -60,10 +68,11 @@
   açıklaması aynı asgari sözleşmeyi söyler (§4; `anyOf` **eklenmedi** — §5) → acceptance
   ölçüm-kapısı düzeltmesi (§5/§6) → **§60/§61: run-contract `001d/1` + producer identity**
   (0 inference; §9–§15).
-- **Sıradaki (§39 kararı → §42–§45 → §46+):** statik preflight koştu — tek kırmızı context
-  headroom (yukarıdaki R1 bloğu). Karar: kanıtlı `num_ctx` revizyonu (öneri 22.528 → 24.576;
-  ~1,1k pay) → preflight tekrarı → pre-live gate (focused/gates 34/34/closure/D regression) →
-  Round 1 (4 çağrı); envelope dondurulursa Round 1 yerine plan revizyonu gerekir.
+- **Sıradaki (§42–§45 → §46+):** pre-live gate kanıtı kapandı (aşağıdaki test bullet'ı:
+  focused/gates/closure). **Round 1 (4 çağrı)** gönderimi — dört Round-1 hücresi, preflight `/2`
+  yeşil, bütçe 0/12; bu commit'te henüz canlı çağrı yapılmadı (0 inference).
+- **Test kanıtı (current, `/2`):** odak **154** · hızlı **119** · gates **34/34** (1005.67 s) ·
+  001C closure `--verify` **45/45** · check_tables **21/0**; hepsi 0 inference koşumlar.
 - **Bonus koşu bulgusu (0 inference, §1d/§1e):** 001B acceptance süiti ölçümsüz kapanabilen bir rapor
   kapısı gösterdi (`report_evidence.measured` sıfır satırlı `vs_d`'yi ölçüm sayıyordu) — tek kaynak
   `arms_with_measurement()` ile düzeltildi + pin testi; süit tamamı **27 passed** (31:48).

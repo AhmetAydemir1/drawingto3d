@@ -456,3 +456,45 @@ CHANGED / TEST EVIDENCE / INFERENCE BUDGET / OPEN GATE / NEXT SINGLE STEP*.
   (a) **önerilen:** kanıtlı `num_ctx` revizyonu (22.528 → 24.576; ~1,1k pay) ayrı bir
   deklerasyon/sapma olarak kaydedilir → preflight tekrarı → Round 1 (4 çağrı);
   (b) envelope dondurulur → Round 1 açılmaz; plan revizyonu (yeni plan entry) gerekir.
+
+---
+
+## 1j. Pre-inference ölçümlü sözleşme revizyonu — `/1` → `/2` (`num_ctx` 24.576) — 2026-10-06
+
+- **CURRENT HEAD:** `084e921` (bu kayıttan önce; bu commit `/2` revizyonunu taşır)
+- **CURRENT EXPERIMENT:** SEMREAD-001D. **Kimlik:** `semread-001d-run-contract/1` → **`/2`**;
+  `num_ctx` 22.528 → **24.576**; producer identity **yenilendi** (dosya hash'i + SETTINGS kimliğe
+  girer); diğer üretim ayarları değişmedi (`num_predict` 8192, `temperature` 0.0, repeat 1.25/512).
+- **GEREKÇE (§38/§39/§49 — kanıt):** `/1`e karşı static preflight KIRMIZI: `dev-flange-book-VE`
+  v3 prompt'u 17.868 B → tahmin 15.244; 15.244 + 8.192 = 23.436 > 22.528 → eksik **908**. Round 1
+  açılmadı; kör artış yok (§39). Karar (2026-10-06, kullanıcı): kanıtlı `num_ctx` revizyonu, ayrı
+  pre-inference kayıt olarak. Kırmızı kayıtlar scratch'te tarihsel:
+  `semread-001d-static-preflight-contract-1-red.json` (prompt_context_gate) +
+  `...contract-2-stale-inputs-red.json` (aşağıdaki cache yakalaması).
+- **REVİZYONUN KONUMU:** ilk canlı çağrıdan **önce** — 001D'de 0 attempt / 0 inference; hiçbir
+  veri geçersizleşmedi. Revizyon `/1`-era prepared-input cache'ini bilinçli geçersizleştirdi;
+  `/1` kopyaları `semread-001d-corpus-contract-1-*` altında saklı.
+- **DEĞİŞEN DOSYALAR:** `src/drawingto3d/semantic_run_contract.py` (docstring `/2` + sürüm +
+  `num_ctx` + yorum), `eval/semread_001b_pilot.py` (`ACTIVE_EXPERIMENT_CONTRACTS` `/2`),
+  `eval/semread_001d_preflight.py` (beklenen kimlik `/2` + `inputs_current` detayı parça-parça
+  ✓/✗), `eval/semread_001d_dev_report.py` (docstring), testler (`identity`: `/2` + ölçümlü-sapma
+  testi; `001c_contract`: zarf zinciri; `dev_report`: fixture).
+- **CACHE YAKALAMASI (ikinci kapı kapanışı):** `/2`nun ilk preflight koşumu `inputs_current`ı
+  KIRMIZI yakaladı — prepared-input cache `key = f(producer_identity, page, arm)` + kayıtlı
+  `contract_version` ile producer-bound'dur; revizyon cache'i geçersiz kıldı (tasarım gereği,
+  hata değil). Çözüm: `eval/semread_001d_inputs.py --write` (yeniden kurulum; sayfa PNGleri
+  byte-kararlı — "doğrulandı", 0 yeni yazım) → `--check` salt-okur yeniden türetim **ok**
+  (4 sayfa, 0 problem) → preflight tekrar.
+- **KANIT (0 inference, nihai koşum):** preflight `/2` **10/10 yeşil** — `ok=true`;
+  flange-book-VE headroom **+1.140** (23.436 ≤ 24.576); diğerleri +9.540 / +12.975 / +12.975;
+  dört hücre `call`; `planned_real_calls 4`; runtime 0.32.1 + digest birebir; cache == yeniden
+  türetim; closure 45/45. Kayıt: `corpus/static-preflight.json` (`ok=true`); girdi kaydı
+  `corpus/input-identity.json` (`/2`). Loglar: `semread-001d-preflight-evidence-v3.json`,
+  `semread-001d-inputs-{write,check}-v2.log`.
+- **TEST EVIDENCE:** odak **154**; hızlı **119**; gates **34/34** (1005.67 s); 001C closure
+  `--verify` **45/45**; check_tables **21/0** — hepsi 0 inference.
+- **INFERENCE BUDGET:** değişmedi — dev **0/12**, final **0/20**; bu commit **0 inference**
+  (canlı çağrı yok; ledger kurulmadı).
+- **OPEN GATE:** §74 listesi bu revizyonla kapandı; sıradaki iş **Round 1 gönderimi** (4 çağrı).
+- **NEXT SINGLE STEP:** Round 1 — dört Round-1 hücresi canlı gönderim (`planned_real_calls 4`,
+  bütçe 0/12, preflight `/2` yeşil).

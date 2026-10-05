@@ -1,12 +1,14 @@
-"""SEMREAD-001D — PLAN-15 §9–§15: run-contract `001d/1` kimliği + attempt manifest kimlik alanları.
+"""SEMREAD-001D — PLAN-15 §9–§15: run-contract `001d/2` kimliği + attempt manifest kimlik alanları.
 
 Kapsam (0 inference; yalnız saf fonksiyonlar ve manifest kurulumu):
 
-* `CONTRACT_VERSION = semread-001d-run-contract/1`; docstring current sözleşmeyi 001D
+* `CONTRACT_VERSION = semread-001d-run-contract/2`; docstring current sözleşmeyi 001D
   (semantic-content-aware) anlatır, 001C tarihi closure artifact'ına işaret eder (§9);
-* şema/reader `/3` yürürlükte; üretim zarfı 001C kapanış değerleriyle **birebir** (§10);
+* şema/reader `/3` yürürlükte; üretim zarfı 001C kapanış değerleriyle devralınmıştır — tek sapma
+  ilk canlı çağrıdan önce yapılan ölçümlü `num_ctx` 22.528 → 24.576 revizyonudur (`/1` → `/2`;
+  §10/§38/§39 kanıtı: flange-book-VE 15.244 + 8.192 = 23.436 ≤ 24.576);
 * dry-run attempt manifesti (çağrısız) güncel kimlikleri taşır: experiment = `semread-001d`,
-  schema/reader `/3`, contract `001d/1`, producer + preprocessing identity (§12/§13); eski 001C
+  schema/reader `/3`, contract `001d/2`, producer + preprocessing identity (§12/§13); eski 001C
   kimliği manifeste **girmez**;
 * producer identity, closure'da kayıtlı 001C kimliklerinden **farklıdır** (§12 "producer identity
   new");
@@ -49,7 +51,7 @@ def _closure() -> dict:
 def test_the_run_contract_identity_is_001d():
     from drawingto3d.semantic_run_contract import CONTRACT_VERSION
 
-    assert CONTRACT_VERSION == "semread-001d-run-contract/1"
+    assert CONTRACT_VERSION == "semread-001d-run-contract/2"
     # 001C sürümü artık yürürlükte değil — closure artifact'ında tarihsel kayıttır.
     assert CONTRACT_VERSION != "semread-001c-run-contract/1"
 
@@ -72,12 +74,15 @@ def test_schema_and_reader_consumed_by_the_contract_are_still_v3():
     assert CANDIDATE_READER_VERSION == "semread-candidate-reader/3"
 
 
-def test_the_generation_envelope_equals_the_001c_closure_values():
-    """PLAN-15 §10/§11: zarf DEĞİŞMEZ — model/digest/runtime + ayarlar closure kaydıyla birebir."""
+def test_the_generation_envelope_equals_the_001c_closure_values_except_the_measured_ctx_revision():
+    """PLAN-15 §10/§11 + ölçümlü revizyon: zarf closure'dan devralınır; tek sapma `num_ctx`tir."""
     from drawingto3d import semantic_run_contract as contract
 
     recorded = _closure()["identities"]["run_contract"]["settings"]
-    assert contract.SETTINGS["num_ctx"] == recorded["num_ctx"] == 22528
+    # Sapma (2026-10-06, `/1` → `/2`): static preflight kanıtıyla num_ctx 24.576; closure tarihsel.
+    assert contract.SETTINGS["num_ctx"] == 24576
+    assert recorded["num_ctx"] == 22528, "001C closure tarihsel kayıttır — değişmez"
+    assert 15244 + contract.SETTINGS["num_predict"] <= contract.SETTINGS["num_ctx"]
     assert contract.SETTINGS["num_predict"] == recorded["num_predict"] == 8192
     assert contract.SETTINGS["temperature"] == recorded["temperature"] == 0.0
     assert contract.REPEAT_PENALTY == recorded["repeat_penalty"] == 1.25
@@ -101,7 +106,7 @@ def test_the_dry_run_manifest_carries_only_current_identities(monkeypatch):
         assert manifest["phase"] == "dev"
         assert manifest["schema_version"] == "semread-candidates/3"
         assert manifest["reader_version"] == "semread-candidate-reader/3"
-        assert manifest["contract_version"] == "semread-001d-run-contract/1"
+        assert manifest["contract_version"] == "semread-001d-run-contract/2"
         assert manifest["producer_identity"] == pilot.producer_identity()
         assert manifest["preprocessing_identity"] == pilot.preprocessing_identity()
         blob = json.dumps(manifest)
@@ -151,5 +156,5 @@ def test_the_contract_identity_block_is_inert_without_a_declared_expectation(mon
     assert pilot.contract_identity_block() is None, "güncel kimlikte blok yok"
     monkeypatch.setattr(pilot, "CONTRACT_VERSION", "semread-001c-run-contract/1")
     assert pilot.contract_identity_block() == {"experiment": "semread-001d",
-                                               "expected": "semread-001d-run-contract/1",
+                                               "expected": "semread-001d-run-contract/2",
                                                "found": "semread-001c-run-contract/1"}

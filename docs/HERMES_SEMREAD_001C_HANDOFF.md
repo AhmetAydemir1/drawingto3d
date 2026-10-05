@@ -27,3 +27,26 @@ burada ve `docs/PLAN-12.md` altında yürür. 001B ve 001C ledger/klasörleri ka
   sonra P1'in üç değişikliği: (1) region JSON şeması `minimum/maximum 0..1`, (2) ortak V/VE
   prompt'ta açık normalize koordinat kuralı, (3) V ve VE'nin aynı koordinat sözleşmesini gördüğünü
   kanıtlayan testler.
+
+---
+
+## 1b. PLAN-12 §14 (P0) — 001B immutable closure manifest ✓
+
+- **CURRENT HEAD:** `dc3ade06a423fa4aa6a88008b6fe3a991e0af9d5` (bu kayıttan önce; P0 commit'i ilerletir).
+- **WHAT CHANGED:** `eval/semread_001b_closure.py` (`--write`/`--verify`) + izlenen
+  `eval/semread_001b_closure.json`; `tests/test_semread_001b_closure.py`.
+- **Kanıt (manifest 9 artifact):** FREEZE.json `f6ecf8f4…`, gold manifesti `058c13d6…`, final rapor
+  `641e18d5…`, pointer `4b96750b…`, bütçe defteri `state.json` `a229c320…`, koşu `944071ab…`
+  artifact'ları (acceptance `05a41715…`, evaluation `ef35524c…`, selected-attempts `c6a2e7ff…`,
+  report `641e18d5…`); gold kimliği `ae30ce6f…`; üretici `16878366…`; değerlendirme `4f63027b…`;
+  sözleşme `semread-001b-run-contract/3`; model/digest/runtime doğrulandı. Bütçe **20/30**
+  (19 `sent` + 1 `transport_http_error`; 1 `not_sent_runtime_mismatch` sayılmaz); attempt defteri
+  **36** (15 pass + 19 parse + 1 transport + 1 bloklu).
+- **TEST EVIDENCE:** `--verify` → *“9/9 artifact birebir — TAMAM”*; `pytest
+  tests/test_semread_001b_closure.py` → **6 passed** (0,02 s). 001B dosyalarına yazılmadı
+  (araç yalnız okur).
+- **INFERENCE BUDGET:** 001C **0/30** (çağrı yok).
+- **OPEN GATE:** P1 — region contract v2.
+- **NEXT SINGLE STEP:** P1 (PLAN-12 §15): şema `minimum/maximum 0..1`, ortak V/VE prompt'ta
+  normalize koordinat kuralı, V/VE aynı sözleşmeyi görüyor testleri; sürüm bump
+  (`semread-candidates/2`, `semread-candidate-reader/2`, `semread-001c-run-contract/1`).

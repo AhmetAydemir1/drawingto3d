@@ -1,0 +1,123 @@
+{
+  "artifacts": [
+    {
+      "bytes": 26804,
+      "path": "eval/semread_001b_gold/FREEZE.json",
+      "sha256": "f6ecf8f4e4e3bfe4c5be92f4aa61abe67160c6614f00e4050a3dc4f43466ed2c",
+      "tracked": true
+    },
+    {
+      "bytes": 7915,
+      "path": "eval/semread_001b_gold/manifest.json",
+      "sha256": "058c13d6a8f8a3f7a0386cbb4673ce7fe40fa7ee5b48cec82cc5526cb7672172",
+      "tracked": true
+    },
+    {
+      "bytes": 3360,
+      "path": "out/lab/semread-001b/evaluations/944071ab22e3061ef132212f070728eb/acceptance.json",
+      "sha256": "05a41715fc56abd4e9fb727663bfcdd53e4036bd8744ead964b8a15f850715a4",
+      "tracked": false
+    },
+    {
+      "bytes": 69424,
+      "path": "out/lab/semread-001b/evaluations/944071ab22e3061ef132212f070728eb/evaluation.json",
+      "sha256": "ef35524c5b9be956ea0b97a4dfe79b587f6cdb136f6c91681b044b130d681074",
+      "tracked": false
+    },
+    {
+      "bytes": 10019,
+      "path": "out/lab/semread-001b/evaluations/944071ab22e3061ef132212f070728eb/report.md",
+      "sha256": "641e18d5af5222a58a1449c0ff3f79ba46b443380f75bb5df4cd63554543fead",
+      "tracked": false
+    },
+    {
+      "bytes": 5864,
+      "path": "out/lab/semread-001b/evaluations/944071ab22e3061ef132212f070728eb/selected-attempts.json",
+      "sha256": "c6a2e7ffe7c4d79bac0e245cd3798302b6145041ad60245c01dd87057bf4ced8",
+      "tracked": false
+    },
+    {
+      "bytes": 302,
+      "path": "out/lab/semread-001b/final/pointer.json",
+      "sha256": "4b96750bf767ab4adcea0e64f3d8d88080f7f2ae8f9c4a8512c758d6fdda451a",
+      "tracked": false
+    },
+    {
+      "bytes": 10019,
+      "path": "out/lab/semread-001b/final/report.md",
+      "sha256": "641e18d5af5222a58a1449c0ff3f79ba46b443380f75bb5df4cd63554543fead",
+      "tracked": false
+    },
+    {
+      "bytes": 63148,
+      "path": "out/lab/semread-001b/state.json",
+      "sha256": "a229c320f02d49dda3979ee1f08c4f15dd815c697649a900226986de63d1bea5",
+      "tracked": false
+    }
+  ],
+  "evaluation_run_id": "944071ab22e3061ef132212f070728eb",
+  "experiment": {
+    "final_report": "out/lab/semread-001b/final/report.md",
+    "handoff": "docs/HERMES_SEMREAD_001B_HANDOFF.md",
+    "name": "semread-001b",
+    "plan": "docs/PLAN-11.md",
+    "status": "closed_as_recorded"
+  },
+  "identities": {
+    "candidate_schema": "semread-001b-case/1",
+    "code_identity": "16878366a1aba7ead3b94e460f9868e4ca4bcced9675eb6947d33d4d311d8430",
+    "contract_version": "semread-001b-run-contract/3",
+    "evaluation_identity": "4f63027bc1a386a2dc84278a0b0061d68715a30a4fdb4d55997e5b74c59aacc7",
+    "expected_model_digest": "0533d74300e4f9bc367d675d4e64ffd073d50ff16a2b4096cc2e8a1cf8c96319",
+    "gold_content_identity": "ae30ce6f1b1d8d5666bd5e749414883b67a7971ba7233f96cb0a41b01ce9a277",
+    "match_policy_version": "semread-001b-match/2",
+    "model": "qwen3-vl:8b-instruct",
+    "preprocessing_identity": "361204ee827221e43f445a8b047697f9cc0b63b41b8bbc610db8936fc47995e5",
+    "producer_identity": "16878366a1aba7ead3b94e460f9868e4ca4bcced9675eb6947d33d4d311d8430",
+    "runtime": "0.32.1"
+  },
+  "note": "PLAN-12 §14 (P0): 001B kapanış kaydı. İzlenen dosya yalnızca hash listesidir; `--verify` başarısızsa 001B artifact'ı değişmiş demektir — düzeltme yeni sürümde yapılır (§11).",
+  "recorded_at_git_head": "dc3ade06a423fa4aa6a88008b6fe3a991e0af9d5",
+  "schema": "semread-001b-closure/1",
+  "summary": {
+    "acceptance": {
+      "B01": "closed",
+      "B02": "closed",
+      "B03": "closed",
+      "B04": "closed",
+      "B05": "closed",
+      "B06": "open",
+      "B07": "closed"
+    },
+    "attempt_ledger": {
+      "by_state": {
+        "blocked_runtime_mismatch": 1,
+        "parse_error": 19,
+        "pass": 15,
+        "transport_error": 1
+      },
+      "dispatched": 35,
+      "total": 36,
+      "unique_attempt_ids": 36
+    },
+    "budget": {
+      "by_send_state": {
+        "not_sent_runtime_mismatch": 1,
+        "sent": 19,
+        "transport_http_error": 1
+      },
+      "limits": {
+        "dev": 10,
+        "final": 20,
+        "total": 30
+      },
+      "rule": "used = send_state'i not_sent_* olmayan kayıt sayısı (gönderilmiş + rezerve + taşıma hatası sayılır; yerel ret sayılmaz — 001B pilot kuralı)",
+      "used": 20
+    },
+    "conclusion": "implementation status: 6/7 kapandı; açık: ['B06']",
+    "open": [
+      "B06"
+    ]
+  },
+  "written_at": "2026-10-05T00:30:37+00:00"
+}

@@ -1,6 +1,6 @@
 # SEMREAD-001C — Faz Raporu
 
-**Tarih:** 2026-10-05 · **Aktif plan:** `docs/PLAN-13.md` (PLAN_LATEST; bayt kopya, sha256 `cc61e0bc…`; PLAN-12 + kök PLAN.md history — §34)
+**Tarih:** 2026-10-05 · **Aktif plan:** `docs/PLAN-14.md` (SEMREAD-001D; PLAN_LATEST; bayt kopya, sha256 `f2d249b7…`; PLAN-13 + PLAN-12 + kök PLAN.md history)
 **Durum:** §21 dev kapısı **8/8 GEÇTİ**; §37 semantik değerlendirme TAMAM (V/VE degenerate — §2b); §35 #5 requalification **KOŞULDU: §8 resmî kapı 7/8 (elbow-VE `schema_coordinate`; paylaşımlı ayar 8/8 ✓, stop 8/8 ✓, içerik 0/8 — §2c)** · **KAPANIŞ (2026-10-05): 001C final yok — READ-ONLY kapandı (Kapanış); karar: yeni experiment version = SEMREAD-001D; closure snapshot: `eval/semread_001c_closure.json`; kayıt: handoff §1t.**
 
 ---

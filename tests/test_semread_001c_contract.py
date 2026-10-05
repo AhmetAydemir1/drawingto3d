@@ -435,9 +435,12 @@ def test_p6_experiment_switch_moves_only_the_ledger(tmp_path, monkeypatch):
     assert pilot.state_path() != original_state
     fresh = pilot.load_state()
     assert fresh["experiment"] == "semread-001c"
-    # Bütçe geçmişi (gerekçe handoff/rapor): dev 10→12→16→18→20→22→24 (PLAN-12 §20 sapmaları);
-    # PLAN-13 §7 çağrılardan ÖNCE tek seferlik 24→32 (paylaşımlı zarf requalification'ı, 8 çağrı) → 52.
-    assert fresh["budget"] == {"dev": 32, "final": 20, "total": 52}, "001C kendi defteri"
+    # Taze defter **güncel deklare tavanları** taşır. 001C'nin TARİHSEL bütçesi (dev 10→…→32,
+    # PLAN-13 §7 requalification'ıyla 52) kendi (READ-ONLY) state.json'unda donmuştur; canlı
+    # sabitler PLAN-14 §24 ile 001D'nin deklare tavanlarıdır (dev 12 / final 20 / toplam 32).
+    assert fresh["budget"] == {"dev": pilot.LIVE_CALL_LIMIT_DEV,
+                               "final": pilot.LIVE_CALL_LIMIT_FINAL,
+                               "total": pilot.LIVE_CALL_LIMIT_TOTAL}, "taze defter sabitlerden"
     # Geri dönüş: 001B adı yine 001B köküne çözülür; varsayılan kayıt yolu sabittir.
     pilot.use_experiment("semread-001b")
     assert pilot.EXPERIMENT_NAME == "semread-001b"

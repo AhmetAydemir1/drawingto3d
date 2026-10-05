@@ -116,7 +116,12 @@ MODEL_TIMEOUT_SECONDS = 3000
 # maxItems=32 + kopya kuralı) causal requalification'ı = 4 dev sayfa × V/VE = 8 yeni çağrı (§8).
 # Bu 8 çağrıdan sonra dev tuning biter; 32 aşılırsa 001C final yok → yeni experiment version (§7).
 # Çağrı-çağrı bütçe artışı yok (§36).
-LIVE_CALL_LIMIT_DEV = 32
+# SEMREAD-001D BÜTÇESİ (PLAN-14 §24; §41#3 skeleton'da deklare edildi): dev 12 (8 primary + 4 tanı
+# rezervi), final 20, toplam 32. 001B/001C kapalıdır (READ-ONLY) — bu tavanlar yeni deneyin
+# önceden deklare bütçesidir; 12 dev çağrısı sonrası tuning YOK, yeni experiment version gerekir
+# (§24). 001C'nin kullandığı 32/52 tavanı kendi state.json'unda donmuştur (001C raporları bütçeyi
+# state'ten okur).
+LIVE_CALL_LIMIT_DEV = 12
 LIVE_CALL_LIMIT_FINAL = 20
 LIVE_CALL_LIMIT_TOTAL = LIVE_CALL_LIMIT_DEV + LIVE_CALL_LIMIT_FINAL
 PHASES = ("dev", "final")                  # çağrının amacı

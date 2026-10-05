@@ -386,11 +386,11 @@ def test_p5_run_contract_envelope_is_001c_and_measured():
     from drawingto3d.semantic_run_contract import CONTRACT_VERSION, NUM_PREDICT, SETTINGS
 
     assert CONTRACT_VERSION == "semread-001c-run-contract/1"
-    # Dev ölçümü zarfı iki kez ilerletti: plate-VE 3072'de kesildi → 4096; flange-VE 14.121 tok
-    # promptla 12288'de HTTP 400 aldı → 20480.
-    assert NUM_PREDICT == 4096 and SETTINGS["num_predict"] == NUM_PREDICT
+    # Dev ölçümü zarfı üç kez ilerletti: plate-VE 3072'de kesildi → 4096; 4096 da sınırda kaldı →
+    # 5120; flange-VE 14.121 tok promptla 12288'de HTTP 400 aldı → 20480.
+    assert NUM_PREDICT == 5120 and SETTINGS["num_predict"] == NUM_PREDICT
     assert SETTINGS["num_ctx"] == 20480
-    # En kötü ölçülen VE prompt'u 14.121 (dev-flange-book); 14.121 + 4.096 = 18.217 ≤ 20.480.
+    # En kötü ölçülen VE prompt'u 14.121 (dev-flange-book); 14.121 + 5.120 = 19.241 ≤ 20.480.
     assert 14121 + SETTINGS["num_predict"] <= SETTINGS["num_ctx"]
     assert SETTINGS["temperature"] == 0.0
 
@@ -409,8 +409,8 @@ def test_p6_experiment_switch_moves_only_the_ledger(tmp_path, monkeypatch):
     assert pilot.state_path() != original_state
     fresh = pilot.load_state()
     assert fresh["experiment"] == "semread-001c"
-    # Bütçe düzeltmeleri (PLAN-12 §20 sapmaları, gerekçe handoff/rapor): dev 10→12→16, toplam 36.
-    assert fresh["budget"] == {"dev": 16, "final": 20, "total": 36}, "001C kendi defteri"
+    # Bütçe düzeltmeleri (PLAN-12 §20 sapmaları, gerekçe handoff/rapor): dev 10→12→16→18, toplam 38.
+    assert fresh["budget"] == {"dev": 18, "final": 20, "total": 38}, "001C kendi defteri"
     # Geri dönüş: 001B adı yine 001B köküne çözülür; varsayılan kayıt yolu sabittir.
     pilot.use_experiment("semread-001b")
     assert pilot.EXPERIMENT_NAME == "semread-001b"

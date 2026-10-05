@@ -56,7 +56,7 @@ IMAGE_MAX_SIDE = 1280          # development'ta sabitlenir; final koşuya kadar 
 # tamamını kullanıp **son adayın ortasında** kesildi (state=truncated_output; ~7,7 tok/s M1'de
 # 4096'nın en kötü karşılığı ~530 s < 900 s model tavanı). Kabul yalnız `done_reason == stop`;
 # hedef: başarılı eval_count ≤ 0.8 × num_predict (4096 → 3277).
-NUM_PREDICT = 4096
+NUM_PREDICT = 5120
 
 # Üretim ayarları: taşıma katmanı bu değerlerden kurulur (kopyası tutulmaz).
 #

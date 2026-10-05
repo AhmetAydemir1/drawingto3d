@@ -250,3 +250,27 @@ burada ve `docs/PLAN-12.md` altında yürür. 001B ve 001C ledger/klasörleri ka
   14121+5120=19241 ≤ 20480 ✓).
 - **Gerçek koşu:** A3=B3 zinciri (plate-VE, flange-VE → elbow V/VE, drawing-2 V/VE), taze model +
   ön-ısıtma ile başlatıldı. Bütçe: 6/12 işlendi.
+
+---
+
+## 1l. Defter denetimi — "zombi" gönderimler + bütçe düzeltmesi #2 (dev 12 → 16)
+
+- **Denetim bulgusu:** Defterde 10 gönderim var; 6, 7 ve 8. kayıtlar wedge triyajı sırasında ELLE
+  öldürülen işçilerdi:
+  - `plate-VE/attempt-0003` (04:19, gerçek kama; sonuç hiç gelmedi),
+  - `flange-V-…` değil: `flange-VE/attempt-0002` (04:33:18 dizini) — batchA runner'ı, kama işini
+    kendi iş zaman aşımıyla geçip bu işi BAŞLATMIŞ; ben 04:45'te zinciri kill edince gönderim
+    ortada öldü,
+  - `elbow-V/attempt-0001` (04:40:00) — batchB başlamış ve ilk işi göndermiş; aynı kill'e kurban,
+  - `plate-VE/attempt-0004` (04:46, batchA2) — erken kill (CPU %'si kama göstergesi SANILDI; oysa
+    Metal üretiminde CPU % düşük kalıyor — yanlış teşhis).
+- **Kural (§20):** "sending" (sonucu belirsiz) kayıtlar bütçede SAYILIR → 3 zombi + kama = 4 boşa
+  harcanan çağrı. Bunların 3'ü operatör (benim) kill'lerim → rapora "operatör hatası" olarak yazılır.
+- **BÜTÇE DÜZELTMESİ #2:** dev 12 → **16** (toplam 32 → **36**). En kötü durum (plate-VE bir kez
+  daha kesilirse) 16'yı tam doldurur; 17. gönderim bloklanır → rapor "blocked".
+- **Ders (İzleme notu düzeltmesi):** CPU % kama göstergesi DEĞİL. Gerçek göstergeler: (1) dış HTTP
+  yanıtı gelmiyor + (2) worker zaman aşımı (MODEL_TIMEOUT) tetikleniyor. Kama şüphesinde önce
+  `eval/semread_001c_probe_big.py` ile AYNI isteği tanı olarak dene (deftere yazmaz).
+- **A3 ilerlemesi:** `plate-VE/attempt-0005` gönderildi (05:10:20); sonuç bekleniyor. A3'ün 2. işi
+  flange-VE redo olacak; ardından B3 (elbow V/VE + drawing-2 V/VE) taze süreç olarak limit=16 ile.
+- **NEXT SINGLE STEP:** attempt-0005 sonucu → flange-VE redo → B3 → §21 kapısı → rapor.

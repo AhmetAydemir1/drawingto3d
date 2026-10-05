@@ -90,9 +90,14 @@ JOB_PREFIX = "semread-001b-"    # tarihsel ad; run_live iş kimliğini EXPERIMEN
 # 001C gözlemi: `dev-plate-pocket-VE` 12288 bağlamda 300 s'lik HTTP tavanında `transport_timeout`
 # ile kesildi (M1'de VE prompt'u ~7.6k token + uzun çıktı). Model tavanı 900 s'ye çıkarıldı;
 # iş/batch tavanları model tavanının üstünde tutulur ki kesilme değil **yanıt** kaydedilsin.
-CASE_TIMEOUT_SECONDS = 1200
+CASE_TIMEOUT_SECONDS = 2400
 RUN_TIMEOUT_SECONDS = 14400
-MODEL_TIMEOUT_SECONDS = 900
+MODEL_TIMEOUT_SECONDS = 1800
+# 2026-10-05 05:2x — KÖK NEDEN BULUNDU: LabRunner her işin zaman aşımını lab settings tavanıyla
+# sınırlar ("case may ask for less, never more"); out/lab/settings.json'da case_timeout_seconds=600
+# idi → işçiler 600 s'de sessizce öldürülüyordu (sonuç.json YAZILMADAN), tam da format-kısıtlı VE
+# üretimi sürerken. Ayarlar 3600/14400'e çıkarıldı (gerekçe handoff §1l-rapor); MODEL 900→1800
+# (ölçülen en kötü ~800 s), CASE 1200→2400. MODEL < CASE < RUN hiyerarşisi korunur.
 # 001C BÜTÇE DÜZELTMESİ (belgelenmiş sapma, PLAN-12 §20): plan 10 dev çağrısı öngörüyordu (8 geçerli
 # + 2 tanı). Ölçüm üç ayrı zarf kusuru gösterdi (300 s timeout, 3072'de truncation, 12288 ctx'te
 # 14121-token VE prompt → HTTP 400) ve §21 kapısı iki VE hücresinin yeniden koşusunu gerektiriyor:
@@ -106,7 +111,7 @@ MODEL_TIMEOUT_SECONDS = 900
 # sırasında ELLE öldürülen gönderimler (§20: sonucu belirsiz 'sending' kayıtları SAYILIR; ikisi
 # hatalı kill, biri erken kill — operatör hatası olarak rapora yazılır). En kötü durum 16'yı tam
 # doldurur (plate-VE bir daha kesilirse redo dahil); 17. gönderim bloklanır ve rapor 'blocked' yazar.
-LIVE_CALL_LIMIT_DEV = 16
+LIVE_CALL_LIMIT_DEV = 18
 LIVE_CALL_LIMIT_FINAL = 20
 LIVE_CALL_LIMIT_TOTAL = LIVE_CALL_LIMIT_DEV + LIVE_CALL_LIMIT_FINAL
 PHASES = ("dev", "final")                  # çağrının amacı

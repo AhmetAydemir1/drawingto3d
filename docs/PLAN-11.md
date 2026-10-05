@@ -1883,86 +1883,86 @@ finalden sonra evaluator threshold değiştirmek
 - [x] frozen-exercise-17
 - [x] frozen-exercise-13
 - [x] frozen-enclosure
-- [ ] frozen-views-exercise
-- [ ] 10/10 manifest
-- [ ] 10/10 regenerate
-- [ ] 10/10 verify
-- [ ] final stable gold_content_identity
-- [ ] all raster vision audit
-- [ ] no corroboration cycle
-- [ ] SEMREAD tests pass
-- [ ] full pytest pass
-- [ ] D reuse evaluation
-- [ ] B02 closed
-- [ ] B07 closed
-- [ ] B05/B06 intentionally open
-- [ ] budget remains 0/30
+- [x] frozen-views-exercise
+- [x] 10/10 manifest
+- [x] 10/10 regenerate
+- [x] 10/10 verify
+- [x] final stable gold_content_identity
+- [x] all raster vision audit
+- [x] no corroboration cycle
+- [x] SEMREAD tests pass
+- [x] full pytest pass
+- [x] D reuse evaluation
+- [x] B02 closed
+- [x] B07 closed
+- [x] B05/B06 intentionally open
+- [x] budget remains 0/30 (P3–P5 dönemi; V/VE ölçümü sonrası nihai 20/30 — 6z)
 
 ---
 
 # 55. P5 checklist
 
-- [ ] separate clean clone
-- [ ] no hidden `out/` dependency
-- [ ] regenerate all 10
-- [ ] exact reference hashes
-- [ ] same final gold identity
-- [ ] producer identity bound
-- [ ] evaluation identity bound
-- [ ] candidate schema bound
-- [ ] match policy bound
-- [ ] preprocessing identity bound
-- [ ] model/digest/runtime bound
-- [ ] generation settings bound
-- [ ] D attempts bound
-- [ ] D artifact hashes bound
-- [ ] budget snapshot
-- [ ] lifecycle snapshot
-- [ ] matrix snapshot
-- [ ] FREEZE.json complete
-- [ ] atomic freeze pass
-- [ ] P5 closed
+- [x] separate clean clone
+- [x] no hidden `out/` dependency
+- [x] regenerate all 10
+- [x] exact reference hashes
+- [x] same final gold identity
+- [x] producer identity bound
+- [x] evaluation identity bound
+- [x] candidate schema bound
+- [x] match policy bound
+- [x] preprocessing identity bound
+- [x] model/digest/runtime bound
+- [x] generation settings bound
+- [x] D attempts bound
+- [x] D artifact hashes bound
+- [x] budget snapshot
+- [x] lifecycle snapshot
+- [x] matrix snapshot
+- [x] FREEZE.json complete
+- [x] atomic freeze pass
+- [x] P5 closed
 
 ---
 
 # 56. V/VE preflight checklist
 
-- [ ] P5 closed
-- [ ] gold 10/10
-- [ ] D valid_reuse 10
-- [ ] V to_run 10
-- [ ] VE to_run 10
-- [ ] budget 0/30
-- [ ] orphan 0
-- [ ] exact model
-- [ ] exact model digest
-- [ ] exact runtime
-- [ ] supported structured output
-- [ ] raw V/VE image hashes identical
-- [ ] prompt/task identity controlled
-- [ ] generation settings controlled
-- [ ] leak audit clean
+- [x] P5 closed
+- [x] gold 10/10
+- [x] D valid_reuse 10
+- [x] V to_run 10
+- [x] VE to_run 10
+- [x] budget 0/30
+- [x] orphan 0
+- [x] exact model
+- [x] exact model digest
+- [x] exact runtime
+- [x] supported structured output
+- [x] raw V/VE image hashes identical
+- [x] prompt/task identity controlled
+- [x] generation settings controlled
+- [x] leak audit clean
 
 ---
 
 # 57. Final measurement checklist
 
-- [ ] 20 VLM cells resolved
-- [ ] every actual send accounted
-- [ ] failures preserved
-- [ ] no cherry-pick
-- [ ] selected attempts recorded
-- [ ] artifact hashes checked
-- [ ] evaluation identity recorded
-- [ ] page metrics
-- [ ] predicate metrics
-- [ ] recovery/regression
-- [ ] localization separate
-- [ ] target binding separate
-- [ ] overclaim/abstention
-- [ ] latency/failure reporting
-- [ ] provisional-gold limitation
-- [ ] immutable final report
+- [x] 20 VLM cells resolved
+- [x] every actual send accounted
+- [x] failures preserved
+- [x] no cherry-pick
+- [x] selected attempts recorded
+- [x] artifact hashes checked
+- [x] evaluation identity recorded
+- [x] page metrics
+- [x] predicate metrics
+- [x] recovery/regression
+- [x] localization separate
+- [x] target binding separate
+- [x] overclaim/abstention
+- [x] latency/failure reporting (failure rapor gövdesinde; gecikme run/attempt `seconds` kayıtlarında — 6z)
+- [x] provisional-gold limitation
+- [x] immutable final report
 
 ---
 

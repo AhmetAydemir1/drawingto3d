@@ -1294,3 +1294,56 @@ kod değişikliği (`041d525`) sonrası alt küme yine tam.
 yerelleştirme/çıktı biçimi (V) ve üretim sınırı (VE-2048). Bilimsel karşılaştırma (Q1–Q5) ve
 taxonomy, final değerlendirme raporuyla (bir sonraki not) yazılacak; iyileştirme kararı ölçümden
 sonra — §24 mevcut freeze'i korur, gerekirse invalid → düzelt → yeniden dondurma.
+
+### 6z. PLAN-11 §29–§38 + §54–§57 — FİNAL KAPANIŞ: matris 30/30 kapalı, rapor yazıldı, kesin hata imzaları + düzeltme, Q1–Q5, taxonomy
+
+**Final değerlendirme (§31/§33/§34/§37):** `--evaluate` koştu; **koşu kimliği yine
+`944071ab22e3061ef132212f070728eb`** — seçilebilir geçerli sonuç yalnız D olduğu için kimlik
+değişmedi (V/VE parse'ları seçime girmez; determinizm kanıtı). `final/report.md` = koşu raporu
+birebir; `final/pointer.json` güncel. Rapor kapsamı: koşu kimliği + bütçe + referans niteliği
+(`agent`/`provisional` + §38 uyarıları) + eşleştirme politikası (`semread-001b-match/2`) + sayfa
+sayfa + kollar + alan bazında (D) + D'ye göre recovery/regression + **matris hücreleri (30)** +
+dev/frozen + maliyet/hatalar (20/30 çağrı; 35 gönderim; 15 geçen; taşıma 1, parse 19, kapı 0,
+yerel 0, bloklu 1) + gerçek hata örnekleri + ölçülmeyenler.
+**Matris KAPALI: {'valid_reuse': 10, 'failed_attempt': 20}; açık hücre 0 → B05 kapandı.**
+**B06 açık kaldı** ("puanlanmış kol: yok" — V/VE geçerli tahmin üretemedi; kabul notu: "V/VE'nin
+D'den iyi çıkması completion şartı değildir"); implementation status **6/7**.
+
+**Düzeltme (6y'ye ek — geçmiş silinmez):** 6y'de "V 10/10 aynı kök: piksel" yazılmıştı; kesin
+sınıflandırma: **V = 7 piksel/bölge + 3 kesik JSON (`done_reason=length`)** — piksel: flange-book,
+flange-elbow, plate-pocket, ex-12, ex-13, ex-17, views-exercise; kesik: **drawing-2, enclosure,
+ex-51**. **VE = 8 kesik JSON (`length`) + 1 derinlik ihlali + 1 http** — kesik: flange-book,
+flange-elbow, plate-pocket, enclosure, ex-12, ex-13, ex-17, views-exercise; derinlik: ex-51;
+http: drawing-2. Her iki kol da donmuş `num_predict=2048` tavanına dayandı → kesme sınıfı
+**11/20 hücre**.
+
+**§26 ham görüntü invaryantı ✓:** V/VE `request-manifest.json` → `images[0].source_sha256` +
+`sent_sha256` **10/10 aynı** (tek meşru fark `prompt_sha256`: kol tanımı gereği V genel / VE
+sayfa-tablolu).
+**§28 leak audit ✓:** 20/20 V/VE `gate-results.json` → `leakage=[]`.
+**Gecikme:** V {min 50.7s · medyan 220.2s · max 404.6s · toplam 33.4 dk} · VE {1.7s (http) ·
+medyan 272.4s · max 536.9s · toplam 49.3 dk}. Rapor gövdesinde ayrı "latency" satırı yok —
+gecikme run/attempt `seconds` kayıtlarında ve `truncated` gate'inde; evaluator'a satır eklemek
+§31'e aykırı (kayıtlar kanıt zincirinde).
+
+**§35 Q1–Q5:**
+* **Q1 (V > D?)** Hayır: V 0 geçerli aday; D 126 aday / 6 eşleşme.
+* **Q2 (VE > V?)** İkisi de 0 geçerli; patlama modları farklı (VE daha çok kesme: 8 vs 3) —
+  ölçülebilir karşılaştırma için geçerli çıktı koşulu sağlanmadı; "kazanan yok".
+* **Q3/Q4 (kanıt faydası/zararı)** Predicate bazında ölçülemedi (geçerli tahmin yok); gözlenen:
+  tablo VE'de kesme oranını artırdı (8/10 vs 3/10) → **çıktı bütçesi altında evidence-induced
+  zarar** sinyali.
+* **Q5 (en büyük hata sınıfı)** **Üretim sınırı + format dayanıklılığı** (11/20 kesme) ve
+  **koordinat konvansiyonu** (7/20 piksel); içerik katmanına (OCR, R/Ø, count, binding) hiç
+  ulaşılamadı.
+
+**§36 taxonomy eşlemesi:** target localization = 7; output/limit (evidence-induced) = 11;
+no-guess/overclaim = 1 (ex-51 VE); transport = 1; diğer kategoriler örneksiz.
+**İyileştirme adayları (§60 "ölçüm ne diyorsa"):** (a) koordinat konvansiyonu — prompt + şema
+örneği; (b) çıktı tavanı — `num_predict` artırımı veya parçalı yanıt birleştirme; (c) tek atış
+yerine güvenli yeniden-deneme politikası. Bunlar §24 gereği **yeni sürüm** işidir (mevcut freeze
+invalid olur); PLAN-11 kapsamı ölçüm + dürüst raporla kapandı.
+
+**Kontrol listeleri:** PLAN-11 §54 (P3) ve §55 (P5) tamamen [x]; §56 (V/VE preflight) [x];
+§57 (final measurement) [x] — iki istisna notu: §54 "budget remains 0/30" P3–P5 dönemi için
+doğru (nihai 20/30) ve §57 "latency/failure reporting" gecikme notuyla.

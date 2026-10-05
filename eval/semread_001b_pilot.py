@@ -55,6 +55,7 @@ from drawingto3d.semantic_run_contract import (CASE_SCHEMA, CONTRACT_VERSION,  #
                                                 EVIDENCE_MODES, ARM_VARIANTS, MODEL, NUM_PREDICT,
                                                 PAGE_IMAGE_ID,
                                                 PREPROCESSING_FILES, PRODUCER_SOURCE_FILES,
+                                                REPEAT_LAST_N, REPEAT_PENALTY_BY_ARM,
                                                 SETTINGS)
 from drawingto3d_lab.runner import Job, LabRunner  # noqa: E402
 
@@ -1447,6 +1448,9 @@ def write_live_attempt(page: dict, arm: str, *, phase: str, observations=None, s
     wanted = {"model": MODEL, **{key: value for key, value in SETTINGS.items()
                                  if key not in transport_kwargs},
               "timeout": float(MODEL_TIMEOUT_SECONDS)}
+    # Zarf #7: döngü kırıcı KOL BAŞINA (ölçüm: V 1.4 / VE 1.25 — gerekçe semantic_run_contract'ta).
+    wanted["repeat_penalty"] = REPEAT_PENALTY_BY_ARM[arm]
+    wanted["repeat_last_n"] = REPEAT_LAST_N
     supported = {field.name for field in dataclasses.fields(ChatSettings)}
     unsupported_settings = sorted(set(wanted) - supported)
     if unsupported_settings:

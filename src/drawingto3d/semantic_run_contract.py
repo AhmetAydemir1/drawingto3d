@@ -67,10 +67,18 @@ NUM_PREDICT = 8192
 SETTINGS = {"num_ctx": 22528, "temperature": 0.0,
             "num_predict": NUM_PREDICT, "keep_alive": "5m", "image_max_side": IMAGE_MAX_SIDE,
             "images_layout": IMAGES_LAYOUT, "image_label_prefix": IMAGE_LABEL_PREFIX,
-            "raw_page_strategy": RAW_PAGE_STRATEGY,
-            # VLM döngü kırıcı (dev kanıtı: elbow-V 64 ve 30 özdeş aday üretti; 1.25 kıramadı,
-            # 1.6 yanıtı boşaltı (susturdu) — prob taraması: 1.4'te temiz stop). Pencere 512.
-            "repeat_penalty": 1.4, "repeat_last_n": 512}
+            "raw_page_strategy": RAW_PAGE_STRATEGY}
+
+# VLM döngü kırıcı — KOL BAŞINA (zarf #7, ölçümle): iki kol farklı çıktı rejimi.
+#  * V kolu (görsel-only): yoğun sayfada (elbow) aynı bölgeyi sonsuz tekrarlıyordu; 1.25 kıramadı
+#    (30 özdeş aday, 8192'de kesildi), 1.6 yanıtı boşalttı (25 token, items:[]), 1.4 probda temiz
+#    durdu (150 token, stop).
+#  * VE kolu (tablo çapalı): 1.25'te zengin yanıt veriyor (plate-VE: 41 aday, 6529 token, stop);
+#    1.4 aynı sayfada yanıtı 175 tokene kısıyor — ağır ceza yapısal tekrarları bastırıp listeyi
+#    erken kapatıyor. Bu yüzden VE 1.25'te kalır.
+# Pencere 512: döngü item'ı ~230-580 token; varsayılan 64'lük pencere tekrarı hiç görmez.
+REPEAT_LAST_N = 512
+REPEAT_PENALTY_BY_ARM = {"V": 1.4, "VE": 1.25}
 
 # Görüntü hazırlama sözleşmesi (preprocessing identity): hazırlama kodu bu dosyalarda yaşar.
 PREPROCESSING_FILES = ("src/drawingto3d/semantic_images.py",

@@ -383,7 +383,9 @@ def test_p4_attempt_state_keeps_truncation_apart_from_parse_error():
 
 
 def test_p5_run_contract_envelope_is_001c_and_measured():
-    from drawingto3d.semantic_run_contract import CONTRACT_VERSION, NUM_PREDICT, SETTINGS
+    from drawingto3d.semantic_run_contract import (CONTRACT_VERSION, NUM_PREDICT,  # noqa: F401
+                                                   REPEAT_LAST_N, REPEAT_PENALTY_BY_ARM,
+                                                   SETTINGS)
 
     assert CONTRACT_VERSION == "semread-001c-run-contract/1"
     # Dev ölçümü zarfı dört kez ilerletti: plate-VE 3072'de kesildi → 4096 → 5120 (sınırda);
@@ -392,8 +394,10 @@ def test_p5_run_contract_envelope_is_001c_and_measured():
     assert NUM_PREDICT == 8192 and SETTINGS["num_predict"] == NUM_PREDICT
     assert SETTINGS["num_ctx"] == 22528
     assert 14121 + SETTINGS["num_predict"] <= SETTINGS["num_ctx"]
-    # VLM döngü kırıcı: elbow-V 64/30 özdeş aday; 1.25 kıramadı, 1.6 susturdu, 1.4 probda temiz durdu.
-    assert SETTINGS["repeat_penalty"] == 1.4 and SETTINGS["repeat_last_n"] == 512
+    # VLM döngü kırıcı KOL BAŞINA (zarf #7): V 1.4 (elbow döngüsü 1.25'te kırılmadı, 1.6 susturdu),
+    # VE 1.25 (1.4, plate-VE'nin 41 adaylık zengin yanıtını 175 tokene kısıyor). Pencere 512.
+    assert REPEAT_PENALTY_BY_ARM == {"V": 1.4, "VE": 1.25}
+    assert REPEAT_LAST_N == 512
     assert SETTINGS["temperature"] == 0.0
 
 

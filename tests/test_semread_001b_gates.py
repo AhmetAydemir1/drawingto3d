@@ -98,17 +98,26 @@ def test_dev_final_and_total_caps_are_enforced_together(scratch_budget):
 
 
 def test_the_total_cap_is_a_backstop_even_when_a_phase_cap_is_not_full(scratch_budget):
-    """Toplam tavan, faz tavanlarından bağımsız olarak da uygulanmalı (bozuk/göçmüş sayaç)."""
+    """Toplam tavan, faz tavanlarından bağımsız olarak da uygulanmalı (bozuk/göçmüş sayaç:
+    sayılan kayıt toplam tavana ulaşmış, ama istenen fazın tavanı dolmamış).
+
+    Not (2026-10-05): test 001B döneminde mutlak sayılarla yazılmıştı (5+25=30); 001C bütçe
+    artışlarından beri (e60a031: dev 10→12, toplam 32) senaryo eşiği tutmuyordu ve test sessizce
+    kırıktı. Beklentiler artık sabitlerden türetilir — bir sonraki bütçe değişiminde de geçerli."""
     state = pilot.load_state()
-    state["live_calls"] = ([{"case_id": f"d{index}", "arm": "V", "phase": "dev", "split": "dev",
-                             "send_state": "sent"} for index in range(5)]
-                           + [{"case_id": f"f{index}", "arm": "VE", "phase": "final",
-                               "split": "frozen", "send_state": "sent"} for index in range(25)])
+    dev_records = 5                                            # dev tavanı dolmuyor (< DEV)
+    final_records = pilot.LIVE_CALL_LIMIT_TOTAL - dev_records  # toplam tavana tam oturur
+    state["live_calls"] = (
+        [{"case_id": f"d{index}", "arm": "V", "phase": "dev", "split": "dev",
+          "send_state": "sent"} for index in range(dev_records)]
+        + [{"case_id": f"f{index}", "arm": "VE", "phase": "final", "split": "frozen",
+            "send_state": "sent"} for index in range(final_records)])
     pilot.save_state(state)
+    assert pilot.budget_report()["total_used"] == pilot.LIVE_CALL_LIMIT_TOTAL
     out = pilot.reserve_live_call("after-cap", phase="dev", arm="V", split="dev",
                                   attempt_dir=scratch_budget / "a")
     assert out["reserved"] is False and "toplam bütçe bitti" in out["reason"]
-    assert pilot.budget_report()["total_used"] == 30
+    assert pilot.budget_report()["total_used"] == pilot.LIVE_CALL_LIMIT_TOTAL
 
 
 def test_a_reserved_but_never_sent_call_still_counts(scratch_budget):

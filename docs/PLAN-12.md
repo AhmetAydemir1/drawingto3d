@@ -1987,14 +1987,14 @@ işine geçme.
 
 # 50. P2/P3 acceptance checklist
 
-- [ ] optional unknown fields may be omitted
-- [ ] defaults deterministic
-- [ ] provenance ownership decided
+- [x] optional unknown fields may be omitted
+- [x] defaults deterministic
+- [x] provenance ownership decided
 - [ ] empty observation rows pruned
 - [ ] row ordering deterministic
 - [ ] evidence serialization identity stable
 - [ ] prompt byte count recorded
-- [ ] zero inference
+- [x] zero inference
 
 ---
 

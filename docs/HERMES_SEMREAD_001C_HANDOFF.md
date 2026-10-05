@@ -70,3 +70,24 @@ burada ve `docs/PLAN-12.md` altında yürür. 001B ve 001C ledger/klasörleri ka
 - **NEXT SINGLE STEP:** P2 (PLAN-12 §16): "Omit optional fields…" prompt kuralı + minimal gövde
   default testi + harness-owned provenance (provenance wire'dan çıkar, parse sonrası inject;
   §16.3 `source.image_id` değerlendirmesi).
+
+---
+
+## 1d. PLAN-12 §16 (P2) — compact output contract ✓
+
+- **CURRENT HEAD:** `1a54b4c` (P1; P2 commit'i ilerletir).
+- **WHAT CHANGED:** `semantic_candidates.py`: (a) ortak görev metnine *"Omit optional fields that
+  would only contain default unknown/not_stated values."* kuralı; (b) `provenance` **wire
+  sözleşmesinden çıkarıldı** — şemada yok, `ALLOWED_CANDIDATE_KEYS`'ten çıkarıldı (gönderilirse
+  reddedilir); `semantic_candidate_reader.read_page` parse sonrası `kind=vlm` +
+  `method=<çağrıda görülen model>` **enjekte** eder (§16.2); (c) §16.3 kararı: `source.image_id`
+  **kaldı** — VE overlay atfı gerçek kanıt, şema yorumunda gerekçeli; (d) `CandidateParseError`
+  alt tür taşır (`kind`: `invalid_json`/`schema_error`/`schema_coordinate`/`schema_no_guess`) —
+  §18 altyapısı, taşımaya bağlama P4 commit'inde.
+- **TEST EVIDENCE:** `pytest tests/test_semread_001c_contract.py tests/test_semantic_candidates.py
+  tests/test_semantic_reader.py` → **59 passed** (0,32 s). 001B aday fixture'ından `provenance`
+  çıkarıldı: yeni sözleşmede yasak.
+- **INFERENCE BUDGET:** 001C **0/30** (çağrı yok).
+- **OPEN GATE:** P3 — VE evidence compression.
+- **NEXT SINGLE STEP:** P3 (PLAN-12 §17): "boş kanıt satırını serileştirme" kuralı + sayım kaydı
+  (raw/sent/dropped + prompt byte) ve stabil sıra/hash testleri.

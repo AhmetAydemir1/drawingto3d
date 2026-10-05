@@ -20,7 +20,7 @@ from pathlib import Path
 
 from drawingto3d.observe import Observations
 from drawingto3d.semantic_candidates import (CANDIDATE_READER_VERSION, CandidateParseError,
-                                             CandidateResponse, candidate_prompt,
+                                             CandidateResponse, ProvenanceField, candidate_prompt,
                                              candidate_json_schema, check_candidate_references,
                                              parse_candidate_json)
 from drawingto3d.semantic_images import (PreparedImage, SourcePage, overlay_from_observations,
@@ -150,6 +150,11 @@ def read_page(chat, bundle: dict, *, forbidden: list[str], num_predict: int | No
         outcome["parse"] = {"ok": False, "error": str(exc)}
         outcome["leakage"] = leak_check(prompt + str(trace) + str(answer), forbidden)
         return outcome
+    # P2 §16.2: `provenance` harness'a aittir — model onu yazmaz (şemada yok). Burada kanıtlanabilir
+    # biçimde enjekte edilir: kind = dal (vlm), method = çağrıda gerçekten görülen model kimliği.
+    model_seen = str(((outcome.get("request") or {}).get("model")) or "")
+    for item in response.items:
+        item.provenance = ProvenanceField(kind="vlm", method=model_seen)
     outcome["parsed"] = response.model_dump(mode="json")
     allowed_ids = [image["image_id"] for image in outcome["images"]]
     references = check_candidate_references(

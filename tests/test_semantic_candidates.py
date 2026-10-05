@@ -28,7 +28,6 @@ def item(**overrides) -> dict:
         "source": {"image_id": "image-1",
                    "region": {"x0": 0.05, "y0": 0.15, "x1": 0.35, "y1": 0.45},
                    "callout_region": {"x0": 0.5, "y0": 0.1, "x1": 0.6, "y1": 0.14}},
-        "provenance": {"kind": "vlm", "method": "qwen3-vl:8b-instruct"},
         "uncertainty": {"fields": {"physical": "kesit görünmüyor"}, "reason": "tek görünüş"},
     }
     base.update(overrides)

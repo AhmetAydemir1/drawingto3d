@@ -5,6 +5,15 @@ taşır ve ortak görev metni normalize koordinat kuralını açıkça öğretir
 V ve VE kollarında **aynı** metinden ve **aynı** şema nesnesinden gelir (kopya literal yok).
 Parser bu kuralı sessizce "tamir" etmez: 0..1 dışındaki bölge reddedilir.
 
+Sürüm **/2** notları (SEMREAD-001C):
+  * P1 (§15): region min/max + normalize kural; V/VE aynı metin, aynı şema nesnesi.
+  * P2 (§16): opsiyonel alanlar yalnız varsayılan (`unknown`/`not_stated`) kalacaksa
+    **atlanabilir**; `provenance` **model çıktısında yoktur** — harness parse sonrası enjekte
+    eder (§16.2). `source.image_id` bilinçli olarak **kaldı**: VE overlay atfı gerçek kanıttır
+    (§16.3 değerlendirmesi; kaldırmak kapsam kontrolünü karmaşıklaştırırdı).
+  * P4 (§18): ayrıştırma hataları alt tür taşır (`kind`): `invalid_json`, `schema_error`,
+    `schema_coordinate`, `schema_no_guess`.
+
 Kapsam bilinçli olarak küçüktür: bir aday, bir **callout/hedef** hakkında yalnız şu alanları taşır:
 
   circle representation / physical hole ayrımı · R vs Ø · basılı değer+birim · count ·
@@ -59,13 +68,21 @@ DECISION_FIELDS = ("supported", "confirmed", "rejected", "resolution", "user_dec
 FORBIDDEN_FIELDS = (*DECISION_FIELDS, "feature_plan", "cad", "fusion")
 
 ALLOWED_CANDIDATE_KEYS = ("candidate_id", "callout", "representation", "physical", "form", "size",
-                         "count", "termination", "depth", "target", "source", "provenance",
-                         "uncertainty")
+                         "count", "termination", "depth", "target", "source", "uncertainty")
 ALLOWED_RESPONSE_KEYS = ("schema_version", "items")
 
 
 class CandidateParseError(ValueError):
-    """Yanıt gövdesi sözleşmeye uymuyor. Bilinçli olarak **tamir yolu yoktur**."""
+    """Yanıt gövdesi sözleşmeye uymuyor. Bilinçli olarak **tamir yolu yoktur**.
+
+    `kind` (P4 §18) hatanın alt türünü taşır: `invalid_json` (JSON katmanı), `schema_error`
+    (sözleşme/doğrulama), `schema_coordinate` (0..1 dışı bölge), `schema_no_guess`
+    (kanıtsız termination iddiası). Taşıma/sınıflandırma bu türü **okur**, mesajı ayrıştırmaz.
+    """
+
+    def __init__(self, message: str, *, kind: str = "invalid_json") -> None:
+        super().__init__(message)
+        self.kind = kind
 
 
 class CandidateReferenceError(ValueError):
@@ -373,18 +390,14 @@ def candidate_json_schema() -> dict:
                             "type": "object", "additionalProperties": False,
                             "required": ["image_id", "region"],
                             "properties": {
+                                # §16.3 değerlendirmesi: bilinçli olarak **kaldı** — VE kolunda
+                                # overlay atfı gerçek kanıttır (ham sayfa mı, overlay mi?) ve kapsam
+                                # kontrolü buna dayanır; deterministik enjeksiyon bu bilgiyi kaybeder.
                                 "image_id": {"type": "string",
                                              "description": "verilen görsel kimliklerinden biri"},
                                 "region": region,
                                 "callout_region": region,
                             },
-                        },
-                        "provenance": {
-                            "type": "object", "additionalProperties": False,
-                            "properties": {"kind": {"enum": list(PROVENANCE_KINDS)},
-                                           "method": {"type": "string"},
-                                           "source_ref": {"type": ["string", "null"]},
-                                           "notes": {"type": "array", "items": {"type": "string"}}},
                         },
                         "uncertainty": {
                             "type": "object", "additionalProperties": False,
@@ -428,6 +441,7 @@ target.region):
 Rules:
   * Never guess. If a field is not visible/stated, keep it unknown/not_stated and say why in
     `uncertainty.fields`.
+  * Omit optional fields that would only contain default unknown/not_stated values.
   * A field you cannot read must not delete the fields you did read.
   * Use only the image ids you were given. `source.image_id` must be one of them.
   * `target.observation_id` may be null; a candidate that shows a valid region but no observation id
@@ -469,6 +483,16 @@ def candidate_prompt(image_ids: list[str], *, observations: list[dict] | None = 
 # ----------------------------------------------------------------- ayrıştırma / doğrulama
 
 
+def _schema_error_kind(exc: ValidationError) -> str:
+    """Pydantic doğrulama hatasını alt türe çevir (P4 §18): mesaj **bizim** sabit metnimizdir."""
+    blob = " ".join(str(error.get("msg", "")) for error in exc.errors())
+    if "0..1 dışında" in blob or "boş ya da ters" in blob:
+        return "schema_coordinate"
+    if "termination" in blob:
+        return "schema_no_guess"
+    return "schema_error"
+
+
 def parse_candidate_json(text: str) -> CandidateResponse:
     """Yanıt gövdesini **tamir etmeden** ayrıştır. Bozuksa `CandidateParseError` fırlatır."""
     if text is None or not str(text).strip():
@@ -484,24 +508,27 @@ def parse_candidate_json(text: str) -> CandidateResponse:
         raise CandidateParseError("gövde nesne değil")
     unexpected = sorted(set(payload) - set(ALLOWED_RESPONSE_KEYS))
     if unexpected:
-        raise CandidateParseError(f"tanımsız üst anahtar: {unexpected}")
+        raise CandidateParseError(f"tanımsız üst anahtar: {unexpected}", kind="schema_error")
     if payload.get("schema_version") != CANDIDATE_SCHEMA_VERSION:
-        raise CandidateParseError(f"şema sürümü uyuşmuyor: {payload.get('schema_version')!r}")
+        raise CandidateParseError(f"şema sürümü uyuşmuyor: {payload.get('schema_version')!r}",
+                                  kind="schema_error")
     items = payload.get("items")
     if not isinstance(items, list):
-        raise CandidateParseError("items liste değil")
+        raise CandidateParseError("items liste değil", kind="schema_error")
     for item in items:
         if isinstance(item, dict):
             bad = sorted(set(item) - set(ALLOWED_CANDIDATE_KEYS))
             if bad:
-                raise CandidateParseError(f"tanımsız aday anahtarı: {bad}")
+                raise CandidateParseError(f"tanımsız aday anahtarı: {bad}", kind="schema_error")
             for forbidden in DECISION_FIELDS:
                 if forbidden in item:
-                    raise CandidateParseError(f"ürün kararı alanı yasak: {forbidden}")
+                    raise CandidateParseError(f"ürün kararı alanı yasak: {forbidden}",
+                                              kind="schema_error")
     try:
         return CandidateResponse.model_validate(payload)
     except ValidationError as exc:
-        raise CandidateParseError(f"şema doğrulaması düştü: {exc.errors()[:3]}") from exc
+        raise CandidateParseError(f"şema doğrulaması düştü: {exc.errors()[:3]}",
+                                  kind=_schema_error_kind(exc)) from exc
 
 
 def check_candidate_references(response: CandidateResponse, sent_image_ids: list[str],

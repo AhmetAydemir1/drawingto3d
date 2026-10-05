@@ -305,7 +305,7 @@
       "value": "9ec5f19ac87300bcf6a55211446026e48f6de7265c9bf787101ad6fa048a282c",
       "value_note": "run-time değer (seçili attempt manifestleri); en kalabalık grup"
     },
-    "evaluation_identity_recomputed_at_closure": "9ec5f19ac87300bcf6a55211446026e48f6de7265c9bf787101ad6fa048a282c",
+    "evaluation_identity_recomputed_at_closure": null,
     "offline_evaluation_run_id": "c6ac6d54d2e825a24cf55fc663260d21",
     "producer_identity": {
       "groups": {
@@ -331,7 +331,8 @@
       "value": "670da0401ef4c05c8e2a12e4b7aefd068c8bbef76bf82a20f78515dede6d9617",
       "value_note": "run-time değer (seçili attempt manifestleri); en kalabalık grup"
     },
-    "producer_identity_recomputed_at_closure": "208a6888a25ad707a3c2d2ee02bb40b1c6afde644769d59c4abfa3c6a0350909",
+    "producer_identity_recomputed_at_closure": null,
+    "recompute_note": "recompute başarısız: No module named 'cv2'",
     "run_contract": {
       "documentation_revision": "P0.5 (2026-10-05, kapanış): yalnız docstring/yorum güncellendi; sabitler (num_ctx 22528 / num_predict 8192 / temperature 0.0 / repeat_penalty 1.25 paylaşımlı / repeat_last_n 512) ve davranış değişmedi — recompute bu yüzden mekanik sapar",
       "file": "src/drawingto3d/semantic_run_contract.py",
@@ -351,7 +352,7 @@
       ]
     }
   },
-  "note": "PLAN_SEMREAD_001D §9 (P0.8): 001C closure kaydı. İzlenen dosya yalnızca hash listesidir; `--verify` başarısızsa bir 001C artifact'ı değişmiş demektir — 001C READ-ONLY'dir, düzeltme yeni sürümde (001D) yapılır. Kimliklerin run-time değerleri attempt manifestlerinden gelir; closure recompute'u bilgi amaçlıdır.",
+  "note": "PLAN_SEMREAD_001D §9 (P0.8): 001C closure kaydı. İzlenen dosya yalnızca hash listesidir; `--verify` başarısızsa: bir `out/` artifact'ı değişmiş ya da kapanış commit geçmişi yeniden yazılmış demektir — 001C READ-ONLY'dir, düzeltme yeni sürümde (001D) yapılır. Çapa: git'te izlenen dokümanlar `recorded_at_git_head` blob'una, `out/` defteri working-tree'ye. Kimliklerin run-time değerleri attempt manifestlerinden gelir; closure recompute'u bilgi amaçlıdır.",
   "recorded_at_git_head": "1c87898b16006b481fcb51fbae4275e82702a125",
   "schema": "semread-001c-closure/1",
   "selected_attempts": [
@@ -601,5 +602,5 @@
       ]
     }
   },
-  "written_at": "2026-10-05T15:32:21+00:00"
+  "written_at": "2026-10-05T15:34:58+00:00"
 }

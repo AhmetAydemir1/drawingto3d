@@ -61,15 +61,17 @@ def test_the_manifest_pins_the_001c_evidence_chain():
             assert f"{row['directory']}/{suffix}" in paths, (row["attempt_id"], suffix)
 
 
-def test_tracked_artifacts_hash_match_everywhere():
-    """İzlenen dosyalar her ortamda denetlenebilir; hash'ler birebir olmalı."""
+def test_tracked_artifacts_anchor_to_the_closure_commit():
+    """İzlenen dokümanlar kapanış HEAD'inin blob'una çapalanır — her (tam) klonda denetlenebilir."""
     manifest = _manifest()
+    recorded = manifest["recorded_at_git_head"]
+    assert recorded, "closure HEAD kaydı zorunlu"
     rows = {row["path"]: row for row in manifest["artifacts"]}
     for relative in ("report.md", "docs/HERMES_SEMREAD_001C_HANDOFF.md", "docs/PLAN-13.md",
                      "eval/semread_001b_gold/FREEZE.json"):
         row = rows[relative]
         assert row["tracked"] is True
-        assert row["sha256"] == tool._sha256_file(ROOT / relative)
+        assert row["sha256"] == tool._git_file_sha256(recorded, relative, ROOT), relative
 
 
 def test_selected_attempts_follow_the_latest_pass_rule():

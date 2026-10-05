@@ -16,9 +16,13 @@ Pinlenen kanıt zinciri (plan §9 minimumu):
 * kimlikler: producer/evaluation (attempt manifestlerinden — run-time) + closure recompute +
   run-contract (sürüm, dosya hash'i, paylaşımlı istek `options` eşitliği)
 
-Doğrulama semantiği (`--verify`): `ok` ancak ve ancak listelenen her artifact diskte varsa **ve**
-hash'i birebir tutuyorsa True'dur. Temiz bir klonda `out/` yoktur; eksikler `missing` altında
-**açıkça** raporlanır (sessizce atlanmaz).
+Doğrulama semantiği (`--verify`): çapa **sınıfa göre** değişir — git'te izlenen dokümanlar
+(`tracked: true`) **`recorded_at_git_head` commit'indeki blob** ile denetlenir (kapanış kanıtı =
+commit'lenen baytlar; kök `report.md`/handoff yaşayan dokümanlardır — sonraki sürüm düzenlemeleri
+kapanış kaydını bozmaz, ama kapanış commit'i geriye dönük değiştirilirse/rebase edilirse sapma
+yakalanır); `out/` defteri ise **working-tree** hash'i ile denetlenir (001C READ-ONLY: hiçbir out/
+dosyası sonradan değişemez). Temiz bir klonda `out/` yoktur; eksikler `missing` altında **açıkça**
+raporlanır (sessizce atlanmaz).
 
 Komutlar:
 
@@ -375,24 +379,40 @@ def build_manifest(root: Path = ROOT) -> dict:
         "selected_attempts": rows,
         "artifacts": artifacts,
         "note": ("PLAN_SEMREAD_001D §9 (P0.8): 001C closure kaydı. İzlenen dosya yalnızca hash "
-                 "listesidir; `--verify` başarısızsa bir 001C artifact'ı değişmiş demektir — 001C "
-                 "READ-ONLY'dir, düzeltme yeni sürümde (001D) yapılır. Kimliklerin run-time "
-                 "değerleri attempt manifestlerinden gelir; closure recompute'u bilgi amaçlıdır."),
+                 "listesidir; `--verify` başarısızsa: bir `out/` artifact'ı değişmiş ya da "
+                 "kapanış commit geçmişi yeniden yazılmış demektir — 001C READ-ONLY'dir, "
+                 "düzeltme yeni sürümde (001D) yapılır. Çapa: git'te izlenen dokümanlar "
+                 "`recorded_at_git_head` blob'una, `out/` defteri working-tree'ye. Kimliklerin "
+                 "run-time değerleri attempt manifestlerinden gelir; closure recompute'u bilgi "
+                 "amaçlıdır."),
     }
 
 
 def verify_manifest(manifest: dict, root: Path = ROOT) -> dict:
-    """Manifestteki her artifact'ı yeniden hash'le; eksik ve sapanları ayrı raporla."""
+    """Manifestteki her artifact'ı yeniden hash'le; eksik ve sapanları ayrı raporla.
+
+    Çapa kuralı: `tracked: true` (git'te izlenen dokümanlar) → `recorded_at_git_head`
+    commit'indeki blob; `out/` defteri → working-tree dosyası. Böylece yaşayan dokümanların
+    (kök `report.md`, handoff) sonraki düzenlemeleri kapanış kaydını bozmaz; kapanış commit'i
+    geriye dönük değiştirilirse blob sapar ve yakalanır.
+    """
+    recorded_head = manifest.get("recorded_at_git_head")
     missing: list[str] = []
     mismatched: list[dict] = []
     checked = 0
     for row in manifest.get("artifacts", []):
         relative = row.get("path")
-        path = root / relative
-        if not path.exists():
-            missing.append(relative)
-            continue
-        actual = _sha256_file(path)
+        if row.get("tracked") and recorded_head:
+            actual = _git_file_sha256(recorded_head, relative, root)
+            if actual is None:
+                missing.append(relative)
+                continue
+        else:
+            path = root / relative
+            if not path.exists():
+                missing.append(relative)
+                continue
+            actual = _sha256_file(path)
         checked += 1
         if actual != row.get("sha256"):
             mismatched.append({"path": relative, "expected": row.get("sha256"),

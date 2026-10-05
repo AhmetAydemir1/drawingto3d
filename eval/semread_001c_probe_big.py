@@ -40,6 +40,8 @@ parser.add_argument("--repeat-last-n", type=int, default=None)
 parser.add_argument("--temperature", type=float, default=None)
 parser.add_argument("--timeout", type=float, default=300.0)
 parser.add_argument("--dump", default=None, help="yanıt içeriğini bu dosyaya yaz (tanı)")
+parser.add_argument("--labeled", action="store_true",
+                    help="üretimdeki gibi etiketli çerçeveleme (görsel kendi mesajında) + tam ayar seti")
 args = parser.parse_args()
 
 page = next(row for row in pilot.PAGES if row["page_id"] == args.page)
@@ -70,6 +72,16 @@ if args.temperature is not None:
 payload = {"model": pilot.MODEL, "stream": False, "keep_alive": "1m",
            "messages": [{"role": "user", "content": prompt, "images": images}],
            "options": options}
+if args.labeled:
+    # Üretim yoluyla birebir: görsel kendi mesajında (nötr etiket metniyle), asıl istem ayrı mesajda;
+    # options yalnız taşımanın gönderdiği küme (fazlalık anahtar yok).
+    label = "image-1"
+    prefix = pilot.IMAGE_LABEL_PREFIX
+    messages = [{"role": "user", "content": f"{prefix}{label}", "images": images},
+                {"role": "user", "content": prompt}]
+    payload["messages"] = messages
+    keep = ("temperature", "num_predict", "num_ctx", "repeat_penalty", "repeat_last_n")
+    payload["options"] = {k: options[k] for k in keep if k in options}
 if args.format:
     payload["format"] = pilot.candidate_json_schema()
 request = urllib.request.Request(

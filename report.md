@@ -1,13 +1,13 @@
 # SEMREAD — durum raporu (yaşam belgesi; aktif deney: SEMREAD-001D)
 
-**Tarih:** 2026-10-05 · **Aktif deney:** SEMREAD-001D · **Aktif plan:** `docs/PLAN-16.md` (SEMREAD-001D; PLAN_LATEST; bayt kopya sha256 `73f81009…` — "`001d/1` producer identity sonrası: dev-report → 001D dev input kurulumu → static preflight → Round 1 semantic proof" planı; PLAN-16 §80: yeni history entry — PLAN-15 rewrite edilmedi, son izlenen revizyonuyla `909e46cb…` geçmişte donar; PLAN-14 son izlenen revizyonuyla `39cf9b84…` (+ önceki `a027cb4a…`, `f2d249b7…`) geçmiş olarak korunur; PLAN-13 + PLAN-12 + kök PLAN.md history)
+**Tarih:** 2026-10-05 · **Aktif deney:** SEMREAD-001D · **Aktif plan:** `docs/PLAN-17.md` (SEMREAD-001D; PLAN_LATEST; bayt kopya sha256 `1bdd4987…` — "`001d/1` producer identity sonrası: dev-report → 001D dev input kurulumu → static preflight → Round 1 semantic proof" planı; PLAN-17 §4: yeni history entry — taslağın beyan ettiği PLAN-16 slotu zaten doluydu (b2e1218), sıradaki serbest numara verildi; PLAN-16 **rewrite edilmedi**, son izlenen revizyonuyla `73f81009…` geçmişte donar; PLAN-15 `909e46cb…`; PLAN-14 son izlenen revizyonuyla `39cf9b84…` (+ önceki `a027cb4a…`, `f2d249b7…`) geçmiş olarak korunur; PLAN-13 + PLAN-12 + kök PLAN.md history)
 **001C durumu (aşağıdaki 001C kaydı — HISTORICAL):** §21 dev kapısı **8/8 GEÇTİ**; §37 semantik değerlendirme TAMAM (V/VE degenerate — §2b); §35 #5 requalification **KOŞULDU: §8 resmî kapı 7/8 (elbow-VE `schema_coordinate`; paylaşımlı ayar 8/8 ✓, stop 8/8 ✓, içerik 0/8 — §2c)** · **KAPANIŞ (2026-10-05): 001C final yok — READ-ONLY kapandı (Kapanış); karar: yeni experiment version = SEMREAD-001D; closure snapshot: `eval/semread_001c_closure.json`; kayıt: handoff §1t.**
 
 ---
 
 ## 0. Aktif deney — SEMREAD-001D (current; 2026-10-05)
 
-- **Bütçe:** dev **0/12** · final **0/20** (toplam **0/32**) — PLAN-16 başlığı; artış yok; ledger
+- **Bütçe:** dev **0/12** · final **0/20** (toplam **0/32**) — PLAN-17 başlığı; artış yok; ledger
   (`out/lab/semread-001d/`) henüz kurulmadı (ilk dev çağrısında kurulur).
 - **Kod (current):** `semread-candidates/3` · `semread-candidate-reader/3` ·
   **`semread-001d-run-contract/1`**. Şema/reader `/3` (§3/§61: semantic-empty geçersiz, semantic
@@ -26,6 +26,17 @@
   `vs_d` ölçüm değildir) + `semantic_valid_output` (§21) + echo v2 (§23) + kopya (§24) + maxItems
   (§25) + overclaim (§26); Round 1/2 kapıları (§57/§72). Araç salt-okur: defter kurmaz/yazmaz;
   `--write` yalnız `dev-report.{json,md}` yazar (§27).
+- **§31–§41 tamam (current): 001D dev girdi kurulumu + raw-page kimliği** (0 inference) —
+  `eval/semread_001d_inputs.py` + `tests/test_semread_001d_inputs.py` (14 test): dört dev sayfanın
+  prepared PNG'si kaynaktan türetilir (§33/§34 — kör kopya yok; 001B/001C ile byte-eşitlik hash'le
+  kanıtlanır), `corpus/input-identity.json` sayfa başına source/prepared sha256 + width/height +
+  page index/rotasyon + `input_identity` + preprocessing kimliğini kaydeder (§35); V/VE ham sayfa
+  byte'ı aynı, VE overlay'i + gözlem tablosu ayrı hash'li (§36/§37); araç gold okumaz (yalnız
+  kaynak + deterministik gözlem) ve gönderim yapmaz; `--check` salt-okur yeniden türetimle
+  doğrular (§40 — çelişkide veya kaynak yoksa hiçbir şey yazılmaz); frozen sayfalar kurulmaz
+  (§32/§82).
+- **§41 dry-run kanıtı (current):** `--dry-run --phase dev` Round 1 için `planned_real_calls 4`
+  (dört hücre `call`); bütçe dev **0/12** · final **0/20**; ledger kurulmadı.
 - **Tamamlanan:** skeleton (PLAN-14 izleme + bütçe deklare + gates 34/34) → **§47 ilk uygulama
   adımı: semantik-içerik sözleşmesi (0 inference)** — tek kaynak `semantic_claim_flags` /
   `candidate_has_semantic_claim` / `evidence_flags`; wire sınırında `schema_semantic_empty` reddi
@@ -35,14 +46,13 @@
   açıklaması aynı asgari sözleşmeyi söyler (§4; `anyOf` **eklenmedi** — §5) → acceptance
   ölçüm-kapısı düzeltmesi (§5/§6) → **§60/§61: run-contract `001d/1` + producer identity**
   (0 inference; §9–§15).
-- **Sıradaki (§96):** 001D dev input/corpus PNG materialization (raw-page identity) → static
-  preflight → Round 1 (4 çağrı). Dev-report kapandı; input prep, evaluator geliştirmeyle
-  paralelleştirilmez (§96). Bugünkü dry-run hâlâ `planned_real_calls 0` verir: 001D corpus sayfa
-  PNG'leri henüz kurulmadı (pre-live gate işi).
+- **Sıradaki (§42–§52):** 001D static preflight (identity/budget/runtime/paylaşımlı ayar/
+  prompt-context/structured-output) → pre-live gate (§53–§55) → Round 1 (4 çağrı). Dev-report
+  kapandı; input prep, evaluator geliştirmeyle paralelleştirilmez (§93).
 - **Bonus koşu bulgusu (0 inference, §1d/§1e):** 001B acceptance süiti ölçümsüz kapanabilen bir rapor
   kapısı gösterdi (`report_evidence.measured` sıfır satırlı `vs_d`'yi ölçüm sayıyordu) — tek kaynak
   `arms_with_measurement()` ile düzeltildi + pin testi; süit tamamı **27 passed** (31:48).
-- **External CI/status:** yok — kabul kanıtı yerel pytest + `eval/` araçlarıdır (PLAN-16 §45).
+- **External CI/status:** yok — kabul kanıtı yerel pytest + `eval/` araçlarıdır (PLAN-17 §45).
 
 ---
 

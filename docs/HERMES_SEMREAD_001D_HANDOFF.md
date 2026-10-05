@@ -1,11 +1,13 @@
 # HERMES — SEMREAD-001D handoff günlüğü
 
-**Plan:** `docs/PLAN-16.md` — SEMREAD-001D ("`001d/1` producer identity sonrası: dev-report → 001D
+**Plan:** `docs/PLAN-17.md` — SEMREAD-001D ("`001d/1` producer identity sonrası: dev-report → 001D
 dev input kurulumu → static preflight → Round 1 semantic proof"). PLAN_LATEST olarak izlenir (bayt
-kopya, sha256 `73f81009dfad29eed1eca73090e3c94a2ade6e10635677a738e3a64f7b9ea437`). PLAN-16 §80:
-**yeni history entry** — PLAN-15 rewrite edilmedi, son izlenen revizyonuyla (`909e46cb…`) geçmişte
-donar; PLAN-14 son izlenen revizyonuyla (`39cf9b84…`; önceki revizyonlar `a027cb4a…`,
-`f2d249b7…`) geçmiş olarak korunur; PLAN-13 + PLAN-12 + kök PLAN.md history olarak korunur.
+kopya, sha256 `1bdd49873d5375196da6dd3e072e59299534e2676cefc44177ee7358ea0b9546`). PLAN-17 §4:
+**yeni history entry** — taslağın beyan ettiği PLAN-16 slotu zaten doluydu (b2e1218), bu yüzden
+sıradaki serbest numara verildi; PLAN-16 rewrite edilmedi, son izlenen revizyonuyla (`73f81009…`)
+geçmişte donar; PLAN-15 (`909e46cb…`); PLAN-14 son izlenen revizyonuyla (`39cf9b84…`; önceki
+revizyonlar `a027cb4a…`, `f2d249b7…`) geçmiş olarak korunur; PLAN-13 + PLAN-12 + kök PLAN.md history
+olarak korunur.
 **Kayıt biçimi:** PLAN-12 §47 — *CURRENT HEAD / CURRENT EXPERIMENT / IMMUTABLE HISTORY / WHAT
 CHANGED / TEST EVIDENCE / INFERENCE BUDGET / OPEN GATE / NEXT SINGLE STEP*.
 **Kural:** 001C kaydı `docs/HERMES_SEMREAD_001C_HANDOFF.md` ve `out/lab/semread-001c/**`
@@ -338,3 +340,65 @@ CHANGED / TEST EVIDENCE / INFERENCE BUDGET / OPEN GATE / NEXT SINGLE STEP*.
   static preflight + Round 1 (4 çağrı).
 - **NEXT SINGLE STEP:** §96: 001D dev corpus sayfa PNG'lerinin kurulumu + corpus/raw-page kimliği
   (dev-report kapandı; input prep, evaluator geliştirmeyle **paralelleştirilmez**).
+
+---
+
+## 1h. §31–§41 — 001D dev girdi kurulumu + raw-page kimliği (0 inference) — 2026-10-05
+
+- **CURRENT HEAD:** `7097288` (bu kayıttan önce; bu commit §31–§41 girdi kurulumunu taşır)
+- **CURRENT EXPERIMENT:** SEMREAD-001D. **Yeni plan entry izlendi:** `docs/PLAN-17.md` bayt kopya
+  (sha256 `1bdd49873d5375196da6dd3e072e59299534e2676cefc44177ee7358ea0b9546`; PLAN-17 §4: yeni
+  history entry — taslağın beyan ettiği PLAN-16 slotu zaten doluydu (b2e1218), sıradaki serbest
+  numara verildi; PLAN-16 **rewrite edilmedi**, son izlenen revizyonuyla (`73f81009…`) geçmişe
+  pinlendi; skeleton pin'i + yeni geçmiş-pin testi (`test_plan16_history_is_preserved`)
+  güncellendi). 001C **CLOSED / READ-ONLY** — closure `--verify` bu commit'te tekrar koşuldu:
+  **45/45**.
+- **IMMUTABLE HISTORY:** değişmedi — `docs/HERMES_SEMREAD_001C_HANDOFF.md`, `docs/PLAN-13.md`,
+  `eval/semread_001b_gold/FREEZE.json`, `eval/semread_001c_closure.{py,json}`, `out/lab/semread-001c/**`.
+- **WHAT CHANGED:** §93'ün tek somut işi (0 inference):
+  1. **Yeni araç `eval/semread_001d_inputs.py`** (§33–§41): dört dev sayfanın (plate-pocket,
+     flange-book, flange-elbow, drawing-2) prepared ham PNG'sini **repodaki kaynaktan** türetir —
+     `source → güncel deterministik hazırlama → corpus/pages/*.png`; 001B/001C artifact'ları input
+     kaynağı değil yalnız byte-eşitlik **kanıtıdır** (§34). Kanonik pilot yolu seçildi
+     (`out/lab/semread-001d/corpus/pages` + `corpus/prepared-inputs`) — dry-run kapısı ve
+     `input_identity` bu yolu okur; defter değildir (state/attempts'a dokunulmaz).
+  2. **Kimlik kaydı `corpus/input-identity.json`** (§35/§37): sayfa başına source path/sha256/boyut,
+     page_index+rotation (view seçici), prepared sha256/width/height, `input_identity`,
+     `preprocessing_identity`; V/VE ham sayfa byte'ı aynı (§36), VE overlay + gözlem tablosu
+     **ayrı hash'li** (V tablosu yok — `null`); kurulum anında producer/evaluation kimlikleri +
+     kontrat `/3`+`/3`+`001d/1` + budget snapshot kayıtlı.
+  3. **Kaynak→kurulum zinciri deterministik:** cross_check 001B **4/4** + 001C **4/4** byte-identical;
+     mevcut dosyanın üzerine **yazılmaz**; kaynak yoksa ya da çelişki varsa **hiçbir şey yazılmaz**
+     (fail-closed, all-or-nothing); `--check` salt-okur **yeniden türeterek** doğrular
+     (byte'lar + kimlik blokları + Round-1 deklarasyonu + cross_check); frozen sayfalar kurulmaz
+     (§32/§82 — 001D final holdout'u kullanıcıdan gelecek yeni çizimler).
+  4. **Kanonik hazırlanmış girdi önbelleği** `corpus/prepared-inputs/*.json` pilot'un kanonik
+     yazıcısıyla (`store_prepared_input`) dolduruldu — attempt anındaki `prepared_input_record`
+     cache hit olur; `v_ve_raw_page_invariant` kayıtları hazır.
+  5. **Yeni test dosyası `tests/test_semread_001d_inputs.py` (14 test):** kurulum + kayıt alanları
+     (§35), V/VE invaryantı + VE'nin ayrı hash'leri (§36/§37), pilot paritesi (tek kaynak; tek
+     gözlem optimizasyonu pinli), check salt-okurluğu, byte-değişikliği/eksik dosya/kimlik kayması
+     kırmızıları, kayıtsız check kırmızısı, ikinci `--write` no-op + determinizm, çelişkili mevcut
+     dosyaya **üzerine yazma reddi**, kaynak yokluğunda yazmama, Round-1 deklarasyon drifti,
+     gold-okumama + gönderim-yapmama trap'i (§39), dry-run 4 (§41).
+- **TEST EVIDENCE:** yeni odak dosyası **14 passed**; odak süiti (identity + skeleton + prompt_v3 +
+  semantic_content + 001c closure + 001c contract + dev-semantik + 001b closure + dev_report +
+  inputs) **140 passed**; hızlı SEMREAD süitleri (lifecycle + identity + gold-manifest + reference +
+  `test_semread_001b`) **119 passed**; 001C closure `--verify` **45/45**; `eval/check_tables.py`
+  **21 satır / 0 tutmuyor**. Gates dosyası bu commit'te koşulmadı: dokunulan dosyalar gates
+  kapsamı (pilot bütçe/tavan/attempt yolu) dışındadır — pilot hiç değişmedi; §54 gereği 34/34
+  yeniden koşusu **live call öncesi** (P4) yapılacak; son doğrulanmış gates: **34/34
+  (1017.84 s, 7097288)**.
+- **§41 BÜTÇE/DRY-RUN KANITI (0 inference):** `--write` → 4 sayfa yazıldı (plate-pocket 632,414 B ·
+  flange-book 466,029 B · flange-elbow 617,299 B · drawing-2 488,773 B); `--check` → **ok: true**
+  (0 problem, 4 sayfa); `--dry-run --phase dev` (Round 1) → **`planned_real_calls 4`** (dört hücre
+  `call`), `remaining_phase_budget 12`; `--budget` → dev **0/12** · final **0/20** (toplam **0/32**),
+  attempt defteri 0; `out/lab/semread-001d/` **yalnız `corpus/`** — state.json/attempts yok (defter
+  ilk gerçek çağrıda kurulur). Loglar: `~/.hermes/cache/scratch/semread-001d-inputs-{write,check}.log`
+  + `semread-001d-inputs-dryrun-{before,after}.json` + `semread-001d-input-identity.json` kopyası.
+- **INFERENCE BUDGET:** 001D dev **0/12**, final **0/20** (toplam **0/32**) — değişmedi; bu commit
+  **0 inference** (canlı çağrı yok, ledger kurulmadı).
+- **OPEN GATE:** §42–§52 static preflight (identity/budget/runtime/paylaşımlı ayar/prompt-context/
+  structured-output + dry-run manifest alanları) → §53–§55 pre-live gate → Round 1 (4 çağrı).
+- **NEXT SINGLE STEP:** §42: static preflight — `planned_real_calls 4` hazır; preflight kapıları
+  geçmeden Round 1 gönderimi yok (§94 blocker listesi).

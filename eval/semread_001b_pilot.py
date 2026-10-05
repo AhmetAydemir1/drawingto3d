@@ -93,7 +93,14 @@ JOB_PREFIX = "semread-001b-"    # tarihsel ad; run_live iş kimliğini EXPERIMEN
 CASE_TIMEOUT_SECONDS = 1200
 RUN_TIMEOUT_SECONDS = 14400
 MODEL_TIMEOUT_SECONDS = 900
-LIVE_CALL_LIMIT_DEV = 10
+# 001C BÜTÇE DÜZELTMESİ (belgelenmiş sapma, PLAN-12 §20): plan 10 dev çağrısı öngörüyordu (8 geçerli
+# + 2 tanı). Ölçüm üç ayrı zarf kusuru gösterdi (300 s timeout, 3072'de truncation, 12288 ctx'te
+# 14121-token VE prompt → HTTP 400) ve §21 kapısı iki VE hücresinin yeniden koşusunu gerektiriyor:
+#   gönderilen 5 (plate-V ✓, plate-VE t/o, plate-VE trunc, flange-V ✓, flange-VE 400)
+#   gerekli +6 (plate-VE redo, flange-VE redo, elbow V/VE, drawing-2 V/VE) = 11 > 10.
+# Dev tavanı 12'ye çıkarıldı (1 yedek ile); final 20 değişmedi; toplam 32 (plan 30). Sapma
+# handoff + rapor + state notlarında gerekçeli kayıtlıdır.
+LIVE_CALL_LIMIT_DEV = 12
 LIVE_CALL_LIMIT_FINAL = 20
 LIVE_CALL_LIMIT_TOTAL = LIVE_CALL_LIMIT_DEV + LIVE_CALL_LIMIT_FINAL
 PHASES = ("dev", "final")                  # çağrının amacı
@@ -475,7 +482,7 @@ def reserve_live_call(case_id: str, *, phase: str, arm: str, split: str,
 
     `split` veri bölümüdür (dev/frozen), `phase` çağrının amacıdır (dev/final). İkisi ayrıdır:
     development sayfası final fazında da çalışabilir. Faz/kol değerleri doğrulanır; geçersiz değer
-    bütçe harcamaz. Development, final ve toplam (30) tavanı **tek** `flock` bölümünde denetlenir;
+    bütçe harcamaz. Development, final ve toplam tavanı **tek** `flock` bölümünde denetlenir;
     böylece yeniden başlatma/timeout/retry/eşzamanlı rezervasyon tavanı aşamaz. Cevaplanmamış
     ("reserved") kayıt da sayılır — gönderilip gönderilmediği belirsiz istek bütçede kalır.
     """

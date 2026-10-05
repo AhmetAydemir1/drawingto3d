@@ -180,3 +180,29 @@ burada ve `docs/PLAN-12.md` altında yürür. 001B ve 001C ledger/klasörleri ka
 - **BÜTÇE:** dev 2/10 gönderildi (1 pass + 1 timeout). Yeniden koşu: plate-VE + flange-V + flange-VE
   = +3 → 5/10; §21 kapısı sonrası +4 → 9/10 (1 yedek).
 - **NEXT SINGLE STEP:** resmoke (3 çağrı) → sonuç kayıtları → §21 dev kapısı (+4).
+
+---
+
+## 1i. §52 dev smoke — üçüncü bulgu (bağlam) + bütçe düzeltmesi + kalan koşu planı
+
+- **Koşu 2 sonucu (3 iş):** `dev-plate-pocket-VE` redo → **`truncated_output`** (done_reason=length,
+  eval_count=3072 tavanı, 398,7 s; P4 taksonomisi: parser çağrılmadı, ham 12 KB saklandı);
+  `dev-flange-book-V` → **PASS** (stop, 197 tok, 52,5 s); `dev-flange-book-VE` →
+  **`transport_http_error`**: Ollama HTTP 400 `exceed_context_size_error` — istek **14.121 token**,
+  ctx 12.288. Anında 400 (üretim yok) → taşıma alt türü doğru kaydedildi.
+- **Zarf ikinci revizyonu (ölçümle):** `num_predict 3072 → 4096` (plate-VE 25 adaylı çıktıda son
+  adayın ortasında kesildi) **ve** `num_ctx 12288 → 20480` (en kötü ölçülen VE prompt'u 14.121;
+  14.121 + 4.096 = 18.217 ≤ 20.480; 18.432 payı %1'e inerdi). Kalan iki sayfanın V/VE prompt'ları
+  koşu öncesi **yerelde** ölçülüyor (`eval/semread_001c_measure_prompts.py`, çağrı yok).
+- **BÜTÇE DÜZELTMESİ (PLAN-12 §20 sapması):** dev 10 → **12**, final 20 sabit, toplam 30 → **32**.
+  Gerekçe: plan 8 geçerli + 2 tanı öngörüyordu; zarf ölçümü **üç** kusur gösterdi (timeout,
+  truncation, ctx-400) ve §21 kapısı iki VE hücresinin redo'sunu gerektiriyor. Gönderilen 5 +
+  gerekli 6 = 11; 1 yedekle 12. Sapma state.json notlarında + raporda kayıtlı.
+- **Runner hükmü uyarısı (yeni değil):** LabRunner işleri `failed/missing_result` yazar çünkü
+  pilot `result.json`'u kendi attempt dizinine yazar; 001B'nin son koşusunda da `results_sha256: {}`
+  idi (aynı konvansiyon). Bağlayıcı kayıt **pilot defteri**dir (state.json + attempts).
+  Runner `repair_rounds: 1` ek çağrı **yapmadı** — defter 5 gönderimi doğrular.
+- **Kalan koşu planı (6 çağrı, tek zincir):** A) `arms=VE pages=dev-plate-pocket,dev-flange-book`
+  (iki VE redo; plate-V/flange-V `reuse` — ayar değiştiği için stale ama kapıda geçerli sonuçları
+  var, yeniden koşulmuyor) → B) `arms=V,VE pages=dev-flange-elbow,dev-drawing-2` (kapı sayfaları).
+- **NEXT SINGLE STEP:** ölçüm → `num_ctx` commit → 6 çağrılık zincir → §21 kapısı değerlendirmesi.

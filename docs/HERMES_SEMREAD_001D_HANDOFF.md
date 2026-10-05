@@ -1,15 +1,15 @@
 # HERMES — SEMREAD-001D handoff günlüğü
 
-**Plan:** `docs/PLAN-14.md` — SEMREAD-001D (semantic-content contract → dev proof → bağımsız
-holdout → freeze → final). PLAN_LATEST olarak izlenir (bayt kopya, sha256
-`39cf9b8483f5cbfa03e0683cebcea4dba7d47dc68a0867b8da76057e7aaf088d` — "semantic-content validator
-sonrası güncel uygulama planı" revizyonu; önceki revizyonlar `a027cb4a…`, `f2d249b7…` git
-history'de); PLAN-13 + PLAN-12 + kök PLAN.md history olarak korunur.
+**Plan:** `docs/PLAN-15.md` — SEMREAD-001D ("`/3` prompt/schema sonrası: producer identity →
+dev-report → static preflight → Round 1 semantic proof"). PLAN_LATEST olarak izlenir (bayt kopya,
+sha256 `909e46cb67aac205b0e270861a364ad79e69eaa2a1b74aa8cf2a4d572109144e`). PLAN-15 §48: **yeni
+history entry** — PLAN-14 son izlenen revizyonuyla (`39cf9b84…`; önceki revizyonlar `a027cb4a…`,
+`f2d249b7…`) geçmiş olarak korunur; PLAN-13 + PLAN-12 + kök PLAN.md history olarak korunur.
 **Kayıt biçimi:** PLAN-12 §47 — *CURRENT HEAD / CURRENT EXPERIMENT / IMMUTABLE HISTORY / WHAT
 CHANGED / TEST EVIDENCE / INFERENCE BUDGET / OPEN GATE / NEXT SINGLE STEP*.
 **Kural:** 001C kaydı `docs/HERMES_SEMREAD_001C_HANDOFF.md` ve `out/lab/semread-001c/**`
 **değiştirilmez** (001C READ-ONLY HISTORICAL; closure: `eval/semread_001c_closure.json` —
-`--verify` 45/45). 001D işleri yalnız burada + PLAN-14 altında yürür; ledger'lar karıştırılmaz.
+`--verify` 45/45). 001D işleri yalnız burada + PLAN-15 altında yürür; ledger'lar karıştırılmaz.
 
 ---
 
@@ -220,3 +220,61 @@ CHANGED / TEST EVIDENCE / INFERENCE BUDGET / OPEN GATE / NEXT SINGLE STEP*.
 - **OPEN GATE:** §60#2 / §63 — `semread-001d-run-contract/1` + producer identity.
 - **NEXT SINGLE STEP:** §10/§63 (değişmedi): run-contract `001d/1` kimliği + producer identity; ardından
   §17–§22 dev rapor katmanı ve §23–§25 static preflight → Round 1 (4 çağrı).
+
+---
+
+## 1f. §60/§61 — run-contract `001d/1` + producer identity (0 inference) — 2026-10-05
+
+- **CURRENT HEAD:** `7d9b0c7` (bu kayıttan önce; bu commit §60/§61 kimlik işini taşır)
+- **CURRENT EXPERIMENT:** SEMREAD-001D. **Yeni plan entry izlendi:** `docs/PLAN-15.md` bayt kopya
+  (sha256 `909e46cb67aac205b0e270861a364ad79e69eaa2a1b74aa8cf2a4d572109144e`; PLAN-15 §48: yeni
+  history entry — PLAN-14 son izlenen revizyonuyla `39cf9b84…` (+ önceki `a027cb4a…`, `f2d249b7…`)
+  geçmişte korunur; skeleton pin'i + yeni geçmiş-pin testi güncellendi). 001C **CLOSED / READ-ONLY** —
+  closure `--verify` bu commit'te tekrar koşuldu: **45/45** (dokümanlar `recorded_at_git_head`
+  blob'una çapalı olduğu için yaşayan report/handoff düzenlemeleri kapanış kaydını bozmaz).
+- **IMMUTABLE HISTORY:** değişmedi — `docs/HERMES_SEMREAD_001C_HANDOFF.md`, `docs/PLAN-13.md`,
+  `eval/semread_001b_gold/FREEZE.json`, `eval/semread_001c_closure.{py,json}`, `out/lab/semread-001c/**`.
+- **WHAT CHANGED:** §60'ın tek somut işi (0 inference; yalnız saf fonksiyonlar + manifest kurulumu):
+  1. **Kimlik (§9/§10):** `CONTRACT_VERSION = "semread-001d-run-contract/1"`; docstring current
+     sözleşmeyi 001D anlatır (**semantic-content-aware full-page V/VE**), 001C tarihi closure
+     artifact'ına işaret eder. **Üretim zarfı DEĞİŞMEDİ** — model `qwen3-vl:8b-instruct`, digest
+     `0533d743…`, runtime `0.32.1`, num_ctx 22528 / num_predict 8192 / temperature 0.0 / paylaşımlı
+     repeat_penalty 1.25 + repeat_last_n 512 / image_max_side 1280 / maxItems 32 (test: 001C kapanış
+     kaydıyla birebir; V==VE invariantı korunur).
+  2. **Attempt manifest kimlik alanları (§12):** `_attempt_manifest` artık açıkça `experiment`
+     (=`semread-001d`), `schema_version` (`semread-candidates/3`), `reader_version`
+     (`semread-candidate-reader/3`), `contract_version` (`001d/1`), `producer_identity`,
+     `preprocessing_identity` taşır (mevcut alanlar korunur; attempt `schema` adı değişmedi).
+     Producer bind listesi (contract + candidates/reader/schema/images/llama/inference_log) §12'yi
+     kapsar: schema /3 · reader /3 · prompt v3 · semantic-empty parser · run-contract 001d/1.
+  3. **Dry-run manifest (§13):** dört Round-1 hücresinin manifesti çağrısız kuruldu — hepsi
+     experiment `semread-001d`, phase `dev`, schema/reader `/3`, contract `001d/1`; eski 001C kimliği
+     manifeste girmiyor (test + log).
+  4. **Gönderim bloğu (§13):** canlı gönderim öncesi kimlik denetimi (`contract_identity_block()`):
+     aktif deney `semread-001d` için beklenen sözleşme tanımlıysa ve kurulu kimlik farklıysa gönderim
+     `blocked_contract_identity` ile durur — attempt defterine yazılır, `send_attempted=false`, bütçe
+     harcanmaz, kaynak/prompt hazırlığına girilmez; test `read_page`'in çağrılmadığını kanıtlar.
+     Tanımsız deney adlarında (test/sandbox) beklenti yoktur.
+  5. **Producer identity (§12):** `eedd96a878891c23…` (BEFORE/HEAD: `d21c9436b4448a02…`, temiz
+     worktree'de ölçüldü); closure'da kayıtlı üç 001C kimliğinden (`52ed8c5e…`, `670da040…`,
+     `dab89088…`) farklı (test). Yan etki (kayıtlı): `evaluation_identity` `96b7e66a…` →
+     `d88f995a…` (pilot: manifest alanları + guard) ve `preprocessing_identity` `94edf558…`
+     (değişmedi) — hepsi attempt manifestlerinde saklanır.
+- **TEST EVIDENCE:** odak süiti (identity + skeleton + prompt_v3 + semantic_content + 001c closure +
+  001c contract + dev-semantik + 001b closure) **101 passed**; hızlı SEMREAD süitleri (lifecycle +
+  identity + gold-manifest + reference + `test_semread_001b`) **119 passed**; gates dosyası tamamı
+  **34 passed (1027.95 s ≈ 17:07)** — koşu sonrası yalnız yorum/docstring düzenlemesi yapıldı
+  (davranış değişmedi); 001C closure `--verify` **45/45**; `eval/check_tables.py` **21 satır / 0
+  tutmuyor**. Yeni: `tests/test_semread_001d_identity.py` (8) + skeleton `test_plan14_history_is_preserved`.
+- **§61 BÜTÇE/DRY-RUN KANITI (0 inference):** `--experiment semread-001d --budget` → dev 0/12 ·
+  final 0/20 (toplam 0/32); `--matrix` → 30 hücre (20 vlm + 10 d), tümü `to_run` (yeniden kullanım
+  yok, ledger yok); `--dry-run --phase dev` → `planned_real_calls 0` (001D corpus PNG'leri henüz yok —
+  pre-live gate işi) · `remaining_phase_budget 12`; `out/lab/semread-001d` **kurulmadı**. Log:
+  `~/.hermes/cache/scratch/semread-001d-identity-evidence.log`.
+- **INFERENCE BUDGET:** 001D dev **0/12**, final **0/20** (toplam **0/32**) — değişmedi; bu commit
+  **0 inference** (canlı çağrı yok, ledger kurulmadı).
+- **OPEN GATE:** §62 — 001D dev rapor katmanı (§16–§23) + static preflight (§24–§28).
+- **NEXT SINGLE STEP:** §16/§17: 001D dev-report aracı — yalnız `experiment = semread-001d` +
+  current kimlikli attempt'ler; attempt yoksa `missing` (001B/001C fallback yok); formal (§18) +
+  semantik (§19; `semantic_claim_flags` reuse) + echo v2 (§20) + duplicate (§21) metrikleri; gerçek
+  ölçüm kapısı (§22) — sıfır-satır `vs_d` ölçüm sayılmaz.

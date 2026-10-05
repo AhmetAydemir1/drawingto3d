@@ -1,30 +1,39 @@
 # SEMREAD — durum raporu (yaşam belgesi; aktif deney: SEMREAD-001D)
 
-**Tarih:** 2026-10-05 · **Aktif deney:** SEMREAD-001D · **Aktif plan:** `docs/PLAN-14.md` (SEMREAD-001D; PLAN_LATEST; bayt kopya sha256 `39cf9b84…` — "semantic-content validator sonrası güncel uygulama planı" revizyonu; önceki revizyonlar `a027cb4a…`, `f2d249b7…` git history'de; PLAN-13 + PLAN-12 + kök PLAN.md history)
+**Tarih:** 2026-10-05 · **Aktif deney:** SEMREAD-001D · **Aktif plan:** `docs/PLAN-15.md` (SEMREAD-001D; PLAN_LATEST; bayt kopya sha256 `909e46cb…` — "`/3` prompt/schema sonrası: 001D producer identity → dev-report → static preflight → Round 1 semantic proof" planı; PLAN-15 §48: yeni history entry — PLAN-14 son izlenen revizyonuyla `39cf9b84…` (+ önceki `a027cb4a…`, `f2d249b7…`) geçmiş olarak korunur; PLAN-13 + PLAN-12 + kök PLAN.md history)
 **001C durumu (aşağıdaki 001C kaydı — HISTORICAL):** §21 dev kapısı **8/8 GEÇTİ**; §37 semantik değerlendirme TAMAM (V/VE degenerate — §2b); §35 #5 requalification **KOŞULDU: §8 resmî kapı 7/8 (elbow-VE `schema_coordinate`; paylaşımlı ayar 8/8 ✓, stop 8/8 ✓, içerik 0/8 — §2c)** · **KAPANIŞ (2026-10-05): 001C final yok — READ-ONLY kapandı (Kapanış); karar: yeni experiment version = SEMREAD-001D; closure snapshot: `eval/semread_001c_closure.json`; kayıt: handoff §1t.**
 
 ---
 
 ## 0. Aktif deney — SEMREAD-001D (current; 2026-10-05)
 
-- **Bütçe:** dev **0/12** · final **0/20** (toplam **0/32**) — PLAN-14 §24; artış yok.
-- **Kod (current):** `semread-candidates/3` · `semread-candidate-reader/3` · `semread-001c-run-contract/1`.
-  Şema/reader `/3` **yapıldı** (§3/§61: semantic-empty geçersiz, semantic claim ≠ evidence-only,
-  prompt semantic-first, no-guess korunur); run-contract `001d/1` kimliği bir sonraki commit'te
-  (PLAN-14 §10/§63).
+- **Bütçe:** dev **0/12** · final **0/20** (toplam **0/32**) — PLAN-15 §31; artış yok; ledger
+  (`out/lab/semread-001d/`) henüz kurulmadı (ilk dev çağrısında kurulur).
+- **Kod (current):** `semread-candidates/3` · `semread-candidate-reader/3` ·
+  **`semread-001d-run-contract/1`**. Şema/reader `/3` (§3/§61: semantic-empty geçersiz, semantic
+  claim ≠ evidence-only, prompt semantic-first, no-guess korunur) ve **§60/§61 run-contract
+  `001d/1` kimliği + producer identity** yapıldı (PLAN-15 §9–§15, 0 inference): docstring current'i
+  001D anlatır; attempt manifesti experiment/schema_version/reader_version/producer/preprocessing
+  kimliklerini açıkça taşır (§12); dry-run manifesti 4 Round-1 hücresinde current kimlik verir
+  (§13); eski kimlikle gönderim `blocked_contract_identity` ile durur. **Üretim zarfı DEĞİŞMEDİ** —
+  model/digest/runtime/ayarlar 001C kapanışından birebir devralındı (§10).
 - **Tamamlanan:** skeleton (PLAN-14 izleme + bütçe deklare + gates 34/34) → **§47 ilk uygulama
   adımı: semantik-içerik sözleşmesi (0 inference)** — tek kaynak `semantic_claim_flags` /
   `candidate_has_semantic_claim` / `evidence_flags`; wire sınırında `schema_semantic_empty` reddi
   (§3/§5/§8/§9); D yolu audit'i (§6 — D doğrudan `Candidate` kurar, wire parser'a girmez) →
   **§61: schema/reader `/3` + prompt v3** (0 inference) — ortak V/VE görevi semantic-first
   (§6/§7), no-guess anti-pressure (§8), VE kanıt bölümünde satır-başına-aday yasağı (§9), şema item
-  açıklaması aynı asgari sözleşmeyi söyler (§4; `anyOf` **eklenmedi** — §5).
-- **Sıradaki (§60#2 / §63):** `semread-001d-run-contract/1` + producer identity; ardından dev rapor
-  (§17–§22), static preflight (§23–§25) + gates → Round 1 (4 çağrı; §31).
+  açıklaması aynı asgari sözleşmeyi söyler (§4; `anyOf` **eklenmedi** — §5) → acceptance
+  ölçüm-kapısı düzeltmesi (§5/§6) → **§60/§61: run-contract `001d/1` + producer identity**
+  (0 inference; §9–§15).
+- **Sıradaki (§62):** 001D dev rapor katmanı (§16–§23; yalnız current kimlikli 001D attempt'leri,
+  yoksa `missing`) → static preflight (§24–§28; prompt/bağlam ölçümü + dry-run manifest) → Round 1
+  (4 çağrı; §32). Bugünkü dry-run `planned_real_calls 0` verir: 001D corpus sayfa PNG'leri henüz
+  kurulmadı (pre-live gate işi).
 - **Bonus koşu bulgusu (0 inference, §1d/§1e):** 001B acceptance süiti ölçümsüz kapanabilen bir rapor
   kapısı gösterdi (`report_evidence.measured` sıfır satırlı `vs_d`'yi ölçüm sayıyordu) — tek kaynak
   `arms_with_measurement()` ile düzeltildi + pin testi; süit tamamı **27 passed** (31:48).
-- **External CI/status:** yok — kabul kanıtı yerel pytest + `eval/` araçlarıdır (PLAN-14 §45).
+- **External CI/status:** yok — kabul kanıtı yerel pytest + `eval/` araçlarıdır (PLAN-15 §45).
 
 ---
 

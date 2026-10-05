@@ -1,4 +1,4 @@
-"""SEMREAD-001C — **tahmin üreten sözleşme** (PLAN-12 §13/§19).
+"""SEMREAD-001D — **tahmin üreten sözleşme** (PLAN-15 §9/§10).
 
 Bu modül, ham tahminin byte'larını/içeriğini değiştirebilecek sabitlerin **tek** yeridir:
 model etiketi, beklenen digest, beklenen runtime, üretim ayarları, görüntü işleme sözleşmesi ve
@@ -8,40 +8,38 @@ Kural: buradaki bir değeri değiştirmek ham tahmini geçersiz kılar. Değerle
 rapor üretimi ve referans doğrulaması bu dosyada **yaşamaz** — onlar `evaluation_identity()`ye girer.
 Böylece yalnız evaluator/gold düzeltmesi geçerli ham tahmini yeniden üretmeyi gerektirmez.
 
-Sürüm `/1` (SEMREAD-001C, PLAN-12 §19). İki katman ayrı okunur:
+Sürüm `/1` (SEMREAD-001D, PLAN-15 §9/§12): bu deney **semantic-content-aware full-page V/VE**
+davranışını test eder — şema/reader `/3` + prompt v3 (semantic-empty aday geçersiz ·
+semantic claim ≠ evidence-only · prompt semantic-first · no-guess korunur; tanım
+`semantic_candidates.py` version notes'unda). Üretim zarfı (model/digest/runtime/ayarlar) **001C
+kapanış zarfından birebir devralınmıştır ve değişmez** (PLAN-15 §10): 001D'nin tek bağımsız
+değişkeni semantik sözleşmedir.
 
-**HISTORICAL — 001C dev zarf revizyonları** (hepsi ölçümle; tam tablo: report.md §3):
-001B'de gönderilen 19 çağrının 11'i `done_reason=length` ile kesilmişti (10'u 2048 tavanında, biri
-bağlam tavanında). 001C dev'de sırayla: `dev-plate-pocket-VE` 3072'de son adayın ortasında kesildi →
-`num_predict = 4096`; `dev-flange-book-VE` 14.121 token'lık prompt ile 12288 ctx'te HTTP 400
-(`exceed_context_size_error`) aldı → `num_ctx = 20480` (14.121 + 4.096 = 18.217 ≤ 20.480); 4096 payı
-dar kaldı → `num_predict = 5120`; `dev-flange-elbow-V` 5120'de de kesildi → `num_predict = 8192` +
-`num_ctx = 22528` (14.121 + 8.192 = 22.313 ≤ 22.528). En büyük context körlemesine seçilmez
-(§19.3): değerler ölçümlü, gerekçesi resources.json `protocol` bloğunda ve deney kaydında izlenir.
-Zaman aşımı hiyerarşisi: MODEL 3000 s < CASE 5400 s < RUN 14400 s (lab case tavanı 7200 s). Tekrar
-döngüsü için `repeat_penalty`/`repeat_last_n = 512` kablolandı; prob taraması (1.25 kırmadı /
-1.6 susturdu / 1.4 durdu ama plate-VE'nin zengin yanıtını kıstı) sonucu **geçici olarak kol başına**
-seçildi (V 1.4 / VE 1.25) — bu kol-başına seçim HISTORICAL'dır.
+**HISTORICAL — 001C (READ-ONLY kapalı):** 001C'nin iki katmanlı revizyon tarihi (ölçümlü dev zarf
+revizyonları + paylaşımlı requalification zarfı) ve kapanış kaydı `eval/semread_001c_closure.json`
+closure artifact'ında, `report.md` §3'te ve `docs/HERMES_SEMREAD_001C_HANDOFF.md` §1t'de tutulur.
+Sabitlerin gerekçe özeti: 001B'de gönderilen 19 çağrının 11'i `done_reason=length` ile kesilmişti →
+`num_predict` ölçümle 2048→8192 (plate-VE 3072'de son adayın ortasında kesildi → 4096 → payı dar →
+5120; elbow-V 5120'de de kesildi → 8192). `num_ctx` 12288→22528: flange-VE 14.121 token'lık prompt
+ile 12288 ctx'te HTTP 400 (`exceed_context_size_error`) aldı; 14.121 + 8.192 = 22.313 ≤ 22.528 —
+en büyük bağlam körlemesine seçilmedi. Döngü kırıcı prob taramasıyla bulundu (1.25 kırmadı /
+1.6 boşalttı / 1.4 durdu ama plate-VE'nin zengin yanıtını kıstı; kol-başına V 1.4 / VE 1.25 seçimi
+HISTORICAL'dır) ve final zarfında **paylaşımlı** `repeat_penalty = 1.25` + `repeat_last_n = 512`
+olarak sabitlendi; döngü sampling ile değil yapısal çıktı sözleşmesiyle de sınırlanır
+(`items.maxItems = 32` + kopya kuralı). Zaman aşımı hiyerarşisi: MODEL 3000 s < CASE 5400 s <
+RUN 14400 s (lab case tavanı 7200 s). `generation_settings(V) == generation_settings(VE)`
+invarianttır; kollar arası izin verilen fark yalnız kanıt katmanıdır.
 
-**CURRENT (001C closure) — paylaşımlı requalification zarfı** (PLAN-13 §4/§6/§8):
-`generation_settings(V) == generation_settings(VE)` zorunlu; kol-başına repeat_penalty kaldırıldı,
-ortak `repeat_penalty = 1.25` + `repeat_last_n = 512`; döngü sampling ile değil **yapısal çıktı
-sözleşmesiyle** sınırlanır (`items.maxItems = 32` + kopya kuralı, PLAN-13 §5). 8 dev hücre bu
-zarfla yeniden doğrulandı (requalification, 2026-10-05): paylaşımlı ayar 8/8 ✓, `stop` 8/8 ✓,
-resmî §8 kapısı **7/8** (elbow-VE tek normalize ihlali: `callout_region.y1 = 1.05`). PLAN-13 §7
-gereği 001C final fazına geçmedi → deney **READ-ONLY** kapandı; sıradaki experiment version
-SEMREAD-001D; kapanış snapshot'ı: `eval/semread_001c_closure.json`. Bu dosya kapanışta **yalnız
-dokümantasyon** olarak revize edildi (P0.5): sabitler ve davranış değişmedi; dosya byte'ı
-değiştiği için `producer_identity()` recompute'u run-time değerinden mekanik olarak sapar
-(snapshot iki değeri de kaydeder).
-
-001B sözleşmesi (`semread-001b-run-contract/3`) `docs/PLAN-11.md` kaydında donmuştur; bu sürüm
-001C deneyinin kimliğidir.
+001B sözleşmesi (`semread-001b-run-contract/3`) `docs/PLAN-11.md` kaydında donmuştur; 001C sürümü
+(`semread-001c-run-contract/1`) closure artifact'ında tarihsel kayıttır. Bu sürüm 001D deneyinin
+kimliğidir.
 """
 
 from __future__ import annotations
 
-CONTRACT_VERSION = "semread-001c-run-contract/1"
+# PLAN-15 §9/§12: 001D run-contract kimliği. Bump, `producer_identity()`yi de yeniler (dosya
+# hash'i kimliğe girer); üretim zarfı sabitleri DEĞİŞMEZ (§10).
+CONTRACT_VERSION = "semread-001d-run-contract/1"
 
 MODEL = "qwen3-vl:8b-instruct"
 EXPECTED_DIGEST = "0533d74300e4f9bc367d675d4e64ffd073d50ff16a2b4096cc2e8a1cf8c96319"

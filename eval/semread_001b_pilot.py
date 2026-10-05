@@ -38,7 +38,8 @@ from drawingto3d.llama import (ChatSettings, OllamaChat, find_model,  # noqa: E4
 from drawingto3d.observe import observe  # noqa: E402
 from drawingto3d.semantic_candidate_reader import (ARMS, OVERLAY_IMAGE_ID, V_ARM, VE_ARM,  # noqa: E402
                                                    prepare_arm_inputs, read_page)
-from drawingto3d.semantic_candidates import (CANDIDATE_SCHEMA_VERSION,  # noqa: E402
+from drawingto3d.semantic_candidates import (CANDIDATE_READER_VERSION,  # noqa: E402
+                                             CANDIDATE_SCHEMA_VERSION,
                                              CandidateResponse, CandidateParseError,
                                              candidate_json_schema, candidate_prompt,
                                              check_candidate_references, parse_candidate_json)
@@ -87,6 +88,27 @@ def use_experiment(name: str) -> dict:
     PREPARED_INPUT_DIR = CORPUS_DIR / "prepared-inputs"
     return {"experiment": name, "report_root": str(REPORT_ROOT)}
 
+
+# PLAN-15 §13: canlı gönderim yalnız **güncel** sözleşme kimliğiyle yapılır. Deney adı → beklenen
+# run-contract eşlemesi yalnız canlı deney için tutulur (001B/001C READ-ONLY kapalıdır; §47);
+# eşlemede olmayan adlarda beklenti yoktur (sandbox/test deneyleri etkilenmez). 001D attempt
+# manifesti eski `semread-001c-run-contract/1` kimliğini taşıyorsa gönderim bloklanır.
+ACTIVE_EXPERIMENT_CONTRACTS = {"semread-001d": "semread-001d-run-contract/1"}
+
+
+def contract_identity_block() -> dict | None:
+    """Aktif deneyin run-contract kimliği beklenenle uyuşmuyorsa blok kaydı döndür (PLAN-15 §13).
+
+    Eşlemede tanımlı deney için `CONTRACT_VERSION` beklenenden farklıysa (ör. 001D attempt
+    manifesti hâlâ eski 001C sözleşmesini taşıyorsa) gönderim durdurulur. Tanımsız deney
+    adlarında beklenti yoktur — None döner (fail-open yalnız eşlemede olmayan adlarda).
+    """
+    expected = ACTIVE_EXPERIMENT_CONTRACTS.get(EXPERIMENT_NAME)
+    if expected is None or CONTRACT_VERSION == expected:
+        return None
+    return {"experiment": EXPERIMENT_NAME, "expected": expected, "found": CONTRACT_VERSION}
+
+
 JOB_PREFIX = "semread-001b-"    # tarihsel ad; run_live iş kimliğini EXPERIMENT_NAME'den kurar
 # 001C gözlemi: `dev-plate-pocket-VE` 12288 bağlamda 300 s'lik HTTP tavanında `transport_timeout`
 # ile kesildi (M1'de VE prompt'u ~7.6k token + uzun çıktı). Model tavanı 900 s'ye çıkarıldı;
@@ -116,10 +138,10 @@ MODEL_TIMEOUT_SECONDS = 3000
 # maxItems=32 + kopya kuralı) causal requalification'ı = 4 dev sayfa × V/VE = 8 yeni çağrı (§8).
 # Bu 8 çağrıdan sonra dev tuning biter; 32 aşılırsa 001C final yok → yeni experiment version (§7).
 # Çağrı-çağrı bütçe artışı yok (§36).
-# SEMREAD-001D BÜTÇESİ (PLAN-14 §24; §41#3 skeleton'da deklare edildi): dev 12 (8 primary + 4 tanı
+# SEMREAD-001D BÜTÇESİ (PLAN-15 §31; skeleton'da deklare edildi): dev 12 (8 primary + 4 tanı
 # rezervi), final 20, toplam 32. 001B/001C kapalıdır (READ-ONLY) — bu tavanlar yeni deneyin
-# önceden deklare bütçesidir; 12 dev çağrısı sonrası tuning YOK, yeni experiment version gerekir
-# (§24). 001C'nin kullandığı 32/52 tavanı kendi state.json'unda donmuştur (001C raporları bütçeyi
+# önceden deklare bütçesidir; 12 dev çağrısı sonrası tuning YOK, yeni experiment version gerekir.
+# 001C'nin kullandığı 32/52 tavanı kendi state.json'unda donmuştur (001C raporları bütçeyi
 # state'ten okur).
 LIVE_CALL_LIMIT_DEV = 12
 LIVE_CALL_LIMIT_FINAL = 20
@@ -131,7 +153,8 @@ FINAL_VLM_CELLS = 20                       # 10 sayfa × V/VE
 # Attempt yaşam döngüsünün kapalı durum kümesi (P0R-FINAL-A). Her attempt klasörü tam olarak bir
 # geçmiş kaydı alır ve o kaydın `state`i bu kümeden biridir.
 FINALIZED_STATES = ("local_error_source", "local_error_observe", "local_error_preparation",
-                    "blocked_budget", "blocked_model_discovery", "blocked_model_mismatch",
+                    "blocked_budget", "blocked_contract_identity", "blocked_model_discovery",
+                    "blocked_model_mismatch",
                     "blocked_runtime_mismatch", "blocked_unsupported_setting", "sending",
                     "transport_error", "parse_error", "truncated_output", "incomplete_metadata",
                     "failed_gates", "pass")
@@ -1172,15 +1195,24 @@ def _attempt_manifest(page: dict, arm: str, *, attempt_id: str, phase: str,
                       runtime: str | None = None, model_metadata: dict | None = None,
                       request_hashes_seen: dict | None = None,
                       prediction_input: dict | None = None) -> dict:
-    """Bir attempt'in değişmez kimlik kaydı (P0: hangi girdi/kod/model ile üretildi)."""
+    """Bir attempt'in değişmez kimlik kaydı (P0: hangi girdi/kod/model ile üretildi).
+
+    PLAN-15 §12: deney kimliği alanları (experiment / contract_version / schema_version /
+    reader_version / producer_identity / preprocessing_identity) manifestte **açıkça** yazılır;
+    dry-run manifesti (§13) bu alanlarla denetlenir.
+    """
     page_png = PAGES_DIR / f"{page['page_id']}.png"
     source = ROOT / page["path"]
     return {
         "schema": "semread-001b-attempt/2", "attempt_id": attempt_id, "case_id": attempt_id,
         "page_id": page["page_id"], "arm": arm, "phase": phase, "split": page["split"],
         "group": page["group"], "created_at": _now(),
+        "experiment": EXPERIMENT_NAME,
         "contract_version": CONTRACT_VERSION,
+        "schema_version": CANDIDATE_SCHEMA_VERSION,
+        "reader_version": CANDIDATE_READER_VERSION,
         "producer_identity": producer_identity(), "evaluation_identity": evaluation_identity(),
+        "preprocessing_identity": preprocessing_identity(),
         "input_identity": input_identity(page), "model_identity": model_identity(),
         # P0R-FINAL-C: yeniden kullanım kararı bu kimliğe bakar (gerçek hazırlanmış girdi).
         "prediction_input_identity": prediction_input_identity(prediction_input),
@@ -1441,6 +1473,17 @@ def write_live_attempt(page: dict, arm: str, *, phase: str, observations=None, s
                                 phase=phase, state=state, verdict=verdict, send_attempted=False,
                                 inference_calls=0, error=error, runtime=runtime, stats=stats,
                                 result_extra=result_extra, manifest_extra=manifest_extra)
+
+    # PLAN-15 §13: kimlik denetimi gönderimden (ve yerel hazırlıktan) önce koşar; eski sözleşme
+    # kimliğiyle gönderim yok — yerel ret attempt defterine yazılır, bütçe harcamaz.
+    identity_block = contract_identity_block()
+    if identity_block is not None:
+        return blocked("blocked_contract_identity", verdict="blocked",
+                       result_extra={"blocking_kind": "contract_identity",
+                                     "blocking_reason": (
+                                         f"{identity_block['experiment']} attempt manifesti "
+                                         f"beklenen sözleşme {identity_block['expected']!r} "
+                                         f"yerine {identity_block['found']!r} taşıyor")})
 
     try:
         if source is None:

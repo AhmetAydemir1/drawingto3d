@@ -415,12 +415,14 @@ def test_p4_attempt_state_keeps_truncation_apart_from_parse_error():
 # ---------------------------------------------------------------- P5/P6: zarf + deney kökü
 
 
-def test_p5_run_contract_envelope_is_001c_and_measured():
+def test_p5_run_contract_envelope_is_001d_and_measured():
     from drawingto3d.semantic_run_contract import (CONTRACT_VERSION, NUM_PREDICT,  # noqa: F401
                                                    REPEAT_LAST_N, REPEAT_PENALTY,
                                                    SETTINGS)
 
-    assert CONTRACT_VERSION == "semread-001c-run-contract/1"
+    # PLAN-15 §9/§10: kimlik 001D'ye ilerledi; **zarf ölçümü ve değerleri 001C kapanışından
+    # birebir devralındı** — bu commit'te hiçbir üretim ayarı değişmedi.
+    assert CONTRACT_VERSION == "semread-001d-run-contract/1"
     # Dev ölçümü zarfı dört kez ilerletti: plate-VE 3072'de kesildi → 4096 → 5120 (sınırda);
     # elbow-V 5120'de kesildi (≥41 aday!) → 8192; flange-VE 14.121 tok promptla 12288'de 400 aldı
     # → 20480 → 22528 (flange 14.121+8.192=22.313 ≤ 22.528).
@@ -470,7 +472,7 @@ def test_p6_experiment_switch_moves_only_the_ledger(tmp_path, monkeypatch):
     assert fresh["experiment"] == "semread-001c"
     # Taze defter **güncel deklare tavanları** taşır. 001C'nin TARİHSEL bütçesi (dev 10→…→32,
     # PLAN-13 §7 requalification'ıyla 52) kendi (READ-ONLY) state.json'unda donmuştur; canlı
-    # sabitler PLAN-14 §24 ile 001D'nin deklare tavanlarıdır (dev 12 / final 20 / toplam 32).
+    # sabitler PLAN-15 §31 ile 001D'nin deklare tavanlarıdır (dev 12 / final 20 / toplam 32).
     assert fresh["budget"] == {"dev": pilot.LIVE_CALL_LIMIT_DEV,
                                "final": pilot.LIVE_CALL_LIMIT_FINAL,
                                "total": pilot.LIVE_CALL_LIMIT_TOTAL}, "taze defter sabitlerden"

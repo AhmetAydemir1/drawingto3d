@@ -636,16 +636,30 @@ REPORT_MARKERS = (
 )
 
 
+def arms_with_measurement(payload: dict) -> list[str]:
+    """Gerçekten **puanlanmış** kollar (001D/§19). Ölçüt: en az bir `scorable_target_count > 0`.
+
+    `comparison.vs_d` her kol için satır taşır — ölçüm yoksa satırlar **sıfır** taşır, yani boş
+    olmayan `vs_d` ölçüm kanıtı değildir. Kapılar (rapor içeriği ve B06) bu tanımı tek yerden
+    kullanır: `semread-candidates/1` attempt'leri gibi eski sözleşmeye bağlı (yeniden seçilemeyen)
+    defterlerde aggregate boş kalır ve hiçbir kol puanlanmamış olur.
+    """
+    rows = (payload.get("comparison") or {}).get("vs_d") or {}
+    return sorted(arm for arm, value in rows.items()
+                  if sum(row.get("scorable_target_count", 0)
+                         for row in (value.get("predicate_rows") or [])) > 0)
+
+
 def report_evidence(report_text: str | None, payload: dict) -> dict:
     """Rapor metni §19'un şartlarını taşıyor mu? (B06'nın kanıtı.)
 
     Şart: her işaret metinde bulunmalı **ve** en az bir gerçek ölçüm olmalı (aggregate ya da
-    yüklem satırı). Boş bir rapor işaretleri taşıyamaz, dolayısıyla B06 kapanamaz.
+    **puanlanmış** yüklem satırı — bkz. `arms_with_measurement`). Boş bir rapor işaretleri
+    taşıyamaz; sıfır satırlı bir `vs_d` de ölçüm sayılmaz, dolayısıyla B06 kapanamaz.
     """
     text = report_text or ""
     markers = {name: (needle in text) for name, needle in REPORT_MARKERS}
-    measured = bool(payload.get("aggregates")) or bool(
-        (payload.get("comparison", {}).get("vs_d") or {}))
+    measured = bool(payload.get("aggregates")) or bool(arms_with_measurement(payload))
     return {"schema": "semread-001b-report-checks/1", "markers": markers,
             "missing": sorted(name for name, present in markers.items() if not present),
             "measured": measured, "complete": all(markers.values()) and measured,
@@ -1840,12 +1854,9 @@ def acceptance_rows(payload: dict) -> dict:
         dispositions = matrix_dispositions(final_matrix()["cells"])
     chain = payload.get("evidence_chain") or evidence_chain_report(final_matrix()["cells"])
     # §19: "boş olmayan comparison" yetmez. `vs_d` her kol için satır taşır ama ölçüm yoksa
-    # sayılar sıfırdır; en az bir kolun gerçekten puanlanmış bir yüklemi olmalı.
-    comparison_rows = payload.get("comparison", {}).get("vs_d") or {}
-    measured_arms = sorted(
-        arm for arm, value in comparison_rows.items()
-        if sum(row.get("scorable_target_count", 0)
-               for row in (value.get("predicate_rows") or [])) > 0)
+    # sayılar sıfırdır; en az bir kolun gerçekten puanlanmış bir yüklemi olmalı — ölçüt tek yerde
+    # (`arms_with_measurement`), rapor içeriği kapısı da aynı tanımı kullanır.
+    measured_arms = arms_with_measurement(payload)
     rows = {
         "B01": {"status": "closed" if (REPORT_ROOT / "snapshot").exists() else "open",
                 "evidence": [str(REPORT_ROOT / "snapshot")],

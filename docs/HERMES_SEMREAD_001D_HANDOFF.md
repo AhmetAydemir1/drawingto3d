@@ -156,7 +156,48 @@ CHANGED / TEST EVIDENCE / INFERENCE BUDGET / OPEN GATE / NEXT SINGLE STEP*.
   **0 inference** (ledger kurulmadı, canlı çağrı yok).
 - **OPEN GATE:** §60#2 / §63 — `semread-001d-run-contract/1` kimliği + producer identity.
 - **NEXT SINGLE STEP:** §10/§63: `CONTRACT_VERSION = semread-001d-run-contract/1`, docstring current
-  durumu 001D anlatır (001C closure artifact'ında kalır); paylaşımlı envelope **değişmez**
+  durumu 001D anlatır (001C closure artifact'ında kalır); paylaşılan envelope **değişmez**
   (model/digest/runtime/ayarlar), producer identity değişir, dry-run manifest
   `experiment = semread-001d` + `/3` + `/3` + `001d/1` der; bütçe 0/12 + 0/20 kalır; closure
   `--verify` hâlâ 45/45 olmalı.
+
+---
+
+## 1d. 001B acceptance bonus koşusu — ölçümsüz kapanabilen rapor kapısı (bulundu + düzeltildi)
+
+- **CURRENT HEAD:** `e879369` (§61 commit'i; bu kayıttan önce)
+- **CURRENT EXPERIMENT:** SEMREAD-001D — bu kayıt **0 inference** (yalnız kapı/ölçüm tanımı).
+- **NE OLDU:** §62'nin zorunlu listesinde olmayan `tests/test_semread_001b_acceptance.py` bonus
+  olarak koşuldu: **1 failed / 25 passed** (1965.18 s ≈ 32:45). Tek kırmızı:
+  `test_the_report_carries_every_required_section_on_the_real_payload` satır 213
+  (`checks["measured"] == bool(payload["aggregates"])`) — sol taraf `True`, sağ taraf `bool({})`.
+- **KÖK NEDEN (iki katman, ikisi de kanıtlandı):**
+  1. **Beklenen durum; `/3` bump'ının sonucu değil.** Pilot kökü `out/lab/semread-001b`; oradaki
+     35 attempt manifestinin **tamamı** `candidate_schema = semread-candidates/1` (üretici kimliği
+     `16878366a1ab…`). Yeniden seçim `manifest.candidate_schema == CANDIDATE_SCHEMA_VERSION`
+     istediği için `/2`'den beri hiçbir attempt seçilemez: bugünkü probe `final_matrix()`de
+     30 hücrenin **0'ında** attempt gösteriyor (`not_run 10 / failed_attempt 20`,
+     `vlm:to_run 20`, `d:to_run 10`). Yani `aggregates` boş — PLAN-14 §19'un "güncel kimlik yoksa
+     `missing/failed` raporla" durumu.
+  2. **Gerçek kusur (düzeltildi):** `aggregates` boşken `comparison.vs_d` yine satır taşır (ölçüm
+     yoksa satırlar **sıfır** taşır). `report_evidence` bu yüzden `measured = True` diyordu; işaretler
+     tam olunca `complete = True` oluyor, yani **B06 ölçümsüz kapanabiliyordu**. Testin 213.
+     satırdaki varsayımı bu kusuru yakaladı.
+- **DÜZELTME:** `eval/semread_001b_pilot.py` — tek kaynak `arms_with_measurement(payload)` (ölçüt:
+  en az bir `scorable_target_count > 0`); `report_evidence.measured` artık
+  `bool(aggregates) or bool(arms_with_measurement(...))`; `acceptance_rows` (B06) de aynı fonksiyonu
+  kullanıyor (kopya ölçüt yok). Sonuç: ölçümsüz hâlde `measured=False` → `complete=False` → B06 açık.
+- **YENİ PİN TESTİ:** `tests/test_semread_001b_acceptance.py::test_a_zero_row_vs_d_without_measurement_cannot_close_the_gate`
+  — sıfır satırlı `vs_d` ölçüm sayılmaz; puanlanmış kol varsa `measured=True`.
+- **KAPSAM:** yalnız rapor/ölçüm kapısı tanımı; prompt · şema · parser · run-contract · bütçe
+  değişmedi. 001B lab'ı (`out/lab/semread-001b/**`) ve 001C lab'ı **yazılmadı** (test monkeypatch'li,
+  `git status` yalnız bu iki dosyayı gösterir).
+- **TEST EVIDENCE:** yeni pin + komşu kapı testi **2 passed** (0.28 s); daha önce kırmızı olan testin
+  yeniden koşusu **başlatıldı** (tek başına, arka planda) — sonuç bu kayda eklenecek §1e'de olacak;
+  henüz "geçti" iddiası yok. Etkilenebilecek hızlı SEMREAD süitleri (lifecycle/identity/
+  gold-manifest/reference/`test_semread_001b`) yeniden koşuldu: **119 passed**; `check_tables`
+  **21 satır / 0 tutmuyor**.
+- **INFERENCE BUDGET:** 001D dev **0/12**, final **0/20** (toplam **0/32**) — değişmedi.
+- **OPEN GATE:** §60#2 / §63 — run-contract `001d/1` + producer identity.
+- **NEXT SINGLE STEP:** §10/§63 (değişmedi): run-contract `001d/1` kimliği + producer identity; §62'nin
+  kanıt listesi bu düzeltmeyle birlikte "focused + gates + closure + D regresyonu" olarak eksiksiz.

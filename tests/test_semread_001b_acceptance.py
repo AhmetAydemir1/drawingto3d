@@ -194,6 +194,28 @@ def test_a_comparison_without_the_required_report_content_cannot_close_b06():
     assert set(checks["missing"]) == {name for name, _ in pilot.REPORT_MARKERS}
 
 
+def test_a_zero_row_vs_d_without_measurement_cannot_close_the_gate():
+    """001D dersi: `vs_d` boş olmayabilir, ama satırlar **sıfırsa** ölçüm yoktur → kapı kapanmaz.
+
+    001B defterindeki attempt'ler `semread-candidates/1` sözleşmesine bağlıdır; güncel üretici/şema
+    kimliğiyle yeniden seçilemedikleri için `aggregates` boş kalır ve hiçbir kol puanlanmaz. Bu
+    durumda işaretler tam olsa bile `measured` false olmalıdır (aksi halde B06 ölçümsüz kapanırdı).
+    Ölçüm ölçütü tek kaynaktır: `arms_with_measurement`.
+    """
+    text = " ".join(needle for _, needle in pilot.REPORT_MARKERS)
+    zero_rows = {"aggregates": {},
+                 "comparison": {"vs_d": {"V": {"predicate_rows": [{"scorable_target_count": 0}]}}}}
+    checks = pilot.report_evidence(text, zero_rows)
+    assert checks["missing"] == []
+    assert pilot.arms_with_measurement(zero_rows) == []
+    assert checks["measured"] is False, "sıfır satırlı vs_d ölçüm sayılamaz"
+    assert checks["complete"] is False
+    scored = {"aggregates": {},
+              "comparison": {"vs_d": {"D": {"predicate_rows": [{"scorable_target_count": 2}]}}}}
+    assert pilot.arms_with_measurement(scored) == ["D"]
+    assert pilot.report_evidence(text, scored)["measured"] is True
+
+
 def test_the_report_carries_every_required_section_on_the_real_payload(monkeypatch):
     """Gerçek rapor §19'un bütün işaretlerini taşır; kapı yalnız ölçüm varsa kapanır.
 

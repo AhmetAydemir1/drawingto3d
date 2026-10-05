@@ -34,6 +34,10 @@ parser.add_argument("--ctx", type=int, required=True)
 parser.add_argument("--predict", type=int, default=32)
 parser.add_argument("--format", action="store_true",
                     help="üretimdeki gibi yanıt şemasını (format=json_schema) ekle")
+parser.add_argument("--repeat-penalty", type=float, default=None,
+                    help="SETTINGS'teki repeat_penalty'yi geçersiz kıl")
+parser.add_argument("--repeat-last-n", type=int, default=None)
+parser.add_argument("--temperature", type=float, default=None)
 parser.add_argument("--timeout", type=float, default=300.0)
 args = parser.parse_args()
 
@@ -56,6 +60,12 @@ print(f"prep: {time.time()-t0:.1f}s | prompt {len(prompt)} B | {len(images)} gö
 options = {key: value for key, value in pilot.SETTINGS.items()}
 options["num_ctx"] = args.ctx
 options["num_predict"] = args.predict
+if args.repeat_penalty is not None:
+    options["repeat_penalty"] = args.repeat_penalty
+if args.repeat_last_n is not None:
+    options["repeat_last_n"] = args.repeat_last_n
+if args.temperature is not None:
+    options["temperature"] = args.temperature
 payload = {"model": pilot.MODEL, "stream": False, "keep_alive": "1m",
            "messages": [{"role": "user", "content": prompt, "images": images}],
            "options": options}

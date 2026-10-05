@@ -1971,17 +1971,17 @@ işine geçme.
 
 # 49. P1 acceptance checklist
 
-- [ ] `semread-candidates/2`
-- [ ] region min=0 max=1 schema
-- [ ] explicit normalized coordinate instruction
-- [ ] top-left/bottom-right convention
-- [ ] generic normalized example
-- [ ] no pixel example
-- [ ] V prompt test
-- [ ] VE common prompt test
-- [ ] out-of-range negative test
-- [ ] no gold/page-specific text
-- [ ] zero inference
+- [x] `semread-candidates/2`
+- [x] region min=0 max=1 schema
+- [x] explicit normalized coordinate instruction
+- [x] top-left/bottom-right convention
+- [x] generic normalized example
+- [x] no pixel example
+- [x] V prompt test
+- [x] VE common prompt test
+- [x] out-of-range negative test
+- [x] no gold/page-specific text
+- [x] zero inference
 
 ---
 

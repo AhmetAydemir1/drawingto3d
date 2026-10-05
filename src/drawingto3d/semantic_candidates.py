@@ -1,5 +1,10 @@
 """SEMREAD-001B — **dar** semantic aday sözleşmesi (ayrı sürüm).
 
+Sürüm **/2** (SEMREAD-001C P1, PLAN-12 §15): bölge alanları şemada `minimum: 0, maximum: 1`
+taşır ve ortak görev metni normalize koordinat kuralını açıkça öğretir; koordinat konvansiyonu
+V ve VE kollarında **aynı** metinden ve **aynı** şema nesnesinden gelir (kopya literal yok).
+Parser bu kuralı sessizce "tamir" etmez: 0..1 dışındaki bölge reddedilir.
+
 Kapsam bilinçli olarak küçüktür: bir aday, bir **callout/hedef** hakkında yalnız şu alanları taşır:
 
   circle representation / physical hole ayrımı · R vs Ø · basılı değer+birim · count ·
@@ -31,8 +36,8 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, Field, ValidationError, field_validator, model_validator
 
-CANDIDATE_SCHEMA_VERSION = "semread-candidates/1"
-CANDIDATE_READER_VERSION = "semread-candidate-reader/1"
+CANDIDATE_SCHEMA_VERSION = "semread-candidates/2"
+CANDIDATE_READER_VERSION = "semread-candidate-reader/2"
 CANDIDATE_RESPONSE_SCHEMA = "semread-candidate-response/1"
 
 # ----------------------------------------------------------------- kapalı sözlükler
@@ -265,9 +270,14 @@ def candidate_json_schema() -> dict:
     Şema **kimlik taşımaz** (hangi görselin ne olduğu, hangi gözlemin hangi hedefe ait olduğu
     yazılmaz); aynı şema V ve VE kolunda aynen kullanılır.
     """
+    # Bölge sözleşmesi **tek** yerde tanımlanır; source.region, source.callout_region ve
+    # target.region aynı nesneden türetilir (kopya literal yok) — koordinat kuralı üçünde de aynı.
     region = {
         "type": "object",
-        "properties": {key: {"type": "number"} for key in ("x0", "y0", "x1", "y1")},
+        "description": ("Normalized page coordinates in [0,1]. (0,0)=top-left, "
+                        "(1,1)=bottom-right. Never use pixel coordinates."),
+        "properties": {key: {"type": "number", "minimum": 0.0, "maximum": 1.0}
+                       for key in ("x0", "y0", "x1", "y1")},
         "required": ["x0", "y0", "x1", "y1"],
         "additionalProperties": False,
     }
@@ -351,7 +361,9 @@ def candidate_json_schema() -> dict:
                         "target": {
                             "type": "object", "additionalProperties": False,
                             "properties": {
-                                "region": {**region, "description": "callout'un gösterdiği hedef bölge"},
+                                "region": {**region,
+                                           "description": region["description"]
+                                           + " Target region the callout points at."},
                                 "observation_id": {"type": ["string", "null"],
                                                    "description": "hedefteki gözlem kimliği; yoksa null"},
                                 "state": {"enum": ["bound", "unknown"], "default": "unknown"},
@@ -406,6 +418,12 @@ Report, for every dimension callout that points at a feature:
     otherwise unknown;
   * the depth value if (and only if) the drawing writes one;
   * where the callout points (target region), and which image you are looking at.
+
+Coordinate convention (applies to every region field: source.region, source.callout_region,
+target.region):
+  * All regions use normalized page coordinates: x0,y0,x1,y1 in [0,1].
+    Top-left is (0,0), bottom-right is (1,1). Never return pixel coordinates.
+  * Example only for coordinate format: {"x0":0.10,"y0":0.20,"x1":0.30,"y1":0.40}
 
 Rules:
   * Never guess. If a field is not visible/stated, keep it unknown/not_stated and say why in

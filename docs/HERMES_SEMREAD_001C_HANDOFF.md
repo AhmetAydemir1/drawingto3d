@@ -50,3 +50,23 @@ burada ve `docs/PLAN-12.md` altında yürür. 001B ve 001C ledger/klasörleri ka
 - **NEXT SINGLE STEP:** P1 (PLAN-12 §15): şema `minimum/maximum 0..1`, ortak V/VE prompt'ta
   normalize koordinat kuralı, V/VE aynı sözleşmeyi görüyor testleri; sürüm bump
   (`semread-candidates/2`, `semread-candidate-reader/2`, `semread-001c-run-contract/1`).
+
+---
+
+## 1c. PLAN-12 §15 (P1) — region contract v2 ✓
+
+- **CURRENT HEAD:** `f5b34b19` (P0 kapanışı; P1 commit'i ilerletir).
+- **WHAT CHANGED:** `semantic_candidates.py`: sürüm bump (`semread-candidates/2`,
+  `semread-candidate-reader/2`); region şemasına `minimum/maximum 0..1` + "Never use pixel
+  coordinates." açıklaması (tek nesne, üç alan da ondan türer); ortak görev metnine koordinat
+  sözleşmesi bloğu (top-left/bottom-right, normalize örnek `{"x0":0.10,…}`); `target.region`
+  açıklaması koordinat kuralını koruyacak şekilde genişletildi. Yeni
+  `tests/test_semread_001c_contract.py`.
+- **TEST EVIDENCE:** `pytest tests/test_semread_001c_contract.py tests/test_semantic_candidates.py
+  tests/test_semantic_reader.py` → **54 passed** (0,26 s). `test_semread_001b_gates.py` arka planda
+  koşuldu (ağır fixture'lar; §32 gereği P1 için zorunlu set değil — sonucu bir sonraki kayda geçer).
+- **INFERENCE BUDGET:** 001C **0/30** (çağrı yok).
+- **OPEN GATE:** P2 — compact output contract.
+- **NEXT SINGLE STEP:** P2 (PLAN-12 §16): "Omit optional fields…" prompt kuralı + minimal gövde
+  default testi + harness-owned provenance (provenance wire'dan çıkar, parse sonrası inject;
+  §16.3 `source.image_id` değerlendirmesi).

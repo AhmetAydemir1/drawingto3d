@@ -30,8 +30,9 @@ CHANGED / TEST EVIDENCE / INFERENCE BUDGET / OPEN GATE / NEXT SINGLE STEP*.
 - **TEST EVIDENCE:** skeleton **4 passed**; odak süiti (skeleton + closure + 001c contract +
   reader/candidates + dev-semantik + 001b closure) **99 passed**; hızlı SEMREAD süitleri
   (lifecycle/identity/gold-manifest/reference/probe) **143 passed**; gates bütçe-caps alt kümesi
-  **5/5**; 001C closure `--verify` **45/45**. Not: gates dosyasının tamamı (34 test) ayrı uzun
-  koşuda — ağır BLAS/numpy ön-işlemeli test içeriyor; sonucu ayrıca işlenecek.
+  **5/5**; gates dosyası tamamı (34 test) **34 passed** (990 s / 16:30 — ağır BLAS/numpy
+  ön-işlemeli test; süre önceden de böyle, bütçe değişiminden bağımsız); 001C closure
+  `--verify` **45/45**.
 - **INFERENCE BUDGET:** 001D dev **0/12**, final **0/20** (toplam **0/32**); ledger
   `out/lab/semread-001d/` ilk dev çağrısında kurulur (§41#8). 001C bütçesine dokunulmadı
   (32/32 kapalı, READ-ONLY).

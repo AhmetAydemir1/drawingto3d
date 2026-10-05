@@ -39,6 +39,7 @@ parser.add_argument("--repeat-penalty", type=float, default=None,
 parser.add_argument("--repeat-last-n", type=int, default=None)
 parser.add_argument("--temperature", type=float, default=None)
 parser.add_argument("--timeout", type=float, default=300.0)
+parser.add_argument("--dump", default=None, help="yanıt içeriğini bu dosyaya yaz (tanı)")
 args = parser.parse_args()
 
 page = next(row for row in pilot.PAGES if row["page_id"] == args.page)
@@ -82,5 +83,8 @@ try:
     print(f"TAMAM: {time.time()-t1:.1f}s | done={body.get('done_reason')} "
           f"| prompt_eval={body.get('prompt_eval_count')} | eval={body.get('eval_count')} "
           f"| içerik[:60]={body.get('message', {}).get('content', '')[:60]!r}")
+    if args.dump:
+        Path(args.dump).write_text(body.get("message", {}).get("content", ""), encoding="utf-8")
+        print(f"içerik yazıldı: {args.dump}")
 except Exception as exc:  # noqa: BLE001 - tanı aracı
     print(f"KAMA/HATA: {time.time()-t1:.1f}s | {type(exc).__name__}: {exc}")

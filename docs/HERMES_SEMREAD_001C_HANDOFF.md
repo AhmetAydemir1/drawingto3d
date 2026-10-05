@@ -419,3 +419,9 @@ burada ve `docs/PLAN-12.md` altında yürür. 001B ve 001C ledger/klasörleri ka
   §8 paylaşımlı-ayar denetimi (V/VE `request_options` eşitliği 8/8) + `dev-report` ve
   `dev-semantic-report` tazeleme → §1s.
 - **Beklenen süre:** 2–4 saat (iş başına ~15–25 dk, sıralı; ilk iş model yüklemesiyle ≈ +2 dk).
+- **ARA NOT (14:40, 4/8 iş tamamlanmış/inişte):** ilk 3 attempt (plate-pocket V/VE + flange-book-V)
+  **pass** ve `request_options` **paylaşımlı** (V dahil `repeat_penalty=1.25`, rln 512, ctx 22528,
+  predict 8192, temp 0.0) → §8 ayar eşitliği ilk kanıtla sağlanıyor. İçerik: hâlâ **0** içerikli aday;
+  cap=32 aktif (VE 32 aday / 32 benzersiz bölge / 32-32 gözlem-tablosu yankısı; flange-book-V eskiden
+  1 aday → şimdi 32 benzersiz boş kutu). Kalan: flange-book-VE (inişte) + elbow V/VE + drawing-2 V/VE.
+  Tam değerlendirme §1s'de (dev-report + §8 denetimi + semantic rapor).

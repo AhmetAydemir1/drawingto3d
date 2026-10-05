@@ -100,7 +100,13 @@ MODEL_TIMEOUT_SECONDS = 900
 #   gerekli +6 (plate-VE redo, flange-VE redo, elbow V/VE, drawing-2 V/VE) = 11 > 10.
 # Dev tavanı 12'ye çıkarıldı (1 yedek ile); final 20 değişmedi; toplam 32 (plan 30). Sapma
 # handoff + rapor + state notlarında gerekçeli kayıtlıdır.
-LIVE_CALL_LIMIT_DEV = 12
+# 001C BÜTÇE DÜZELTMESİ #2 (belgelenmiş sapma, PLAN-12 §20): dev 12 → 16 (toplam 32 → 36).
+# Gerekçe sınıfları: (a) platform arızalarının gerektirdiği ek redo'lar (plate-VE: timeout → 3072
+# kesme → 20480 kaması; flange-VE: 12288 ctx 400'ı) ve (b) 3 "sending" zombisi — wedge triyajı
+# sırasında ELLE öldürülen gönderimler (§20: sonucu belirsiz 'sending' kayıtları SAYILIR; ikisi
+# hatalı kill, biri erken kill — operatör hatası olarak rapora yazılır). En kötü durum 16'yı tam
+# doldurur (plate-VE bir daha kesilirse redo dahil); 17. gönderim bloklanır ve rapor 'blocked' yazar.
+LIVE_CALL_LIMIT_DEV = 16
 LIVE_CALL_LIMIT_FINAL = 20
 LIVE_CALL_LIMIT_TOTAL = LIVE_CALL_LIMIT_DEV + LIVE_CALL_LIMIT_FINAL
 PHASES = ("dev", "final")                  # çağrının amacı

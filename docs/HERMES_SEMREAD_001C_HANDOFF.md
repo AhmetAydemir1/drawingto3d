@@ -206,3 +206,47 @@ burada ve `docs/PLAN-12.md` altında yürür. 001B ve 001C ledger/klasörleri ka
   (iki VE redo; plate-V/flange-V `reuse` — ayar değiştiği için stale ama kapıda geçerli sonuçları
   var, yeniden koşulmuyor) → B) `arms=V,VE pages=dev-flange-elbow,dev-drawing-2` (kapı sayfaları).
 - **NEXT SINGLE STEP:** ölçüm → `num_ctx` commit → 6 çağrılık zincir → §21 kapısı değerlendirmesi.
+
+---
+
+## 1j. dev smoke — 20k ctx kama olayı (platform) + yeniden başlatma
+
+- **Olay (04:19→04:45):** `dev-plate-pocket-VE/attempt-0003` (ctx 20480) çağrısı gönderildi; 26+ dk
+  boyunca yanıt gelmedi; ollama runner **%1.8 CPU'da kama**; sistem bellek baskısı (89 MB boş,
+  11 GB wired, 2.4 GB compressor, 2.7M swap-out sayfası). Çağrı sonuçlandırılamadı.
+- **Müdahale:** batch süreçleri kill → `ollama stop qwen3-vl:8b-instruct` (bellek 6.1 GB boşa indi)
+  → model ctx 20480 ile temiz yüklendi (8.24 GB). Sonra: batch A2 + B2 zinciri yeniden başlatıldı.
+- **Kayıt:** attempt-0003 send_state=`sending` (sonuç belirsiz → PLAN-12 §20 gereği bütçede **sayılır**).
+- **Karar:** ctx **20480 kalır** (ölçüm: en kötü gerçek prompt 14.121 tok; elbow ≤12.2k, drawing-2 ≤7.7k
+  üst sınır; 14.121+4.096=18.217 ≤ 20.480). Kama, ctx'ten çok bellek baskısı + 31h'lik sunucu
+  runner'ıyla ilişkili görünüyor → koşular öncesi `ollama stop` ile taze model.
+- **Bütçe:** 6/12 işlendi. Kalan 6 (plate-VE redo, flange-VE redo, elbow×2, drawing-2×2) → sonuç 12/12;
+  yedek yok — herhangi bir başarısızlık raporu "blocked" yazar.
+- **İzleme notu:** plate-VE-0003 gibi uzun süren VE çağrıları için: runner CPU %0–2'ye düşerse ve
+  attempt dizini 25 dk'dır result.json'suz ise kama kabul edilir → kill + taze model + tekrar.
+- **NEXT SINGLE STEP:** A2/B2 zinciri → §21 kapısı → rapor.
+
+---
+
+## 1k. Platform tanısı (yalnız tanı; kanıt değil) — kama kökü: geçici sunucu durumu
+
+- **Araç:** `eval/semread_001c_probe_big.py` (attempt/defter yazmaz): plate-VE'nin gerçek girdisini
+  (2 görsel + tablo + **format=json_schema**) yeniden kurup verilen `num_ctx`/`num_predict` ile
+  /api/chat'e POST eder. Önbellekli hazırlık 0,3 s (ikinci koşudan sonra).
+- **Bulgular (kronolojik):**
+  1. Küçük istek @20480 (görselsiz): 5,0 s ✓ → ctx 20480 sağlıklı.
+  2. Büyük istek @18432, predict 32: 73,5 s ✓ (prompt_eval 4584 + 32 token).
+  3. Büyük istek @20480, predict 32: 67,5 s ✓ → 20480 de kama YAPMIYOR.
+  4. Büyük istek @20480, predict 4096, **formatsız**: 521,5 s'de TAMAMLANDI (eval=4096, length) —
+     ama formatsız olduğu için çıktı şeması kaydı ("observations" kökü) → yalnız zamanlama sinyali.
+  5. Büyük istek @20480, predict 32, **format=json_schema** (üretim şekli): 74,0 s ✓, içerik
+     `{"schema_version": "semread-candidates/2", "items": ...` — üretim şekli SAĞLIKLI.
+- **Sonuç:** attempt-0003/0004 kamaları yapılandırma kusuru değil; **31 saatlik sunucu runner'ı +
+  bellek baskısı** dönemine denk geldi. `ollama stop` + taze yükleme sonrası aynı büyük istek
+  hem 18432'te hem 20480'de sorunsuz çalışıyor.
+- **Uyarı (ölçüm):** formatsız 4096'lık deneme tavanda kesildi (≥4096 ihtiyaç sinyali); 0002'nin
+  3072 kesiği ~12,2 KB yarımdı → plate-VE'nin tam yanıtı ≈3,5–4,2k token sınırında. 4096 yeterli
+  OLABİLİR ama pay dar; batch'te yine `length` gelirse `num_predict` 5120'ye çıkarılır (flange:
+  14121+5120=19241 ≤ 20480 ✓).
+- **Gerçek koşu:** A3=B3 zinciri (plate-VE, flange-VE → elbow V/VE, drawing-2 V/VE), taze model +
+  ön-ısıtma ile başlatıldı. Bütçe: 6/12 işlendi.

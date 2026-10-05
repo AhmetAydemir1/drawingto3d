@@ -1,4 +1,4 @@
-"""SEMREAD-001B — **tahmin üreten sözleşme** (P0R-2).
+"""SEMREAD-001C — **tahmin üreten sözleşme** (PLAN-12 §13/§19).
 
 Bu modül, ham tahminin byte'larını/içeriğini değiştirebilecek sabitlerin **tek** yeridir:
 model etiketi, beklenen digest, beklenen runtime, üretim ayarları, görüntü işleme sözleşmesi ve
@@ -8,15 +8,20 @@ Kural: buradaki bir değeri değiştirmek ham tahmini geçersiz kılar. Değerle
 rapor üretimi ve referans doğrulaması bu dosyada **yaşamaz** — onlar `evaluation_identity()`ye girer.
 Böylece yalnız evaluator/gold düzeltmesi geçerli ham tahmini yeniden üretmeyi gerektirmez.
 
-Sürüm `/3` (P0R-FINAL-C): tahmin girdisi kimliği artık gerçekten hazırlanan paketten (hazırlanmış
-görüntü byte'ları + gönderilen prompt + VE gözlem tablosu) kurulur; eski sürümdeki sayfa PNG'sine
-dayanan `input_identity` yalnız meta veri olarak kalır. Girdi sözleşmesi değiştiği için bu dosyayı
-hash'leyen attempt'ler bayatlar (yeniden kullanım yok; D yeniden koşar, inference harcamaz).
+Sürüm `/1` (SEMREAD-001C, PLAN-12 §19): üretim zarfı 001B'nin **ölçülmüş** tavanlarına göre
+yeniden seçildi. 001B'de gönderilen 19 çağrının 11'i `done_reason=length` ile kesildi: 10'u 2048
+`num_predict` tavanında, biri (`dev-plate-pocket-VE`) **bağlam tavanında** (prompt 7593 + çıktı
+599 = 8192). VE prompt'u sayfa başına 4098–7593 token ölçüldü. Bu yüzden:
+`num_predict = 3072` (kesilme tavanının 1,5×'i; kabul yalnız `done_reason=stop` ile verilir) ve
+`num_ctx = 12288` (en kötü ölçülen VE prompt'u 7593 + 3072 = 10665 < 12288; 8192 kanıtlı biçimde
+yetmiyor). En büyük context körlemesine seçilmez (§19.3): dev koşusu bu zarfı ölçer.
+001B sözleşmesi (`semread-001b-run-contract/3`) `docs/PLAN-11.md` kaydında donmuştur; bu sürüm
+001C deneyinin kimliğidir.
 """
 
 from __future__ import annotations
 
-CONTRACT_VERSION = "semread-001b-run-contract/3"
+CONTRACT_VERSION = "semread-001c-run-contract/1"
 
 MODEL = "qwen3-vl:8b-instruct"
 EXPECTED_DIGEST = "0533d74300e4f9bc367d675d4e64ffd073d50ff16a2b4096cc2e8a1cf8c96319"
@@ -45,7 +50,9 @@ IMAGES_LAYOUT = "per_image_message_labeled"
 IMAGE_LABEL_PREFIX = "Image ID: "
 
 IMAGE_MAX_SIDE = 1280          # development'ta sabitlenir; final koşuya kadar değişmez
-NUM_PREDICT = 2048
+# PLAN-12 §19: 2048 körlemesine yükseltilmedi; 001B'nin ölçülen kesilme tavanına göre 3072 seçildi.
+# Kabul yalnız `done_reason == stop` ile verilir; hedef: başarılı eval_count ≤ 0.8 × num_predict.
+NUM_PREDICT = 3072
 
 # Üretim ayarları: taşıma katmanı bu değerlerden kurulur (kopyası tutulmaz).
 #
@@ -53,7 +60,7 @@ NUM_PREDICT = 2048
 # `_chat_request`) bu iki seçeneği Ollama `options` gövdesine koymuyor. Donmuş sözleşmeye yazıp
 # göndermemek, kaydetmenin gerçeği anlatması kuralını çiğnerdi. Desteklenmeyen bir donmuş ayar
 # eklenirse `write_live_attempt()` gönderimi durdurur (`blocking_kind=unsupported_frozen_setting`).
-SETTINGS = {"num_ctx": 8192, "temperature": 0.0,
+SETTINGS = {"num_ctx": 12288, "temperature": 0.0,
             "num_predict": NUM_PREDICT, "keep_alive": "5m", "image_max_side": IMAGE_MAX_SIDE,
             "images_layout": IMAGES_LAYOUT, "image_label_prefix": IMAGE_LABEL_PREFIX,
             "raw_page_strategy": RAW_PAGE_STRATEGY}

@@ -66,6 +66,26 @@ PAGES_DIR = CORPUS_DIR / "pages"
 ATTEMPT_ROOT = REPORT_ROOT / "attempts"
 PREPARED_INPUT_DIR = CORPUS_DIR / "prepared-inputs"   # gerçek hazırlanmış girdi kaydı önbelleği
 
+# Deney kökü (PLAN-12 §20/§47): 001B ve 001C kayıtları aynı klasörde/ledger'da karışmaz. Varsayılan
+# 001B'dir; `use_experiment("semread-001c")` yalnız bu modülün yollarını çevirir — diskte hiçbir
+# 001B dosyasına dokunulmaz. Sayfa kaynakları ortak okunur; 001B dev/frozen sayfaları 001C'de
+# **regression/diagnostic** amaçlıdır (§22), "unseen holdout" diye raporlanamaz.
+EXPERIMENT_NAME = "semread-001b"
+
+
+def use_experiment(name: str) -> dict:
+    """Deney kökünü değiştir (PLAN-12 §20): defter/attempt/corpus dizinleri `out/lab/<name>` olur."""
+    global EXPERIMENT_NAME, REPORT_ROOT, CORPUS_DIR, GOLD_DIR, PAGES_DIR, ATTEMPT_ROOT
+    global PREPARED_INPUT_DIR
+    EXPERIMENT_NAME = name
+    REPORT_ROOT = LAB_ROOT / name
+    CORPUS_DIR = REPORT_ROOT / "corpus"
+    GOLD_DIR = CORPUS_DIR / "gold"
+    PAGES_DIR = CORPUS_DIR / "pages"
+    ATTEMPT_ROOT = REPORT_ROOT / "attempts"
+    PREPARED_INPUT_DIR = CORPUS_DIR / "prepared-inputs"
+    return {"experiment": name, "report_root": str(REPORT_ROOT)}
+
 JOB_PREFIX = "semread-001b-"
 CASE_TIMEOUT_SECONDS = 600
 RUN_TIMEOUT_SECONDS = 7200
@@ -389,7 +409,8 @@ def state_path() -> Path:
 def load_state() -> dict:
     state = read_json(state_path(), default=None)
     if state is None:
-        state = {"schema": "semread-001b-state/1", "created_at": _now(), "live_calls": [],
+        state = {"schema": "semread-001b-state/1", "experiment": EXPERIMENT_NAME,
+                 "created_at": _now(), "live_calls": [],
                  "budget": {"dev": LIVE_CALL_LIMIT_DEV, "final": LIVE_CALL_LIMIT_FINAL,
                             "total": LIVE_CALL_LIMIT_TOTAL},
                  "attempts": {}, "notes": [
@@ -1500,9 +1521,13 @@ def write_live_attempt(page: dict, arm: str, *, phase: str, observations=None, s
                 "references": outcome.get("references"), "truncated": outcome.get("truncated"),
                 "leakage": outcome.get("leakage"), "images": outcome.get("images")})
     stats = outcome.get("stats") or {}
+    answer_text = outcome.get("raw_response")
     write_json(directory / "resources.json",
                {"schema": "semread-001b-resources/1", "arm": arm, "seconds": seconds,
                 "inference_calls": 1, "stats": stats,
+                "prompt_bytes": len(prompt.encode("utf-8")),
+                "response_bytes": (len(answer_text.encode("utf-8"))
+                                   if isinstance(answer_text, str) else None),
                 "rss": {"value_bytes": resource.getrusage(resource.RUSAGE_SELF).ru_maxrss,
                         "scope": "bu sürecin RSS'i; toplam sistem/model RAM'i değildir"}})
     write_json(directory / "runtime-identity.json", runtime)
@@ -2259,7 +2284,7 @@ def final_matrix(reuse: bool = True) -> dict:
 
 
 def run_live(phase: str, split: str | None = None, arms: tuple[str, ...] = (V_ARM, VE_ARM),
-             dry_run: bool = False, reuse: bool = True) -> dict:
+             dry_run: bool = False, reuse: bool = True, pages: tuple[str, ...] = ()) -> dict:
     if phase not in PHASES:
         raise SystemExit(f"geçersiz faz: {phase!r} (beklenen: {PHASES})")
     matrix = final_matrix(reuse=reuse)
@@ -2268,6 +2293,8 @@ def run_live(phase: str, split: str | None = None, arms: tuple[str, ...] = (V_AR
     for cell in matrix["cells"]:
         page = next(row for row in PAGES if row["page_id"] == cell["page_id"])
         if split and page["split"] != split:
+            continue
+        if pages and page["page_id"] not in pages:
             continue
         if cell["arm"] not in arms:
             continue
@@ -2282,6 +2309,7 @@ def run_live(phase: str, split: str | None = None, arms: tuple[str, ...] = (V_AR
         jobs.append(Job(
             id=f"{JOB_PREFIX}{cell['page_id']}-{cell['arm']}-{phase}",
             command=[sys.executable, str(ROOT / "eval/semread_001b_pilot.py"),
+                     "--experiment", EXPERIMENT_NAME,
                      "--worker", "--page-id", page["page_id"], "--arm", cell["arm"],
                      "--phase", phase],
             inputs=[page_png],
@@ -2323,11 +2351,18 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--evaluate", action="store_true")
     parser.add_argument("--budget", action="store_true")
     parser.add_argument("--dry-run", action="store_true", help="plan + bütçe; çağrı yok")
+    parser.add_argument("--experiment", default=None,
+                        help="deney kökü (örn. semread-001c); varsayılan semread-001b")
+    parser.add_argument("--pages", default=None,
+                        help="virgülle sayfa kimliği listesi (örn. dev-plate-pocket,dev-flange-book)")
     parser.add_argument("--worker", action="store_true")
     parser.add_argument("--d-worker", action="store_true")
     parser.add_argument("--page-id")
     parser.add_argument("--arm", choices=list(ARMS))
     args = parser.parse_args(argv)
+    if args.experiment:
+        use_experiment(args.experiment)
+    selected_pages = tuple(part.strip() for part in (args.pages or "").split(",") if part.strip())
 
     if args.worker:
         return worker(args)
@@ -2366,7 +2401,8 @@ def main(argv: list[str] | None = None) -> int:
         if not args.phase:
             raise SystemExit("--dry-run için --phase gerekli (dev|final)")
         print(json.dumps(run_live(args.phase, args.split, tuple(args.arms.split(",")),
-                                  dry_run=True, reuse=not args.no_reuse),
+                                  dry_run=True, reuse=not args.no_reuse,
+                                  pages=selected_pages),
                          ensure_ascii=False, indent=2))
         return 0
     if args.d:
@@ -2379,7 +2415,7 @@ def main(argv: list[str] | None = None) -> int:
         if not args.phase:
             raise SystemExit("--live için --phase gerekli (dev|final)")
         print(json.dumps(run_live(args.phase, args.split, tuple(args.arms.split(",")),
-                                  reuse=not args.no_reuse),
+                                  reuse=not args.no_reuse, pages=selected_pages),
                          ensure_ascii=False, indent=2))
         return 0
     if args.evaluate:

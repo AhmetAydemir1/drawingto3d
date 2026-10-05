@@ -377,3 +377,38 @@ def test_p4_attempt_state_keeps_truncation_apart_from_parse_error():
                                {"parsed": False}) == "transport_error"
     assert {"truncated_output", "incomplete_metadata"} <= set(pilot.FINALIZED_STATES)
     assert {"truncated_output", "incomplete_metadata"} <= set(pilot.DISPATCHED_ATTEMPT_STATES)
+
+
+# ---------------------------------------------------------------- P5/P6: zarf + deney kökü
+
+
+def test_p5_run_contract_envelope_is_001c_and_measured():
+    from drawingto3d.semantic_run_contract import CONTRACT_VERSION, NUM_PREDICT, SETTINGS
+
+    assert CONTRACT_VERSION == "semread-001c-run-contract/1"
+    assert NUM_PREDICT == 3072 and SETTINGS["num_predict"] == NUM_PREDICT
+    # 001B kanıtı: en kötü VE prompt'u 7593; 7593 + 3072 = 10665 < 12288. 8192 kanıtlı biçimde yetmiyor.
+    assert SETTINGS["num_ctx"] == 12288
+    assert SETTINGS["num_predict"] + 7593 <= SETTINGS["num_ctx"]
+    assert SETTINGS["temperature"] == 0.0
+
+
+def test_p6_experiment_switch_moves_only_the_ledger(tmp_path, monkeypatch):
+    pilot = _load_pilot()
+    assert pilot.EXPERIMENT_NAME == "semread-001b"
+    original_state = pilot.state_path()
+    monkeypatch.setattr(pilot, "LAB_ROOT", tmp_path)
+    info = pilot.use_experiment("semread-001c")
+    assert info["experiment"] == "semread-001c"
+    assert pilot.REPORT_ROOT == tmp_path / "semread-001c"
+    assert pilot.CORPUS_DIR == tmp_path / "semread-001c" / "corpus"
+    assert pilot.ATTEMPT_ROOT == tmp_path / "semread-001c" / "attempts"
+    assert pilot.state_path() == tmp_path / "semread-001c" / "state.json"
+    assert pilot.state_path() != original_state
+    fresh = pilot.load_state()
+    assert fresh["experiment"] == "semread-001c"
+    assert fresh["budget"] == {"dev": 10, "final": 20, "total": 30}, "001C kendi defteri"
+    # Geri dönüş: 001B adı yine 001B köküne çözülür; varsayılan kayıt yolu sabittir.
+    pilot.use_experiment("semread-001b")
+    assert pilot.EXPERIMENT_NAME == "semread-001b"
+    assert pilot.REPORT_ROOT == tmp_path / "semread-001b"

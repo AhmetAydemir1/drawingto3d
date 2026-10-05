@@ -136,3 +136,24 @@ burada ve `docs/PLAN-12.md` altında yürür. 001B ve 001C ledger/klasörleri ka
 - **NEXT SINGLE STEP:** P5/P6 (§19/§20): `CONTRACT_VERSION` → `semread-001c-run-contract/1`,
   `NUM_PREDICT`/`num_ctx` kararı (3072/4096 adayı, done_reason=stop acceptance), 001C ledger
   (`out/lab/semread-001c`) + dev smoke (ilk 2 sayfa × V/VE = 4 çağrı).
+
+---
+
+## 1g. PLAN-12 §19/§20 (P5/P6) — run-contract v1 + zarf + 001C kökü ✓
+
+- **CURRENT HEAD:** `ae91dc6` (P4; P5/P6 commit'i ilerletir).
+- **WHAT CHANGED:** `semantic_run_contract.py`: `CONTRACT_VERSION = "semread-001c-run-contract/1"`;
+  zarf **ölçüme dayalı** — `num_predict 3072` (001B'de 19 gönderimin 11'i length ile kesildi: 10'u
+  2048 tavanı, 1'i bağlam tavanı `dev-plate-pocket-VE` 7593+599=8192) ve `num_ctx 12288`
+  (7593+3072=10665 < 12288; 8192 kanıtlı biçimde yetmiyor). `semread_001b_pilot.py`:
+  `use_experiment()` + `--experiment` (001B ve 001C defterleri/dizinleri **karışmaz**), `--pages`
+  seçici, worker komutuna `--experiment` geçirilir; `load_state` yeni deftere `experiment` alanı
+  yazar; `resources.json` artık `prompt_bytes`/`response_bytes` taşır (§19.1 ölçümü).
+- **TEST EVIDENCE:** `pytest tests/test_semread_001c_contract.py tests/test_semantic_candidates.py
+  tests/test_semantic_reader.py` → **68 passed** (0,50 s); zarf testi 7593+3072≤12288 ilişkisini ve
+  `semread-001c-run-contract/1`'i bağlar; deney-kökü testi 001C defterini/bütçesini (10/20/30)
+  doğrular. `identity+lifecycle` süiti arka planda koşuyor (§32 seti).
+- **INFERENCE BUDGET:** 001C **0/30** — bu commit'te canlı çağrı yok.
+- **OPEN GATE:** §52 dev smoke (ilk 2 sayfa × V/VE = 4 çağrı).
+- **NEXT SINGLE STEP:** 001C corpus kökünü kur (`--experiment semread-001c --corpus`), dry-run'la
+  4 işi doğrula, sonra `dev-plate-pocket` + `dev-flange-book` V/VE canlı koşu.

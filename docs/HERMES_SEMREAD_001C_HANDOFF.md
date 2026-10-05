@@ -1,6 +1,8 @@
 # HERMES — SEMREAD-001C handoff günlüğü
 
 **Plan:** `docs/PLAN-12.md` (SEMREAD-001B sonrası: output contract v2 → SEMREAD-001C).
+**Aktif plan (2026-10-05'ten):** `docs/PLAN-13.md` — dev 8/8 sonrası güncel plan (kullanıcı PLAN_LATEST'i,
+bayt kopya, sha256 `cc61e0bc…`); PLAN-12 + kök PLAN.md history olarak korunur (§34). Bkz. §1p.
 **Kayıt biçimi:** PLAN-12 §47 — *CURRENT HEAD / CURRENT EXPERIMENT / IMMUTABLE HISTORY / WHAT
 CHANGED / TEST EVIDENCE / INFERENCE BUDGET / OPEN GATE / NEXT SINGLE STEP*.
 **Kural:** 001B kaydı `docs/HERMES_SEMREAD_001B_HANDOFF.md` **değiştirilmez**; 001C işleri yalnız
@@ -345,3 +347,36 @@ burada ve `docs/PLAN-12.md` altında yürür. 001B ve 001C ledger/klasörleri ka
 - **Sıradaki adım (TEK):** **P7 (§23) yeni bağımsız holdout için KULLANICI GİRDİSİ** — repoda
   görülmemiş çizim(ler). Geldiğinde: P8 freeze (zarf yeniden onaylanır) → P9/P10 20 final çağrı +
   değerlendirme. Rapor: `report.md` (kök). Tüm commit'ler push edildi.
+
+---
+
+## 1p. §37 OFFLINE dev semantik değerlendirme ✓ + PLAN-13 izleme (2026-10-05 ~13:40)
+
+- **CURRENT HEAD:** `1f5977a` + bu kayıtla gelen commit.
+- **Aktif plan:** `docs/PLAN-13.md` izlendi — kullanıcının PLAN_LATEST'i; bayt kopya, sha256
+  `cc61e0bc1ca710b0c0144de5de95985304ab3462a6200bf37f95922e1cd4ac89`. PLAN-12 + kök PLAN.md
+  **history** olarak korundu (§34); silinmedi.
+- **WHAT CHANGED:**
+  1. `eval/semread_001c_dev_semantic_eval.py` — §37 aracı: seçili 8 V/VE attempt'i + D kolu,
+     dondurulmuş dev gold (FREEZE hash denetimli), D/V/VE **aynı** `semantic_evaluation` yolu;
+     salt-okur, 0 inference; llama zinciri import edilmez. Çıktı:
+     `out/lab/semread-001c/dev-semantic-report.{json,md}`.
+  2. D kolu 001C'de koşuldu (4 sayfa; `inference_calls: 0`): plate-pocket 7 · flange-book 12 ·
+     elbow 17 · drawing-2 17 aday — 001B D adetleriyle birebir aynı. `dev-flange-book-D/attempt-0001`
+     kesilen yerel koşudan orfan kaldı (result.json yok → defterde kayıt değil; yeniden koşu
+     `attempt-0002`). **Bütçe değişmedi: dev 24/24, final 0/20** (D yalnız attempt tarihçesi yazar).
+  3. `tests/test_semread_001c_dev_semantic_eval.py` — 8 test (birim + gerçek defter + taze-süreç).
+- **BULGU (§37 yanıtı): EVET — parse-valid (V/VE) çıktı semantik olarak degenerate.** Seçili 8
+  hücrenin **51/51 adayı içeriksiz** (yalnız `source.region` kutusu; callout/temsil/ölçü/bitiş/hedef
+  hepsi boş). **Tüm VE adayları (45/45) prompt gözlem tablosu satırlarının birebir yankısı**
+  (plate-VE 41/41; 21'i metin satırı). Kesik flood denemeleri de içeriksizdi (elbow-V 40/64/30 öğe)
+  → "aşırı bastırma gerçek içeriği kesti" okuması veriyle desteklenmiyor (§28). D kolu 53/53
+  içerikli — kıyas aynı evaluator, aynı gold.
+- **TEST EVIDENCE:** yeni dosya **8/8 passed**; odak süiti (001c contract + semantic_candidates +
+  semantic_reader + yeni dosya) **77 passed** (~0,6 s); 001B closure `--verify` → **9/9 birebir**.
+- **INFERENCE BUDGET:** değişmedi — dev 24/24, final 0/20 (bu kayıtta canlı çağrı yok).
+- **OPEN GATE:** §37 kapandı; sıradaki PLAN-13 §35 #2–#5: shared generation invariant → maxItems=32 +
+  kopya kuralı → dev bütçe tavanı 32 → 8-hücre shared-envelope requalification.
+- **NEXT SINGLE STEP:** §35 #2 — `semantic_run_contract.py`: `REPEAT_PENALTY_BY_ARM` yerine ortak
+  `REPEAT_PENALTY`; `generation_settings(V) == generation_settings(VE)` invariant testi; pilot'ta
+  kol-özel rp dalını kaldırma.

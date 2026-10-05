@@ -1,0 +1,605 @@
+{
+  "artifacts": [
+    {
+      "bytes": 38366,
+      "path": "docs/HERMES_SEMREAD_001C_HANDOFF.md",
+      "sha256": "757851dcdbfb8b7bdd0147eca4716c6090676a03c468888d27449daa55dca4c7",
+      "tracked": true
+    },
+    {
+      "bytes": 14512,
+      "path": "docs/PLAN-13.md",
+      "sha256": "cc61e0bc1ca710b0c0144de5de95985304ab3462a6200bf37f95922e1cd4ac89",
+      "tracked": true
+    },
+    {
+      "bytes": 26804,
+      "path": "eval/semread_001b_gold/FREEZE.json",
+      "sha256": "f6ecf8f4e4e3bfe4c5be92f4aa61abe67160c6614f00e4050a3dc4f43466ed2c",
+      "tracked": true
+    },
+    {
+      "bytes": 2948,
+      "path": "out/lab/semread-001c/attempts/dev-drawing-2-D/attempt-0001/manifest.json",
+      "sha256": "4aafa56a56b5b54ec60e72a6c453b4d812e058c8b370e4a14643705b1550f2a9",
+      "tracked": false
+    },
+    {
+      "bytes": 36721,
+      "path": "out/lab/semread-001c/attempts/dev-drawing-2-D/attempt-0001/response-parsed.json",
+      "sha256": "4ea531732b16492544a5337cb69e189f3b919ec75a4287b850d794dca5a96bc8",
+      "tracked": false
+    },
+    {
+      "bytes": 1164,
+      "path": "out/lab/semread-001c/attempts/dev-drawing-2-D/attempt-0001/result.json",
+      "sha256": "904f4a79869ed0ca56f37b8f19652f615ecc3792234dc0fd964a25343ff29fda",
+      "tracked": false
+    },
+    {
+      "bytes": 2833,
+      "path": "out/lab/semread-001c/attempts/dev-drawing-2-V/attempt-0002/manifest.json",
+      "sha256": "38be11351d305e8afeab1e8a5ba42ddcad5a45369a53248bb2cc20e51944ec0b",
+      "tracked": false
+    },
+    {
+      "bytes": 2803,
+      "path": "out/lab/semread-001c/attempts/dev-drawing-2-V/attempt-0002/response-parsed.json",
+      "sha256": "eb42d8b662e52659e78c8e8bd79c1e060e2ad2e6cf6a9fa0e4c7eb5e3581f708",
+      "tracked": false
+    },
+    {
+      "bytes": 1280,
+      "path": "out/lab/semread-001c/attempts/dev-drawing-2-V/attempt-0002/result.json",
+      "sha256": "c6df304d71e9b94f3a4d3f1be777c19ea09cd7b6e1486218dd4e1ee8fce33b63",
+      "tracked": false
+    },
+    {
+      "bytes": 2864,
+      "path": "out/lab/semread-001c/attempts/dev-drawing-2-VE/attempt-0002/manifest.json",
+      "sha256": "96c894448ec91b24fae02418fc8b12d3d7645680b3733f647272a280a503ba55",
+      "tracked": false
+    },
+    {
+      "bytes": 43930,
+      "path": "out/lab/semread-001c/attempts/dev-drawing-2-VE/attempt-0002/response-parsed.json",
+      "sha256": "51fc92235a8b75c31b2df75261468590282c275dd95f60ae4ca076d0c1b5e6fa",
+      "tracked": false
+    },
+    {
+      "bytes": 1289,
+      "path": "out/lab/semread-001c/attempts/dev-drawing-2-VE/attempt-0002/result.json",
+      "sha256": "9d7e507186156fd0b2ad93c81fca7247386087c20223c260c99ce66014fdb8de",
+      "tracked": false
+    },
+    {
+      "bytes": 2937,
+      "path": "out/lab/semread-001c/attempts/dev-flange-book-D/attempt-0002/manifest.json",
+      "sha256": "7a3fafbb4d83c0eca1556624358aab8e0e0cad8544161d9e90683f00b83cb3b8",
+      "tracked": false
+    },
+    {
+      "bytes": 23230,
+      "path": "out/lab/semread-001c/attempts/dev-flange-book-D/attempt-0002/response-parsed.json",
+      "sha256": "5e3a2ac24ba780c953f2f1e71f282831132d0c42cb626b7f2efdb96c7e665b82",
+      "tracked": false
+    },
+    {
+      "bytes": 1170,
+      "path": "out/lab/semread-001c/attempts/dev-flange-book-D/attempt-0002/result.json",
+      "sha256": "a61f46677c29f356182bbccc0feb989b4640c37f8737d94b8bbf2d715c693fe0",
+      "tracked": false
+    },
+    {
+      "bytes": 2844,
+      "path": "out/lab/semread-001c/attempts/dev-flange-book-V/attempt-0003/manifest.json",
+      "sha256": "879cbe18b64240e575759353f4d32bb020062fab5b82e4a025f894cc50ecca3a",
+      "tracked": false
+    },
+    {
+      "bytes": 43883,
+      "path": "out/lab/semread-001c/attempts/dev-flange-book-V/attempt-0003/response-parsed.json",
+      "sha256": "316d97545cb1b9de49a5eeb0f183fd7932ee67174d67a23b83cdc932561f3daf",
+      "tracked": false
+    },
+    {
+      "bytes": 1291,
+      "path": "out/lab/semread-001c/attempts/dev-flange-book-V/attempt-0003/result.json",
+      "sha256": "78b71987603c46bce49d22fe00de5ded2e2260cad6bdbbb083ee84f866b12bc2",
+      "tracked": false
+    },
+    {
+      "bytes": 2875,
+      "path": "out/lab/semread-001c/attempts/dev-flange-book-VE/attempt-0005/manifest.json",
+      "sha256": "7e67de72e29d7666070d6df9d2ae9ae81f8dc087d5a17d36a174309321163163",
+      "tracked": false
+    },
+    {
+      "bytes": 43974,
+      "path": "out/lab/semread-001c/attempts/dev-flange-book-VE/attempt-0005/response-parsed.json",
+      "sha256": "8db1ef6ecfb8349f50c33581f0c0c2981c6e15898e1b2a2dd6f5fffb62f617a4",
+      "tracked": false
+    },
+    {
+      "bytes": 1298,
+      "path": "out/lab/semread-001c/attempts/dev-flange-book-VE/attempt-0005/result.json",
+      "sha256": "f254e164eb15ba28c74d4cf971bd0ed55f0ffa0c16b3a96dc7b71aa7a4fe4457",
+      "tracked": false
+    },
+    {
+      "bytes": 2918,
+      "path": "out/lab/semread-001c/attempts/dev-flange-elbow-D/attempt-0001/manifest.json",
+      "sha256": "abfe86f7c17dd6b589768d8d118178e731ff0e46b487ac88afdc0c5cf6b958b3",
+      "tracked": false
+    },
+    {
+      "bytes": 32593,
+      "path": "out/lab/semread-001c/attempts/dev-flange-elbow-D/attempt-0001/response-parsed.json",
+      "sha256": "7055d70747dcfbce0825552942233f74e233d8c0f69d045353d8170c977199db",
+      "tracked": false
+    },
+    {
+      "bytes": 1172,
+      "path": "out/lab/semread-001c/attempts/dev-flange-elbow-D/attempt-0001/result.json",
+      "sha256": "c9428a8a906389368986bf09920b8205061cf2d744bff2133217d2fdc5ef488f",
+      "tracked": false
+    },
+    {
+      "bytes": 2834,
+      "path": "out/lab/semread-001c/attempts/dev-flange-elbow-V/attempt-0008/manifest.json",
+      "sha256": "f6b544d97005901d3535f49ddbf2bdd0bb3c386c92352487ecf378779ffb848e",
+      "tracked": false
+    },
+    {
+      "bytes": 43675,
+      "path": "out/lab/semread-001c/attempts/dev-flange-elbow-V/attempt-0008/response-parsed.json",
+      "sha256": "d77640ade56cc882c39660809b0c6b8bc30c669e396fe21138bc46f4a3ea158b",
+      "tracked": false
+    },
+    {
+      "bytes": 1296,
+      "path": "out/lab/semread-001c/attempts/dev-flange-elbow-V/attempt-0008/result.json",
+      "sha256": "541d46072e0cdd9c54014b48743be555a3fde1de8d7f4b8a62f8a37c1bd136d4",
+      "tracked": false
+    },
+    {
+      "bytes": 2919,
+      "path": "out/lab/semread-001c/attempts/dev-flange-elbow-VE/attempt-0003/manifest.json",
+      "sha256": "e8f2500f58a796ad86b24ca2c20f3cf7cfc34b0424b16b83ec400acdc6673943",
+      "tracked": false
+    },
+    {
+      "bytes": 1436,
+      "path": "out/lab/semread-001c/attempts/dev-flange-elbow-VE/attempt-0003/response-parsed.json",
+      "sha256": "88dc7ec98c4049448767d1e652ca051c076037061e2051c65754b16ce6e05f5c",
+      "tracked": false
+    },
+    {
+      "bytes": 1301,
+      "path": "out/lab/semread-001c/attempts/dev-flange-elbow-VE/attempt-0003/result.json",
+      "sha256": "2224a580d82fb5ceb3bda4ab79fb889d9fdf1a9b4ec17feab66a4d557fadda8a",
+      "tracked": false
+    },
+    {
+      "bytes": 2975,
+      "path": "out/lab/semread-001c/attempts/dev-plate-pocket-D/attempt-0001/manifest.json",
+      "sha256": "ec9086ee79f9230fb3851532910fccd8e23015a0efea94efeae89484b7a0ba79",
+      "tracked": false
+    },
+    {
+      "bytes": 15520,
+      "path": "out/lab/semread-001c/attempts/dev-plate-pocket-D/attempt-0001/response-parsed.json",
+      "sha256": "269f37895d5724c25494598f44790e5b82d7653dd26efe79e79e0e8cde1dba55",
+      "tracked": false
+    },
+    {
+      "bytes": 1168,
+      "path": "out/lab/semread-001c/attempts/dev-plate-pocket-D/attempt-0001/result.json",
+      "sha256": "b4fc1bfa7af5a52175c805410c3ada4a1a0b432ccbcd8054856ef414398b50e2",
+      "tracked": false
+    },
+    {
+      "bytes": 2867,
+      "path": "out/lab/semread-001c/attempts/dev-plate-pocket-V/attempt-0002/manifest.json",
+      "sha256": "d70b64004123dffb5bf85e07238a6417befef0ee11a40f36ff803ea27b5e0bb9",
+      "tracked": false
+    },
+    {
+      "bytes": 2803,
+      "path": "out/lab/semread-001c/attempts/dev-plate-pocket-V/attempt-0002/response-parsed.json",
+      "sha256": "74b0546a2a5b288de786887ec1bd2be00022a715c1523993510f850a388e06cf",
+      "tracked": false
+    },
+    {
+      "bytes": 1295,
+      "path": "out/lab/semread-001c/attempts/dev-plate-pocket-V/attempt-0002/result.json",
+      "sha256": "021de061f23b2c4ff48d9079384a81ee641e64116cc86d2053f02ba5717f4d35",
+      "tracked": false
+    },
+    {
+      "bytes": 2898,
+      "path": "out/lab/semread-001c/attempts/dev-plate-pocket-VE/attempt-0007/manifest.json",
+      "sha256": "21bee43a56ed0719929cf2bb68f7c18db0d272829449778e17fc4d8ed172af68",
+      "tracked": false
+    },
+    {
+      "bytes": 43922,
+      "path": "out/lab/semread-001c/attempts/dev-plate-pocket-VE/attempt-0007/response-parsed.json",
+      "sha256": "9899a2d82cd457464cd2b5e2c34ffa393e3ef718060ff3a576c4e31e5ee627c3",
+      "tracked": false
+    },
+    {
+      "bytes": 1303,
+      "path": "out/lab/semread-001c/attempts/dev-plate-pocket-VE/attempt-0007/result.json",
+      "sha256": "9d80f0ec24af4cd80d1ddc903ce886d2bfa15e37419f564336883fc16d924a4a",
+      "tracked": false
+    },
+    {
+      "bytes": 16490,
+      "path": "out/lab/semread-001c/dev-report.json",
+      "sha256": "7608ee5300d9f25f5e5f45b24ec8c47e6406c97e8bcbd4aa29f975277e41e732",
+      "tracked": false
+    },
+    {
+      "bytes": 1194,
+      "path": "out/lab/semread-001c/dev-report.md",
+      "sha256": "799d2dcdd326af9ab45e62d2f5acf0e8ccbf0edefe703049ddf9c0e20d3d0b11",
+      "tracked": false
+    },
+    {
+      "bytes": 277850,
+      "path": "out/lab/semread-001c/dev-semantic-report.json",
+      "sha256": "4c75cd96dc0855124bcc21399eb7df1a3ef811493f07cc857df613f35dd23385",
+      "tracked": false
+    },
+    {
+      "bytes": 6413,
+      "path": "out/lab/semread-001c/dev-semantic-report.md",
+      "sha256": "e2ef9820da8a2480ba3e3cbf690f8605389527d826a6e28039867bc062c688fb",
+      "tracked": false
+    },
+    {
+      "bytes": 66374,
+      "path": "out/lab/semread-001c/state.json",
+      "sha256": "8635adc70bcd1827c469e2a39da507411d4a9a7bdc70894abd6e07d77be6cf16",
+      "tracked": false
+    },
+    {
+      "bytes": 15820,
+      "path": "report.md",
+      "sha256": "d16f6d59c316531957d2be34b81888624be9b103960e22ea777890599423b407",
+      "tracked": true
+    }
+  ],
+  "experiment": {
+    "decision": "PLAN-13 §7: dev 32/32 sonrası §8 kapısı geçilmedi → 001C final yok; yeni experiment version = SEMREAD-001D",
+    "handoff": "docs/HERMES_SEMREAD_001C_HANDOFF.md",
+    "name": "semread-001c",
+    "plan": "docs/PLAN-13.md",
+    "report": "report.md",
+    "requalification": "7/8 (§8 resmî kapı; elbow-VE schema_coordinate) · paylaşımlı ayar 8/8",
+    "status": "closed_read_only_historical"
+  },
+  "identities": {
+    "evaluation_identity": {
+      "groups": {
+        "7637d6d6a749d1a5ae48f622797b12e338bc6d8bec1ffe448a12c029f0296bf8": [
+          "dev-plate-pocket-D/attempt-0001",
+          "dev-flange-book-D/attempt-0002",
+          "dev-flange-elbow-D/attempt-0001",
+          "dev-drawing-2-D/attempt-0001"
+        ],
+        "9c3651b41c7d1e9c64725e0240285dec60c076157550ad92956a3e62f6f7c748": [
+          "dev-flange-elbow-VE/attempt-0003"
+        ],
+        "9ec5f19ac87300bcf6a55211446026e48f6de7265c9bf787101ad6fa048a282c": [
+          "dev-plate-pocket-V/attempt-0002",
+          "dev-plate-pocket-VE/attempt-0007",
+          "dev-flange-book-V/attempt-0003",
+          "dev-flange-book-VE/attempt-0005",
+          "dev-flange-elbow-V/attempt-0008",
+          "dev-drawing-2-V/attempt-0002",
+          "dev-drawing-2-VE/attempt-0002"
+        ]
+      },
+      "value": "9ec5f19ac87300bcf6a55211446026e48f6de7265c9bf787101ad6fa048a282c",
+      "value_note": "run-time değer (seçili attempt manifestleri); en kalabalık grup"
+    },
+    "evaluation_identity_recomputed_at_closure": "9ec5f19ac87300bcf6a55211446026e48f6de7265c9bf787101ad6fa048a282c",
+    "offline_evaluation_run_id": "c6ac6d54d2e825a24cf55fc663260d21",
+    "producer_identity": {
+      "groups": {
+        "52ed8c5ee01f87963d47f76c99ddf07830e042df2268bb25113670d7a236f62b": [
+          "dev-plate-pocket-D/attempt-0001",
+          "dev-flange-book-D/attempt-0002",
+          "dev-flange-elbow-D/attempt-0001",
+          "dev-drawing-2-D/attempt-0001"
+        ],
+        "670da0401ef4c05c8e2a12e4b7aefd068c8bbef76bf82a20f78515dede6d9617": [
+          "dev-plate-pocket-V/attempt-0002",
+          "dev-plate-pocket-VE/attempt-0007",
+          "dev-flange-book-V/attempt-0003",
+          "dev-flange-book-VE/attempt-0005",
+          "dev-flange-elbow-V/attempt-0008",
+          "dev-drawing-2-V/attempt-0002",
+          "dev-drawing-2-VE/attempt-0002"
+        ],
+        "dab8908805c3b41a29bd6f5f0574d3ec239a7d6dfcf4d8b1c770af07a0b54400": [
+          "dev-flange-elbow-VE/attempt-0003"
+        ]
+      },
+      "value": "670da0401ef4c05c8e2a12e4b7aefd068c8bbef76bf82a20f78515dede6d9617",
+      "value_note": "run-time değer (seçili attempt manifestleri); en kalabalık grup"
+    },
+    "producer_identity_recomputed_at_closure": "208a6888a25ad707a3c2d2ee02bb40b1c6afde644769d59c4abfa3c6a0350909",
+    "run_contract": {
+      "documentation_revision": "P0.5 (2026-10-05, kapanış): yalnız docstring/yorum güncellendi; sabitler (num_ctx 22528 / num_predict 8192 / temperature 0.0 / repeat_penalty 1.25 paylaşımlı / repeat_last_n 512) ve davranış değişmedi — recompute bu yüzden mekanik sapar",
+      "file": "src/drawingto3d/semantic_run_contract.py",
+      "file_sha256_at_closure": "ef1d407a73e3dc2731d7735ea4a0124cfafe2647cad71c5b2d44655b6d9f92ba",
+      "file_sha256_before_documentation_revision": "f1a5a90992fbebaf861fc8b8f38d4600ca498eff0702a0325b0654f6404173e0",
+      "generation_settings_V_eq_VE": true,
+      "settings": {
+        "num_ctx": 22528,
+        "num_predict": 8192,
+        "repeat_last_n": 512,
+        "repeat_penalty": 1.25,
+        "temperature": 0.0
+      },
+      "version": "semread-001c-run-contract/1",
+      "versions_seen": [
+        "semread-001c-run-contract/1"
+      ]
+    }
+  },
+  "note": "PLAN_SEMREAD_001D §9 (P0.8): 001C closure kaydı. İzlenen dosya yalnızca hash listesidir; `--verify` başarısızsa bir 001C artifact'ı değişmiş demektir — 001C READ-ONLY'dir, düzeltme yeni sürümde (001D) yapılır. Kimliklerin run-time değerleri attempt manifestlerinden gelir; closure recompute'u bilgi amaçlıdır.",
+  "recorded_at_git_head": "1c87898b16006b481fcb51fbae4275e82702a125",
+  "schema": "semread-001c-closure/1",
+  "selected_attempts": [
+    {
+      "attempt_id": "dev-plate-pocket-D/attempt-0001",
+      "cell": "dev-plate-pocket-D",
+      "contract_version": "semread-001c-run-contract/1",
+      "directory": "out/lab/semread-001c/attempts/dev-plate-pocket-D/attempt-0001",
+      "evaluation_identity": "7637d6d6a749d1a5ae48f622797b12e338bc6d8bec1ffe448a12c029f0296bf8",
+      "manifest_sha256": "ec9086ee79f9230fb3851532910fccd8e23015a0efea94efeae89484b7a0ba79",
+      "parsed_sha256": "269f37895d5724c25494598f44790e5b82d7653dd26efe79e79e0e8cde1dba55",
+      "producer_identity": "52ed8c5ee01f87963d47f76c99ddf07830e042df2268bb25113670d7a236f62b",
+      "result_sha256": "b4fc1bfa7af5a52175c805410c3ada4a1a0b432ccbcd8054856ef414398b50e2",
+      "state": "pass"
+    },
+    {
+      "attempt_id": "dev-plate-pocket-V/attempt-0002",
+      "cell": "dev-plate-pocket-V",
+      "contract_version": "semread-001c-run-contract/1",
+      "directory": "out/lab/semread-001c/attempts/dev-plate-pocket-V/attempt-0002",
+      "evaluation_identity": "9ec5f19ac87300bcf6a55211446026e48f6de7265c9bf787101ad6fa048a282c",
+      "manifest_sha256": "d70b64004123dffb5bf85e07238a6417befef0ee11a40f36ff803ea27b5e0bb9",
+      "parsed_sha256": "74b0546a2a5b288de786887ec1bd2be00022a715c1523993510f850a388e06cf",
+      "producer_identity": "670da0401ef4c05c8e2a12e4b7aefd068c8bbef76bf82a20f78515dede6d9617",
+      "result_sha256": "021de061f23b2c4ff48d9079384a81ee641e64116cc86d2053f02ba5717f4d35",
+      "state": "pass"
+    },
+    {
+      "attempt_id": "dev-plate-pocket-VE/attempt-0007",
+      "cell": "dev-plate-pocket-VE",
+      "contract_version": "semread-001c-run-contract/1",
+      "directory": "out/lab/semread-001c/attempts/dev-plate-pocket-VE/attempt-0007",
+      "evaluation_identity": "9ec5f19ac87300bcf6a55211446026e48f6de7265c9bf787101ad6fa048a282c",
+      "manifest_sha256": "21bee43a56ed0719929cf2bb68f7c18db0d272829449778e17fc4d8ed172af68",
+      "parsed_sha256": "9899a2d82cd457464cd2b5e2c34ffa393e3ef718060ff3a576c4e31e5ee627c3",
+      "producer_identity": "670da0401ef4c05c8e2a12e4b7aefd068c8bbef76bf82a20f78515dede6d9617",
+      "result_sha256": "9d80f0ec24af4cd80d1ddc903ce886d2bfa15e37419f564336883fc16d924a4a",
+      "state": "pass"
+    },
+    {
+      "attempt_id": "dev-flange-book-D/attempt-0002",
+      "cell": "dev-flange-book-D",
+      "contract_version": "semread-001c-run-contract/1",
+      "directory": "out/lab/semread-001c/attempts/dev-flange-book-D/attempt-0002",
+      "evaluation_identity": "7637d6d6a749d1a5ae48f622797b12e338bc6d8bec1ffe448a12c029f0296bf8",
+      "manifest_sha256": "7a3fafbb4d83c0eca1556624358aab8e0e0cad8544161d9e90683f00b83cb3b8",
+      "parsed_sha256": "5e3a2ac24ba780c953f2f1e71f282831132d0c42cb626b7f2efdb96c7e665b82",
+      "producer_identity": "52ed8c5ee01f87963d47f76c99ddf07830e042df2268bb25113670d7a236f62b",
+      "result_sha256": "a61f46677c29f356182bbccc0feb989b4640c37f8737d94b8bbf2d715c693fe0",
+      "state": "pass"
+    },
+    {
+      "attempt_id": "dev-flange-book-V/attempt-0003",
+      "cell": "dev-flange-book-V",
+      "contract_version": "semread-001c-run-contract/1",
+      "directory": "out/lab/semread-001c/attempts/dev-flange-book-V/attempt-0003",
+      "evaluation_identity": "9ec5f19ac87300bcf6a55211446026e48f6de7265c9bf787101ad6fa048a282c",
+      "manifest_sha256": "879cbe18b64240e575759353f4d32bb020062fab5b82e4a025f894cc50ecca3a",
+      "parsed_sha256": "316d97545cb1b9de49a5eeb0f183fd7932ee67174d67a23b83cdc932561f3daf",
+      "producer_identity": "670da0401ef4c05c8e2a12e4b7aefd068c8bbef76bf82a20f78515dede6d9617",
+      "result_sha256": "78b71987603c46bce49d22fe00de5ded2e2260cad6bdbbb083ee84f866b12bc2",
+      "state": "pass"
+    },
+    {
+      "attempt_id": "dev-flange-book-VE/attempt-0005",
+      "cell": "dev-flange-book-VE",
+      "contract_version": "semread-001c-run-contract/1",
+      "directory": "out/lab/semread-001c/attempts/dev-flange-book-VE/attempt-0005",
+      "evaluation_identity": "9ec5f19ac87300bcf6a55211446026e48f6de7265c9bf787101ad6fa048a282c",
+      "manifest_sha256": "7e67de72e29d7666070d6df9d2ae9ae81f8dc087d5a17d36a174309321163163",
+      "parsed_sha256": "8db1ef6ecfb8349f50c33581f0c0c2981c6e15898e1b2a2dd6f5fffb62f617a4",
+      "producer_identity": "670da0401ef4c05c8e2a12e4b7aefd068c8bbef76bf82a20f78515dede6d9617",
+      "result_sha256": "f254e164eb15ba28c74d4cf971bd0ed55f0ffa0c16b3a96dc7b71aa7a4fe4457",
+      "state": "pass"
+    },
+    {
+      "attempt_id": "dev-flange-elbow-D/attempt-0001",
+      "cell": "dev-flange-elbow-D",
+      "contract_version": "semread-001c-run-contract/1",
+      "directory": "out/lab/semread-001c/attempts/dev-flange-elbow-D/attempt-0001",
+      "evaluation_identity": "7637d6d6a749d1a5ae48f622797b12e338bc6d8bec1ffe448a12c029f0296bf8",
+      "manifest_sha256": "abfe86f7c17dd6b589768d8d118178e731ff0e46b487ac88afdc0c5cf6b958b3",
+      "parsed_sha256": "7055d70747dcfbce0825552942233f74e233d8c0f69d045353d8170c977199db",
+      "producer_identity": "52ed8c5ee01f87963d47f76c99ddf07830e042df2268bb25113670d7a236f62b",
+      "result_sha256": "c9428a8a906389368986bf09920b8205061cf2d744bff2133217d2fdc5ef488f",
+      "state": "pass"
+    },
+    {
+      "attempt_id": "dev-flange-elbow-V/attempt-0008",
+      "cell": "dev-flange-elbow-V",
+      "contract_version": "semread-001c-run-contract/1",
+      "directory": "out/lab/semread-001c/attempts/dev-flange-elbow-V/attempt-0008",
+      "evaluation_identity": "9ec5f19ac87300bcf6a55211446026e48f6de7265c9bf787101ad6fa048a282c",
+      "manifest_sha256": "f6b544d97005901d3535f49ddbf2bdd0bb3c386c92352487ecf378779ffb848e",
+      "parsed_sha256": "d77640ade56cc882c39660809b0c6b8bc30c669e396fe21138bc46f4a3ea158b",
+      "producer_identity": "670da0401ef4c05c8e2a12e4b7aefd068c8bbef76bf82a20f78515dede6d9617",
+      "result_sha256": "541d46072e0cdd9c54014b48743be555a3fde1de8d7f4b8a62f8a37c1bd136d4",
+      "state": "pass"
+    },
+    {
+      "attempt_id": "dev-flange-elbow-VE/attempt-0003",
+      "cell": "dev-flange-elbow-VE",
+      "contract_version": "semread-001c-run-contract/1",
+      "directory": "out/lab/semread-001c/attempts/dev-flange-elbow-VE/attempt-0003",
+      "evaluation_identity": "9c3651b41c7d1e9c64725e0240285dec60c076157550ad92956a3e62f6f7c748",
+      "manifest_sha256": "e8f2500f58a796ad86b24ca2c20f3cf7cfc34b0424b16b83ec400acdc6673943",
+      "parsed_sha256": "88dc7ec98c4049448767d1e652ca051c076037061e2051c65754b16ce6e05f5c",
+      "producer_identity": "dab8908805c3b41a29bd6f5f0574d3ec239a7d6dfcf4d8b1c770af07a0b54400",
+      "result_sha256": "2224a580d82fb5ceb3bda4ab79fb889d9fdf1a9b4ec17feab66a4d557fadda8a",
+      "state": "pass"
+    },
+    {
+      "attempt_id": "dev-drawing-2-D/attempt-0001",
+      "cell": "dev-drawing-2-D",
+      "contract_version": "semread-001c-run-contract/1",
+      "directory": "out/lab/semread-001c/attempts/dev-drawing-2-D/attempt-0001",
+      "evaluation_identity": "7637d6d6a749d1a5ae48f622797b12e338bc6d8bec1ffe448a12c029f0296bf8",
+      "manifest_sha256": "4aafa56a56b5b54ec60e72a6c453b4d812e058c8b370e4a14643705b1550f2a9",
+      "parsed_sha256": "4ea531732b16492544a5337cb69e189f3b919ec75a4287b850d794dca5a96bc8",
+      "producer_identity": "52ed8c5ee01f87963d47f76c99ddf07830e042df2268bb25113670d7a236f62b",
+      "result_sha256": "904f4a79869ed0ca56f37b8f19652f615ecc3792234dc0fd964a25343ff29fda",
+      "state": "pass"
+    },
+    {
+      "attempt_id": "dev-drawing-2-V/attempt-0002",
+      "cell": "dev-drawing-2-V",
+      "contract_version": "semread-001c-run-contract/1",
+      "directory": "out/lab/semread-001c/attempts/dev-drawing-2-V/attempt-0002",
+      "evaluation_identity": "9ec5f19ac87300bcf6a55211446026e48f6de7265c9bf787101ad6fa048a282c",
+      "manifest_sha256": "38be11351d305e8afeab1e8a5ba42ddcad5a45369a53248bb2cc20e51944ec0b",
+      "parsed_sha256": "eb42d8b662e52659e78c8e8bd79c1e060e2ad2e6cf6a9fa0e4c7eb5e3581f708",
+      "producer_identity": "670da0401ef4c05c8e2a12e4b7aefd068c8bbef76bf82a20f78515dede6d9617",
+      "result_sha256": "c6df304d71e9b94f3a4d3f1be777c19ea09cd7b6e1486218dd4e1ee8fce33b63",
+      "state": "pass"
+    },
+    {
+      "attempt_id": "dev-drawing-2-VE/attempt-0002",
+      "cell": "dev-drawing-2-VE",
+      "contract_version": "semread-001c-run-contract/1",
+      "directory": "out/lab/semread-001c/attempts/dev-drawing-2-VE/attempt-0002",
+      "evaluation_identity": "9ec5f19ac87300bcf6a55211446026e48f6de7265c9bf787101ad6fa048a282c",
+      "manifest_sha256": "96c894448ec91b24fae02418fc8b12d3d7645680b3733f647272a280a503ba55",
+      "parsed_sha256": "51fc92235a8b75c31b2df75261468590282c275dd95f60ae4ca076d0c1b5e6fa",
+      "producer_identity": "670da0401ef4c05c8e2a12e4b7aefd068c8bbef76bf82a20f78515dede6d9617",
+      "result_sha256": "9d7e507186156fd0b2ad93c81fca7247386087c20223c260c99ce66014fdb8de",
+      "state": "pass"
+    }
+  ],
+  "summary": {
+    "attempt_ledger": {
+      "by_state": {
+        "failed_gates": 1,
+        "parse_error": 2,
+        "pass": 19,
+        "transport_error": 2,
+        "truncated_output": 5
+      },
+      "dispatched": 29,
+      "total": 29,
+      "unique_attempt_ids": 29
+    },
+    "budget": {
+      "by_phase": {
+        "dev": 32
+      },
+      "by_send_state": {
+        "sending": 7,
+        "sent": 23,
+        "transport_http_error": 1,
+        "transport_timeout": 1
+      },
+      "limits": {
+        "dev": 32,
+        "final": 20,
+        "total": 52
+      },
+      "rule": "used = send_state'i not_sent_* olmayan kayıt sayısı (gönderilmiş + rezerve + taşıma hatası sayılır; yerel ret sayılmaz — 001B pilot kuralı, 001C kapanışı)",
+      "used": 32
+    },
+    "requalification": {
+      "cells": 8,
+      "common_options": {
+        "num_ctx": 22528,
+        "num_predict": 8192,
+        "repeat_last_n": 512,
+        "repeat_penalty": 1.25,
+        "temperature": 0.0
+      },
+      "latest_attempts": {
+        "dev-drawing-2-V": "dev-drawing-2-V/attempt-0002",
+        "dev-drawing-2-VE": "dev-drawing-2-VE/attempt-0002",
+        "dev-flange-book-V": "dev-flange-book-V/attempt-0003",
+        "dev-flange-book-VE": "dev-flange-book-VE/attempt-0005",
+        "dev-flange-elbow-V": "dev-flange-elbow-V/attempt-0008",
+        "dev-flange-elbow-VE": "dev-flange-elbow-VE/attempt-0004",
+        "dev-plate-pocket-V": "dev-plate-pocket-V/attempt-0002",
+        "dev-plate-pocket-VE": "dev-plate-pocket-VE/attempt-0007"
+      },
+      "shared_settings": {
+        "cells": [
+          "dev-plate-pocket-V",
+          "dev-plate-pocket-VE",
+          "dev-flange-book-V",
+          "dev-flange-book-VE",
+          "dev-flange-elbow-V",
+          "dev-flange-elbow-VE",
+          "dev-drawing-2-V",
+          "dev-drawing-2-VE"
+        ],
+        "passed": 8,
+        "total": 8
+      },
+      "stop": {
+        "cells": [
+          "dev-plate-pocket-V",
+          "dev-plate-pocket-VE",
+          "dev-flange-book-V",
+          "dev-flange-book-VE",
+          "dev-flange-elbow-V",
+          "dev-flange-elbow-VE",
+          "dev-drawing-2-V",
+          "dev-drawing-2-VE"
+        ],
+        "passed": 8,
+        "total": 8
+      },
+      "valid_result": {
+        "cells": [
+          "dev-plate-pocket-V",
+          "dev-plate-pocket-VE",
+          "dev-flange-book-V",
+          "dev-flange-book-VE",
+          "dev-flange-elbow-V",
+          "dev-drawing-2-V",
+          "dev-drawing-2-VE"
+        ],
+        "passed": 7,
+        "total": 8
+      },
+      "violations": [
+        {
+          "attempt_id": "dev-flange-elbow-VE/attempt-0004",
+          "cell": "dev-flange-elbow-VE",
+          "failure_kind": "schema_coordinate",
+          "state": "parse_error"
+        }
+      ]
+    }
+  },
+  "written_at": "2026-10-05T15:32:21+00:00"
+}

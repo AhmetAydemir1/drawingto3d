@@ -420,8 +420,41 @@ burada ve `docs/PLAN-12.md` altında yürür. 001B ve 001C ledger/klasörleri ka
   `dev-semantic-report` tazeleme → §1s.
 - **Beklenen süre:** 2–4 saat (iş başına ~15–25 dk, sıralı; ilk iş model yüklemesiyle ≈ +2 dk).
 - **ARA NOT (14:40, 4/8 iş tamamlanmış/inişte):** ilk 3 attempt (plate-pocket V/VE + flange-book-V)
-  **pass** ve `request_options` **paylaşımlı** (V dahil `repeat_penalty=1.25`, rln 512, ctx 22528,
+  **pass** ve `options` alanı **paylaşımlı** (V dahil `repeat_penalty=1.25`, rln 512, ctx 22528,
   predict 8192, temp 0.0) → §8 ayar eşitliği ilk kanıtla sağlanıyor. İçerik: hâlâ **0** içerikli aday;
   cap=32 aktif (VE 32 aday / 32 benzersiz bölge / 32-32 gözlem-tablosu yankısı; flange-book-V eskiden
   1 aday → şimdi 32 benzersiz boş kutu). Kalan: flange-book-VE (inişte) + elbow V/VE + drawing-2 V/VE.
   Tam değerlendirme §1s'de (dev-report + §8 denetimi + semantic rapor).
+
+---
+
+## 1s. §35 #5 requalification — SONUÇ: §8 kapısı GEÇMEDİ (7/8) (2026-10-05 ~15:05)
+
+- **Koşu:** batch `proc_06219e2def2d` normal bitti (exit 0). **Tam 8 çağrı** dispatch edildi, elle
+  kill yok; bütçe **32/32** doldu → §7 gereği **dev tuning bitti** (final 0/20 kullanılmadı).
+- **§8 kapı tablosu (yeni 8 attempt):**
+  - `valid_result` **7/8 ✗** — `dev-flange-elbow-VE/attempt-0004`: `parse_error` (`failure_kind=schema_coordinate`)
+  - `done_reason=stop` **8/8 ✓** · sızıntı temiz **8/8 ✓** · paylaşımlı ayar **8/8 ✓**
+    (tek imza: rp 1.25 · rln 512 · ctx 22528 · predict 8192 · temp 0.0 — V dahil)
+  - coordinate valid **7/8 ✗** · refs valid **7/8 ✗** · aday sınırı ≤32 ✓ (truncation yok)
+- **Elbow-VE/0004 kök neden:** 32 aday, JSON tam, `stop`; **tek** normalize ihlali —
+  `c32.callout_region.y1 = 1.05` (>1). Bölge sözleşmesi (P1, katı) gövdeyi reddetti; sessiz tamir
+  yasak olduğundan attempt geçersiz sayıldı. İhlal **model kaynaklı**; parser tasarım gereği katı.
+- **Requalification ne gösterdi:** (i) paylaşımlı zarf sahada — V artık 1.25, kol-başına ceza yok;
+  (ii) **elbow-V döngü çağı bitti**: eski 64/30-aday kesintileri yerine 0008 `stop` + 32'de sınırlı;
+  (iii) **içerik yine 0/8** — cap akışı sınırladı, semantik degenerate sürüyor (VE 32/32 gözlem-tablo
+  yankısı; elbow-V'de 28 birebir kopya; flange-book-V'de 2 gold bölge eşleşmesi var ama alanlar boş).
+- **Sonuç (PLAN-13 §7 birebir):** "32 sonrası geçmezse: 001C final yok; yeni experiment version.
+  Call-call bütçe artırma yok." → **001C bu haliyle final fazına geçemez**; retry/redo §36 gereği
+  yasak (9. çağrı bütçe 33 gerektirir = call-call artış).
+- **TEST EVIDENCE:** `dev-report` — §21 kapısı hücre-başına≥1-pass kuralıyla hâlâ 8/8 GEÇTİ
+  (elbow-VE'nin son geçerli pass'i **0003, eski zarftan**; requal kapısı bunu saymaz — ayrı kural);
+  bütçe satırı `dev 32/32`. `dev-semantic-report` tazelendi: seçili attempt'ler yeni koşudan
+  (elbow-VE 0004 geçersiz olduğundan 0003'e düşer).
+- **INFERENCE BUDGET:** 32/32 kullanıldı; bu bölümde yeni çağrı yok.
+- **OPEN GATE — KULLANICI KARARI GEREKLİ:**
+  - **(a) PLAN YOLU (önerilen):** §7 uygula — 001C final yok; yeni experiment version (ör. 001D)
+    planı yazılır (holdout girdisi zaten P7'de kullanıcıdan bekleniyordu).
+  - **(b) Tek-sapma (plan dışı):** yalnız elbow-VE için 1 redo (bütçe 33) — açık kullanıcı onayı +
+    sapma kaydı ister; §36'ya aykırı, önerilmez.
+- **NEXT SINGLE STEP:** KULLANICI (a)/(b) kararı. Karar gelene kadar **yeni çağrı yok**.

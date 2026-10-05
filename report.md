@@ -1,7 +1,7 @@
 # SEMREAD-001C — Faz Raporu
 
 **Tarih:** 2026-10-05 · **Aktif plan:** `docs/PLAN-13.md` (PLAN_LATEST; bayt kopya, sha256 `cc61e0bc…`; PLAN-12 + kök PLAN.md history — §34)
-**Durum:** §21 dev kapısı **8/8 GEÇTİ**; **§37 dev semantik değerlendirme TAMAM — bulgu: V/VE çıktısı semantik degenerate (§2b)** · sıradaki: shared-envelope requalification (PLAN-13 §35) · final fazı (P7–P10) kullanıcı holdout'una bağlı.
+**Durum:** §21 dev kapısı **8/8 GEÇTİ**; §37 semantik değerlendirme TAMAM (V/VE degenerate — §2b); **§35 #5 requalification KOŞULDU: §8 resmî kapı 7/8 (elbow-VE `schema_coordinate`) — paylaşımlı ayar 8/8 ✓, stop 8/8 ✓, içerik 0/8 (§2c)** · §7 gereği 001C final kararı kullanıcıda (handoff §1s).
 
 ---
 
@@ -76,6 +76,37 @@ değil) · elbow 17 · drawing-2 17 — 001B D adetleriyle birebir aynı (7/12/1
 **Sonuç:** freeze'e bu çıktıyla geçilemez. Sıradaki iş: PLAN-13 §35 #5 — 8-hücre shared-envelope
 requalification (#2–#4 tamam; bkz. §6).
 
+## 2c. §35 #5 shared-envelope requalification — SONUÇ (2026-10-05 12:00–15:00)
+
+8 çağrı (4 dev sayfa × V/VE), paylaşımlı zarf (rp 1.25 + rln 512 + ctx 22528 + predict 8192 +
+`maxItems=32` + anti-loop metin). Bütçe 24→32 — **hepsi kullanıldı (32/32)**; elle kill yok.
+
+| hücre | attempt | sonuç | aday | içerikli | kopya | yankı |
+|---|---|---|---|---|---|---|
+| plate-pocket-V | 0002 | pass | 2 | 0 | 1 | — |
+| plate-pocket-VE | 0007 | pass | 32 | 0 | 3 | 32 |
+| flange-book-V | 0003 | pass | 32 | 0 | 6 | — |
+| flange-book-VE | 0005 | pass | 32 | 0 | 15 | 32 |
+| flange-elbow-V | 0008 | pass | 32 | 0 | 28 | — |
+| flange-elbow-VE | 0004 | **parse_error** | 32 | — | — | — |
+| drawing-2-V | 0002 | pass | 2 | 0 | 1 | — |
+| drawing-2-VE | 0002 | pass | 32 | 0 | 16 | 32 |
+
+**§8 kapısı:** `valid_result` **7/8 ✗** · `stop` 8/8 ✓ · coordinate 7/8 ✗ · refs 7/8 ✗ · sızıntı
+temiz 8/8 ✓ · **paylaşımlı ayar 8/8 ✓** (tek imza — V dahil rp 1.25). Elbow-VE/0004: 32 adayın
+1'inde tek normalize ihlali (`c32.callout_region.y1 = 1.05`) → katı bölge sözleşmesi reddetti
+(`schema_coordinate`); model ihlali, sessiz tamir yasak.
+
+**Ne sağlandı:** paylaşımlı zarfta V==VE 8/8; stop 8/8; adaylar ≤32 (truncation yok — elbow-V'nin
+bitmeyen döngüsü bitti: eski 64/30-aday kesintileri yerine 32'de `stop`).
+**Ne sağlanmadı:** içerik hâlâ **0/8** (degenerate sürüyor; VE 32/32 gözlem-tablo yankısı, elbow-V'de
+28 birebir kopya); resmî kapı **7/8**.
+
+**Sonuç (PLAN-13 §7 birebir):** "32 sonrası geçmezse: 001C final yok; yeni experiment version.
+Call-call bütçe artırma yok." → **001C bu haliyle final fazına geçemez**; retry/redo §36 gereği yasak.
+Karar kullanıcıya sunuldu (handoff §1s: (a) plan yolu = yeni experiment version, (b) tek-sapma redo —
+§36'ya aykırı, önerilmez).
+
 ## 3. Zarf revizyonları (hepsi ölçümle)
 
 | # | Değişiklik | Gerekçe (kanıt) |
@@ -122,11 +153,10 @@ Her artış `state.json` notu + handoff §1i/§1l/§1n + test assertion'ı ile k
 
 ## 6. Kalan işler
 
-- **PLAN-13 §35 #2–#4 TAMAM** (d08e8c3 / f9b417f / bu commit): ortak üretim zarfı (`REPEAT_PENALTY=1.25`,
-  `generation_settings(V) == generation_settings(VE)` invariant testi), `items.maxItems=32` + kopya
-  kuralı (şema + parser aynı sözü verir; sessiz kırpma/tamir yok), dev tavanı 24→32 çağrılardan önce
-  deklare edildi (state notu; kullanım 24/32). **Sıradaki: §35 #5 requalification (8 çağrı)** →
-  #6 semantic sanity + tam pytest. §37 bulgusu (V/VE içeriksiz; §2b) final freeze'i bloklar.
+- **PLAN-13 §35 #2–#4 TAMAM** (d08e8c3 / f9b417f / 85b3bdf); **#5 requalification KOŞULDU — §8 resmî
+  kapı GEÇMEDİ (7/8: elbow-VE `schema_coordinate`); paylaşımlı ayar 8/8, stop 8/8, içerik 0/8 (§2c).**
+  §7 gereği karar kullanıcıda: (a) plan yolu — 001C final yok, yeni experiment version planı;
+  (b) tek-sapma redo (plan dışı, önerilmez). **Yeni çağrı yok; karar bekleniyor (handoff §1s).**
 - **P7 (§23) — YENİ BAĞIMSIZ HOLDOUT: kullanıcı girdisi gerekli.** Repoda görülmemiş bir sayfa yok;
   final fazının kilitleneceği yeni çizim(ler) sağlanmalı. P8 (freeze) → P9/P10 (20 final çağrı +
   değerlendirme) buna bağlıdır.

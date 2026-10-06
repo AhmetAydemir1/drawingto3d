@@ -123,7 +123,7 @@ metinsiz PNG ile koşuldu, fixture değil. HTTP ret kanıtı UI senaryosu yerine
 
 ## 4. Açık kalanlar (gizlenmedi)
 
-1. **Commit yok.** Değişiklikler çalışma ağacında; stage/commit kullanıcı kararı (PLAN.md §3.10 yalnız ilgili dosyaların açık adlarla stage edilmesini şart koşar; push/merge şart değil). Tek adımda stage için:
+1. **Commit + push yapıldı** (kullanıcı istedi): `a187bf3` → `git push origin main` → `2cdb4d0..a187bf3` (origin/main). Aşağıdaki liste o commit'in içeriğidir; `PLAN-17-HERMES.md` kasıtlı olarak stage dışı kaldı. Teslim kayıtlarındaki (bu dosya, `docs/GUIDED_PROGRESS.md`, `report.md`) commit hash'i sonrası güncellendi.
 
    ```sh
    git add src/drawingto3d/guided.py src/drawingto3d/callout_models.py \

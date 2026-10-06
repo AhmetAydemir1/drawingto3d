@@ -6,9 +6,9 @@
 - G2 initial HEAD: `316518eb8d67c7a4ad81eed59c09e6c59ef4df37`
 - G3 initial HEAD: `ff97295065260ba8d46bf6fcd2c6e864e63dfcef` (`ff97295` = G2)
 - G3R initial HEAD: `2cdb4d0424b17e4299d625066c24e6a0eab4de6d` (`2cdb4d0` = G3 + G1R3-01 kabul commit'i; eski “G3 commit edilmedi” ifadesi artık geçerli değil)
-- Current HEAD: `2cdb4d0` + **G3R-01–04 çalışma ağacında (commit yok)**
+- Current HEAD: `a187bf3` (G3R kayıt sınırı düzeltmeleri; `git push origin main` → `2cdb4d0..a187bf3`)
 - Initial worktree changes: `?? PLAN-17-HERMES.md` (kullanıcının verdiği plan kaynağı; **korunur, stage edilmez**)
-- Current task: **G3R-01–04 tamamlandı** — dört dar düzeltme + anlamlı kırmızı regresyonlar + dört bağımsız probe + gerçek tarayıcı kabulü PASS; commit yok; G4+ açılmadı, model çağrısı 0
+- Current task: **G3R-01–04 tamamlandı** — dört dar düzeltme + anlamlı kırmızı regresyonlar + dört bağımsız probe + gerçek tarayıcı kabulü PASS; commit `a187bf3` push edildi; G4+ açılmadı, model çağrısı 0
 
 | İş | Durum | Kanıt | Kalan |
 |---|---|---|---|
@@ -249,7 +249,7 @@ Ortam: uygulama `PYTHONPATH=src .venv/bin/python -m drawingto3d.app` (gerçek 87
 | G3R-02 | PASS | Yeni hedef onayı freshness'i kaydın **bırakacağı** etkin kararlardan hesaplanıyor (`callout_models.callout_state(record, id, decisions=payload)`): region_changed/ignored/stale parse → ret; taşınan hedef etkilenmiyor. 3 store + 1 HTTP regresyonu; probe `new_confirmation_requires_current_transcription_and_parse` | — |
 | G3R-03 | PASS | Şema damgası yalnız gerçek diske yazımda ve yalnız ileri: v1/versiyonsuz kayıt ilk gerçek yazımda 2 olur, okuma/no-op baytı değiştirmez, undo geri düşürmez, gelecekteki bilinmeyen sürüm korunur. 4 regresyon; probe `v1_session_real_g3_write_stamps_current_schema` | — |
 | G3R-04 | PASS | `public()` `callout_detection` sunuyor (eski kayıtta `null`); UI boş listeyi nedeniyle açıklıyor (no_text_observations / invalid_frame / unsupported_page / source_digest_mismatch / bilinmeyen kod birebir), aday varsa yalnız uyarı. 1 store + 1 yapısal HTML regresyonu; probe `public_preserves_detection_metadata`; tarayıcı senaryo 5 (3 durum + yazımsızlık kanıtı) | — |
-| Doğrulama + teslim | PASS | Dört probe exit 0; birleşik pytest (19 dosya) **304 passed / 133.47 s / EXIT=0**; gerçek tarayıcı **30/30 adım PASS / EXIT=0** (16 screenshot, `browser-steps.json`, 1 beklenen 400; belgelenen komutla 18:51'de yeniden koşuldu); `git diff --check` temiz | commit yok (karar kullanıcıda) |
+| Doğrulama + teslim | PASS | Dört probe exit 0; birleşik pytest (19 dosya) **304 passed / 133.47 s / EXIT=0**; gerçek tarayıcı **30/30 adım PASS / EXIT=0** (16 screenshot, `browser-steps.json`, 1 beklenen 400; belgelenen komutla 18:51'de yeniden koşuldu); `git diff --check` temiz | commit `a187bf3` + push (`2cdb4d0..a187bf3`) |
 
 ### G3R-01 — eski `/save` yeni kuralları atlamasın
 
@@ -346,7 +346,7 @@ Ortam: uygulama `PYTHONPATH=src .venv/bin/python -m drawingto3d.app` (gerçek 87
 
 ## Yeniden başlarken ilk somut işlem
 
-- **G3R düzeltme turu teslim edildi** (kök `PLAN.md` uygulaması): G3R-01–04 düzeltmeleri + 18 yeni regresyon + dört bağımsız probe (7/7, 1/1, 2/2, 5/5) + gerçek tarayıcı 30/30 PASS; birleşik pytest **303 passed / 138.71 s / EXIT=0**. Değişiklikler **çalışma ağacında, commit yok**. Çalışan G3 baştan yazılmadı.
+- **G3R düzeltme turu teslim edildi** (kök `PLAN.md` uygulaması): G3R-01–04 düzeltmeleri + 19 yeni regresyon + dört bağımsız probe (7/7, 1/1, 2/2, 5/5) + gerçek tarayıcı 30/30 PASS; birleşik pytest **304 passed / 133.47 s / EXIT=0**; **commit `a187bf3`** (`2cdb4d0..a187bf3`, origin/main). Çalışan G3 baştan yazılmadı.
 - **Açık kalanlar:** (1) tam takım bu turda koşulmadı; (2) önceden mevcut `test_planner::test_settings_record_is_the_run_record_fields` kırmızısı; (3) **G4 (deterministik parser + parse onayı) ve sonrası açılmadı** — bu görevde uygulanması istenmiyor; (4) G4/G7 yokken callout metninin STEP'e uygulandığı iddia edilmez.
 - Kullanıcı G4'ü açarsa: kök `PLAN.md` §10 sonundaki yönlendirme + `docs/PLAN-20.md`; parser/parse onayı/target önericisi kapsamı. G3R teslim kanıtları: `docs/GUIDED_PROGRESS.md` (bu bölüm) + `eval/audits/20261006-guided-g3r-fix-review/DELIVERY.md`.
 - Önceki turlar: G2 teslimi yukarıdaki G2 bölümünde (birleşik **242 passed / 130.66 s / EXIT=0**, full pytest **1479 passed / 1 failed** — tek kırmızı G2 dışı `test_planner` pini); G3 + G1R3-01 `2cdb4d0` commit'iyle kapandı (G3 turu: birleşik 285 passed, tarayıcı **28/28**).

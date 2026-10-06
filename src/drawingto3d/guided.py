@@ -29,6 +29,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from drawingto3d import advise
 from drawingto3d import callout_models
+from drawingto3d import callouts
 from drawingto3d.general import GeneralPlan, build_general
 from drawingto3d.ingest import load_page
 from drawingto3d.observe import observe
@@ -1806,15 +1807,25 @@ class GuidedStore:
         token=uuid.uuid4().hex; folder=self.folder(token);folder.mkdir(parents=True)
         source=folder/("source"+suffix);source.write_bytes(payload)
         observations=observe(source)
+        detection=callouts.callout_candidates_from_observations(observations,geometry_version=GEOMETRY_VERSION)
+        candidates=[row.model_dump(mode="json") for row in detection.candidates]
+        diagnostics=[row.model_dump(mode="json") for row in detection.diagnostics]
+        source_sha=_digest(source)
+        # PLAN-18 §28: gözlemin kendi özeti oturumun kaynak özetiyle uyuşmuyorsa aday kimliği uydurulmaz.
+        if observations.source.sha256!=source_sha:
+            diagnostics.append({"code":"source_digest_mismatch","observation_id":None})
+            candidates=[]
         page=load_page(source);(folder/"drawing.png").write_bytes(page.image_png)
         options=drawing_options(observations)
         archetype=part_class(observations)
         reading=advise.reading_record(source)
         suggested=advise.proposals(options,reading,archetype)
         record={"version":1,"geometry_version":GEOMETRY_VERSION,"token":token,"revision":0,"source":str(source.resolve()),
-                "source_sha256":_digest(source),"options":options,"decisions":Decisions().model_dump(mode="json"),
+                "source_sha256":source_sha,"options":options,"decisions":Decisions().model_dump(mode="json"),
                 "archetype":archetype,
-                "callout_schema_version":callout_models.CALLOUT_SCHEMA_VERSION,"callout_candidates":[],"callout_parses":[],
+                "callout_schema_version":callout_models.CALLOUT_SCHEMA_VERSION,"callout_candidates":candidates,
+                "callout_detection":{"detector_version":detection.detector_version,"diagnostics":diagnostics},
+                "callout_parses":[],
                 "reading":reading,"proposals":suggested,"history":[],"build":None,"log":[]}
         _log(record,"system","open","drawing",None,{"source_sha256":record["source_sha256"],
              "profiles":len(options["profiles"]),"circles":len(options["circles"]),

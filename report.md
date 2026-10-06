@@ -1,6 +1,6 @@
 # drawingto3d — durum raporu (yaşam belgesi)
 
-**Tarih:** 2026-10-06 · **Aktif ürün yönü:** **guided transcription** (callout alanları → kullanıcı metni → deterministik parser → kullanıcı onayı → mevcut guided CAD yolu → STEP; ürün hedefi: 10 çizimde 10 geometrik doğru STEP — G10–G13) · **Aktif plan:** `docs/PLAN-20.md` · **İlerleme:** `docs/GUIDED_PROGRESS.md` · **İlk kapsam:** G0 + G1
+**Tarih:** 2026-10-06 · **Aktif ürün yönü:** **guided transcription** (callout alanları → kullanıcı metni → deterministik parser → kullanıcı onayı → mevcut guided CAD yolu → STEP; ürün hedefi: 10 çizimde 10 geometrik doğru STEP — G10–G13) · **Aktif plan:** `docs/PLAN-20.md` · **İlerleme:** `docs/GUIDED_PROGRESS.md` · **Kapsam:** G0 + G1 (kabul; iki inceleme turu sonrası) + **G2 aktif** (Observations → deterministik CalloutCandidate)
 **Park edilen araştırma:** SEMREAD-001D = **PARKED RESEARCH — Round 1 FAIL** (formal 0/4; dev bütçe **4/12** donduruldu; yeni requalification/001E/VLM ayarı yok) · eski planlar, attempt kayıtları, dev-report, preflight ve input identity kayıtları tarihsel kanıt olarak korunur.
 
 ---
@@ -8,7 +8,7 @@
 ## Aktif ürün yönü — guided transcription (current; 2026-10-06)
 
 - **Pivot (PLAN-20 §2.1):** otomatik VLM okuması kritik yoldan çıkarıldı. Yeni akış: callout alanları → kullanıcı metni yazar/doğrular → deterministik parser → kullanıcı parse önizlemesini onaylar → sistem geometri hedefi önerir → kullanıcı hedefi onaylar → eksik fiziksel anlam/birim/eksen kararları tamamlanır → mevcut guided kararlar → GeneralPlan → CAD → STEP → STEP yeniden açılır + bağımsız geometri kontrolü.
-- **İlk uygulama:** G0 + G1 (callout veri sözleşmesi: dört model, kalıcılık ve eski oturum uyumu, revision, tazelik, undo, build stale). **G2–G13 kapsam dışı**; kullanıcı faz açmadan başlanmaz.
+- **Uygulama durumu:** G0 + G1 kabul edildi (iki bağımsız inceleme turu sonrası; callout veri sözleşmesi: dört model, kalıcılık ve eski oturum uyumu, revision, tazelik, undo, build stale). **G2 aktif:** `Observations → CalloutCandidate` deterministik adaptör (kök `PLAN.md`). **G3–G13 kapsam dışı**; kullanıcı faz açmadan başlanmaz.
 - **Kayıtlar:** plan `docs/PLAN-20.md` (yeni history entry; `docs/PLAN-19.md` ve öncesi korunur) · ilerleme `docs/GUIDED_PROGRESS.md` (iş kalemleri + komut/exit-code/kanıt).
 - **Çağrı disiplini:** bu pivotta yeni model çağrısı yok; SEMREAD dev bütçesi **4/12** · final **0/20** park kararıyla donduruldu.
 

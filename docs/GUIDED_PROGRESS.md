@@ -1,11 +1,12 @@
 # Guided progress
 
-Scope: G0 + G1 (düzeltme turu 1 ve 2 dahil)  
-Active plan: kök `PLAN.md` (G1 düzeltme turu 2) + `docs/PLAN-20.md`  
+Scope: G0 + G1 (düzeltme turu 1 ve 2 dahil) + G2 (tamamlandı — kabul kanıtı aşağıda)  
+Active plan: kök `PLAN.md` (G2 — PLAN-18 bayt kopya `docs/PLAN-21.md`, sha256 `09e18c82…`) + `docs/PLAN-20.md`  
 Initial HEAD: `5175f373f1d6892e481341ed2cbcfd89dec29e36`  
-Current HEAD: `5175f37` + G0 `373e096` + G1.2/G1.3 `554f5ae` + G1.4–G1.7 `e59c5eb` + düzeltme turu 1 `67ff518` + düzeltme turu 2 (bu commit)  
+G2 initial HEAD: `316518eb8d67c7a4ad81eed59c09e6c59ef4df37`  
+Current HEAD: `5175f37` + G0 `373e096` + G1.2/G1.3 `554f5ae` + G1.4–G1.7 `e59c5eb` + düzeltme turu 1 `67ff518` + düzeltme turu 2 `316518e`  
 Initial worktree changes: `?? PLAN-17-HERMES.md` (kullanıcının verdiği plan kaynağı; **korunur, stage edilmez**)  
-Current task: **G1 + düzeltme turu 1 ve 2 tamam** — teslim edildi; G2+ hâlâ açılmadı
+Current task: **G2 tamamlandı ve doğrulandı** — sıradaki tek adım G3 planı/isteği (G3 açılmadı)  
 
 | İş | Durum | Kanıt | Kalan |
 |---|---|---|---|
@@ -17,7 +18,131 @@ Current task: **G1 + düzeltme turu 1 ve 2 tamam** — teslim edildi; G2+ hâlâ
 | G1.5 | PASS | Undo/olay günlüğü testleri (T13/T14/T22 + log denetimi) | — |
 | G1.6 | PASS | Build/artifact stale (T15/T16): geç build yeni kararlara bağlanmaz, `build=None` ile çökmez | — |
 | G1.7 | PASS | Birleşik doğrulama **174 passed / 79.51 s / EXIT=0** (`g1-7-final.log`); `git diff --check` temiz; kabul tablosu | — |
-| **Düzeltme turu 1** | **PASS** | Bağımsız incelemedeki 4 sorun kapatıldı; 8 yeni regresyon testi önce kırmızı → sonra yeşil; models+callouts **74 passed** (`g1-fix1-models-callouts.log`); birleşik küme **183 passed / 78.31 s / EXIT=0** (`g1-fix1-final.log`) | — |
+| **Düzeltme turu 1** | **PASS** | Bağımsız incelemede tekrarlanan 4 sorun kapatıldı; 8 yeni regresyon testi önce kırmızı → sonra yeşil; models+callouts **74 passed** (`g1-fix1-models-callouts.log`); birleşik küme **183 passed / 78.31 s / EXIT=0** (`g1-fix1-final.log`) | — |
+| **Düzeltme turu 2** | **PASS** | G1R2-01 (etkin konturda hedef doğrulaması) + G1R2-02 (gerçek yeniden onay günlüğü); bağımsız tekrar exit 0 (`probe-results-after.json`); odak **98 passed** (`g1r2-focus.log`); birleşik **198 passed / 80.05 s / EXIT=0** (`g1r2-final.log`) | — |
+
+## G2 ilerleme tablosu (kök `PLAN.md` = PLAN-18; bayt kopya `docs/PLAN-21.md`)
+
+| İş | Durum | Kanıt | Kalan |
+|---|---|---|---|
+| G2.0 | PASS | Kickoff: kök plan kuruldu (PLAN-18 sha256 `09e18c82…`; önceki kök arşivi `docs/PLAN_ROOT_BEFORE_G2_20261006.md` `429a0d75…`; `docs/PLAN-21.md` bayt kopya); baseline odak `test_callout_models`+`test_guided_callouts` **89 passed / 1.95 s / EXIT=0** (`g2-baseline-focus.log`); 15 dosya **198 passed / 82.19 s / EXIT=0** (`g2-baseline-combined.log`) | — |
+| G2.1 | PASS | `src/drawingto3d/callouts.py` + `tests/test_callout_candidates.py`; RED `g2-1-red.log` (ModuleNotFoundError, exit 2) → **29 passed / 0.31 s / EXIT=0** (`g2-2-candidates.log`; matris §23 sıra 1–20 + §85/§86/§89 guard'ları) | — |
+| G2.2 | PASS | Aynı dosyada sertleştirme: canonical region (tek nokta, 8 basamak), `expected_id` testiyle birebir pinlenen canonical JSON+SHA-256 kimlik, method resolver, exact dedup + provenance union, deterministik sıralama ve dedupe diagnostics, purity guard (uuid/random/Path/observe yok) | — |
+| G2.3 | PASS | `guided.py` create: aynı `observations` nesnesinden adaptör (ikinci observe/OCR yok); `callout_candidates` + `callout_detection` persist; §28 digest cross-check → `source_digest_mismatch`; RED `g2-3-red.log` (6 failed / 6 passed) → `tests/test_guided_callout_candidates.py` **12 passed / 19.86 s / EXIT=0** (`g2-3-green.log`); tek-observe + tek-adaptör spy; build/kullanıcı olayı yok | — |
+| G2.4 | PASS | Gerçek vektör (plate): 45 text → 45 aday, id kümesi birebir, bağımsız normalizasyon eşitliği (§98); gerçek raster (flange-elbow-90): 27 OCR ifadesi → 27 `raster_region` aday, bölge-sahip eşlemesi birebir; dürüst-none (metinsiz gerçek raster): 0 aday + `no_text_observations`, ikinci OCR çağrısı yasak-spy; ağır flange probe 29/29 (`g2-4-probe.log`); testler `tests/test_guided_callout_candidates.py` **15 passed / 51.40 s / EXIT=0** (`g2-4-green.log`) | — |
+| G2.5 | PASS | reopen: kayıt eşitliği + dosya baytları değişmez + load redetect/adaptör çağırmaz + sahte kullanıcı olayı yok; legacy (callout öncesi oturum): observe yasak-spy ile okuma, eski kararlar korunur, hiçbir şey yazılmaz; kaynak kaybı: adaylar silinmez, `geometry.stale` mevcut davranış; §93 save/undo adaptörü hiç çalıştırmaz; §95 aday listesi history snapshot'ında yok; §96 build sonucu candidate base'i oynatmaz | — |
+| G2.6 | DEVAM | Seçili regresyon (15 G1 dosyası + 2 yeni dosya): **242 passed / 130.66 s / EXIT=0** (`g2-6-selected.log`); §68 metrikleri (`g2-6-metrics.log`: vektör 45/45/0/0, raster 27/27/0/0, dürüst-none 0 + `no_text_observations`); full pytest koşuyor (`g2-6-full.log`); diff check + commit bekliyor | full sonucu + diff check + commit |
+
+## G2 final kanıt (kök `PLAN.md` §60/§61/§68/§106)
+
+Exact komut zinciri ve çıktıları:
+
+```text
+.venv/bin/python -m pytest -q tests/test_callout_candidates.py        > out/guided-transcription/g2-2-candidates.log    # 29 passed / 0.31 s / EXIT=0
+.venv/bin/python -m pytest -q tests/test_guided_callout_candidates.py > out/guided-transcription/g2-4-green.log      # 15 passed / 51.40 s / EXIT=0
+.venv/bin/python -m pytest -q <15 G1 dosyası + 2 yeni dosya>          > out/guided-transcription/g2-6-selected.log   # 242 passed / 130.66 s / EXIT=0
+.venv/bin/python -m pytest -q                                         > out/guided-transcription/g2-6-full.log       # 1 failed, 1479 passed / 4519.6 s (1:15:19) / EXIT=1 — tek kırmızı G2 dışı, önceden mevcut
+PYTHONPATH=src .venv/bin/python ~/.hermes/cache/scratch/g2-6-metrics.py | tee out/guided-transcription/g2-6-metrics.log   # EXIT=0 (§68 metrikleri)
+git diff --check ; git status --short                                 # aşağıdaki sınıflandırma
+```
+
+G2 §61 final report:
+
+```text
+HEAD / worktree: G2 commit'i ("guided: G2 — …"); öncesi 316518e
+G2.0 baseline: 89 passed / 1.95 s (odak); 198 passed / 82.19 s (15 dosya) — EXIT=0
+G2.1 adapter: RED ModuleNotFoundError (g2-1-red.log) → 29 passed / 0.31 s (g2-2-candidates.log)
+G2.2 identity/dedup: canonical JSON+SHA-256 pin; dedup/union/hint/sıra/diagnostics guard'ları (aynı dosya)
+G2.3 store integration: RED 6 failed / 6 passed → 12 passed / 19.86 s (g2-3-red.log → g2-3-green.log)
+G2.4 vector/raster: plate 45/45 (id kümesi birebir, bağımsız normalizasyon); flange-elbow-90 27/27; Flange probe 29/29 (g2-4-probe.log); dürüst-none 0 + no_text_observations; 15 passed / 51.40 s (g2-4-green.log)
+G2.5 reopen/legacy: reopen exact + yazımsız okuma; legacy observe-yasak; save/undo adaptörsüz (§93); history snapshot'ında aday yok (§95); build base'i oynatmaz (§96); kaynak kaybında adaylar korunur (§49)
+Combined tests: 242 passed / 130.66 s / EXIT=0 (g2-6-selected.log; 15 G1 dosyası + 2 yeni)
+Full pytest: 1479 passed / 1 failed / 4519.6 s (1:15:19) / EXIT=1 (g2-6-full.log) — tek kırmızı G2 dışı ve HEAD'de önceden mevcut: `tests/test_planner.py::test_settings_record_is_the_run_record_fields` (88ba6c5 `repeat_penalty`/`repeat_last_n`'i `ChatSettings.as_dict`'e ekledi, testin pinli anahtar kümesi güncellenmedi; `llama.py` ve `test_planner.py` G2 diff'inde yok, tek başına da kırmızı)
+Diff check: kod/test diff'i temiz; staged toplam 25 uyarı, tümü hard-break satır sonu: 10 PLAN.md + 10 docs/PLAN-21.md (verbatim plan kopyası) + 5 GUIDED_PROGRESS başlık/durum satırı — 373e096'da 12 uyarılık yerleşik stille aynı sınıf (kaynak sadakati; `g2-6-diffcheck.log` / `g2-6-diffcheck-cached.log`)
+Changed files: src/drawingto3d/callouts.py (yeni); src/drawingto3d/guided.py; tests/test_callout_candidates.py (yeni); tests/test_guided_callout_candidates.py (yeni); docs/GUIDED_PROGRESS.md; report.md; PLAN.md (kurulum); docs/PLAN-21.md (bayt kopya); docs/PLAN_ROOT_BEFORE_G2_20261006.md (arşiv)
+Known open issues: §101→G3 (overlay/transcription/ignore/manual region), §102→G4 (grammar), §103→G5/G6 (target), §104→G7/CAD; §65 confidence politikası; §66 yüksek-recall yanlış-pozitifler G3 ignore akışına; ayrıca G2 dışı önceden-kırmızı `test_planner.py::test_settings_record_is_the_run_record_fields` (yukarıda)
+Model calls: 0
+G3 status: NOT OPENED
+NEXT SINGLE STEP: G3 plan/request
+```
+
+Ölçülen §68 metrikleri (bu ortam, gerçek fixture'lar; `g2-6-metrics.log`):
+
+```text
+vektör / plate          : texts=45  candidate=45  invalid=0  dedup=0  vector=45  raster=0   diagnostics=[]
+raster / flange-elbow-90: texts=27  candidate=27  invalid=0  dedup=0  vector=0   raster=27  diagnostics=[]
+raster / metinsiz sayfa : texts=0   candidate=0   invalid=0  dedup=0  honest none      diagnostics=["no_text_observations"]
+ağır raster / Flange.PNG: texts=29  candidate=29  (probe; 258.3 s — test_raster ile aynı gözlem yolu, g2-4-probe.log)
+```
+
+Doğru başarı cümlesi (§69): mevcut observation text bölgeleri deterministic, provenance-preserving ve reopen-stable `CalloutCandidate` kayıtlarına dönüştürülebiliyor. "Program teknik resmi anlıyor / Ø8 otomatik okunuyor / binding çözüldü / STEP doğruluğu arttı" iddiaları bu fazda geçerli değildir.
+
+## G2 DoD kontrol listesi (kök `PLAN.md` §60)
+
+- [x] pure adapter module exists — `src/drawingto3d/callouts.py` + purity guard testi
+- [x] detector version single-source — `CALLOUT_DETECTOR_VERSION`; create `detection.detector_version` persist eder
+- [x] px→normalized math pinned — 1000×500 / (100,50,200,100) → `[0.1,0.1,0.3,0.3]`
+- [x] deterministic SHA-256 identity — `expected_id` canonical JSON pin testi
+- [x] source path not identity — kimlik beş alandan; yeniden adlandırma id'yi değiştirmez
+- [x] method-based source kind — pdf-text/tesseract-tsv eşlemesi; suffix'ten tahmin testle yasaklı
+- [x] exact dedup only — aynı bölge birleşir; 1 px fark ayrı kalır
+- [x] provenance union — sıralı/unique; şema sınırında dürüst `provenance_ids_capped`
+- [x] conflicting hints not truth — `hint=None` + `duplicate_hint_conflict`
+- [x] invalid bbox diagnostic, no clamp — 4 bbox kodu + `region_collapsed`; kırpma yok
+- [x] deterministic ordering — y0,x0,y1,x1,kind,id; giriş sırasından bağımsız
+- [x] no semantic field promotion — `value/unit/kind/count` karara dönüşmez; dump anahtarları pinli
+- [x] new session persists candidates — create → 45 aday; `callout_detection` metadata
+- [x] no auto transcription — state'te transcription yok; `needs_transcription`
+- [x] no auto parse — `callout_parses == []`
+- [x] no auto target — target yok; `needs_target`
+- [x] no model call — model/network importu yok; 0 çağrı
+- [x] real vector fixture — plate 45/45
+- [x] raster exercised or honestly blocked — flange-elbow-90 27/27 (BLOCKED_ENV değil)
+- [x] honest-none test — metinsiz gerçek raster → [] + `no_text_observations`
+- [x] reopen exact — kayıt eşitliği + bayt sabit + redetect yok
+- [x] legacy no-redetect — observe-yasak spy
+- [x] no fake user events — create/reopen log'larında user olayı yok
+- [x] G1 regression green — 242 passed (17 dosya)
+- [x] diff check clean — yukarıdaki sınıflandırma
+- [x] progress updated — bu dosya
+- [x] G3 still NOT OPENED — G3 işi yapılmadı
+
+## G2 handoff snapshot (kök `PLAN.md` §107)
+
+```text
+CURRENT HEAD
+G2 commit ("guided: G2 — …") üzerine 316518e
+
+ACTIVE PRODUCT
+Guided transcription
+
+UMBRELLA PLAN
+docs/PLAN-20.md
+
+PROGRESS
+G0 PASS
+G1 PASS after two review/fix rounds
+G2 PASS — deterministic Observations → CalloutCandidate producer live
+
+G2 CONTRACTS
+callouts.CALLOUT_DETECTOR_VERSION = "callout-detector/1"
+CalloutDetection / DetectionDiagnostic (computed transport, not user decisions)
+GuidedStore.create persists callout_candidates + callout_detection; base state = candidates only
+no transcription / parse / target / model / material decisions
+reopen and legacy loads never redetect, never rewrite, never fabricate user events
+
+MISSING NEXT PIECE
+No G3 decision path: no overlay, no user transcription, no ignore, no manual region.
+
+RESEARCH
+SEMREAD-001D parked; no inference.
+
+NEXT SINGLE STEP
+G3 plan/request (G3 NOT OPENED)
+
+G3+
+NOT OPENED
+```
 
 ## Düzeltme turu 1 (bağımsız inceleme) — önce/sonra
 
@@ -109,4 +234,4 @@ T01 round-trip → models testleri · T02 raw/reopen → `test_save_persists_a_t
 
 ## Yeniden başlarken ilk somut işlem
 
-- G1 + düzeltme turu 1 ve 2 teslim edildi (tur 2: G1R2-01 + G1R2-02 kapatıldı; bağımsız tekrar exit 0; birleşik **198 passed**); **G2+ hâlâ açılmadı.** Kullanıcı G2'yi açarsa: kök `PLAN.md` §8 ve `docs/PLAN-20.md` §11.1'i oku; Observations → callout candidate adaptörünü `source_digest + page_index + canonical region + detector_version + source_kind` deterministik kimliğiyle küçük iş paketlerine böl; sahte kutu üretme kuralını koru.
+- G2 teslim edildi: kabul kanıtı yukarıda (G2.0–G2.6 tablosu + G2 final kanıt bölümü; birleşik **242 passed / 130.66 s / EXIT=0**, full pytest **1479 passed / 1 failed** — tek kırmızı G2 dışı ve önceden mevcut `test_planner` pini). **G3+ kapalı.** Kullanıcı G3'ü açarsa: kök `PLAN.md` §70 ve `docs/PLAN-20.md` §11.1'i oku; kapsam overlay / candidate select / crop preview / user raw transcription / ignore / manual region / persistence+undo — **G3 semantik parser DEĞİL**; girdi: G1'in dört callout modeli + G2 `callout_candidates` base state (kimlik/bölge/provenance/ipucu hazır).

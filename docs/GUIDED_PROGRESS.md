@@ -461,6 +461,10 @@ sözleşmesinden geçer ve kanıtı (`proposal` / `user_click`) satırda durur.
 `hedef eskidi (geometry_changed)` + hazırlık kapısı kapandı → elle daire seç → `Seçimi onayla`
 (`user_click`, yeni `geometry_key`/`profile_id`) → geri al → yeniden aç → paket indir.
 
+Tam regresyon ağı (semread bloğu hariç tüm testler): `pytest -q tests -k "not semread"` →
+**1387 passed, 339 deselected** (26 dk, EXIT=0) — G4–G8/G6 değişiklikleri bu turda yalnız altı
+bilinçli beklenti güncellemesiyle geçti, başka kırılma yok.
+
 Regresyon: `pytest -k "guided or callout or app or html or static or observe"` → **471 passed**, ve
 G8 kapısının getirdiği iki bilinçli test güncellemesi: `geometry_state` paftası ile `test_guided.py`'nin
 flange testi callout'ları kapsam dışı ilan ediyor; `test_guided_html.py` artık panelin *doğru*

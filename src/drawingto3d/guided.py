@@ -1467,8 +1467,10 @@ def _prepare_callouts(record: dict, decisions: Decisions) -> Decisions:
     prior_transcriptions = {row.get("callout_id"): row for row in stored.get("transcriptions") or []}
     prior_targets = {row.get("callout_id"): row for row in stored.get("callout_targets") or []}
     next_revision = (record.get("revision") or 0) + 1
-    key = callout_models.geometry_key(record)
     payload = decisions.model_dump(mode="json")
+    # Pin against the context this very save establishes — a profile switch and a confirmation can
+    # arrive in one payload, and the fingerprinted context must be the new one (PLAN-20 §6.4).
+    key = callout_models.geometry_key(record, payload)
     for row in payload.get("transcriptions") or []:
         prior = prior_transcriptions.get(row.get("callout_id"))
         if prior is not None and _transcription_carried(prior, row):

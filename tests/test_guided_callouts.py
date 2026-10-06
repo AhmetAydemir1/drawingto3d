@@ -6,10 +6,12 @@ as session records the store reads; G1 has no parser and no store API may fake o
 """
 import hashlib
 import json
+import threading
+from pathlib import Path
 
 import pytest
 
-from drawingto3d import guided
+from drawingto3d import callout_models, guided
 from drawingto3d.callout_models import CALLOUT_PARSER_VERSION
 from drawingto3d.guided import GuidedStore, _atomic, drawing_options
 from drawingto3d.observe import Observations
@@ -29,6 +31,10 @@ def _base_record(tmp_path):
     for i, point in enumerate(border):
         primitives.append(dict(id=f"g{4 + i}", path_id=f"b{i}", kind="line", start=point,
                                end=border[(i + 1) % 4]))
+    inner = [[40, 40], [100, 40], [100, 60], [40, 60]]
+    for i, point in enumerate(inner):
+        primitives.append(dict(id=f"n{i}", path_id=f"n{i}", kind="line", start=point,
+                               end=inner[(i + 1) % 4]))
     source = tmp_path / "source.pdf"
     source.write_bytes(b"fixture-source-hash")
     observations = Observations(source={"ref": str(source), "sha256": hashlib.sha256(source.read_bytes()).hexdigest()},
@@ -60,7 +66,8 @@ def _session_path(store):
     return store.folder(TOKEN) / "session.json"
 
 
-def seed_callouts(store, *, candidate=True, candidates=None, parses=None, proposals=None, history=None):
+def seed_callouts(store, *, candidate=True, candidates=None, parses=None, targets=None,
+                  proposals=None, history=None):
     """An open fixture: the way G2/G4 will one day write candidates and parse results."""
     record = store.load(TOKEN)
     if candidates is not None:
@@ -74,6 +81,8 @@ def seed_callouts(store, *, candidate=True, candidates=None, parses=None, propos
             "geometry_version": record["geometry_version"], "machine_text_hint": "4x Ø8 THRU"}]
     if parses is not None:
         record["callout_parses"] = [dict(row) for row in parses]
+    if targets is not None:
+        record["decisions"]["callout_targets"] = [dict(row) for row in targets]
     if proposals is not None:
         record["proposals"] = list(proposals)
     if history is not None:
@@ -97,7 +106,7 @@ def _fake_build(store):
     folder = store.folder(TOKEN) / "build-0-oldfolder"
     folder.mkdir(exist_ok=True)
     (folder / "part.step").write_bytes(b"old step")
-    record["build"] = {"revision": 0, "status": "complete", "folder": str(folder),
+    record["build"] = {"revision": record["revision"], "status": "complete", "folder": str(folder),
                        "source_sha256": record["source_sha256"],
                        "geometry_version": record["geometry_version"]}
     _atomic(_session_path(store), record)
@@ -107,6 +116,53 @@ def _fake_build(store):
 def _transcription(raw="  4 × Ø8 THRU  "):
     return {"callout_id": "k1", "raw_text": raw, "source_region": [0.1, 0.2, 0.4, 0.5],
             "entered_by": "user", "revision": 777}
+
+
+def _candidate_row(record, callout_id, **over):
+    row = {"id": callout_id, "source_digest": record["source_sha256"], "page_index": 0,
+           "region": [0.1, 0.2, 0.4, 0.5], "crop_region": [0.05, 0.15, 0.45, 0.55],
+           "source_kind": "observation", "observation_ids": [], "detector_version": "callout-detector/1",
+           "geometry_version": record["geometry_version"], "machine_text_hint": None}
+    row.update(over)
+    return row
+
+
+def _parse_row(**over):
+    row = {"callout_id": "k1", "parser_version": CALLOUT_PARSER_VERSION, "transcription_revision": 1,
+           "status": "parsed", "form": "diameter", "size": 8.0, "count": None, "termination": "thru",
+           "depth": None, "unit": None, "warnings": []}
+    row.update(over)
+    return row
+
+
+def _target_row(record, **over):
+    row = {"callout_id": "k1", "target_kind": "circle", "target_ids": ["c0"],
+           "geometry_version": record["geometry_version"],
+           "geometry_key": callout_models.geometry_key(record),
+           "profile_id": record["decisions"]["profile_id"], "transcription_revision": 1,
+           "parser_version": CALLOUT_PARSER_VERSION,
+           "evidence": [{"kind": "user_click", "ref": "c0"}], "status": "confirmed"}
+    row.update(over)
+    return row
+
+
+def _target_payload(**over):
+    """A client-side confirmation as the save boundary receives it — no server fields filled in."""
+    row = {"callout_id": "k1", "target_kind": "circle", "target_ids": ["c0"],
+           "transcription_revision": 1, "parser_version": CALLOUT_PARSER_VERSION,
+           "evidence": [{"kind": "user_click", "ref": "c0"}]}
+    row.update(over)
+    return row
+
+
+def _transcribed(store, parses=None):
+    """k1 written down (revision 1) with parse fixtures seeded — the open fixture state."""
+    seed_callouts(store)
+    payload = current_payload(store)
+    payload["transcriptions"] = [_transcription(raw="4x Ø8 THRU")]
+    store.save(TOKEN, 0, payload)
+    seed_callouts(store, candidate=False, parses=[_parse_row()] if parses is None else parses)
+    return store.load(TOKEN)
 
 
 # --- persistence and reopen ----------------------------------------------
@@ -278,3 +334,347 @@ def test_accept_keeps_callout_decisions_and_confirms_nothing(store):
     assert state["decisions"]["callout_targets"] == []                  # metin ipucu onay sayılmaz
     assert state["callouts"][0]["transcription"]["state"] == "current"
     assert state["callouts"][0]["target"]["state"] == "missing"
+
+
+# --- targets, parse freshness and rejections (T06/T09/T10/T11/T12/T17/T21) --
+
+def test_a_target_confirmation_is_pinned_and_current(store):
+    _transcribed(store)
+    key = callout_models.geometry_key(store.load(TOKEN))
+    payload = current_payload(store)
+    payload["callout_targets"] = [_target_payload()]
+    state = store.save(TOKEN, 1, payload)
+    record = store.load(TOKEN)
+    stored = state["decisions"]["callout_targets"][0]
+    assert stored["geometry_key"] == key                                  # sunucu pinledi
+    assert stored["geometry_version"] == record["geometry_version"]
+    assert stored["profile_id"] == record["decisions"]["profile_id"]
+    assert state["callouts"][0]["parse"] == {"state": "current", "reason": None}
+    assert state["callouts"][0]["target"] == {"state": "current", "reason": None}
+
+    reopened = GuidedStore(store.root)
+    public = reopened.public(reopened.load(TOKEN))
+    assert public["callouts"][0]["target"] == {"state": "current", "reason": None}
+
+
+def test_a_vertex_pair_wraps_around_the_selected_contour(store):
+    _transcribed(store)
+    payload = current_payload(store)
+    payload["callout_targets"] = [_target_payload(target_kind="vertex_pair", target_ids=["v3", "v0"],
+                                                  evidence=[{"kind": "user_click", "ref": "v3"}])]
+    state = store.save(TOKEN, store.load(TOKEN)["revision"], payload)
+    stored = state["decisions"]["callout_targets"][0]
+    assert stored["target_kind"] == "vertex_pair" and stored["target_ids"] == ["v3", "v0"]
+    assert state["callouts"][0]["target"]["state"] == "current"
+
+
+def test_wrong_targets_are_refused_without_touching_the_record(store):
+    _transcribed(store)
+    before = _session_path(store).read_bytes()
+    revision = store.load(TOKEN)["revision"]
+    cases = [
+        (_target_payload(target_ids=["ghost"]), "bulunamadı"),
+        (_target_payload(target_kind="circle_group", target_ids=["c0", "ghost"]), "bulunamadı"),
+        (_target_payload(target_kind="circle_group", target_ids=["c0", "c0"]), "benzersiz"),
+        (_target_payload(target_kind="vertex_pair", target_ids=["v0", "v2"]), "ardışık"),
+        (_target_payload(target_kind="vertex_pair", target_ids=["v0", "v9"]), "kenarlarında yok"),
+    ]
+    for row, match in cases:
+        payload = current_payload(store)
+        payload["callout_targets"] = [row]
+        with pytest.raises(ValueError, match=match):
+            store.save(TOKEN, revision, payload)
+    assert _session_path(store).read_bytes() == before
+
+
+def test_a_target_needs_its_own_current_transcription(store):
+    _transcribed(store)
+    payload = current_payload(store)
+    payload["transcriptions"] = []
+    payload["callout_targets"] = [_target_payload()]
+    with pytest.raises(ValueError, match="transcription gerektirir"):
+        store.save(TOKEN, store.load(TOKEN)["revision"], payload)
+
+
+def test_an_explicit_count_must_match_the_unique_targets(store):
+    record = store.load(TOKEN)
+    seed_callouts(store, candidates=[_candidate_row(record, "k1"),
+                                     _candidate_row(record, "k2", region=[0.6, 0.1, 0.7, 0.2],
+                                                    crop_region=[0.55, 0.05, 0.75, 0.25])])
+    payload = current_payload(store)
+    payload["transcriptions"] = [
+        {"callout_id": "k1", "raw_text": "4x Ø8", "source_region": [0.1, 0.2, 0.4, 0.5], "entered_by": "user"},
+        {"callout_id": "k2", "raw_text": "2x Ø8", "source_region": [0.6, 0.1, 0.7, 0.2], "entered_by": "user"},
+    ]
+    store.save(TOKEN, 0, payload)
+    seed_callouts(store, candidate=False, parses=[_parse_row(count=4),
+                                                  _parse_row(callout_id="k2", count=2)])
+    revision = store.load(TOKEN)["revision"]
+    for row in (_target_payload(target_ids=["c0"]),
+                _target_payload(target_kind="circle_group", target_ids=["c0", "c1"])):
+        payload = current_payload(store)
+        payload["callout_targets"] = [row]
+        with pytest.raises(ValueError, match="uyuşmuyor"):
+            store.save(TOKEN, revision, payload)
+    payload = current_payload(store)
+    payload["callout_targets"] = [_target_payload(callout_id="k2", target_kind="circle_group",
+                                                  target_ids=["c0", "c1"])]
+    state = store.save(TOKEN, revision, payload)
+    assert state["callouts"][1]["target"]["state"] == "current"          # 2 adet = 2 hedef
+
+
+def test_editing_the_text_stales_the_old_parse_and_target_and_keeps_history(store):
+    _transcribed(store)
+    payload = current_payload(store)
+    payload["callout_targets"] = [_target_payload()]
+    state = store.save(TOKEN, 1, payload)
+    assert state["callouts"][0]["target"]["state"] == "current"
+
+    payload = current_payload(store)
+    payload["transcriptions"] = [_transcription(raw="Ø10")]
+    state = store.save(TOKEN, 2, payload)
+    callout = state["callouts"][0]
+    assert callout["transcription"] == {"state": "current", "revision": 3, "reason": None}
+    assert callout["parse"] == {"state": "stale", "reason": "transcription_changed"}
+    assert callout["target"] == {"state": "stale", "reason": "transcription_changed"}
+    history = store.load(TOKEN)["history"]
+    old = [row for entry in history for row in entry.get("transcriptions", [])
+           if row.get("raw_text") == "4x Ø8 THRU"]
+    assert old and old[0]["revision"] == 1                               # A kaydı geçmişte duruyor
+
+
+def test_a_profile_change_stales_the_target_within_the_same_geometry_version(store):
+    _transcribed(store)
+    payload = current_payload(store)
+    payload["callout_targets"] = [_target_payload()]
+    store.save(TOKEN, 1, payload)
+    pinned = store.load(TOKEN)["decisions"]["callout_targets"][0]
+    wires = [row["id"] for row in store.load(TOKEN)["options"]["profiles"] if row["kind"] == "wire"]
+    assert len(wires) >= 2
+
+    payload = current_payload(store, profile_id=wires[1])
+    state = store.save(TOKEN, 2, payload)
+    assert store.load(TOKEN)["geometry_version"] == guided.GEOMETRY_VERSION   # sürüm artmadı
+    callout = state["callouts"][0]
+    assert callout["parse"]["state"] == "current"                        # metin aynıysa parse korunur
+    assert callout["target"] == {"state": "stale", "reason": "geometry_changed"}
+    stored = store.load(TOKEN)["decisions"]["callout_targets"][0]
+    assert stored["profile_id"] == pinned["profile_id"]                  # taşınan onay byte-korunur
+    assert stored["geometry_key"] == pinned["geometry_key"]
+
+    payload = current_payload(store)
+    payload["callout_targets"] = [{**stored, "evidence": [{"kind": "user_click", "ref": "c0-again"}]}]
+    state = store.save(TOKEN, store.load(TOKEN)["revision"], payload)    # açık yeniden onay
+    assert state["callouts"][0]["target"] == {"state": "current", "reason": None}
+    assert store.load(TOKEN)["decisions"]["callout_targets"][0]["profile_id"] == wires[1]
+
+
+def test_a_changed_source_stales_the_callout_layer_and_the_build(store):
+    _transcribed(store)
+    payload = current_payload(store)
+    payload["callout_targets"] = [_target_payload()]
+    store.save(TOKEN, 1, payload)
+    _fake_build(store)
+    public = store.public(store.load(TOKEN))
+    assert public["build_status"] == "complete"
+    assert public["callouts"][0]["target"]["state"] == "current"
+
+    Path(store.load(TOKEN)["source"]).write_bytes(b"changed-source-bytes")   # kaynak değişti
+    public = store.public(store.load(TOKEN))
+    assert public["geometry"]["stale"] is not None
+    assert public["callouts"][0]["transcription"]["state"] == "current"      # yazılan metin tarihsel kayıt
+    assert public["callouts"][0]["parse"] == {"state": "stale", "reason": "source_unavailable"}
+    assert public["callouts"][0]["target"] == {"state": "stale", "reason": "source_unavailable"}
+    assert public["build_status"] == "historical" and public["step"] is None
+    with pytest.raises(ValueError):
+        store.artifact(TOKEN, "part.step")
+
+
+def test_a_geometry_version_mismatch_stales_the_target(store):
+    _transcribed(store)
+    payload = current_payload(store)
+    payload["callout_targets"] = [_target_payload()]
+    store.save(TOKEN, 1, payload)
+    record = json.loads(_session_path(store).read_text())
+    record["geometry_version"] = guided.GEOMETRY_VERSION + 1
+    public = store.public(record)                                            # aynı public hesabı
+    assert public["callouts"][0]["parse"]["state"] == "current"              # parse geometriye bağlı değil
+    assert public["callouts"][0]["target"] == {"state": "stale", "reason": "geometry_changed"}
+
+
+def test_a_contour_change_stales_the_target_in_the_same_version(store):
+    _transcribed(store)
+    payload = current_payload(store)
+    payload["callout_targets"] = [_target_payload()]
+    store.save(TOKEN, 1, payload)
+    record = json.loads(_session_path(store).read_text())
+    record["decisions"]["contour"] = {"drop": ["g3"], "approve_join": False}
+    public = store.public(record)
+    assert public["geometry"]["version"] == record["geometry_version"]        # sürüm aynı
+    assert public["callouts"][0]["target"] == {"state": "stale", "reason": "geometry_changed"}
+
+
+def test_an_old_parser_version_fixture_stales_its_parse_and_target(store):
+    record = _transcribed(store, parses=[_parse_row(parser_version="callout-parser/0")])
+    seed_callouts(store, candidate=False,
+                  targets=[_target_row(record, parser_version="callout-parser/0")])
+    callout = store.public(store.load(TOKEN))["callouts"][0]
+    assert callout["parse"] == {"state": "stale", "reason": "parser_version_changed"}
+    assert callout["target"] == {"state": "stale", "reason": "parser_version_changed"}
+
+    payload = current_payload(store)
+    payload["callout_targets"] = [dict(payload["callout_targets"][0],
+                                       evidence=[{"kind": "user_click", "ref": "again"}])]
+    with pytest.raises(ValueError, match="parser sürümüne bağlanmalı"):
+        store.save(TOKEN, store.load(TOKEN)["revision"], payload)
+
+
+def test_loading_twice_changes_nothing(store):
+    _transcribed(store)
+    before = _session_path(store).read_bytes()
+    first = store.load(TOKEN)
+    second = store.load(TOKEN)
+    assert _session_path(store).read_bytes() == before
+    assert first["revision"] == second["revision"] == 1
+    assert first["log"] == second["log"] and first["decisions"] == second["decisions"]
+
+
+# --- undo, logging and build/artifact staleness (T13/T14/T15/T16/T22) -------
+
+def test_undo_restores_the_earlier_callout_decisions_and_stales_the_build(store):
+    _transcribed(store)
+    payload = current_payload(store)
+    payload["transcriptions"] = [_transcription(raw="Ø10")]                    # B
+    store.save(TOKEN, 1, payload)
+    snapshot = [entry for entry in store.load(TOKEN)["history"] if entry.get("transcriptions")][-1]
+    state = store.save(TOKEN, 2, undo=True)
+    assert state["revision"] == 3
+    assert state["decisions"]["transcriptions"][0]["raw_text"] == "4x Ø8 THRU"  # A geri geldi
+    assert state["decisions"]["transcriptions"][0]["revision"] == 1
+    assert state["decisions"] == snapshot                     # bağımsız snapshot aynen döndü
+    assert state["build_status"] is None and state["step"] is None              # build stale, diriltme yok
+    assert state["callouts"][0]["transcription"] == {"state": "current", "revision": 1, "reason": None}
+
+    reopened = GuidedStore(store.root)
+    again = reopened.public(reopened.load(TOKEN))
+    assert again["revision"] == 3
+    assert again["decisions"]["transcriptions"][0]["raw_text"] == "4x Ø8 THRU"
+
+
+def test_undo_does_not_make_an_old_target_current_again(store):
+    _transcribed(store)
+    payload = current_payload(store)
+    payload["callout_targets"] = [_target_payload()]
+    store.save(TOKEN, 1, payload)                                              # A bağlamında onay
+    wires = [row["id"] for row in store.load(TOKEN)["options"]["profiles"] if row["kind"] == "wire"]
+    store.save(TOKEN, 2, current_payload(store, profile_id=wires[1]))          # B bağlamı
+    stored = store.load(TOKEN)["decisions"]["callout_targets"][0]
+    payload = current_payload(store)
+    payload["callout_targets"] = [{**stored, "evidence": [{"kind": "user_click", "ref": "b"}]}]
+    store.save(TOKEN, 3, payload)                                              # B'de yeniden onay
+    assert store.public(store.load(TOKEN))["callouts"][0]["target"]["state"] == "current"
+
+    state = store.save(TOKEN, 4, undo=True)      # A onayı geri gelir, bağlam B kalır
+    assert state["decisions"]["callout_targets"][0]["profile_id"] == wires[0]
+    assert state["callouts"][0]["target"] == {"state": "stale", "reason": "geometry_changed"}
+
+
+def test_base_reading_and_options_survive_callout_edits_and_undo(store):
+    _transcribed(store)
+    before = json.loads(_session_path(store).read_text())
+    payload = current_payload(store)
+    payload["callout_targets"] = [_target_payload()]
+    store.save(TOKEN, 1, payload)
+    payload = current_payload(store)
+    payload["transcriptions"] = [_transcription(raw="Ø10")]
+    store.save(TOKEN, 2, payload)
+    store.save(TOKEN, 3, undo=True)
+    after = json.loads(_session_path(store).read_text())
+    assert after["options"] == before["options"]                 # temel okuma kullanıcı girdisiyle değişmez
+    assert after["source_sha256"] == before["source_sha256"]
+    assert after.get("reading") == before.get("reading")
+    assert after.get("proposals") == before.get("proposals")
+
+
+def test_callout_events_are_user_actions_and_no_parser_is_invented(store):
+    _transcribed(store)
+    payload = current_payload(store)
+    payload["callout_targets"] = [_target_payload()]
+    store.save(TOKEN, 1, payload)
+    payload = current_payload(store)
+    payload["transcriptions"] = [_transcription(raw="Ø10")]
+    store.save(TOKEN, 2, payload)
+    store.save(TOKEN, 3, undo=True)
+    log = store.load(TOKEN)["log"]
+    assert [row["action"] for row in log if row["action"] == "transcribe"].count("transcribe") == 1
+    assert len([row for row in log if row["action"] == "edit_transcription"]) == 1
+    assert len([row for row in log if row["action"] == "confirm_target"]) == 1
+    assert any(row["actor"] == "user" and row["action"] == "undo" for row in log)
+    assert not [row for row in log if "parse" in row["action"]]   # parser yokken parse olayı yazılmaz
+    assert not [row for row in log if row["action"] in ("freshness", "stale")]
+    event = next(row for row in log if row["action"] == "transcribe")
+    assert event["value"] == "4x Ø8 THRU"
+    assert all(row["actor"] != "parser" for row in log)
+
+
+def test_a_later_edit_leaves_the_old_step_historical_and_never_current(store):
+    _transcribed(store)
+    folder = _fake_build(store)
+    assert store.public(store.load(TOKEN))["build_status"] == "complete"
+    revision = store.load(TOKEN)["revision"]
+    payload = current_payload(store)
+    payload["transcriptions"] = [_transcription(raw="Ø10")]                    # transcription edit
+    state = store.save(TOKEN, revision, payload)
+    assert state["build_status"] is None and state["step"] is None
+    with pytest.raises(ValueError):
+        store.artifact(TOKEN, "part.step")
+    assert (folder / "part.step").exists()                    # eski çıktı tarihsel olarak diskte kalır
+    state = store.save(TOKEN, store.load(TOKEN)["revision"], undo=True)
+    assert state["step"] is None and state["build_status"] is None             # undo da diriltmez
+
+
+def test_a_target_edit_also_makes_the_old_step_historical(store):
+    _transcribed(store)
+    payload = current_payload(store)
+    payload["callout_targets"] = [_target_payload()]
+    store.save(TOKEN, 1, payload)
+    folder = _fake_build(store)
+    assert store.public(store.load(TOKEN))["step"]
+    stored = store.load(TOKEN)["decisions"]["callout_targets"][0]
+    payload = current_payload(store)
+    payload["callout_targets"] = [{**stored, "evidence": [{"kind": "user_click", "ref": "again"}]}]
+    state = store.save(TOKEN, store.load(TOKEN)["revision"], payload)
+    assert state["step"] is None and state["build_status"] is None
+    assert (folder / "part.step").exists()
+
+
+def test_a_build_that_finishes_late_never_attaches_to_newer_decisions(store, monkeypatch):
+    _transcribed(store)
+    entered, release = threading.Event(), threading.Event()
+
+    def slow(plan, source, folder):
+        entered.set()
+        release.wait(timeout=10)
+
+    monkeypatch.setattr(guided, "build_general", slow)
+    revision = store.load(TOKEN)["revision"]
+    errors = []
+
+    def run():
+        try:
+            store.build(TOKEN, revision)
+        except Exception as exc:                                # çökme burada yakalanır
+            errors.append(exc)
+
+    worker = threading.Thread(target=run)
+    worker.start()
+    assert entered.wait(timeout=10)
+    payload = current_payload(store)
+    payload["thickness"] = 12.0
+    store.save(TOKEN, revision, payload)                        # build sürerken yeni karar
+    release.set()
+    worker.join(timeout=10)
+    assert errors == [] and not worker.is_alive()
+    record = store.load(TOKEN)
+    assert record.get("build") is None                          # geç sonuç yeni kararlara bağlanmaz
+    assert store.public(record)["build_status"] is None

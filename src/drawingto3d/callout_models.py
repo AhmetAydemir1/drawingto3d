@@ -293,8 +293,12 @@ def _transcription_state(transcription: dict | None) -> dict:
 
 
 def _parse_state(callout_id: str, transcription: dict | None, parses: list[dict],
-                 expected_parser_version: str) -> dict:
+                 expected_parser_version: str, record: dict) -> dict:
     mine = [row for row in parses if row.get("callout_id") == callout_id]
+    # PLAN-20 §7 (source changed/unreadable or geometry stale): an existing parse cannot be served
+    # as current data any more — the page it was read off is no longer verifiable.
+    if record.get("geometry_stale") and mine:
+        return {"state": "stale", "reason": "source_unavailable"}
     if transcription is None:
         if mine:
             return {"state": "stale", "reason": "transcription_missing"}
@@ -366,7 +370,7 @@ def callout_states(record: dict, expected_parser_version: str | None = None) -> 
             "page_index": candidate_row.get("page_index"),
             "source_kind": candidate_row.get("source_kind"),
             "transcription": _transcription_state(transcription),
-            "parse": _parse_state(callout_id, transcription, parses, expected),
+            "parse": _parse_state(callout_id, transcription, parses, expected, record),
             "target": _target_state(callout_id, transcription, targets.get(callout_id), parses,
                                     key, record, expected),
         })

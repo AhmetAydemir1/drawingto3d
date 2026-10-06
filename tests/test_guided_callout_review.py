@@ -10,7 +10,7 @@ import json
 import pytest
 
 import test_guided_callouts as helpers
-from drawingto3d import callout_models
+from drawingto3d import callout_models, callout_parse
 from drawingto3d.guided import GuidedStore, _atomic
 
 TOKEN = helpers.TOKEN
@@ -295,7 +295,8 @@ def test_saving_the_text_again_on_the_new_region_is_a_new_user_decision(store):
     assert row["revision"] != first                               # yeni transcription revision'ı
     assert row["source_region"] == [0.30, 0.30, 0.36, 0.34]       # incelenen yeni alan
     assert states_of(state)["k1"]["transcription"]["state"] == "current"
-    assert states_of(state)["k1"]["parse"] == {"state": "stale", "reason": "transcription_changed"}
+    # PLAN §9: yeni alan + yeni metin = yeni revizyon, ve okuma o revizyona bağlı olarak türetilir.
+    assert states_of(state)["k1"]["parse"] == {"state": "current", "reason": None}
     events = [item["action"] for item in record_of(store)["log"] if item["actor"] == "user"]
     assert events.count("edit_transcription") == 1                # gerçek kullanıcı eylemi olarak kayıtlı
 
@@ -388,8 +389,11 @@ def test_the_base_candidates_and_the_reading_never_move_from_a_review(store):
     assert json.dumps(after["callout_candidates"], sort_keys=True) == base
     assert json.dumps(after["proposals"], sort_keys=True) == proposals
     assert json.dumps(after["options"], sort_keys=True) == options
-    assert (after.get("callout_parses") or []) == []               # hiçbir parse uydurulmadı
-    assert after["callout_schema_version"] == 2                    # G3 yazımı yeni sürümü damgalar
+    # PLAN §9: birincil okuma (candidates/proposals/options) hiç kıpırdamaz; callout okuması ise
+    # sunucunun kendi türetmesidir — gerçek parser'ın kaydedilen metin için ürettiği tek satır.
+    stored = after["decisions"]["transcriptions"][0]
+    assert after["callout_parses"] == [callout_parse.semantic_parse(stored, sheet_unit="mm").model_dump(mode="json")]
+    assert after["callout_schema_version"] == 3                    # G3/G5-GX yazımı yeni sürümü damgalar
 
 
 # --- düzeltme turu 4 (PLAN-22 §4, G3R-01): eski /save yeni komut kurallarını atlayamaz ----------
@@ -624,8 +628,8 @@ def test_a_v1_session_is_stamped_by_its_first_real_write_and_reads_stay_read_onl
     noop = store.save(TOKEN, 0, helpers.current_payload(store))
     assert noop["callout_schema_version"] == 1 and bytes_of(store) == before   # no-op yazmaz
     state = command(store, "add_region", {"region": [0.2, 0.2, 0.3, 0.3]})
-    assert state["callout_schema_version"] == callout_models.CALLOUT_SCHEMA_VERSION == 2
-    assert store.load(TOKEN)["callout_schema_version"] == 2
+    assert state["callout_schema_version"] == callout_models.CALLOUT_SCHEMA_VERSION == 3
+    assert store.load(TOKEN)["callout_schema_version"] == 3
 
 
 def test_a_versionless_legacy_session_is_stamped_on_a_real_write_only(store):
@@ -637,7 +641,7 @@ def test_a_versionless_legacy_session_is_stamped_on_a_real_write_only(store):
     _atomic(helpers._session_path(store), record)
     assert store.public(store.load(TOKEN))["callout_schema_version"] is None
     state = store.save(TOKEN, 0, helpers.current_payload(store, with_callouts=False, thickness=12.0))
-    assert state["revision"] == 1 and state["callout_schema_version"] == 2
+    assert state["revision"] == 1 and state["callout_schema_version"] == 3
 
 
 def test_a_future_unknown_schema_version_is_never_downgraded(store):
@@ -658,7 +662,7 @@ def test_undo_never_lowers_the_callout_schema_version(store):
     _atomic(helpers._session_path(store), record)
     state = store.save(TOKEN, 1, undo=True)
     assert state["revision"] == 2
-    assert state["callout_schema_version"] == 2                      # history'de sürüm alanı yok: geriye düşmez
+    assert state["callout_schema_version"] == 3                      # history'de sürüm alanı yok: geriye düşmez
 
 
 # --- düzeltme turu 4 (PLAN-22 §7, G3R-04): tespit metadata'sı public'te -----------------------

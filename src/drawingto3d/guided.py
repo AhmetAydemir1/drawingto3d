@@ -29,6 +29,7 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_valida
 
 from drawingto3d import advise
 from drawingto3d import callout_models
+from drawingto3d import callout_parse
 from drawingto3d import callouts
 from drawingto3d.general import GeneralPlan, build_general
 from drawingto3d.ingest import load_page
@@ -1461,6 +1462,10 @@ def _merge_callout_defaults(record: dict, decisions):
     keeps the old save contract exactly as it was."""
     if not isinstance(decisions, dict):
         return decisions
+    # PLAN §9: a reading is the server's own derivation — a client cannot send one, and a payload that
+    # carries the derived rows is refused rather than having them ignored in silence.
+    if "callout_parses" in decisions:
+        raise ValueError("callout_parses sunucunun türettiği okumadır; istemci okuma gönderemez (PLAN §9)")
     merged = dict(decisions)
     stored = record.get("decisions") or {}
     for key in ("transcriptions", "callout_targets", "manual_callouts", "callout_reviews"):
@@ -1496,6 +1501,43 @@ def _endpoint_point(edges: list[dict], identity: tuple[str, str], target: str) -
     if edge is None:
         raise ValueError(f"hedef uç kimliği bu düzeltmeden sonra konturda yok (yeniden seçin): {target}")
     return [float(value) for value in edge[tail]]
+
+
+def _refresh_callout_parses(record: dict) -> None:
+    """Derive the one current reading per callout (PLAN §9) — derived data, never a decision.
+
+    A saved text gets exactly one reading, computed by the real parser, bound to the transcription
+    revision it was computed from and to `CALLOUT_PARSER_VERSION`. The G4 model:
+
+    * a row for the current revision+version is the record's authority and is never rewritten;
+    * a row that can no longer be current (the text moved on, the region moved, the parser version
+      changed) is *replaced* by the fresh one — its text lives in the decisions (and in history), so
+      nothing is lost, and a reading is not a user act: no history step, no log line;
+    * a text whose region has moved away keeps its old row and stays `stale`/`region_changed` — no
+      reading is fabricated for a box the user has not looked at;
+    * with no transcription at all the key is left exactly as it was (an old record keeps its shape).
+    """
+    decisions = record.get("decisions") or {}
+    transcriptions = {row.get("callout_id"): row for row in decisions.get("transcriptions") or []}
+    regions = {row["id"]: row.get("region") for row in callout_models.effective_callouts(record)}
+    unit = callout_models.sheet_unit(record)
+    rows = list(record.get("callout_parses") or [])
+    for callout_id, transcription in transcriptions.items():
+        region = regions.get(callout_id)
+        if region is None:
+            continue                       # olmayan bir callout için okuma yazılmaz
+        stored = [float(value) for value in transcription.get("source_region") or []]
+        if [float(value) for value in region] != stored:
+            continue                       # metin okunduğu alandan ayrıldı: okuma yenilenmez
+        revision = transcription.get("revision")
+        mine = [row for row in rows if row.get("callout_id") == callout_id]
+        if any(row.get("transcription_revision") == revision
+               and row.get("parser_version") == callout_models.CALLOUT_PARSER_VERSION for row in mine):
+            continue                       # güncel okuma kayıt için otoritedir; yeniden yazılmaz
+        rows = [row for row in rows if row.get("callout_id") != callout_id]
+        rows.append(callout_parse.semantic_parse(transcription, sheet_unit=unit).model_dump(mode="json"))
+    if rows != (record.get("callout_parses") or []):
+        record["callout_parses"] = rows
 
 
 def _prepare_callouts(record: dict, decisions: Decisions) -> Decisions:
@@ -2141,6 +2183,7 @@ class GuidedStore:
                 if not r["history"]: raise ValueError("geri alınacak karar yok")
                 before=r["decisions"]
                 r["decisions"]=r["history"].pop()
+                _refresh_callout_parses(r)
                 _log(r,"user","undo","decisions",r["decisions"],None,"Son karar geri alındı.")
                 for field,value in _changed_fields(before,r["decisions"]):
                     _log(r,"user","undo",field,value,None,"Geri alma ile eski değere döndü.")
@@ -2159,6 +2202,9 @@ class GuidedStore:
                 before=r["decisions"]
                 r["history"].append(r["decisions"])
                 r["decisions"]=payload
+                # PLAN §9: the reading is the server's own derivation, computed here and bound to the
+                # revision it was read off — derived data, so no history step and no log line.
+                _refresh_callout_parses(r)
                 for field,value in _changed_fields(before,payload):
                     item=_proposal_match(r.get("proposals",[]),field,value)
                     if item:

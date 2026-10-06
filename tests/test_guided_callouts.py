@@ -184,11 +184,12 @@ def test_save_persists_a_transcription_and_reopen_keeps_raw_text(store):
     reopened = GuidedStore(store.root)                   # fresh instance, same folder
     public = reopened.public(reopened.load(TOKEN))
     assert public["decisions"]["transcriptions"][0]["raw_text"] == "  4 × Ø8 THRU  "
-    assert public["callout_schema_version"] == 2                   # G3: kullanıcı alan/yok sayma kararları eklendi
+    assert public["callout_schema_version"] == 3                   # G3: alan/yok sayma; G5-GX: arc/profile + bağlanamaz + external_review
     assert public["callouts"] == [{
         "id": "k1", "page_index": 0, "source_kind": "vector_text", "manual": False, "ignored": False,
+        "unbindable": False,
         "transcription": {"state": "current", "revision": 1, "reason": None},
-        "parse": {"state": "missing", "reason": "needs_parse"},
+        "parse": {"state": "current", "reason": None},
         "target": {"state": "missing", "reason": "needs_target"}}]
 
 
@@ -426,7 +427,9 @@ def test_an_explicit_count_must_match_the_unique_targets(store):
     assert state["callouts"][1]["target"]["state"] == "current"          # 2 adet = 2 hedef
 
 
-def test_editing_the_text_stales_the_old_parse_and_target_and_keeps_history(store):
+def test_editing_the_text_replaces_the_stored_reading_and_keeps_history(store):
+    """PLAN §9: metin değişince eski okuma *yerini yenisine bırakır* (eski metin geçmişte durur) ve
+    hedef eskiyerek kalır — hedef kendiliğinden yenilenmez, onay kullanıcınındır."""
     _transcribed(store)
     payload = current_payload(store)
     payload["callout_targets"] = [_target_payload()]
@@ -438,7 +441,10 @@ def test_editing_the_text_stales_the_old_parse_and_target_and_keeps_history(stor
     state = store.save(TOKEN, 2, payload)
     callout = state["callouts"][0]
     assert callout["transcription"] == {"state": "current", "revision": 3, "reason": None}
-    assert callout["parse"] == {"state": "stale", "reason": "transcription_changed"}
+    assert callout["parse"] == {"state": "current", "reason": None}
+    reading = [row for row in store.load(TOKEN)["callout_parses"] if row["callout_id"] == "k1"]
+    assert len(reading) == 1 and reading[0]["transcription_revision"] == 3
+    assert (reading[0]["form"], reading[0]["size"]) == ("diameter", 10.0)
     assert callout["target"] == {"state": "stale", "reason": "transcription_changed"}
     history = store.load(TOKEN)["history"]
     old = [row for entry in history for row in entry.get("transcriptions", [])

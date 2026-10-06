@@ -25,13 +25,23 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-CALLOUT_SCHEMA_VERSION = 2
+CALLOUT_SCHEMA_VERSION = 3
 """Version of the callout layer itself (PLAN-20 §6.1) — *not* `guided.GEOMETRY_VERSION`.
 
 Adding the callout fields must never bump the geometry contract; a change to these records bumps
 this number instead. G3 added the user's own region/ignore decisions (`manual_callouts`,
-`callout_reviews`) to the persisted structure, so the written version moves to 2; a record that is
-merely *loaded* is never rewritten because of it (PLAN-21 §6.1)."""
+`callout_reviews`) to the persisted structure, so the written version moved to 2; G5–GX add what the
+binding chain needs and move it to 3:
+
+* `CalloutTargetDecision.target_kind` also names `arc` and `profile` — PLAN §10 asks for an arc
+  candidate for a radius and a contour candidate for a linear callout, and neither is honestly
+  expressible as a circle or a pair of ends. Additive: the three older kinds still validate.
+* `CalloutReviewDecision.unbindable` — the user's own "this callout cannot be bound" verdict, so a
+  reviewed-and-excluded callout is a declared scope decision instead of silent absence.
+* `TranscriptionDecision.entered_by` may be `external_review` — GX import provenance on the row
+  itself, so an imported text never looks like something the user typed here.
+
+A record that is merely *loaded* is never rewritten because of it (PLAN-21 §6.1)."""
 
 MANUAL_ID_PREFIX = "manual:"
 """The user-created callout's own namespace (PLAN-21 §6.1).
@@ -174,6 +184,7 @@ class CalloutReviewDecision(BaseModel):
     callout_id: str = Field(min_length=1, max_length=120)
     region_override: list[float] | None = None
     ignored: bool = False
+    unbindable: bool = False     # "bağlanamaz": kullanıcının kapsam kararı (G6 panelindeki dördüncü düğme)
     revision: int = Field(default=0, ge=0)
 
     @field_validator("region_override")
@@ -188,8 +199,9 @@ class CalloutReviewDecision(BaseModel):
 
     @model_validator(mode="after")
     def _carries_a_decision(self):
-        if self.region_override is None and not self.ignored:
-            raise ValueError("gözden geçirme kaydı ya bir bölge düzeltmesi ya yok sayma taşımalı")
+        if self.region_override is None and not self.ignored and not self.unbindable:
+            raise ValueError("gözden geçirme kaydı bir bölge düzeltmesi, yok sayma ya da "
+                             "'bağlanamaz' kararı taşımalı")
         return self
 
 
@@ -201,7 +213,7 @@ class TranscriptionDecision(BaseModel):
     callout_id: str = Field(min_length=1, max_length=120)
     raw_text: str = Field(min_length=1)
     normalized_text: str = ""      # the server's derivation — a client value is replaced on validation
-    entered_by: Literal["user"] = "user"
+    entered_by: Literal["user", "external_review"] = "user"
     source_region: list[float] = Field(min_length=4, max_length=4)
     revision: int = Field(default=0, ge=0)   # the server's revision id for this text/region decision
 
@@ -277,7 +289,7 @@ class CalloutTargetDecision(BaseModel):
     model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
 
     callout_id: str = Field(min_length=1, max_length=120)
-    target_kind: Literal["circle", "circle_group", "vertex_pair"]
+    target_kind: Literal["circle", "circle_group", "arc", "profile", "vertex_pair"]
     target_ids: list[str] = Field(min_length=1, max_length=100)
     geometry_version: int = Field(default=0, ge=0)
     geometry_key: str = ""     # the server pins the real fingerprint at save time
@@ -300,6 +312,10 @@ class CalloutTargetDecision(BaseModel):
             raise ValueError("hedef kimlikleri benzersiz olmalı (aynı ID tekrar edilemez)")
         if self.target_kind == "circle" and len(self.target_ids) != 1:
             raise ValueError("circle hedefi tam olarak 1 geometri kimliği ister")
+        if self.target_kind == "arc" and len(self.target_ids) != 1:
+            raise ValueError("arc hedefi tam olarak 1 yay kimliği ister")
+        if self.target_kind == "profile" and len(self.target_ids) != 1:
+            raise ValueError("profile hedefi tam olarak 1 kontur kimliği ister")
         if self.target_kind == "circle_group" and len(self.target_ids) < 2:
             raise ValueError("circle_group en az 2 benzersiz hedef ister")
         if self.target_kind == "vertex_pair" and len(self.target_ids) != 2:
@@ -337,6 +353,18 @@ def _profile_row(profile: dict) -> dict:
 def _circle_row(circle: dict) -> dict:
     return {"id": str(circle.get("id")), "center": _numbers(circle.get("center")),
             "radius": None if circle.get("radius") is None else float(circle["radius"])}
+
+
+def sheet_unit(record: dict) -> str | None:
+    """The unit the *user* declared for this sheet — their calibration's own unit, or nothing.
+
+    A parse never fills a missing printed unit from here (G4 keeps `unit: None` and says
+    `unit_unresolved`); the compiler and the binder may resolve a size with it because it is a
+    decision the user made about the sheet, and they say so (`unit_source: "sheet"`).
+    """
+    calibration = (record.get("decisions") or {}).get("calibration") or {}
+    unit = calibration.get("unit")
+    return unit if unit in ("mm", "in") else None
 
 
 def geometry_key(record: dict, decisions: dict | None = None) -> str:
@@ -432,6 +460,7 @@ def effective_callouts(record: dict) -> list[dict]:
             "crop_region": _covering_crop(region, candidate.get("crop_region")),
             "machine_text_hint": candidate.get("machine_text_hint"),
             "ignored": bool(review.get("ignored")),
+            "unbindable": bool(review.get("unbindable")),
             "provenance": {"kind": "detected", "observation_ids": list(candidate.get("observation_ids") or []),
                            "detector_version": candidate.get("detector_version"),
                            "geometry_version": candidate.get("geometry_version")},
@@ -456,6 +485,7 @@ def effective_callouts(record: dict) -> list[dict]:
             # (a hint, an observation id) would present a detection that never happened.
             "machine_text_hint": None,
             "ignored": bool(review.get("ignored")),
+            "unbindable": bool(review.get("unbindable")),
             "provenance": {"kind": "manual", "observation_ids": [], "detector_version": None,
                            "geometry_version": None},
         })
@@ -571,6 +601,7 @@ def callout_states(record: dict, expected_parser_version: str | None = None) -> 
             "source_kind": callout.get("source_kind"),
             "manual": callout.get("manual"),
             "ignored": callout.get("ignored"),
+            "unbindable": callout.get("unbindable"),
             "transcription": _transcription_state(transcription, callout.get("region")),
             "parse": _parse_state(callout_id, transcription, parses, expected, record, region_changed),
             "target": _target_state(callout_id, transcription, targets.get(callout_id), parses,

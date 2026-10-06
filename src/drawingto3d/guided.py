@@ -144,16 +144,24 @@ class Decisions(BaseModel):
     # parse result never becomes a "decision" — it rides in the session's `callout_parses`.
     transcriptions: list[callout_models.TranscriptionDecision] = Field(default_factory=list, max_length=200)
     callout_targets: list[callout_models.CalloutTargetDecision] = Field(default_factory=list, max_length=200)
+    # PLAN-21 §6.1: G3's two user decisions — areas the user drew themselves, and their own review
+    # (region correction / "not a callout") of any callout. Both undo-scoped, like every decision.
+    manual_callouts: list[callout_models.ManualCalloutDecision] = Field(default_factory=list, max_length=200)
+    callout_reviews: list[callout_models.CalloutReviewDecision] = Field(default_factory=list, max_length=200)
 
     @model_validator(mode="after")
     def one_callout_entry_each(self):
-        """PLAN-20 §6.5: one current entry per callout — never silently pick the last."""
-        for name, rows in (("transcriptions", self.transcriptions), ("callout_targets", self.callout_targets)):
+        """PLAN-20 §6.5 + PLAN-21 §6.1: one current entry per callout — never silently pick the last."""
+        for name, rows, key_field in (("transcriptions", self.transcriptions, "callout_id"),
+                                      ("callout_targets", self.callout_targets, "callout_id"),
+                                      ("manual_callouts", self.manual_callouts, "id"),
+                                      ("callout_reviews", self.callout_reviews, "callout_id")):
             seen = set()
             for row in rows:
-                if row.callout_id in seen:
-                    raise ValueError(f"aynı callout için birden fazla {name} kaydı olamaz: {row.callout_id}")
-                seen.add(row.callout_id)
+                key = getattr(row, key_field)
+                if key in seen:
+                    raise ValueError(f"aynı callout için birden fazla {name} kaydı olamaz: {key}")
+                seen.add(key)
         return self
 
 
@@ -1448,14 +1456,14 @@ def _target_carried(prior: dict | None, row: dict) -> bool:
 
 
 def _merge_callout_defaults(record: dict, decisions):
-    """PLAN-20 §8.7: for the two callout fields only, a missing key keeps the stored value while an
-    explicit list (an empty one included) is the client's own statement. Every other field keeps the
-    old save contract exactly as it was."""
+    """PLAN-20 §8.7 + PLAN-21 §6.1: for the callout fields only, a missing key keeps the stored value
+    while an explicit list (an empty one included) is the client's own statement. Every other field
+    keeps the old save contract exactly as it was."""
     if not isinstance(decisions, dict):
         return decisions
     merged = dict(decisions)
     stored = record.get("decisions") or {}
-    for key in ("transcriptions", "callout_targets"):
+    for key in ("transcriptions", "callout_targets", "manual_callouts", "callout_reviews"):
         if key not in merged:
             merged[key] = stored.get(key, [])
     return merged
@@ -1553,7 +1561,7 @@ def _validate_callouts(record: dict, decisions: Decisions) -> None:
     They run against what this save adds or edits; a stale record merely carried along stays
     inspectable — its staleness must never block another legitimate edit.
     """
-    candidates = {row.get("id"): row for row in record.get("callout_candidates") or []}
+    candidates = {row.get("id"): row for row in callout_models.effective_callouts(record)}
     source = record.get("source_sha256")
     parses = record.get("callout_parses") or []
     expected = callout_models.CALLOUT_PARSER_VERSION
@@ -1599,6 +1607,12 @@ def _validate_callouts(record: dict, decisions: Decisions) -> None:
 
 
 def _require_callout(candidates: dict, source: str | None, callout_id: str) -> None:
+    """The callout must exist *in this session* — including a region the user drew themselves.
+
+    PLAN-21 §6.2: the base machine list is not the only source of truth any more, so the check runs
+    on the effective list (`effective_callouts`); otherwise a manual callout could never be written
+    to. Borrowing another session's id or source digest is still refused here.
+    """
     row = candidates.get(callout_id)
     if row is None:
         raise ValueError(f"bu oturumda böyle bir callout yok: {callout_id}")
@@ -1606,12 +1620,31 @@ def _require_callout(candidates: dict, source: str | None, callout_id: str) -> N
         raise ValueError(f"callout bu oturumun kaynağına ait değil: {callout_id}")
 
 
+# PLAN-21 §4 (G1R3-01): two selected ends are the *same physical point* only within the sheet-level
+# "same point" tolerance the contour audit itself uses to tell an endpoint from an interior crossing.
+# The 20 px repair budget answers a different question (how far a broken contour's closure may miss)
+# and never says two measured ends are one point.
+ENDPOINT_IDENTITY_TOLERANCE_PX = contour_audit.TOLERANCE_PX
+
+
+def same_physical_point(first, second) -> bool:
+    """Whether two endpoints name one and the same physical point on the sheet (PLAN-21 §4).
+
+    Sheet pixels, compared with the contour audit's own point-equality tolerance — the same value it
+    uses to decide that a join has met rather than merely passed close, so "one point" means the same
+    thing everywhere. Deliberately *not* `RASTER_JOIN_TOLERANCE_PX`: that is how far a broken
+    contour's closure may be repaired, and using it here refused genuinely distinct short measures.
+    """
+    return math.dist(first, second) <= ENDPOINT_IDENTITY_TOLERANCE_PX
+
+
 def _check_target_geometry(record: dict, row: dict, payload: dict) -> None:
     """PLAN-20 §6.5 + düzeltme turu 2 (G1R2-01): the ids must name real geometry, of the right type,
     in the profile *this save* selects — and through the contour *this save's own correction
     leaves*, not the raw traced list. The correction is applied exactly the way the build applies
     it, in a working copy; a removal is refused with an explicit re-selection ask. Physical equality
-    uses the same coordinate/tolerance contract the join uses — never a raw index."""
+    is a small point tolerance (`same_physical_point`, PLAN-21 §4) — never the repair budget and
+    never a raw index."""
     options = record.get("options") or {}
     circles = {str(circle.get("id")) for circle in options.get("circles") or []}
     if row.get("target_kind") in ("circle", "circle_group"):
@@ -1634,7 +1667,7 @@ def _check_target_geometry(record: dict, row: dict, payload: dict) -> None:
         raise ValueError(f"etkin kontur çözümlenemedi ({error}): hedef onayı kaydedilemez") from None
     points = [_endpoint_point(corrected.get("edges") or [], identity, target)
               for identity, target in zip(identities, targets)]
-    if math.dist(points[0], points[1]) <= RASTER_JOIN_TOLERANCE_PX:
+    if same_physical_point(points[0], points[1]):
         raise ValueError(f"vertex_pair aynı fiziksel noktayı iki kez seçemez: {targets}")
 
 
@@ -1651,7 +1684,8 @@ def _stamp_callout_version(record: dict) -> None:
         return
     decisions = record.get("decisions") or {}
     if (record.get("callout_candidates") or record.get("callout_parses")
-            or decisions.get("transcriptions") or decisions.get("callout_targets")):
+            or decisions.get("transcriptions") or decisions.get("callout_targets")
+            or decisions.get("manual_callouts") or decisions.get("callout_reviews")):
         record["callout_schema_version"] = callout_models.CALLOUT_SCHEMA_VERSION
 
 
@@ -1699,6 +1733,117 @@ def _log_callout_changes(record: dict, before: dict, payload: dict) -> None:
         if callout_id not in after_targets:
             _log(record, "user", "veto", f"callout:{callout_id}", None, None,
                  "Kullanıcı callout hedef onayını kaldırdı.")
+
+
+# --- G3 user commands (PLAN-21 §6.4): one command, one history step, one revision ---------------
+
+_CALLOUT_COMMANDS = ("add_region", "edit_region", "set_ignored", "transcribe")
+
+
+def _next_callout_revision(record: dict) -> int:
+    """The save's own revision id for a new user record — the same rule the transcription uses."""
+    return (record.get("revision") or 0) + 1
+
+
+def _upsert(rows: list[dict], key_field: str, row: dict) -> list[dict]:
+    """Replace the one row with this key where it already sits, else append — order is data."""
+    rows = [dict(item) for item in rows]
+    index = next((i for i, item in enumerate(rows) if item.get(key_field) == row.get(key_field)), None)
+    if index is None:
+        rows.append(row)
+    else:
+        rows[index] = row
+    return rows
+
+
+def _effective_row(record: dict, decisions: dict, callout_id: str) -> dict:
+    """The one effective callout a command names, judged against *this command's* decisions."""
+    view = callout_models.effective_callouts({**record, "decisions": decisions})
+    row = next((item for item in view if item.get("id") == callout_id), None)
+    if row is None:
+        raise ValueError(f"bu oturumda böyle bir callout yok: {callout_id}")
+    if row.get("source_digest") != record.get("source_sha256"):
+        raise ValueError(f"callout bu oturumun kaynağına ait değil: {callout_id}")
+    return row
+
+
+def _set_review(record: dict, decisions: dict, callout_id: str, *,
+                region_override: list[float] | None, ignored: bool) -> None:
+    """Write the one review row for a callout — or remove it when both decisions are taken back.
+
+    An unchanged decision keeps its stored revision, so repeating a command is a true no-op rather
+    than a rewrite that would inflate history (PLAN-21 §6.4).
+    """
+    stored = list(decisions.get("callout_reviews") or [])
+    prior = next((item for item in stored if item.get("callout_id") == callout_id), None)
+    if region_override is None and not ignored:
+        decisions["callout_reviews"] = [item for item in stored if item.get("callout_id") != callout_id]
+        return
+    same = (prior is not None and prior.get("region_override") == region_override
+            and bool(prior.get("ignored")) == bool(ignored))
+    revision = (prior or {}).get("revision", 0) if same else _next_callout_revision(record)
+    row = callout_models.CalloutReviewDecision(callout_id=callout_id, region_override=region_override,
+                                               ignored=bool(ignored), revision=revision)
+    decisions["callout_reviews"] = _upsert(stored, "callout_id", row.model_dump(mode="json"))
+
+
+def _apply_callout_command(record: dict, decisions: dict, action: str, payload: dict) -> list[tuple]:
+    """One G3 user command → the working decisions plus the log events only it can name.
+
+    Everything the client sends is checked or replaced here: the region against the one coordinate
+    contract, the ids against this session's own effective callouts, and the identity/source/page/
+    revision fields are the server's. It writes nothing and takes no lock — `GuidedStore.save`
+    commits the result through the one save path (validation, no-op, history, revision, log).
+    """
+    if action == "add_region":
+        if payload.get("page_index", 0) != 0:
+            raise ValueError("bu sürümde callout alanı yalnız 0. sayfada çizilebilir")
+        region = callout_models.check_region(payload.get("region"))
+        row = callout_models.ManualCalloutDecision(
+            id=f"{callout_models.MANUAL_ID_PREFIX}{uuid.uuid4().hex}",
+            source_digest=record["source_sha256"], page_index=0, region=region,
+            revision=_next_callout_revision(record))
+        decisions["manual_callouts"] = _upsert(decisions.get("manual_callouts") or [], "id",
+                                               row.model_dump(mode="json"))
+        return [("add_callout_region", f"callout:{row.id}", region,
+                 {"callout_id": row.id, "page_index": 0, "region": region},
+                 "Kullanıcı çizim üzerinde yeni bir callout alanı çizdi.")]
+
+    callout_id = payload.get("callout_id")
+    if not isinstance(callout_id, str) or not callout_id:
+        raise ValueError("callout kimliği gerekli")
+    current = _effective_row(record, decisions, callout_id)
+
+    if action == "edit_region":
+        region = callout_models.check_region(payload.get("region"))
+        _set_review(record, decisions, callout_id, region_override=region, ignored=current["ignored"])
+        return [("edit_callout_region", f"callout:{callout_id}", region,
+                 {"callout_id": callout_id, "region": region},
+                 "Kullanıcı callout alanını düzeltti; alanın kendisi (makine tespiti) değişmedi.")]
+
+    if action == "set_ignored":
+        ignored = payload.get("ignored")
+        if not isinstance(ignored, bool):
+            raise ValueError("yok sayma kararı true/false olmalı")
+        _set_review(record, decisions, callout_id, region_override=current["region_override"],
+                    ignored=ignored)
+        return [(("ignore_callout" if ignored else "restore_callout"), f"callout:{callout_id}", None,
+                 {"callout_id": callout_id},
+                 "Kullanıcı bu callout'u 'callout değil' olarak işaretledi." if ignored
+                 else "Kullanıcı bu callout'u yeniden değerlendirmeye aldı; metni silinmedi.")]
+
+    if action == "transcribe":
+        if current["ignored"]:
+            raise ValueError("yok sayılan bir callout'a metin yazılamaz; önce geri alın")
+        row = callout_models.TranscriptionDecision(callout_id=callout_id, raw_text=payload.get("raw_text"),
+                                                   source_region=current["region"], revision=0)
+        # The region the user actually reviewed is the server's own effective region — a client
+        # cannot claim to have read a box the session never showed (PLAN-21 §6.3).
+        decisions["transcriptions"] = _upsert(decisions.get("transcriptions") or [], "callout_id",
+                                              row.model_dump(mode="json"))
+        return []       # `_log_callout_changes` writes user/transcribe or user/edit_transcription
+
+    raise ValueError(f"işlem bulunamadı: {action}")
 
 
 class GuidedStore:
@@ -1849,7 +1994,7 @@ class GuidedStore:
         _atomic(folder/"session.json",record)
         return self.public(record)
 
-    def save(self,token,revision,decisions=None,undo=False):
+    def save(self,token,revision,decisions=None,undo=False,events=None):
         with self.lock:
             r=self.load(token)
             if type(revision) is not int or revision != r["revision"]: raise ValueError("oturum değişti; yeniden açın")
@@ -1885,10 +2030,29 @@ class GuidedStore:
                     else:
                         _log(r,"user","edit",field,value,None,"Kullanıcı bu kararı kendi girdi.")
                 _log_callout_changes(r,before,payload)
+                for action,field,value,evidence,note in (events or []):
+                    _log(r,"user",action,field,value,evidence,note)
             _stamp_callout_version(r)
             r["revision"]+=1;r["build"]=None
             _atomic(self.folder(token)/"session.json",note_sketch(r))
             return self.public(r)
+
+    def edit_callout(self,token,revision,action,payload=None):
+        """One G3 user command on the callout layer (PLAN-21 §6.4).
+
+        The command only *proposes* a change to a working copy of the decisions; the commit goes
+        through the one save path, so validation, the byte-level no-op check, history, the global
+        revision, the stale build and the log behave exactly as they do for every other decision.
+        A failed validation or a revision conflict leaves the record untouched.
+        """
+        if action not in _CALLOUT_COMMANDS:
+            raise ValueError(f"işlem bulunamadı: {action}")
+        with self.lock:
+            r=self.load(token)
+            if type(revision) is not int or revision != r["revision"]: raise ValueError("oturum değişti; yeniden açın")
+            decisions=json.loads(json.dumps(r["decisions"]))
+            events=_apply_callout_command(r,decisions,action,payload if isinstance(payload,dict) else {})
+            return self.save(token,revision,decisions,events=events)
 
     def accept(self,token,revision,fields=None):
         """The user takes the reading's own proposals in one step. Values stay the user's decision."""
@@ -2004,6 +2168,9 @@ class GuidedStore:
                 "callout_candidates":r.get("callout_candidates") or [],
                 "callout_parses":r.get("callout_parses") or [],
                 "callouts":callout_models.callout_states(r),
+                # PLAN-21 §6.2: the one effective list — base detections plus the user's own regions,
+                # with the reviewed region/ignore state applied. Derived, never a decision itself.
+                "effective_callouts":callout_models.effective_callouts(r),
                 "archetype":r.get("archetype"), "sketch":note_sketch({"options":r["options"],"decisions":r["decisions"]}).get("sketch"),
                 "reading":{"printed":reading.get("printed",[]),"outline_mm":reading.get("outline_mm"),
                            "refusals":reading.get("refusals",[]),"refused":reading.get("refused"),

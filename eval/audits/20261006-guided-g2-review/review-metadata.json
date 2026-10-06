@@ -1,0 +1,34 @@
+{
+  "review_date": "2026-10-06",
+  "head": "ff97295065260ba8d46bf6fcd2c6e864e63dfcef",
+  "scope": "Review and PLAN.md only; no product implementation",
+  "focused": {
+    "passed": 133,
+    "failed": 0,
+    "seconds": 50.05,
+    "exit_code": 0
+  },
+  "regression": {
+    "passed": 108,
+    "failed": 1,
+    "seconds": 76.58,
+    "exit_code": 1,
+    "failure": "localhost bind denied by sandbox"
+  },
+  "http_recheck": {
+    "passed": 1,
+    "failed": 0,
+    "seconds": 1.29,
+    "exit_code": 0
+  },
+  "distinct_selected_tests_verified": 242,
+  "known_planner_test": {
+    "failed": 1,
+    "seconds": 0.12,
+    "exit_code": 1
+  },
+  "full_suite_rerun": false,
+  "previous_review_probes_passed": true,
+  "new_finding": "G1R3-01: 20 px repair tolerance wrongly identifies distinct endpoints as one point",
+  "archive_sha256": "09e18c8252ca8d3456864ad75e7fe0e15a7c05f9da1f1e75c7167d45b62b4259"
+}

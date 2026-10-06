@@ -1,12 +1,13 @@
 # Guided progress
 
-Scope: G0 + G1 (düzeltme turu 1 ve 2 dahil) + G2 (tamamlandı — kabul kanıtı aşağıda)  
-Active plan: kök `PLAN.md` (G2 — PLAN-18 bayt kopya `docs/PLAN-21.md`, sha256 `09e18c82…`) + `docs/PLAN-20.md`  
+Scope: G0 + G1 (düzeltme turu 1 ve 2 dahil) + G2 (tamamlandı) + **G3 + G1R3-01 (PLAN-21, tamamlandı)**  
+Active plan: kök `PLAN.md` (PLAN-21 = inceleme planı; bayt kopya `docs/PLAN-22.md` sha256 `5743bb06…`; önceki kök arşivi `docs/PLAN_ROOT_BEFORE_G3_REVIEW_20261006.md` sha256 `09e18c82…`) + `docs/PLAN-20.md`  
 Initial HEAD: `5175f373f1d6892e481341ed2cbcfd89dec29e36`  
 G2 initial HEAD: `316518eb8d67c7a4ad81eed59c09e6c59ef4df37`  
-Current HEAD: `5175f37` + G0 `373e096` + G1.2/G1.3 `554f5ae` + G1.4–G1.7 `e59c5eb` + düzeltme turu 1 `67ff518` + düzeltme turu 2 `316518e`  
+G3 initial HEAD: `ff97295065260ba8d46bf6fcd2c6e864e63dfcef` (`ff97295` = G2)  
+Current HEAD: G0 `373e096` + G1.2/G1.3 `554f5ae` + G1.4–G1.7 `e59c5eb` + düzeltme turu 1 `67ff518` + düzeltme turu 2 `316518e` + G2 `ff97295` + **G3 (commit edilmedi)**  
 Initial worktree changes: `?? PLAN-17-HERMES.md` (kullanıcının verdiği plan kaynağı; **korunur, stage edilmez**)  
-Current task: **G2 tamamlandı ve doğrulandı** — sıradaki tek adım G3 planı/isteği (G3 açılmadı)  
+Current task: **G1R3-01 + G3 (PLAN-21) tamamlandı** — G1R3-01 ve G3.0–G3.6 PASS; G4+ açılmadı, model çağrısı 0  
 
 | İş | Durum | Kanıt | Kalan |
 |---|---|---|---|
@@ -21,6 +22,50 @@ Current task: **G2 tamamlandı ve doğrulandı** — sıradaki tek adım G3 plan
 | **Düzeltme turu 1** | **PASS** | Bağımsız incelemede tekrarlanan 4 sorun kapatıldı; 8 yeni regresyon testi önce kırmızı → sonra yeşil; models+callouts **74 passed** (`g1-fix1-models-callouts.log`); birleşik küme **183 passed / 78.31 s / EXIT=0** (`g1-fix1-final.log`) | — |
 | **Düzeltme turu 2** | **PASS** | G1R2-01 (etkin konturda hedef doğrulaması) + G1R2-02 (gerçek yeniden onay günlüğü); bağımsız tekrar exit 0 (`probe-results-after.json`); odak **98 passed** (`g1r2-focus.log`); birleşik **198 passed / 80.05 s / EXIT=0** (`g1r2-final.log`) | — |
 
+## PLAN-21 — G1R3-01 + G3 ilerleme tablosu (aktif görev)
+
+Başlangıç durumu: `ff97295`, worktree ` M PLAN.md` (yeni kök plan) + `?? PLAN-17-HERMES.md`, `?? docs/PLAN_ROOT_BEFORE_G3_REVIEW_20261006.md`, `?? eval/audits/20261006-guided-g2-review/`. Yeni kök plan bayt kopyası `docs/PLAN-22.md` (sha256 `5743bb06…`); önceki kök plan (G2 = PLAN-18 baytı) arşivde `09e18c82…` — ezilmedi.
+
+| İş | Durum | Kanıt | Kalan |
+|---|---|---|---|
+| G1R3-01 | PASS | `guided.same_physical_point` + `ENDPOINT_IDENTITY_TOLERANCE_PX = contour_audit.TOLERANCE_PX` (0.5 px); onarım bütçesi (20 px) yalnız `correct_profile`'da kaldı. Bağımsız tekrar: `eval/audits/20261006-guided-g2-review/review_probes.py` **exit 0**, 5/5 satır `passed=true` (`probe-results-after.json`; öncesi `probe-results-before.json` `passed=false`, exit 1) · G1 tekrarı exit 0 · kapı **70 passed / 3.14 s / EXIT=0** (`out/guided-callout-review/g1r3-01-gate.log`) · saf geometri pini `tests/test_contour_fix.py::test_point_equality_is_the_audits_own_tolerance_not_the_repair_budget`; store regresyonları `test_two_short_ends_are_two_distinct_points[5/10/20/21]` + `test_a_short_contours_shared_corner_is_still_one_point` | — |
+| G3.0 | PASS | Bu bölüm + `docs/PLAN-22.md` (bayt kopya) + `report.md` ürün pointer'ı; G2.6 satırı gerçek duruma çekildi; tarihsel kayıtlar silinmedi | — |
+| G3.1 | PASS | `callout_models.py`: `ManualCalloutDecision`, `CalloutReviewDecision`, `CALLOUT_SCHEMA_VERSION=2`, `effective_callouts()` (base + manual + review), `CROP_PADDING=0.02`, `_no_bool`; `guided.py`: `manual_callouts`/`callout_reviews` alanları + eksik-alan-korur/açık-liste-değiştirir merge + `_require_callout` etkin liste üzerinden. Testler: `tests/test_guided_callout_review.py` (yeni) + `test_callout_models` + `test_guided_callouts` + `test_guided_callout_candidates` **109 passed / 54.97 s / EXIT=0** (`/tmp/g31b.log`) | — |
+| G3.2 | PASS | `GuidedStore.edit_callout(token, revision, action, payload)` + `_CALLOUT_COMMANDS = (add_region, edit_region, set_ignored, transcribe)`, tek komut = tek history adımı = tek revision; `/api/guided/callout` dispatch; `public()` `callouts` + `effective_callouts` + `callout_detection`; transcription `source_region` sunucuda etkin bölgeden türetilir, `region_changed` stale. Testler: aynı dosya (HTTP conflict/invalid command/foreign source/region freshness) + `test_guided.py`, `test_guided_geometry_*`. Gerçek tarayıcı: adım 19–21 (revision conflict → tek reddedilen istek `POST /api/guided/callout` 400; taslak korunuyor) ve adım 16–17 (`Alan değişti`) | — |
+| G3.3 | PASS | `guided.js`: `renderCallouts()` overlay (etiket = sıralanabilir gösterim adı; gerçek ID `id`), tek paylaşımlı koordinat dönüşümü (§7.2 `imagePoint`/`regionBox`/`normalizedRegion`), örtüşmede en küçük kapsayan kutu + ID tie-break hit-test, çift yeniden örneklemeli crop canvas, liste fallback'i; `guided.html` panel + tools. Testler: `test_guided_html.py` (4 yeni yapısal test: JS'in bağlandığı her id HTML'de tam bir kez var; panel kontrolleri; `innerHTML` yok; üretim sınırı metni) → **40 passed / 0.81 s** (`/tmp/g33.log`). Gerçek tarayıcı: adım 3–4 (seçim + crop), 13–14 (manuel alan seçimi + crop), 18 (dar/geniş pencerede aynı kutu + **aynı crop baytları**), 22 (overlay eski profil tıklamasını engellemiyor) | — |
+| G3.4 | PASS | Metin alanı, ipucunun yalnız açık eylemle taslağa geçmesi, kaydet/ignore/restore, `state.drafts` ile kaydedilmemiş taslak koruması (§7.3), `busy()` textarea farkındalığı. Gerçek tarayıcı: adım 5–12 (raw `"  4 × Ø8 THRU  "` aynen + normalized ayrı; reload sonrası aynı; undo; ignore → “Yok sayılanları göster” → geri al), 20–21 (conflict'te taslak duruyor, sonra bilinçli kayıt), 23 (markup metin kalıyor), 27–28 (tek reddedilen istek dışında console hatası yok) | — |
+| G3.5 | PASS | `Yeni alan çiz` / `Alanı düzelt` pointer akışı (pointer capture, Escape iptali, `suppressClick` ile drag sonrası click yutma, min/max normalize), `add_region` ID'yi sunucuda `manual:<uuid4>` olarak alır, `edit_region` bölge override'ı detected region'ı silmez. Gerçek tarayıcı: adım 13–17 (manuel alan + seçim + crop; bölge taşıma eski `raw_text`/`source_region`'ı değiştirmiyor; panel `Alan değişti`), 24–26 (sıfır alan ret, Escape iptali, tersten çizim normalize) | — |
+| G3.6 | PASS | Birleşik pytest (18 dosya, PLAN-21 §10.1) **285 passed / 139.81 s / EXIT=0** (`out/guided-callout-review/g3-combined.log`); gerçek tarayıcı **28/28 adım PASS / EXIT=0** (`eval/audits/20261006-guided-g3-review/browser-acceptance.log`, 15 screenshot, `browser-steps.json` — adım listesi bu dosyada); iki bağımsız review scripti **exit 0**; teslim bloğu `eval/audits/20261006-guided-g3-review/DELIVERY.md`. Bilinen eski `test_planner::test_settings_record_is_the_run_record_fields` failure'ı kapsam dışı ve açık | — |
+
+### G3 kabul kanıtı — zorunlu davranış matrisi (PLAN-21 §9)
+
+Sürücü: `eval/audits/20261006-guided-g3-review/browser_acceptance.py` + `cdp_client.py` (gerçek Chrome, gerçek fare/klavye olayları, CDP; her adımın gözlemi `browser-steps.json`, tam teslim `DELIVERY.md`). Adım numaraları `browser-steps.json` sırasıdır.
+
+| Matris | Kanıt |
+|---|---|
+| U01 | tarayıcı adım 2–3 (45 aday listelenir; kutuya tıklama yalnız seçer) + `test_effective_callouts_is_the_base_list_until_the_user_adds_something`, `test_computing_the_effective_view_writes_nothing` |
+| U02 | adım 4 (`Makine ipucu (öneri): 6` ayrı satır; textarea boş; otomatik transcription yok) |
+| U03 | adım 5–7 (raw `"  4 × Ø8 THRU  "` aynen, normalized ayrı, reload sonrası aynı) + `test_the_text_is_kept_verbatim_and_the_source_region_is_the_servers` |
+| U04 | `test_a_blank_text_is_refused` (boş/whitespace açık ret; karar değişmez) |
+| U05 | adım 13–15 + `test_a_manual_callout_takes_its_own_server_assigned_identity`, `test_a_manual_callout_can_carry_the_users_text` |
+| U06 | adım 16–17 (`Alan değişti`) + `test_moving_the_region_stales_the_old_text_and_never_rewrites_it` |
+| U07 | `test_saving_the_text_again_on_the_new_region_is_a_new_user_decision` (yeni revision + yeni `source_region`; eski parse/target geçerli olmaz) |
+| U08 | adım 10–12 + `test_ignore_keeps_the_text_and_restore_brings_the_callout_back`, `test_a_text_cannot_be_written_to_an_ignored_callout` |
+| U09 | adım 8–9 + `test_a_review_survives_undo_and_a_fresh_store_instance`, `test_an_edit_makes_the_old_step_historical_without_resurrecting_it` |
+| U10 | `test_a_missing_key_keeps_the_new_decisions_and_an_explicit_empty_removes_them`, `test_a_history_entry_from_an_older_schema_still_undoes` |
+| U11 | adım 19–21 (adım 27–28: tek reddedilen istek `POST /api/guided/callout` → 400; taslak duruyor; sonra bilinçli kayıt başarılı) + `test_a_stale_revision_command_is_refused_and_keeps_the_stored_decisions` |
+| U12 | `test_an_unknown_callout_or_a_foreign_source_is_refused_without_a_write` |
+| U13 | adım 24–26 (sıfır alan reddi “Alan çok küçük”; Escape iptali hiç karar yazmadı; tersten çizim `[0.62, 0.60, 0.80, 0.80]` olarak normalize) + `test_a_region_the_server_cannot_draw_is_refused` |
+| U14 | adım 18 (dar 520 px / geniş 1400 px: aynı satır seçildi, crop canvas **bayt-eşit**) |
+| U15 | adım 22 (profil aracı konturu seçti; overlay tıklamayı çalmadı) |
+| U16 | adım 23 (`<img src=x onerror=…>` metin olarak; `imgs: 0`) + `test_callout_text_is_never_rendered_as_markup` (script'te `innerHTML` hiç yok) |
+| U17 | `test_the_base_candidates_and_the_reading_never_move_from_a_review` + mevcut `/accept` testleri |
+| U18 | `test_computing_the_effective_view_writes_nothing`, `test_the_base_candidates_and_the_reading_never_move_from_a_review` |
+| U19 | G1 stale/source testleri + `test_an_unknown_callout_or_a_foreign_source_is_refused_without_a_write` |
+| U20 | adım 6 (panel yalnız “Metin kaydedildi”; “Kaydet ve ayrıştır”/“Parsed”/“Bound” yok) + `test_the_production_panel_admits_callout_text_is_not_used_yet` |
+
+Harness/ortam notları (teslimi etkileyen, açıkça kayıtlı): Hermes'in tarayıcı aracı bu oturumda `127.0.0.1`'i SSRF korumasıyla reddetti → kabul, aynı Chrome CDP ile doğrudan sürülerek yapıldı; bu sırada yazılan 4 `browser.*` anahtarı iş sonunda geri alındı. Audit dizininde `uv run` `.venv`'i lockfile'a senkronlayıp paketleri kaldırdı → `uv sync --extra dev` + `cadquery-ocp-novtk==8.0.1.1.0` ile onarıldı, `check_env.py` ile doğrulandı; oluşan `uv.lock`/`egg-info` silindi. Ayrıntı: `DELIVERY.md`.
+
 ## G2 ilerleme tablosu (kök `PLAN.md` = PLAN-18; bayt kopya `docs/PLAN-21.md`)
 
 | İş | Durum | Kanıt | Kalan |
@@ -31,7 +76,7 @@ Current task: **G2 tamamlandı ve doğrulandı** — sıradaki tek adım G3 plan
 | G2.3 | PASS | `guided.py` create: aynı `observations` nesnesinden adaptör (ikinci observe/OCR yok); `callout_candidates` + `callout_detection` persist; §28 digest cross-check → `source_digest_mismatch`; RED `g2-3-red.log` (6 failed / 6 passed) → `tests/test_guided_callout_candidates.py` **12 passed / 19.86 s / EXIT=0** (`g2-3-green.log`); tek-observe + tek-adaptör spy; build/kullanıcı olayı yok | — |
 | G2.4 | PASS | Gerçek vektör (plate): 45 text → 45 aday, id kümesi birebir, bağımsız normalizasyon eşitliği (§98); gerçek raster (flange-elbow-90): 27 OCR ifadesi → 27 `raster_region` aday, bölge-sahip eşlemesi birebir; dürüst-none (metinsiz gerçek raster): 0 aday + `no_text_observations`, ikinci OCR çağrısı yasak-spy; ağır flange probe 29/29 (`g2-4-probe.log`); testler `tests/test_guided_callout_candidates.py` **15 passed / 51.40 s / EXIT=0** (`g2-4-green.log`) | — |
 | G2.5 | PASS | reopen: kayıt eşitliği + dosya baytları değişmez + load redetect/adaptör çağırmaz + sahte kullanıcı olayı yok; legacy (callout öncesi oturum): observe yasak-spy ile okuma, eski kararlar korunur, hiçbir şey yazılmaz; kaynak kaybı: adaylar silinmez, `geometry.stale` mevcut davranış; §93 save/undo adaptörü hiç çalıştırmaz; §95 aday listesi history snapshot'ında yok; §96 build sonucu candidate base'i oynatmaz | — |
-| G2.6 | DEVAM | Seçili regresyon (15 G1 dosyası + 2 yeni dosya): **242 passed / 130.66 s / EXIT=0** (`g2-6-selected.log`); §68 metrikleri (`g2-6-metrics.log`: vektör 45/45/0/0, raster 27/27/0/0, dürüst-none 0 + `no_text_observations`); full pytest koşuyor (`g2-6-full.log`); diff check + commit bekliyor | full sonucu + diff check + commit |
+| G2.6 | PASS | Seçili regresyon (15 G1 dosyası + 2 yeni dosya): **242 passed / 130.66 s / EXIT=0** (`g2-6-selected.log`); §68 metrikleri (`g2-6-metrics.log`: vektör 45/45/0/0, raster 27/27/0/0, dürüst-none 0 + `no_text_observations`); full pytest **1479 passed / 1 failed / EXIT=1** (`g2-6-full.log`; tek kırmızı G2 dışı ve önceden mevcut `test_planner` pini); diff check yapıldı (`g2-6-diffcheck*.log`); commit `ff97295` | — |
 
 ## G2 final kanıt (kök `PLAN.md` §60/§61/§68/§106)
 

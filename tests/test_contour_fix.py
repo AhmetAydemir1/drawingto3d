@@ -8,7 +8,8 @@ with the gap it would leave.
 import pytest
 
 from drawingto3d import contour_audit
-from drawingto3d.guided import ContourFix, correct_profile
+from drawingto3d.guided import (ENDPOINT_IDENTITY_TOLERANCE_PX, ContourFix, correct_profile,
+                                 same_physical_point)
 
 TOLERANCE = 20.0
 MID_CAP = 10.0
@@ -84,3 +85,20 @@ def test_dropping_every_edge_is_refused():
     edges = [line("a", (0, 0), (10, 0)), line("b", (10, 0), (0, 0))]
     with pytest.raises(ValueError, match="kenar kalmadı"):
         corrected(edges, ContourFix(drop=["a", "b"]))
+
+
+def test_point_equality_is_the_audits_own_tolerance_not_the_repair_budget():
+    """G1R3-01: iki uç yalnız denetimin kendi nokta toleransı içinde *aynı nokta*dır.
+
+    Yanı baştaki 20 px onarım bütçesidir: kopuk bir konturun kapanışının ne kadar kaçabileceğini söyler,
+    iki ölçülmüş ucun bir nokta olduğunu söylemez. Bu ikisi karıştığında 5/10/20 px'lik gerçek ölçüler
+    seçilemiyordu.
+    """
+    at = [10.0, 10.0]
+    assert same_physical_point(at, [10.0, 10.0]) is True
+    assert same_physical_point(at, [10.0 + 0.49, 10.0]) is True            # toleransın hemen altı: hâlâ bir nokta
+    assert same_physical_point(at, [10.0 + ENDPOINT_IDENTITY_TOLERANCE_PX, 10.0]) is True   # sınırı
+    assert same_physical_point(at, [10.0 + 0.51, 10.0]) is False           # hemen üstü: iki ayrı nokta
+    assert same_physical_point(at, [10.0, 10.0 - ENDPOINT_IDENTITY_TOLERANCE_PX]) is True   # uzaklık, eksen değil
+    assert ENDPOINT_IDENTITY_TOLERANCE_PX == contour_audit.TOLERANCE_PX   # denetimin kendi sözleşmesi
+    assert ENDPOINT_IDENTITY_TOLERANCE_PX != TOLERANCE                    # ... ve asla 20 px onarım bütçesi

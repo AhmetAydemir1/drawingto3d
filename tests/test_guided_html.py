@@ -80,3 +80,43 @@ def test_no_button_is_broken_by_a_nested_tag():
     start = html.index("<button ")
     button = html[html.index('id="bind-start"') - 60:html.index('id="bind-start"')]
     assert "<div" not in button, button
+
+
+def test_every_element_the_script_binds_to_exists_exactly_once():
+    """G3.3: the F01 class of bug caught in general — an id `guided.js` binds to must be served once.
+
+    The callout panel added a dozen new controls; a typo in one of them would leave its handler on
+    `undefined` and only show up as a dead button in the browser.
+    """
+    script = (ROOT / "guided.js").read_text(encoding="utf-8")
+    collector = parse()
+    bound = set(re.findall(r"\$\('([A-Za-z0-9_-]+)'\)", script))
+    bound |= set(re.findall(r"getElementById\('([A-Za-z0-9_-]+)'\)", script))
+    assert bound
+    assert not [name for name in sorted(bound) if collector.by_id.get(name) is None]
+    assert not [name for name in sorted(bound) if collector.counts.get(name, 0) > 1]
+
+
+def test_the_callout_panel_has_the_review_controls_the_contract_requires():
+    """PLAN-21 §7.1: canvas tools, crop, text field and the three review actions, one each."""
+    collector = parse()
+    for name, kind in (("pick-callout", "button"), ("draw-callout", "button"), ("callout-crop", "canvas"),
+                       ("callout-text", "textarea"), ("callout-save", "button"), ("callout-ignore", "button"),
+                       ("callout-restore", "button"), ("callout-edit", "button"), ("callout-new", "button"),
+                       ("callout-use-hint", "button"), ("callout-show-ignored", "input")):
+        assert collector.by_id.get(name) == kind, (name, collector.by_id.get(name))
+        assert collector.counts[name] == 1, (name, collector.counts[name])
+
+
+def test_callout_text_is_never_rendered_as_markup():
+    """U16: drawing text is shown through textContent / textarea.value, never as HTML."""
+    script = (ROOT / "guided.js").read_text(encoding="utf-8")
+    assert "innerHTML" not in script
+    assert "textContent" in script
+    assert "$('callout-text').value" in script
+
+
+def test_the_production_panel_admits_callout_text_is_not_used_yet():
+    """PLAN-21 §5/§7.1: the UI must not imply the saved text reached the STEP."""
+    html = (ROOT / "guided.html").read_text(encoding="utf-8")
+    assert "Kaydedilen callout metinleri bu taslak üretiminde henüz kullanılmıyor." in html

@@ -1,0 +1,453 @@
+{
+  "app": "http://127.0.0.1:8765",
+  "drawing": "/Users/aydemir/Desktop/drawingto3d/examples/pdf with steps/5/Plate With A Pocket Drawing.PDF",
+  "steps": [
+    {
+      "step": "page serves the callout panel",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "step": "detected callout candidates are listed",
+      "passed": true,
+      "detail": "45 makine adayı · 45 etkin alan · 0 incelendi · 0 yok sayıldı"
+    },
+    {
+      "step": "clicking a box selects it and crops the drawing",
+      "passed": true,
+      "detail": {
+        "selected_row": 0,
+        "expected": 0,
+        "title": "C1 · makine tespiti",
+        "badge": "İncelenmedi",
+        "hint": "Makine ipucu (öneri): 6",
+        "crop": "4Mnv3zVT0f0/AAAA////N95mAAAABklEQVQDAOrm37RoY8hlAAAAAElFTkSuQmCC"
+      }
+    },
+    {
+      "step": "the hint is offered separately and the field is still empty",
+      "passed": true,
+      "detail": {
+        "hint": "Makine ipucu (öneri): 6",
+        "text": ""
+      }
+    },
+    {
+      "step": "saved text is kept exactly as typed, spaces included",
+      "passed": true,
+      "detail": {
+        "panel": "  4 × Ø8 THRU  ",
+        "raw": "  4 × Ø8 THRU  ",
+        "normalized": "4 × Ø8 THRU"
+      }
+    },
+    {
+      "step": "the panel calls it saved, not parsed",
+      "passed": true,
+      "detail": {
+        "badge": "Metin kaydedildi",
+        "status": "Metin kaydedildi. (Bu metin bu taslak üretiminde henüz CAD'e uygulanmıyor.)"
+      }
+    },
+    {
+      "step": "after a real reload the same session shows the same text",
+      "passed": true,
+      "detail": {
+        "text": "  4 × Ø8 THRU  ",
+        "badge": "Metin kaydedildi",
+        "selected": 0
+      }
+    },
+    {
+      "step": "undo removes the transcription and leaves the detected candidates untouched",
+      "passed": true,
+      "detail": {
+        "before": 1,
+        "after": 0,
+        "candidates": 45
+      }
+    },
+    {
+      "step": "re-saving after undo writes the text again (region unchanged)",
+      "passed": true,
+      "detail": {
+        "callout_id": "b1aea745ec1f819dfc763387c51e067d1368623fa3041d511f6ecb365b7a1139",
+        "raw_text": "4 × Ø8 THRU",
+        "normalized_text": "4 × Ø8 THRU",
+        "entered_by": "user",
+        "source_region": [
+          0.07588713,
+          0.00908706,
+          0.08801197,
+          0.03865175
+        ],
+        "revision": 3
+      }
+    },
+    {
+      "step": "ignoring hides the box from the default list and counts it",
+      "passed": true,
+      "detail": {
+        "summary": "45 makine adayı · 45 etkin alan · 1 incelendi · 1 yok sayıldı",
+        "rows": [
+          "C1 · makine adayı · İncelenmedi",
+          "C2 · makine adayı · İncelenmedi",
+          "C3 · makine adayı · İncelenmedi",
+          "C4 · makine adayı · İncelenmedi",
+          "C5 · makine adayı · İncelenmedi",
+          "C6 · makine adayı · İncelenmedi",
+          "C7 · makine adayı · İncelenmedi",
+          "C8 · makine adayı · İncelenmedi",
+          "C9 · makine adayı · İncelenmedi",
+          "C10 · makine adayı · İncelenmedi",
+          "C11 · makine adayı · İncelenmedi",
+          "C12 · makine adayı · İncelenmedi",
+          "C13 · makine adayı · İncelenmedi",
+          "C14 · makine adayı · İncelenmedi",
+          "C15 · makine adayı · İncelenmedi",
+          "C16 · makine adayı · İncelenmedi",
+          "C17 · makine adayı · İncelenmedi",
+          "C18 · makine adayı · İncelenmedi",
+          "C19 · makine adayı · İncelenmedi",
+          "C20 · makine adayı · İncelenmedi",
+          "C21 · makine adayı · İncelenmedi",
+          "C22 · makine adayı · İncelenmedi",
+          "C23 · makine adayı · İncelenmedi",
+          "C24 · makine adayı · İncelenmedi",
+          "C25 · makine adayı · İncelenmedi",
+          "C26 · makine adayı · İncelenmedi",
+          "C27 · makine adayı · İncelenmedi",
+          "C28 · makine adayı · İncelenmedi",
+          "C29 · makine adayı · İncelenmedi",
+          "C30 · makine adayı · İncelenmedi",
+          "C31 · makine adayı · İncelenmedi",
+          "C32 · makine adayı · İncelenmedi",
+          "C33 · makine adayı · İncelenmedi",
+          "C34 · makine adayı · İncelenmedi",
+          "C35 · makine adayı · İncelenmedi",
+          "C36 · makine adayı · İncelenmedi",
+          "C37 · makine adayı · İncelenmedi",
+          "C38 · makine adayı · İncelenmedi",
+          "C39 · makine adayı · İncelenmedi",
+          "C40 · makine adayı · İncelenmedi",
+          "C41 · makine adayı · İncelenmedi",
+          "C42 · makine adayı · İncelenmedi",
+          "C43 · makine adayı · İncelenmedi",
+          "C44 · makine adayı · İncelenmedi"
+        ]
+      }
+    },
+    {
+      "step": "“Yok sayılanları göster” brings the ignored box back with its text",
+      "passed": true,
+      "detail": {
+        "rows": [
+          "C1 · makine adayı · Yok sayıldı",
+          "C2 · makine adayı · İncelenmedi",
+          "C3 · makine adayı · İncelenmedi",
+          "C4 · makine adayı · İncelenmedi",
+          "C5 · makine adayı · İncelenmedi",
+          "C6 · makine adayı · İncelenmedi",
+          "C7 · makine adayı · İncelenmedi",
+          "C8 · makine adayı · İncelenmedi",
+          "C9 · makine adayı · İncelenmedi",
+          "C10 · makine adayı · İncelenmedi",
+          "C11 · makine adayı · İncelenmedi",
+          "C12 · makine adayı · İncelenmedi",
+          "C13 · makine adayı · İncelenmedi",
+          "C14 · makine adayı · İncelenmedi",
+          "C15 · makine adayı · İncelenmedi",
+          "C16 · makine adayı · İncelenmedi",
+          "C17 · makine adayı · İncelenmedi",
+          "C18 · makine adayı · İncelenmedi",
+          "C19 · makine adayı · İncelenmedi",
+          "C20 · makine adayı · İncelenmedi",
+          "C21 · makine adayı · İncelenmedi",
+          "C22 · makine adayı · İncelenmedi",
+          "C23 · makine adayı · İncelenmedi",
+          "C24 · makine adayı · İncelenmedi",
+          "C25 · makine adayı · İncelenmedi",
+          "C26 · makine adayı · İncelenmedi",
+          "C27 · makine adayı · İncelenmedi",
+          "C28 · makine adayı · İncelenmedi",
+          "C29 · makine adayı · İncelenmedi",
+          "C30 · makine adayı · İncelenmedi",
+          "C31 · makine adayı · İncelenmedi",
+          "C32 · makine adayı · İncelenmedi",
+          "C33 · makine adayı · İncelenmedi",
+          "C34 · makine adayı · İncelenmedi",
+          "C35 · makine adayı · İncelenmedi",
+          "C36 · makine adayı · İncelenmedi",
+          "C37 · makine adayı · İncelenmedi",
+          "C38 · makine adayı · İncelenmedi",
+          "C39 · makine adayı · İncelenmedi",
+          "C40 · makine adayı · İncelenmedi",
+          "C41 · makine adayı · İncelenmedi",
+          "C42 · makine adayı · İncelenmedi",
+          "C43 · makine adayı · İncelenmedi",
+          "C44 · makine adayı · İncelenmedi",
+          "C45 · makine adayı · İncelenmedi"
+        ],
+        "summary": "45 makine adayı · 45 etkin alan · 1 incelendi · 1 yok sayıldı"
+      }
+    },
+    {
+      "step": "restore clears the ignore decision and keeps the text",
+      "passed": true,
+      "detail": {
+        "reviews": [],
+        "text": "4 × Ø8 THRU"
+      }
+    },
+    {
+      "step": "a drawn region becomes a manual callout with a server-assigned id and the drawn box",
+      "passed": true,
+      "detail": {
+        "row": [
+          {
+            "id": "manual:8d4d0ead60e54402a8d6cc310d01e3fc",
+            "source_digest": "9e34e6713de6ef8d95bad464e0c87330b515976abc7e5e2e0f9bb0fe701d96ef",
+            "page_index": 0,
+            "region": [
+              0.5999999847700644,
+              0.5002546856106409,
+              0.7599999756321032,
+              0.660336206521266
+            ],
+            "revision": 6
+          }
+        ],
+        "expected_region": [
+          0.6,
+          0.5,
+          0.76,
+          0.66
+        ]
+      }
+    },
+    {
+      "step": "the new region is selected, crops the drawing and has no machine hint",
+      "passed": true,
+      "detail": {
+        "title": "C46 · elle çizilen alan",
+        "badge": "İncelenmedi",
+        "hint": "Makine ipucu yok: çizimde yazanı kendiniz yazın."
+      }
+    },
+    {
+      "step": "the manual callout keeps its id and takes the user's text",
+      "passed": true,
+      "detail": [
+        {
+          "callout_id": "b1aea745ec1f819dfc763387c51e067d1368623fa3041d511f6ecb365b7a1139",
+          "raw_text": "4 × Ø8 THRU",
+          "normalized_text": "4 × Ø8 THRU",
+          "entered_by": "user",
+          "source_region": [
+            0.07588713,
+            0.00908706,
+            0.08801197,
+            0.03865175
+          ],
+          "revision": 3
+        },
+        {
+          "callout_id": "manual:8d4d0ead60e54402a8d6cc310d01e3fc",
+          "raw_text": "KAYNAK: elle çizilen alan",
+          "normalized_text": "KAYNAK: elle çizilen alan",
+          "entered_by": "user",
+          "source_region": [
+            0.5999999847700644,
+            0.5002546856106409,
+            0.7599999756321032,
+            0.660336206521266
+          ],
+          "revision": 7
+        }
+      ]
+    },
+    {
+      "step": "moving the region keeps the old raw text and its snapshot untouched",
+      "passed": true,
+      "detail": {
+        "before": {
+          "callout_id": "b1aea745ec1f819dfc763387c51e067d1368623fa3041d511f6ecb365b7a1139",
+          "raw_text": "4 × Ø8 THRU",
+          "normalized_text": "4 × Ø8 THRU",
+          "entered_by": "user",
+          "source_region": [
+            0.07588713,
+            0.00908706,
+            0.08801197,
+            0.03865175
+          ],
+          "revision": 3
+        },
+        "after": {
+          "callout_id": "b1aea745ec1f819dfc763387c51e067d1368623fa3041d511f6ecb365b7a1139",
+          "raw_text": "4 × Ø8 THRU",
+          "normalized_text": "4 × Ø8 THRU",
+          "entered_by": "user",
+          "source_region": [
+            0.07588713,
+            0.00908706,
+            0.08801197,
+            0.03865175
+          ],
+          "revision": 3
+        }
+      }
+    },
+    {
+      "step": "the panel reports the region change instead of pretending it is current",
+      "passed": true,
+      "detail": "Alan değişti"
+    },
+    {
+      "step": "the same box is hit and cropped in a narrow and a wide window",
+      "passed": true,
+      "detail": {
+        "narrow_row": 0,
+        "wide_row": 0,
+        "expected": 0,
+        "crop_equal": true,
+        "title": "C1 · makine tespiti · alan düzeltildi"
+      }
+    },
+    {
+      "step": "the server accepts a command the page did not send (it is now stale)…",
+      "passed": true,
+      "detail": [
+        200,
+        true
+      ]
+    },
+    {
+      "step": "the conflict is shown and the typed draft survives",
+      "passed": true,
+      "detail": {
+        "status": "oturum değişti; yeniden açın — yazdığınız metin duruyor; güncel durum alındı, kararı tekrar kaydedebilirsiniz.",
+        "text": "  yarım kalan taslak  ",
+        "draft_note": "Kaydedilmemiş metin var: “Metni kaydet” demeden karar oluşmaz.",
+        "server_still": "4 × Ø8 THRU"
+      }
+    },
+    {
+      "step": "after the refresh the same draft saves as a conscious decision",
+      "passed": true,
+      "detail": {
+        "callout_id": "b1aea745ec1f819dfc763387c51e067d1368623fa3041d511f6ecb365b7a1139",
+        "raw_text": "  yarım kalan taslak  ",
+        "normalized_text": "yarım kalan taslak",
+        "entered_by": "user",
+        "source_region": [
+          0.5999999847700644,
+          0.5002546856106409,
+          0.7599999756321032,
+          0.660336206521266
+        ],
+        "revision": 10
+      }
+    },
+    {
+      "step": "the profile tool still selects a contour (and the callout overlay is not in the way)",
+      "passed": true,
+      "detail": {
+        "profile": "outline_1",
+        "expected": "outline_1"
+      }
+    },
+    {
+      "step": "markup-like text is stored and shown as text",
+      "passed": true,
+      "detail": {
+        "imgs": 0,
+        "value": "<img src=x onerror=alert(1)>",
+        "raw": false
+      }
+    },
+    {
+      "step": "a zero-area drag is refused and writes nothing",
+      "passed": true,
+      "detail": {
+        "manual_rows": 1,
+        "status": "Alan çok küçük: çizim üzerinde bir kutu sürükleyin."
+      }
+    },
+    {
+      "step": "a drag cancelled with Escape leaves no decision behind",
+      "passed": true,
+      "detail": {
+        "manual_rows": 1,
+        "status_at_cancel": "Alan çizimi iptal edildi.",
+        "status_after_release": "Bu noktada callout alanı yok; listeden seçin ya da “Yeni alan çiz” ile çizin."
+      }
+    },
+    {
+      "step": "a drag drawn bottom-right to top-left is stored as a normalized region",
+      "passed": true,
+      "detail": {
+        "region": [
+          0.6200000121839484,
+          0.600305622732769,
+          0.8000000304598709,
+          0.8004074969770254
+        ],
+        "expected": [
+          0.62,
+          0.6,
+          0.8,
+          0.8
+        ]
+      }
+    },
+    {
+      "step": "no console error except the deliberately rejected revision conflict",
+      "passed": true,
+      "detail": {
+        "unexpected": [],
+        "expected": [
+          {
+            "level": "error",
+            "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+            "url": "http://127.0.0.1:8765/api/guided/callout",
+            "source": "network"
+          }
+        ],
+        "rejected_requests": [
+          {
+            "status": 400,
+            "url": "http://127.0.0.1:8765/api/guided/callout",
+            "request": "POST http://127.0.0.1:8765/api/guided/callout"
+          }
+        ]
+      }
+    },
+    {
+      "step": "the only rejected request is the stale save the UI was told to retry",
+      "passed": true,
+      "detail": [
+        {
+          "status": 400,
+          "url": "http://127.0.0.1:8765/api/guided/callout",
+          "request": "POST http://127.0.0.1:8765/api/guided/callout"
+        }
+      ]
+    }
+  ],
+  "console": [
+    {
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "url": "http://127.0.0.1:8765/api/guided/callout",
+      "source": "network"
+    }
+  ],
+  "rejected_requests": [
+    {
+      "status": 400,
+      "url": "http://127.0.0.1:8765/api/guided/callout",
+      "request": "POST http://127.0.0.1:8765/api/guided/callout"
+    }
+  ]
+}

@@ -20,16 +20,27 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import re
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-CALLOUT_SCHEMA_VERSION = 1
+CALLOUT_SCHEMA_VERSION = 2
 """Version of the callout layer itself (PLAN-20 §6.1) — *not* `guided.GEOMETRY_VERSION`.
 
 Adding the callout fields must never bump the geometry contract; a change to these records bumps
-this number instead.
+this number instead. G3 added the user's own region/ignore decisions (`manual_callouts`,
+`callout_reviews`) to the persisted structure, so the written version moves to 2; a record that is
+merely *loaded* is never rewritten because of it (PLAN-21 §6.1)."""
+
+MANUAL_ID_PREFIX = "manual:"
+"""The user-created callout's own namespace (PLAN-21 §6.1).
+
+The G2 detector's determinism ban on uuids does not apply here: adding an area is a *user* act, and
+a per-act identity is what keeps two regions drawn at the same place two decisions. The namespace
+also keeps a server-assigned id from ever colliding with a detected candidate's id.
 """
+MANUAL_ID_PATTERN = r"manual:[0-9a-f]{32}"
 
 CALLOUT_PARSER_VERSION = "callout-parser/1"
 """The parser contract version this slice expects (PLAN-20 §6.5).
@@ -52,9 +63,9 @@ def normalize_text(raw_text: str) -> str:
     return " ".join(str(raw_text).split())
 
 
-def _check_region(value: list[float]) -> list[float]:
+def _check_region(value) -> list[float]:
     """One coordinate contract (PLAN-20 §6.2): 0..1 page coordinates, top-left origin, finite, drawn."""
-    if len(value) != 4:
+    if not isinstance(value, (list, tuple)) or len(value) != 4:
         raise ValueError("bölge dört sayı olmalı: [x0, y0, x1, y1]")
     x0, y0, x1, y1 = (float(item) for item in value)
     for item in (x0, y0, x1, y1):
@@ -70,6 +81,15 @@ def _no_bool(value):
     if isinstance(value, bool):
         raise ValueError("bool kabul edilmez")
     return value
+
+
+def check_region(value) -> list[float]:
+    """The one region contract, callable on its own (PLAN-21 §6.4).
+
+    The store's user commands check a region *before* building a record from it, so a bad box is
+    named as a bad box rather than as a wrapped validation error.
+    """
+    return _check_region(value)
 
 
 class CalloutCandidate(BaseModel):
@@ -104,6 +124,72 @@ class CalloutCandidate(BaseModel):
         cx0, cy0, cx1, cy1 = self.crop_region
         if not (cx0 <= x0 and cy0 <= y0 and cx1 >= x1 and cy1 >= y1):
             raise ValueError("crop_region region'u kapsamalı (görüntü kolaylığı; sayfa sınırlarında kalır)")
+        return self
+
+
+class ManualCalloutDecision(BaseModel):
+    """A callout area the user drew themselves (PLAN-21 §6.1) — a user decision, not a detection.
+
+    The identity is the server's: `manual:<uuid4 hex>`, assigned once when the region is added and
+    kept for the life of the record (refresh and undo included). Source, page and revision are the
+    server's too; a client can neither borrow another session's identity nor name its own.
+    """
+
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
+
+    id: str = Field(min_length=1, max_length=120)
+    source_digest: str = Field(min_length=1, max_length=200)
+    page_index: int = Field(ge=0)
+    region: list[float] = Field(min_length=4, max_length=4)
+    revision: int = Field(default=0, ge=0)
+
+    @field_validator("id")
+    @classmethod
+    def _namespace(cls, value):
+        if not re.fullmatch(MANUAL_ID_PATTERN, str(value)):
+            raise ValueError(f"manual callout kimliği '{MANUAL_ID_PREFIX}<uuid>' biçiminde olmalı (sunucu atar)")
+        return value
+
+    @field_validator("page_index", "revision", mode="before")
+    @classmethod
+    def _no_bool(cls, value):
+        return _no_bool(value)
+
+    @field_validator("region")
+    @classmethod
+    def _region(cls, value):
+        return _check_region(value)
+
+
+class CalloutReviewDecision(BaseModel):
+    """The user's own review of one callout: a corrected region and/or "not a callout" (PLAN-21 §6.1).
+
+    At most one record per callout. A region override never deletes the detected region or its
+    provenance — it only changes which region is *effective*; an ignored callout keeps its text and
+    its history. A record that carries neither decision is meaningless and is not stored.
+    """
+
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
+
+    callout_id: str = Field(min_length=1, max_length=120)
+    region_override: list[float] | None = None
+    ignored: bool = False
+    revision: int = Field(default=0, ge=0)
+
+    @field_validator("region_override")
+    @classmethod
+    def _region(cls, value):
+        return None if value is None else _check_region(value)
+
+    @field_validator("revision", mode="before")
+    @classmethod
+    def _no_bool(cls, value):
+        return _no_bool(value)
+
+    @model_validator(mode="after")
+    def _carries_a_decision(self):
+        if self.region_override is None and not self.ignored:
+            raise ValueError("gözden geçirme kaydı ya bir bölge düzeltmesi ya yok sayma taşımalı")
         return self
 
 
@@ -287,16 +373,114 @@ def geometry_key(record: dict, decisions: dict | None = None) -> str:
     return hashlib.sha256(blob.encode("utf-8")).hexdigest()
 
 
+# --- one effective view: base detections + the user's own regions and reviews --------------
+
+CROP_PADDING = 0.02
+"""How much context a derived crop adds around a region (PLAN-21 §6.2/§7.2).
+
+A display convenience only: the crop is clipped to the page, and neither the base nor the effective
+region is ever changed for the sake of a crop.
+"""
+
+
+def _crop_for(region: list[float]) -> list[float]:
+    """A padded, page-clipped crop box around `region` — always covering it (PLAN-21 §6.2)."""
+    x0, y0, x1, y1 = (float(value) for value in region)
+    return [max(0.0, x0 - CROP_PADDING), max(0.0, y0 - CROP_PADDING),
+            min(1.0, x1 + CROP_PADDING), min(1.0, y1 + CROP_PADDING)]
+
+
+def _covering_crop(region: list[float], stored: list[float] | None) -> list[float]:
+    """Keep the detector's own crop while it still covers the region; derive one when it does not.
+
+    A region override can move the box past the crop the detector wrote — serving the stale crop
+    then would show the user the wrong window, so the crop follows the effective region (the base
+    region and the provenance are untouched either way).
+    """
+    if stored and len(stored) == 4:
+        cx0, cy0, cx1, cy1 = (float(value) for value in stored)
+        if cx0 <= region[0] and cy0 <= region[1] and cx1 >= region[2] and cy1 >= region[3]:
+            return [cx0, cy0, cx1, cy1]
+    return _crop_for(region)
+
+
+def effective_callouts(record: dict) -> list[dict]:
+    """The one list the store, the checks and the UI all use (PLAN-21 §6.2).
+
+    Base G2 candidates, then the user's own manual regions, each carrying: its id, page, source
+    kind, base and effective region, crop region, hint, ignored flag and provenance. Purely
+    derived — computing this never creates a decision, writes history, or changes a region.
+    """
+    decisions = record.get("decisions") or {}
+    reviews = {row.get("callout_id"): row for row in decisions.get("callout_reviews") or []}
+    rows: list[dict] = []
+    for candidate in record.get("callout_candidates") or []:
+        callout_id = candidate.get("id")
+        review = reviews.get(callout_id) or {}
+        base = [float(value) for value in candidate.get("region") or []]
+        override = review.get("region_override")
+        region = [float(value) for value in override] if override else list(base)
+        rows.append({
+            "id": callout_id,
+            "page_index": candidate.get("page_index"),
+            "source_kind": candidate.get("source_kind"),
+            "source_digest": candidate.get("source_digest"),
+            "manual": False,
+            "region": region,
+            "base_region": base,
+            "region_override": None if not override else [float(value) for value in override],
+            "crop_region": _covering_crop(region, candidate.get("crop_region")),
+            "machine_text_hint": candidate.get("machine_text_hint"),
+            "ignored": bool(review.get("ignored")),
+            "provenance": {"kind": "detected", "observation_ids": list(candidate.get("observation_ids") or []),
+                           "detector_version": candidate.get("detector_version"),
+                           "geometry_version": candidate.get("geometry_version")},
+        })
+    for manual in decisions.get("manual_callouts") or []:
+        callout_id = manual.get("id")
+        review = reviews.get(callout_id) or {}
+        base = [float(value) for value in manual.get("region") or []]
+        override = review.get("region_override")
+        region = [float(value) for value in override] if override else list(base)
+        rows.append({
+            "id": callout_id,
+            "page_index": manual.get("page_index"),
+            "source_kind": "manual",
+            "source_digest": manual.get("source_digest"),
+            "manual": True,
+            "region": region,
+            "base_region": base,
+            "region_override": None if not override else [float(value) for value in override],
+            "crop_region": _covering_crop(region, None),
+            # The user drew this area: there is no machine reading of it, and saying otherwise
+            # (a hint, an observation id) would present a detection that never happened.
+            "machine_text_hint": None,
+            "ignored": bool(review.get("ignored")),
+            "provenance": {"kind": "manual", "observation_ids": [], "detector_version": None,
+                           "geometry_version": None},
+        })
+    return rows
+
+
 # --- freshness: current / stale / missing, with machine reason codes ---------------
 
-def _transcription_state(transcription: dict | None) -> dict:
+def _transcription_state(transcription: dict | None, region: list[float] | None) -> dict:
+    """Current while the text was written against the region that is still in front of the user.
+
+    `source_region` is the snapshot of the box the user actually read (PLAN-21 §6.3). Moving the box
+    never rewrites that snapshot — the old text simply becomes stale (`region_changed`) until the
+    user looks at the new region and saves the text again.
+    """
     if transcription is None:
         return {"state": "missing", "revision": None, "reason": "needs_transcription"}
+    stored = [float(value) for value in transcription.get("source_region") or []]
+    if region is not None and stored != [float(value) for value in region]:
+        return {"state": "stale", "revision": transcription.get("revision"), "reason": "region_changed"}
     return {"state": "current", "revision": transcription.get("revision"), "reason": None}
 
 
 def _parse_state(callout_id: str, transcription: dict | None, parses: list[dict],
-                 expected_parser_version: str, record: dict) -> dict:
+                 expected_parser_version: str, record: dict, region_changed: bool = False) -> dict:
     mine = [row for row in parses if row.get("callout_id") == callout_id]
     # PLAN-20 §7 (source changed/unreadable or geometry stale): an existing parse cannot be served
     # as current data any more — the page it was read off is no longer verifiable.
@@ -307,6 +491,11 @@ def _parse_state(callout_id: str, transcription: dict | None, parses: list[dict]
             return {"state": "stale", "reason": "transcription_missing"}
         return {"state": "missing", "reason": "needs_parse"}
     revision = transcription.get("revision")
+    if region_changed:
+        # The text is no longer standing on the region it was read from: any parse of it describes
+        # a box the user has moved away from (PLAN-21 §6.3).
+        return {"state": "stale", "reason": "region_changed"} if mine else \
+               {"state": "missing", "reason": "needs_parse"}
     exact = [row for row in mine if row.get("transcription_revision") == revision
              and row.get("parser_version") == expected_parser_version]
     if exact:
@@ -322,8 +511,9 @@ def _parse_state(callout_id: str, transcription: dict | None, parses: list[dict]
 
 
 def _target_state(callout_id: str, transcription: dict | None, target: dict | None, parses: list[dict],
-                  key: str, record: dict, expected_parser_version: str) -> dict:
-    """Reason priority, first one wins: source_unavailable → transcription_missing →
+                  key: str, record: dict, expected_parser_version: str,
+                  region_changed: bool = False) -> dict:
+    """Reason priority, first one wins: source_unavailable → transcription_missing → region_changed →
     transcription_changed → parser_version_changed → geometry_changed → parse_missing/parse_conflict."""
     if target is None:
         return {"state": "missing", "reason": "needs_target"}
@@ -332,6 +522,8 @@ def _target_state(callout_id: str, transcription: dict | None, target: dict | No
         reasons.append("source_unavailable")
     if transcription is None:
         reasons.append("transcription_missing")
+    elif region_changed:
+        reasons.append("region_changed")
     elif target.get("transcription_revision") != transcription.get("revision"):
         reasons.append("transcription_changed")
     if target.get("parser_version") != expected_parser_version:
@@ -356,7 +548,9 @@ def callout_states(record: dict, expected_parser_version: str | None = None) -> 
 
     Every callout gets its transcription/parse/target state (`current` / `stale` / `missing`) and a
     machine reason code — computed from records, never asserted by them. This computation creates
-    no confirmation and never re-pins anything.
+    no confirmation and never re-pins anything. The list is the *effective* one (PLAN-21 §6.2), so
+    a region the user drew themselves has a state too; `ignored` rides along as the user's own
+    review flag, not as a freshness verdict.
     """
     expected = expected_parser_version or CALLOUT_PARSER_VERSION
     decisions = record.get("decisions") or {}
@@ -365,16 +559,21 @@ def callout_states(record: dict, expected_parser_version: str | None = None) -> 
     parses = record.get("callout_parses") or []
     key = geometry_key(record, decisions)
     rows = []
-    for candidate_row in record.get("callout_candidates") or []:
-        callout_id = candidate_row.get("id")
+    for callout in effective_callouts(record):
+        callout_id = callout["id"]
         transcription = transcriptions.get(callout_id)
+        region_changed = (transcription is not None
+                          and [float(value) for value in transcription.get("source_region") or []]
+                          != [float(value) for value in callout.get("region") or []])
         rows.append({
             "id": callout_id,
-            "page_index": candidate_row.get("page_index"),
-            "source_kind": candidate_row.get("source_kind"),
-            "transcription": _transcription_state(transcription),
-            "parse": _parse_state(callout_id, transcription, parses, expected, record),
+            "page_index": callout.get("page_index"),
+            "source_kind": callout.get("source_kind"),
+            "manual": callout.get("manual"),
+            "ignored": callout.get("ignored"),
+            "transcription": _transcription_state(transcription, callout.get("region")),
+            "parse": _parse_state(callout_id, transcription, parses, expected, record, region_changed),
             "target": _target_state(callout_id, transcription, targets.get(callout_id), parses,
-                                    key, record, expected),
+                                    key, record, expected, region_changed),
         })
     return rows

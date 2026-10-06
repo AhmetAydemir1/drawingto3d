@@ -184,9 +184,9 @@ def test_save_persists_a_transcription_and_reopen_keeps_raw_text(store):
     reopened = GuidedStore(store.root)                   # fresh instance, same folder
     public = reopened.public(reopened.load(TOKEN))
     assert public["decisions"]["transcriptions"][0]["raw_text"] == "  4 × Ø8 THRU  "
-    assert public["callout_schema_version"] == 1
+    assert public["callout_schema_version"] == 2                   # G3: kullanıcı alan/yok sayma kararları eklendi
     assert public["callouts"] == [{
-        "id": "k1", "page_index": 0, "source_kind": "vector_text",
+        "id": "k1", "page_index": 0, "source_kind": "vector_text", "manual": False, "ignored": False,
         "transcription": {"state": "current", "revision": 1, "reason": None},
         "parse": {"state": "missing", "reason": "needs_parse"},
         "target": {"state": "missing", "reason": "needs_target"}}]
@@ -1090,3 +1090,56 @@ def test_an_undo_after_a_reconfirmation_logs_no_fake_confirmation(store):       
     events = store.load(TOKEN)["log"][start:]
     assert any(row["action"] == "undo" for row in events)         # undo kendi olayını kullanır
     assert not [row for row in events if row["action"] == "confirm_target"]
+
+
+# --- düzeltme turu 3 (PLAN-21 §4): G1R3-01 — nokta eşitliği onarım bütçesi değildir ---------------
+
+
+def _short_side_session(store, width):
+    """Geçerli fakat kendi kısa kenarı `width` px olan bir kontur: küçük, gerçek bir ölçü (G1R3-01).
+
+    Kontur denetimi her genişlikte geçmelidir; bulgu yalnızca *geçerli* geometriye aittir, 1 px'lik
+    çizgi kalınlığı sınırının altındaki bir kutuyla hata iddia edilmez.
+    """
+    seed_callouts(store)
+    payload = current_payload(store)
+    payload["transcriptions"] = [_transcription(raw=f"{width / 2:g} mm")]
+    store.save(TOKEN, 0, payload)
+    seed_callouts(store, candidate=False, parses=[_parse_row(
+        form="linear", size=width / 2, count=None, unit="mm", termination=None)])
+    record = store.load(TOKEN)
+    profile = next(row for row in record["options"]["profiles"]
+                   if row["id"] == record["decisions"]["profile_id"])
+    points = [[20, 20], [20 + width, 20], [20 + width, 80], [20, 80]]
+    edges = [{"id": f"short{i}", "kind": "line", "start": point, "end": points[(i + 1) % 4]}
+             for i, point in enumerate(points)]
+    assert contour_audit.audit_contour(edges)["ok"] is True
+    profile["edges"], profile["points"] = edges, points
+    _atomic(_session_path(store), record)
+    return record
+
+
+@pytest.mark.parametrize("width", [5, 10, 20, 21])
+def test_two_short_ends_are_two_distinct_points(store, width):                       # G1R3-01
+    """Araları 20 px'den kısa iki ölçü ucu, onarım bütçesi yüzünden "aynı nokta" sayılamaz."""
+    record = _short_side_session(store, width)
+    payload = current_payload(store)
+    payload["callout_targets"] = [_target_payload(
+        target_kind="vertex_pair", target_ids=["short0:start", "short0:end"],
+        evidence=[{"kind": "user_click", "ref": "short0:start,short0:end"}])]
+    state = store.save(TOKEN, record["revision"], payload)
+    assert state["callouts"][0]["target"] == {"state": "current", "reason": None}
+    assert state["decisions"]["callout_targets"][0]["target_ids"] == ["short0:start", "short0:end"]
+
+
+def test_a_short_contours_shared_corner_is_still_one_point(store):                   # G1R3-01
+    """Küçük ölçüler kabul edilirken komşu iki kenarın aynı köşe ucu hâlâ reddedilir."""
+    record = _short_side_session(store, 5)
+    payload = current_payload(store)
+    payload["callout_targets"] = [_target_payload(
+        target_kind="vertex_pair", target_ids=["short0:end", "short1:start"],
+        evidence=[{"kind": "user_click", "ref": "same-corner"}])]
+    before = _session_path(store).read_bytes()
+    with pytest.raises(ValueError, match="aynı fiziksel nokta"):
+        store.save(TOKEN, record["revision"], payload)
+    assert _session_path(store).read_bytes() == before           # ret: kalıcı kayıt değişmez

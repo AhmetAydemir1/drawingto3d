@@ -1,12 +1,16 @@
 import {showStl} from './preview.js';
 const $=id=>document.getElementById(id), sheet=$('sheet'), ctx=sheet.getContext('2d');
 let state=null, picture=new Image(), mode='profile', points=[], pending=false;
+// PLAN-21 §7.3: kaydedilmemiş metin taslakları burada durur — render, seçim değişimi veya başarısız
+// bir kayıt onları silmez; karar sunucuya yazıldığında temizlenir.
+let selectedCallout=null, calloutDrag=null, suppressClick=false, labelById={};
+const drafts=new Map();
 const text=(id,value)=>{$(id).textContent=value;};
 function status(message,error=false){text('status',message);$('status').classList.toggle('error',error);}
-function busy(value){pending=value;for(const el of document.querySelectorAll('button,input,select'))el.disabled=value; if(!value)render();}
+function busy(value){pending=value;for(const el of document.querySelectorAll('button,input,select,textarea'))el.disabled=value; if(!value)render();}
 async function api(path,data){const response=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});const result=await response.json();if(!response.ok)throw Error(result.error||'İşlem tamamlanamadı');return result;}
 function selectOptions(id,items,chosen){const el=$(id);el.replaceChildren();for(const [value,label] of items){const opt=document.createElement('option');opt.value=value;opt.textContent=label;el.append(opt);}el.value=chosen??'';}
-function render(){if(!state)return;$('controls').hidden=false;for(const id of ['pick-profile','pick-calibration','pick-hole'])$(id).disabled=pending;
+function render(){if(!state)return;$('controls').hidden=false;for(const id of ['pick-profile','pick-calibration','pick-hole','pick-callout','draw-callout'])$(id).disabled=pending;
  const d=state.decisions,o=state.options;selectOptions('profile',[['','Kontur seçin'],...o.profiles.map((p,i)=>[p.id,`${i+1} · ${p.kind==='circle'?'Daire':'Kapalı kontur'}`])],d.profile_id);
  const sel=o.profiles.find(p=>p.id===d.profile_id),fix=$('contour-fix');fix.replaceChildren();
  if(sel&&sel.contour&&sel.contour.ok===false){const lead=document.createElement('span');lead.className='hint';
@@ -31,7 +35,7 @@ function render(){if(!state)return;$('controls').hidden=false;for(const id of ['
  $('accept-all').hidden=!(state.proposals||[]).length;$('accept-all').disabled=pending;
  $('links').replaceChildren();for(const [key,label] of [['step','Taslak STEP'],['plan','CAD planı'],['audit','Geometri kontrolü']])if(state[key]){const a=document.createElement('a');a.href=state[key];a.textContent=label;a.download='';$('links').append(a);}
  if(!state.stl)$('preview').hidden=true;const klass=state.archetype&&state.archetype.class?` · sınıf: ${state.archetype.class}`:'';text('summary',`${o.profiles.length} kontur · ${o.circles.length} daire · ${o.measurements.length} ölçü adayı${klass} · kayıt ${state.revision}`);
- $('bind-start').disabled=pending||!state.decisions.profile_id;renderProposals();renderBindings();renderSketch();renderLog();setMode(mode);renderView();draw();}
+ $('bind-start').disabled=pending||!state.decisions.profile_id;renderProposals();renderBindings();renderSketch();renderLog();renderCallouts();setMode(mode);renderView();draw();}
 
 const FIELD_LABEL={profile_id:'Dış kontur',calibration:'Ölçek',thickness:'Kalınlık',depth:'Cep derinliği'};
 const CONFIDENCE_LABEL={bound:'okumaya bağlı',rule:'kural',assumed:'varsayım',model:'model önerisi'};
@@ -76,9 +80,28 @@ async function accept(fields,label){busy(true);try{state=await api('/api/guided/
  render();if(state.stl)await showStl(state.stl,$('preview'));}
  catch(e){status(e.message,true);}finally{busy(false);}}
 document.getElementById('accept-all').onclick=()=>accept(null);
-function setMode(value){mode=value;text('mode',mode==='calibration'?'Bilinen ölçünün iki ucuna tıklayın. Yakın uçlar ve daire merkezlerine yakalanır.':mode==='bind'?'Bağlanacak iki uca tıklayın: seçilen konturun köşesi ya da bir dairenin merkezi. Değer yukarıdaki ölçü satırından ya da elle girilir.':mode==='hole'?'Çizimde bir daireye tıklayın; çapını ve türünü aşağıda belirtin.':'Dış konturun kenarına tıklayın veya listeden seçin.');$('bind-cancel').hidden=mode!=='bind';}
+const MODE_HINT={calibration:'Bilinen ölçünün iki ucuna tıklayın. Yakın uçlar ve daire merkezlerine yakalanır.',
+ bind:'Bağlanacak iki uca tıklayın: seçilen konturun köşesi ya da bir dairenin merkezi. Değer yukarıdaki ölçü satırından ya da elle girilir.',
+ hole:'Çizimde bir daireye tıklayın; çapını ve türünü aşağıda belirtin.',
+ callout:'İncelenecek callout kutusuna tıklayın; listeden de seçebilirsiniz.',
+ 'callout-draw':'Yeni callout alanı için çizim üzerinde bir kutu sürükleyin. Escape iptal eder.',
+ 'callout-edit':'Alanı düzeltmek için çizim üzerinde yeni kutuyu sürükleyin. Escape iptal eder.'};
+function setMode(value){mode=value;text('mode',MODE_HINT[mode]||'Dış konturun kenarına tıklayın veya listeden seçin.');$('bind-cancel').hidden=mode!=='bind';}
 function updatePoints(){text('points',`${points.length}/2 nokta seçildi${points.length===2?` · çizimde ${Math.hypot(points[1][0]-points[0][0],points[1][1]-points[0][1]).toFixed(1)} piksel`:''}`);}
 function scale(){return Math.min(sheet.width/picture.width,sheet.height/picture.height);}
+// PLAN-21 §7.2: tek koordinat dönüşümü. Canvas backing boyutu ile CSS boyutu ayrı olabilir, bu yüzden
+// client koordinatı doğrudan görüntü pikseli sayılmaz. Seçim, hit-test, sürükleme ve crop aynı
+// yardımcıları kullanır; görüntü yüklenmeden seçim/kayıt yapılmaz.
+function imagePoint(event){const rect=sheet.getBoundingClientRect(),s=scale();
+ return [(event.clientX-rect.left)*sheet.width/rect.width/s,(event.clientY-rect.top)*sheet.height/rect.height/s];}
+function clamp(value,low,high){return Math.max(low,Math.min(high,value));}
+function regionBox(region){return {x:region[0]*picture.width,y:region[1]*picture.height,
+ w:(region[2]-region[0])*picture.width,h:(region[3]-region[1])*picture.height};}
+function normalizedRegion(a,b){return [clamp(Math.min(a[0],b[0]),0,picture.width)/picture.width,
+ clamp(Math.min(a[1],b[1]),0,picture.height)/picture.height,
+ clamp(Math.max(a[0],b[0]),0,picture.width)/picture.width,
+ clamp(Math.max(a[1],b[1]),0,picture.height)/picture.height];}
+function regionArea(region){return (region[2]-region[0])*(region[3]-region[1]);}
 function draw(){ctx.clearRect(0,0,sheet.width,sheet.height);if(!picture.width||!state)return;const s=scale();ctx.drawImage(picture,0,0,picture.width*s,picture.height*s);
  for(const p of state.options.profiles){ctx.beginPath();p.points.forEach((v,i)=>i?ctx.lineTo(v[0]*s,v[1]*s):ctx.moveTo(v[0]*s,v[1]*s));ctx.closePath();ctx.strokeStyle=p.id===state.decisions.profile_id?'#178a51':'#4e83a850';ctx.lineWidth=p.id===state.decisions.profile_id?3:1;ctx.stroke();}
  // The contour audit's own positions, marked where the drawing is wrong (PLAN §26.4-A): a ring and a
@@ -92,13 +115,77 @@ function draw(){ctx.clearRect(0,0,sheet.width,sheet.height);if(!picture.width||!
  for(const [i,p] of points.entries()){ctx.beginPath();ctx.arc(p[0]*s,p[1]*s,5,0,2*Math.PI);ctx.fillStyle='#b4392b';ctx.fill();ctx.fillText(String(i+1),p[0]*s+8,p[1]*s-8);}if(points.length===2){ctx.beginPath();ctx.moveTo(points[0][0]*s,points[0][1]*s);ctx.lineTo(points[1][0]*s,points[1][1]*s);ctx.strokeStyle='#b4392b';ctx.lineWidth=2;ctx.stroke();}
  for(const [i,end] of bindPoints.entries()){ctx.beginPath();ctx.arc(end.x*s,end.y*s,6,0,2*Math.PI);ctx.fillStyle='#265947';ctx.fill();ctx.fillText(String(i+1),end.x*s+8,end.y*s-8);}
  // PLAN §8.6: the sheet's own frame and axes, drawn so the user can check them before confirming.
- const frame=state.options.sheet_frame;if(frame&&frame.found&&(!$('view-show')||$('view-show').checked)){const r=frame.rect;ctx.save();ctx.setLineDash([7,5]);ctx.strokeStyle='#6b4fbb';ctx.lineWidth=2;ctx.strokeRect(r[0]*s,r[1]*s,(r[2]-r[0])*s,(r[3]-r[1])*s);ctx.setLineDash([]);const cx=(r[0]+r[2])/2*s,cy=(r[1]+r[3])/2*s;for(const [i,axis] of (frame.axes||[]).entries()){ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+axis.page[0]*70,cy+axis.page[1]*70);ctx.strokeStyle=i?'#6b4fbb':'#8a2be2';ctx.lineWidth=3;ctx.stroke();}ctx.restore();}}
+ const frame=state.options.sheet_frame;if(frame&&frame.found&&(!$('view-show')||$('view-show').checked)){const r=frame.rect;ctx.save();ctx.setLineDash([7,5]);ctx.strokeStyle='#6b4fbb';ctx.lineWidth=2;ctx.strokeRect(r[0]*s,r[1]*s,(r[2]-r[0])*s,(r[3]-r[1])*s);ctx.setLineDash([]);const cx=(r[0]+r[2])/2*s,cy=(r[1]+r[3])/2*s;for(const [i,axis] of (frame.axes||[]).entries()){ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+axis.page[0]*70,cy+axis.page[1]*70);ctx.strokeStyle=i?'#6b4fbb':'#8a2be2';ctx.lineWidth=3;ctx.stroke();}ctx.restore();}
+ // PLAN-21 §7.1: callout kutuları. Etiket yeniden sıralanabilir bir gösterim adıdır; gerçek kimlik
+ // (ve dolayısıyla kayıt) hiç değişmez.
+ for(const row of calloutList()){const box=regionBox(row.region),x=box.x*s,y=box.y*s,w=box.w*s,h=box.h*s,on=row.id===selectedCallout;
+  ctx.save();ctx.setLineDash(row.ignored?[5,4]:[]);ctx.lineWidth=on?3:2;
+  ctx.strokeStyle=row.ignored?'#9a938a':(on?'#178a51':'#2f6ea8');ctx.strokeRect(x,y,w,h);
+  ctx.fillStyle=row.ignored?'#9a938a':'#2f6ea8';ctx.font='13px system-ui';ctx.fillText(row.label,x+3,Math.max(12,y-4));ctx.restore();}
+ if(calloutDrag){const box=regionBox(normalizedRegion(calloutDrag.start,calloutDrag.current));
+  ctx.save();ctx.setLineDash([6,4]);ctx.strokeStyle='#b56519';ctx.lineWidth=2;
+  ctx.strokeRect(box.x*s,box.y*s,box.w*s,box.h*s);ctx.restore();}}
 function compass(v){if(!v||v.length!==2)return '?';const [x,y]=v;if(Math.abs(x)>=Math.abs(y))return x>0?'sağ':'sol';return y>0?'aşağı':'yukarı';}
 function renderView(){const el=$('view-text');if(!el)return;const frame=state.options&&state.options.sheet_frame;const approved=state.decisions&&state.decisions.view;
  if(approved){el.textContent=`Onaylandı: X ${compass(approved.x_page)}, Y ${compass(approved.y_page)}${approved.frame_rect?` · çerçeve ${approved.frame_rect.map(n=>Math.round(n)).join(' / ')} px`:''} · kaynak ${approved.source}.`;return;}
  if(!frame){el.textContent='Görüş bilgisi bu okumada yok.';return;}
  const axes=frame.axes||[];const where=frame.found?`çerçeve ${frame.rect.map(n=>Math.round(n)).join(' / ')} px`:'çerçeve bulunamadı';
  el.textContent=`${where}; ${axes.length===2?`öneri: X ${compass(axes[0].page)}, Y ${compass(axes[1].page)}`:'eksen önerisi yok'} · ${frame.provenance||''}`;}
+// --- G3 callout inceleme (PLAN-21 §6–7): etkin liste sunucudan gelir, tarayıcı yalnız gösterir ---------
+function calloutList(){const show=$('callout-show-ignored').checked;const rows=(state.effective_callouts||[]).filter(row=>show||!row.ignored);
+ // §7.1/§7.3: C1 yalnız bir gösterim adıdır; gerçek kimlik ve kayıt değişmez.
+ const out=rows.map((row,index)=>({...row,label:`C${index+1}`}));labelById={};for(const row of out)labelById[row.id]=row.label;return out;}
+function calloutRow(id){return id?(calloutList().find(row=>row.id===id)||null):null;}
+function calloutStates(){const map={};for(const row of state.callouts||[])map[row.id]=row;return map;}
+function calloutBadge(row,stateRow){if(row.ignored)return 'Yok sayıldı';const t=(stateRow&&stateRow.transcription)||{state:'missing'};
+ if(t.state==='missing')return 'İncelenmedi';if(t.state==='current')return 'Metin kaydedildi';return t.reason==='region_changed'?'Alan değişti':'Metin eskidi';}
+function storedText(id){const row=(state.decisions.transcriptions||[]).find(item=>item.callout_id===id);return row?row.raw_text||'':'';}
+function calloutAt(p){const hits=calloutList().filter(row=>{const box=regionBox(row.region);
+ return p[0]>=box.x&&p[0]<=box.x+box.w&&p[1]>=box.y&&p[1]<=box.y+box.h;});
+ // §7.1: en küçük kapsayan kutu kazanır; eşitlikte kimlik sırası — kararlı hit-test.
+ return hits.sort((a,b)=>regionArea(a.region)-regionArea(b.region)||a.id.localeCompare(b.id))[0]||null;}
+function drawCrop(row){const canvas=$('callout-crop');if(!canvas)return;const cx=canvas.getContext('2d');
+ cx.clearRect(0,0,canvas.width,canvas.height);if(!picture.width)return;
+ const crop=regionBox(row.crop_region),region=regionBox(row.region);if(crop.w<=0||crop.h<=0)return;
+ cx.drawImage(picture,crop.x,crop.y,crop.w,crop.h,0,0,canvas.width,canvas.height);
+ const sx=canvas.width/crop.w,sy=canvas.height/crop.h;
+ cx.strokeStyle='#178a51';cx.lineWidth=2;cx.strokeRect((region.x-crop.x)*sx,(region.y-crop.y)*sy,region.w*sx,region.h*sy);
+ text('callout-crop-note','Kırpma yalnız inceleme kolaylığıdır; doğruluk kararı değildir.');}
+function renderCallouts(){const list=$('callout-list');if(!list)return;const rows=calloutList(),states=calloutStates();
+ if(selectedCallout&&!rows.some(row=>row.id===selectedCallout))selectedCallout=null;
+ list.replaceChildren();
+ for(const row of rows){const li=document.createElement('li');li.className=row.id===selectedCallout?'selected':'';
+  const name=document.createElement('strong');name.textContent=row.label;
+  const note=document.createElement('small');
+  note.textContent=` · ${row.source_kind==='manual'?'elle çizilen alan':'makine adayı'} · ${calloutBadge(row,states[row.id])}${drafts.has(row.id)?' · kaydedilmemiş metin':''}`;
+  li.append(name,note);li.onclick=()=>{selectedCallout=row.id;render();};list.append(li);}
+ const all=state.effective_callouts||[];
+ const ignored=all.filter(row=>row.ignored).length;
+ const reviewed=all.filter(row=>{const t=(states[row.id]||{}).transcription;return t&&t.state!=='missing';}).length;
+ text('callout-summary',all.length?`${(state.callout_candidates||[]).length} makine adayı · ${all.length} etkin alan · ${reviewed} incelendi · ${ignored} yok sayıldı`
+  :'Bu okumada callout adayı yok: metinsiz çizim normal bir sonuçtur, alanı “Yeni alan çiz” ile siz çizebilirsiniz.');
+ const row=calloutRow(selectedCallout);$('callout-detail').hidden=!row;
+ if(!row)return;
+ text('callout-title',`${row.label} · ${row.source_kind==='manual'?'elle çizilen alan':'makine tespiti'}${row.region_override?' · alan düzeltildi':''}`);
+ text('callout-state',calloutBadge(row,states[row.id]));
+ text('callout-hint-line',row.machine_text_hint?`Makine ipucu (öneri): ${row.machine_text_hint}`:'Makine ipucu yok: çizimde yazanı kendiniz yazın.');
+ const field=$('callout-text');if(document.activeElement!==field)field.value=drafts.has(row.id)?drafts.get(row.id):storedText(row.id);
+ text('callout-draft',drafts.has(row.id)?'Kaydedilmemiş metin var: “Metni kaydet” demeden karar oluşmaz.':'');
+ $('callout-use-hint').disabled=pending||!row.machine_text_hint;
+ for(const id of ['callout-save','callout-ignore','callout-restore','callout-edit','callout-new'])$(id).disabled=pending;
+ $('callout-ignore').hidden=row.ignored;$('callout-restore').hidden=!row.ignored;drawCrop(row);}
+const CALLOUT_NOTE={add_region:'Yeni alan kaydedildi.',edit_region:'Alan düzeltmesi kaydedildi.',set_ignored:'Karar kaydedildi.',
+ transcribe:'Metin kaydedildi. (Bu metin bu taslak üretiminde henüz CAD\'e uygulanmıyor.)'};
+async function refreshState(){try{const response=await fetch('/api/guided/'+state.token);const data=await response.json();if(response.ok)state=data;}catch(e){/* durum alınamadı: mevcut state olduğu gibi kalır */}}
+async function command(action,payload){busy(true);const known=new Set((state.effective_callouts||[]).map(row=>row.id));
+ try{state=await api('/api/guided/callout',{token:state.token,revision:state.revision,action,payload});
+  if(action==='add_region'){const fresh=(state.effective_callouts||[]).find(row=>!known.has(row.id));if(fresh)selectedCallout=fresh.id;}
+  if(action==='transcribe')drafts.delete(payload.callout_id);   // karar sunucuya yazıldı: taslak artık gereksiz
+  status(CALLOUT_NOTE[action]||'Karar kaydedildi.');}
+ catch(e){status(e.message,true);
+  // §7.3: çakışmada sessiz last-write-wins yok — hata görünür, yazılan taslak durur, güncel durum alınır.
+  if(/oturum değişti/.test(e.message)){await refreshState();status(`${e.message} — yazdığınız metin duruyor; güncel durum alındı, kararı tekrar kaydedebilirsiniz.`,true);}}
+ finally{busy(false);}}
 function distSegment(p,a,b){const x=b[0]-a[0],y=b[1]-a[1],t=Math.max(0,Math.min(1,((p[0]-a[0])*x+(p[1]-a[1])*y)/(x*x+y*y||1)));return Math.hypot(p[0]-a[0]-t*x,p[1]-a[1]-t*y);}
 function holeAt(p,displayed){const far=c=>Math.hypot(p[0]-c.center[0],p[1]-c.center[1]);
  const rim=state.options.circles.map(c=>[Math.abs(far(c)-c.radius),c]).sort((a,b)=>a[0]-b[0])[0];
@@ -144,7 +231,11 @@ function renderSketch(){const box=$('sketch'),s=state.sketch||{};box.replaceChil
   for(const note of sol.notes||[])line(`• ${note}`,'muted');
   for(const ids of sol.conflicts||[])line(`• çakışan bağlar: ${(ids||[]).join(', ')}`,'muted');}
 }
-sheet.onclick=async event=>{if(!state||pending)return;const rect=sheet.getBoundingClientRect(),s=scale(),displayed=rect.width/picture.width,p=[(event.clientX-rect.left)*sheet.width/rect.width/s,(event.clientY-rect.top)*sheet.height/rect.height/s];
+sheet.onclick=async event=>{if(!state||pending)return;
+ if(suppressClick){suppressClick=false;return;}   // §7.2: sürüklemenin ardından gelen click başka modu seçmez
+ const rect=sheet.getBoundingClientRect(),s=scale(),displayed=rect.width/picture.width,p=imagePoint(event);
+ if(mode==='callout'||mode==='callout-draw'||mode==='callout-edit'){const hit=calloutAt(p);
+  if(hit){selectedCallout=hit.id;render();}else{selectedCallout=null;render();status('Bu noktada callout alanı yok; listeden seçin ya da “Yeni alan çiz” ile çizin.');}return;}
  if(mode==='calibration'){const candidates=[...state.options.profiles.flatMap(p=>p.edges?.flatMap(e=>[e.start,e.end])||[]),...state.options.circles.map(c=>c.center)];let point=p,best=12/displayed;for(const v of candidates){const d=Math.hypot(v[0]-p[0],v[1]-p[1]);if(d<best){best=d;point=v;}}if(points.length===2)points=[];points.push(point);updatePoints();draw();}
  else if(mode==='hole'){const hit=holeAt(p,displayed);if(hit){$('circle').value=hit.id;fillDiameter();draw();}else status('Bu noktada daire yok: bir dairenin kenarına ya da içine tıklayın.',true);}
  else if(mode==='bind'){const end=snapEnd(p,displayed);if(!end)return status('Bağ ucu seçilen konturun bir köşesine ya da bir daire merkezine yakın olmalı.',true);
@@ -174,5 +265,38 @@ $('apply-calibration').onclick=()=>{if(points.length!==2)return status('Önce ç
 $('circle').onchange=fillDiameter;$('hole-kind').onchange=syncDepth;
 $('add-hole').onclick=()=>{const h={circle_id:$('circle').value,kind:$('hole-kind').value,diameter:Number($('hole-diameter').value),depth:$('hole-kind').value==='pocket'?Number($('hole-depth').value):null};if(!h.circle_id)return status('Bir daire seçin.',true);save({...state.decisions,holes:[...state.decisions.holes.filter(x=>x.circle_id!==h.circle_id),h]});};
 $('undo').onclick=async()=>{busy(true);try{state=await api('/api/guided/undo',{token:state.token,revision:state.revision});points=[];status('Son karar geri alındı.');}catch(e){status(e.message,true);}finally{busy(false);}};
+document.addEventListener('keydown',event=>{if(event.key!=='Escape')return;
+ if(calloutDrag){calloutDrag=null;status('Alan çizimi iptal edildi.');draw();return;}
+ if(mode==='callout-draw'||mode==='callout-edit')setMode('callout');});
+// --- G3 kullanıcı komutları (PLAN-21 §6.4/§7.4) --------------------------------------------------------
+$('pick-callout').onclick=()=>setMode('callout');
+$('draw-callout').onclick=()=>setMode('callout-draw');
+$('callout-new').onclick=()=>setMode('callout-draw');
+$('callout-show-ignored').onchange=()=>render();
+$('callout-use-hint').onclick=()=>{const row=calloutRow(selectedCallout);if(!row||!row.machine_text_hint)return;
+ $('callout-text').value=row.machine_text_hint;drafts.set(row.id,row.machine_text_hint);renderCallouts();
+ status('İpucu yalnız taslağa alındı; karar “Metni kaydet” ile doğar.');};
+$('callout-text').oninput=()=>{if(selectedCallout)drafts.set(selectedCallout,$('callout-text').value);renderCallouts();};
+$('callout-save').onclick=()=>{const row=calloutRow(selectedCallout);if(!row)return status('Önce bir callout seçin.',true);
+ const value=$('callout-text').value;if(!value.trim())return status('Boş metin kaydedilemez: çizimde yazanı girin.',true);
+ command('transcribe',{callout_id:row.id,raw_text:value});};
+$('callout-ignore').onclick=()=>{const row=calloutRow(selectedCallout);if(!row)return status('Önce bir callout seçin.',true);command('set_ignored',{callout_id:row.id,ignored:true});};
+$('callout-restore').onclick=()=>{const row=calloutRow(selectedCallout);if(!row)return status('Önce bir callout seçin.',true);command('set_ignored',{callout_id:row.id,ignored:false});};
+$('callout-edit').onclick=()=>{if(!calloutRow(selectedCallout))return status('Önce düzeltilecek callout\'u seçin.',true);setMode('callout-edit');};
+// §7.2: sürükleme pointer olaylarıyla yürür; Escape/iptal kayıt üretmez, pointer capture yarım çizimi bırakır.
+sheet.addEventListener('pointerdown',event=>{if(!state||pending||!picture.width)return;
+ if(mode!=='callout-draw'&&mode!=='callout-edit')return;
+ const origin=mode==='callout-edit'?calloutRow(selectedCallout):null;
+ if(mode==='callout-edit'&&!origin)return status('Önce düzeltilecek callout\'u seçin.',true);
+ const point=imagePoint(event);calloutDrag={mode,start:point,current:point,origin};suppressClick=false;
+ if(sheet.setPointerCapture)sheet.setPointerCapture(event.pointerId);draw();});
+sheet.addEventListener('pointermove',event=>{if(!calloutDrag)return;calloutDrag.current=imagePoint(event);draw();});
+sheet.addEventListener('pointerup',event=>{if(!calloutDrag)return;const drag=calloutDrag;calloutDrag=null;
+ if(sheet.releasePointerCapture){try{sheet.releasePointerCapture(event.pointerId);}catch(e){/* pointer zaten serbest */}}
+ suppressClick=true;   // aynı hareketin click'i profile/hole seçmesin
+ const region=normalizedRegion(drag.start,drag.current),box=regionBox(region);
+ if(box.w<4||box.h<4){draw();return status('Alan çok küçük: çizim üzerinde bir kutu sürükleyin.',true);}
+ if(drag.mode==='callout-edit')command('edit_region',{callout_id:drag.origin.id,region});else command('add_region',{region});});
+sheet.addEventListener('pointercancel',()=>{if(!calloutDrag)return;calloutDrag=null;status('Alan çizimi iptal edildi.',true);draw();});
 $('build').onclick=async()=>{busy(true);status('Kararlardan 3B taslak hazırlanıyor; STEP yeniden açılarak kontrol ediliyor…');try{state=await api('/api/guided/build',{token:state.token,revision:state.revision});render();if(state.error)throw Error(state.error);if(state.stl)await showStl(state.stl,$('preview'));status('Taslak hazır. Geometrik kontrol tamam; çizimle ölçü doğruluğunu ayrıca inceleyin.');}catch(e){status(e.message,true);}finally{busy(false);}};
 (async()=>{const token=new URLSearchParams(location.search).get('session');if(token){busy(true);try{const r=await fetch('/api/guided/'+token);const data=await r.json();if(!r.ok)throw Error(data.error);state=data;await loadImage();render();if(state.stl)await showStl(state.stl,$('preview'));status('Kaydedilmiş oturum açıldı.');}catch(e){status(e.message,true);}finally{busy(false);}}})().catch(()=>{});

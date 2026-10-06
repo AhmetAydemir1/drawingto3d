@@ -1,0 +1,72 @@
+{
+  "finding": "G1R3-01",
+  "observed_join_tolerance_px": 20.0,
+  "cases": [
+    {
+      "case": "distinct_5px",
+      "contour_ok": true,
+      "point_distance_px": 5,
+      "target_ids": [
+        "short0:start",
+        "short0:end"
+      ],
+      "expected": "accept_current",
+      "rejection": "vertex_pair aynı fiziksel noktayı iki kez seçemez: ['short0:start', 'short0:end']",
+      "target_current": false,
+      "passed": false
+    },
+    {
+      "case": "distinct_10px",
+      "contour_ok": true,
+      "point_distance_px": 10,
+      "target_ids": [
+        "short0:start",
+        "short0:end"
+      ],
+      "expected": "accept_current",
+      "rejection": "vertex_pair aynı fiziksel noktayı iki kez seçemez: ['short0:start', 'short0:end']",
+      "target_current": false,
+      "passed": false
+    },
+    {
+      "case": "distinct_20px",
+      "contour_ok": true,
+      "point_distance_px": 20,
+      "target_ids": [
+        "short0:start",
+        "short0:end"
+      ],
+      "expected": "accept_current",
+      "rejection": "vertex_pair aynı fiziksel noktayı iki kez seçemez: ['short0:start', 'short0:end']",
+      "target_current": false,
+      "passed": false
+    },
+    {
+      "case": "distinct_21px",
+      "contour_ok": true,
+      "point_distance_px": 21,
+      "target_ids": [
+        "short0:start",
+        "short0:end"
+      ],
+      "expected": "accept_current",
+      "rejection": null,
+      "target_current": true,
+      "passed": true
+    },
+    {
+      "case": "same_corner_aliases",
+      "contour_ok": true,
+      "point_distance_px": 0,
+      "target_ids": [
+        "short0:end",
+        "short1:start"
+      ],
+      "expected": "reject_without_write",
+      "rejection": "vertex_pair aynı fiziksel noktayı iki kez seçemez: ['short0:end', 'short1:start']",
+      "target_current": false,
+      "passed": true
+    }
+  ],
+  "passed": false
+}

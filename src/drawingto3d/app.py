@@ -85,6 +85,11 @@ class Handler(BaseHTTPRequestHandler):
                         fields = data.get("fields")
                         if fields is not None and not isinstance(fields, list): raise ValueError("fields liste olmalı")
                         result = GUIDED.accept(data.get("token"), data.get("revision"), fields)
+                    elif path == "/api/guided/callout":
+                        # PLAN-21 §6.4: one user command on the callout layer, through the same
+                        # store lock / revision / save / history path as every other decision.
+                        result = GUIDED.edit_callout(data.get("token"), data.get("revision"),
+                                                     data.get("action"), data.get("payload"))
                     elif path == "/api/guided/undo":
                         result = GUIDED.save(data.get("token"), data.get("revision"), undo=True)
                     elif path == "/api/guided/build":

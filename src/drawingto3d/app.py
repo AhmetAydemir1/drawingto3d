@@ -90,6 +90,21 @@ class Handler(BaseHTTPRequestHandler):
                         # store lock / revision / save / history path as every other decision.
                         result = GUIDED.edit_callout(data.get("token"), data.get("revision"),
                                                      data.get("action"), data.get("payload"))
+                    elif path == "/api/guided/propose":
+                        # G5 (PLAN §10): a read — ranked target proposals for one callout, written nowhere.
+                        result = GUIDED.propose(data.get("token"), data.get("callout_id"))
+                    elif path == "/api/guided/readiness":
+                        # G8 (PLAN §14): what the build waits on, in the shared categories.
+                        result = GUIDED.readiness(data.get("token"))
+                    elif path == "/api/guided/export":
+                        # GX (PLAN §12): the review bundle for a session, sources and local artifacts
+                        # untouched.
+                        result = GUIDED.review_export(data.get("token"))
+                    elif path == "/api/guided/import":
+                        # GX (PLAN §12): untrusted input — validated against this record, all-or-nothing,
+                        # with external_review as its provenance.
+                        result = GUIDED.review_import(data.get("token"), data.get("revision"),
+                                                      data.get("bundle"))
                     elif path == "/api/guided/undo":
                         result = GUIDED.save(data.get("token"), data.get("revision"), undo=True)
                     elif path == "/api/guided/build":

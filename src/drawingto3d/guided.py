@@ -28,8 +28,12 @@ import numpy as np
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
 
 from drawingto3d import advise
+from drawingto3d import callout_bind
+from drawingto3d import callout_compile
 from drawingto3d import callout_models
 from drawingto3d import callout_parse
+from drawingto3d import callout_readiness
+from drawingto3d import callout_review
 from drawingto3d import callouts
 from drawingto3d.general import GeneralPlan, build_general
 from drawingto3d.ingest import load_page
@@ -1886,7 +1890,7 @@ def _log_callout_changes(record: dict, before: dict, payload: dict, produced=Non
 
 # --- G3 user commands (PLAN-21 §6.4): one command, one history step, one revision ---------------
 
-_CALLOUT_COMMANDS = ("add_region", "edit_region", "set_ignored", "transcribe")
+_CALLOUT_COMMANDS = ("add_region", "edit_region", "set_ignored", "set_unbindable", "transcribe")
 
 
 def _next_callout_revision(record: dict) -> int:
@@ -1917,26 +1921,31 @@ def _effective_row(record: dict, decisions: dict, callout_id: str) -> dict:
 
 
 def _set_review(record: dict, decisions: dict, callout_id: str, *,
-                region_override: list[float] | None, ignored: bool) -> None:
-    """Write the one review row for a callout — or remove it when both decisions are taken back.
+                region_override: list[float] | None, ignored: bool, unbindable: bool = False) -> None:
+    """Write the one review row for a callout — or remove it when every decision is taken back.
 
     An unchanged decision keeps its stored revision, so repeating a command is a true no-op rather
-    than a rewrite that would inflate history (PLAN-21 §6.4).
+    than a rewrite that would inflate history (PLAN-21 §6.4). `unbindable` is the G6 verdict "this
+    callout cannot be bound": a declared scope decision, so it is written like any other review — it
+    simply means the build is not blocked by a callout the user has already looked at.
     """
     stored = list(decisions.get("callout_reviews") or [])
     prior = next((item for item in stored if item.get("callout_id") == callout_id), None)
-    if region_override is None and not ignored:
+    if region_override is None and not ignored and not unbindable:
         decisions["callout_reviews"] = [item for item in stored if item.get("callout_id") != callout_id]
         return
     same = (prior is not None and prior.get("region_override") == region_override
-            and bool(prior.get("ignored")) == bool(ignored))
+            and bool(prior.get("ignored")) == bool(ignored)
+            and bool(prior.get("unbindable")) == bool(unbindable))
     revision = (prior or {}).get("revision", 0) if same else _next_callout_revision(record)
     row = callout_models.CalloutReviewDecision(callout_id=callout_id, region_override=region_override,
-                                               ignored=bool(ignored), revision=revision)
+                                               ignored=bool(ignored), unbindable=bool(unbindable),
+                                               revision=revision)
     decisions["callout_reviews"] = _upsert(stored, "callout_id", row.model_dump(mode="json"))
 
 
-def _apply_callout_command(record: dict, decisions: dict, action: str, payload: dict) -> tuple[list[tuple], list[tuple]]:
+def _apply_callout_command(record: dict, decisions: dict, action: str, payload: dict,
+                           actor: str = "user") -> tuple[list[tuple], list[tuple]]:
     """One G3 user command → the working decisions plus the log events only it can name.
 
     Everything the client sends is checked or replaced here: the region against the one coordinate
@@ -1979,19 +1988,42 @@ def _apply_callout_command(record: dict, decisions: dict, action: str, payload: 
         ignored = payload.get("ignored")
         if not isinstance(ignored, bool):
             raise ValueError("yok sayma kararı true/false olmalı")
+        # "callout değil" ve "bağlanamaz" birbirini dışlar: biri seçildiğinde öteki bırakılır.
         _set_review(record, decisions, callout_id, region_override=current["region_override"],
-                    ignored=ignored)
+                    ignored=ignored,
+                    unbindable=False if ignored else bool(current.get("unbindable")))
         return ([("ignore_callout" if ignored else "restore_callout", f"callout:{callout_id}", None,
                   {"callout_id": callout_id},
                   "Kullanıcı bu callout'u 'callout değil' olarak işaretledi." if ignored
                   else "Kullanıcı bu callout'u yeniden değerlendirmeye aldı; metni silinmedi.")],
                 [("callout_reviews", callout_id)])
 
+    if action == "set_unbindable":
+        unbindable = payload.get("unbindable")
+        if not isinstance(unbindable, bool):
+            raise ValueError("'bağlanamaz' kararı true/false olmalı")
+        # G6 panelinin dördüncü düğmesi: kullanıcı bu callout'u inceledi ve bağlanamayacağını söyledi.
+        # Bu bir kapsam kararıdır — uydurma değil, sessiz düşürme de değil: kayıtta görünür.
+        _set_review(record, decisions, callout_id, region_override=current["region_override"],
+                    ignored=False if unbindable else bool(current.get("ignored")),
+                    unbindable=unbindable)
+        return ([("unbindable_callout" if unbindable else "rebind_callout", f"callout:{callout_id}", None,
+                  {"callout_id": callout_id},
+                  "Kullanıcı bu callout'un bağlanamadığını bildirdi; kapsam dışı sayılıyor." if unbindable
+                  else "Kullanıcı 'bağlanamaz' kararını geri aldı; callout yeniden bağlanabilir.")],
+                [("callout_reviews", callout_id)])
+
+    subject = "Dış inceleme" if actor == "external_review" else "Kullanıcı"
+
     if action == "transcribe":
         if current["ignored"]:
             raise ValueError("yok sayılan bir callout'a metin yazılamaz; önce geri alın")
         row = callout_models.TranscriptionDecision(callout_id=callout_id, raw_text=payload.get("raw_text"),
-                                                   source_region=current["region"], revision=0)
+                                                   source_region=current["region"], revision=0,
+                                                   # GX: dış inceleme metni kendi kaynağıyla yazılır — kullanıcı
+                                                   # burada yazmış gibi görünmez (PLAN §12 provenance).
+                                                   entered_by=("external_review" if actor == "external_review"
+                                                               else "user"))
         # The region the user actually reviewed is the server's own effective region — a client
         # cannot claim to have read a box the session never showed (PLAN-21 §6.3).
         decisions["transcriptions"] = _upsert(decisions.get("transcriptions") or [], "callout_id",
@@ -2003,11 +2035,85 @@ def _apply_callout_command(record: dict, decisions: dict, action: str, payload: 
             return [], [("transcriptions", callout_id)]      # aynı karar: olay yok, yazım da olmayacak
         return ([("transcribe" if prior is None else "edit_transcription", f"callout:{callout_id}",
                   row.raw_text, {"callout_id": callout_id, "source_region": row.source_region},
-                  "Kullanıcı callout metnini yazdı." if prior is None
-                  else "Kullanıcı callout metnini düzenledi.")],
+                  f"{subject} callout metnini yazdı." if prior is None
+                  else f"{subject} callout metnini düzenledi.")],
                 [("transcriptions", callout_id)])
 
     raise ValueError(f"işlem bulunamadı: {action}")
+
+
+def _review_target(record: dict, decisions: dict, callout_id: str, action: str,
+                   payload: dict) -> tuple[list[tuple], list[tuple]]:
+    """GX: a reviewer's target confirmation — server fields come from this record, never the bundle.
+
+    The revision the reading stands on and the parser version are read here, so an imported
+    confirmation is bound exactly like one the interface sent; the evidence says where it came from.
+    """
+    transcription = next((row for row in decisions.get("transcriptions") or []
+                          if row.get("callout_id") == callout_id), None)
+    if transcription is None:
+        raise ValueError(f"hedef onayı için önce metin gerekli: {callout_id}")
+    ids = [str(item) for item in payload.get("target_ids") or []]
+    evidence = payload.get("evidence") or [{"kind": "external_review",
+                                            "ref": f"{action} · {', '.join(ids)}"}]
+    row = callout_models.CalloutTargetDecision(callout_id=callout_id,
+                                               target_kind=payload.get("target_kind"),
+                                               target_ids=ids,
+                                               transcription_revision=transcription.get("revision"),
+                                               parser_version=callout_models.CALLOUT_PARSER_VERSION,
+                                               evidence=evidence, reconfirm=False)
+    decisions["callout_targets"] = _upsert(decisions.get("callout_targets") or [], "callout_id",
+                                           row.model_dump(mode="json"))
+    return ([("confirm_target" if action == "confirm_target" else "select_target",
+              f"callout:{callout_id}", ids,
+              {"callout_id": callout_id, "source": "external_review", "via": action},
+              "Dış inceleme bu callout için hedefi onayladı." if action == "confirm_target"
+              else "Dış inceleme bu callout için hedefi kendi seçti.")],
+            [("callout_targets", callout_id)])
+
+
+def _sheet_issues(record: dict) -> list[dict]:
+    """The build's own waiting states in the G8 categories (PLAN §14) — never a free-text guess.
+
+    The store's `questions()` stays the authority on *whether* a build may start; this names the same
+    conditions with machine reason codes so the callout layer's readiness can merge them without
+    re-deriving a rule of its own.
+    """
+    decisions = Decisions.model_validate(record.get("decisions") or {})
+    options = record.get("options") or {}
+    issues: list[dict] = []
+    if not decisions.profile_id:
+        issues.append({"category": "missing_profile", "reason": "profile_not_chosen",
+                       "detail": "Ana görünüşte dış konturu seçin."})
+    if not decisions.calibration:
+        issues.append({"category": "missing_calibration", "reason": "calibration_missing",
+                       "detail": "Bilinen ölçünün iki noktasını ve uzunluğunu belirtin."})
+    if not decisions.thickness:
+        issues.append({"category": "geometry_conflict", "reason": "thickness_missing",
+                       "detail": "Parçanın kalınlığını girin."})
+    if not decisions.trace_acknowledged:
+        issues.append({"category": "geometry_conflict", "reason": "trace_not_acknowledged",
+                       "detail": "Çizimden izlenen konturu taslak olarak kullanmayı onaylayın."})
+    if any(row.axis is None or row.direction is None for row in decisions.bindings):
+        issues.append({"category": "geometry_conflict", "reason": "binding_axis_missing",
+                       "detail": "Bağlanan ölçünün eksenini (X/Y) ve yönünü seçin."})
+    product = options.get("sheet_frame") or {}
+    view = getattr(decisions, "view", None)
+    obvious = bool(product.get("found")) and product.get("aligned") is not False and not product.get("rotation")
+    if view is None and not obvious:
+        issues.append({"category": "missing_view", "reason": "view_not_confirmed",
+                       "detail": _view_question(product)})
+    elif view is not None and _view_mismatch(view, product):
+        issues.append({"category": "missing_view", "reason": "view_mismatch",
+                       "detail": "Onaylanan görüş yönü bu okumayla uyuşmuyor; görüş yeniden onaylanmalı."})
+    profile = next((row for row in options.get("profiles") or [] if row["id"] == decisions.profile_id), None)
+    for reason in unsupported_binding_reasons(profile or {}, decisions):
+        issues.append({"category": "geometry_conflict", "reason": "binding_unsupported", "detail": reason})
+    if options:
+        for row in unresolved_bindings(options, decisions):
+            issues.append({"category": "geometry_conflict", "reason": "binding_unresolved",
+                           "detail": f"Bağlanan ölçü yeniden bağlanmalı ({row['reason']})."})
+    return issues
 
 
 class GuidedStore:
@@ -2169,7 +2275,8 @@ class GuidedStore:
         with self.lock:
             return self._commit(token,revision,decisions=decisions,undo=undo)
 
-    def _commit(self,token,revision,*,decisions=None,undo=False,events=None,produced=None):
+    def _commit(self,token,revision,*,decisions=None,undo=False,events=None,produced=None,
+                actor="user"):
         """The one persistence path (PLAN-22 §4.1).
 
         `events` and `produced` belong to an *internally validated command* — never read from an HTTP
@@ -2216,7 +2323,7 @@ class GuidedStore:
                         _log(r,"user","edit",field,value,None,"Kullanıcı bu kararı kendi girdi.")
                 _log_callout_changes(r,before,payload,produced=produced)
                 for action,field,value,evidence,note in (events or []):
-                    _log(r,"user",action,field,value,evidence,note)
+                    _log(r,actor,action,field,value,evidence,note)
             _stamp_callout_version(r)
             r["revision"]+=1;r["build"]=None
             _atomic(self.folder(token)/"session.json",note_sketch(r))
@@ -2239,6 +2346,97 @@ class GuidedStore:
             decisions=json.loads(json.dumps(r["decisions"]))
             events,produced=_apply_callout_command(r,decisions,action,payload if isinstance(payload,dict) else {})
             return self._commit(token,revision,decisions=decisions,events=events,produced=produced)
+
+    def propose(self, token, callout_id):
+        """G5 on demand: ranked, evidence-based target proposals for one callout (a read).
+
+        Nothing is written and no confirmation is created: this is the picture the G6 panel shows
+        before the user decides. The scale it measures with is the user's own calibration — the same
+        number the build uses, never a fit of their printed measures (PLAN P04-a).
+        """
+        with self.lock:
+            r = self.load(token)
+            if not isinstance(callout_id, str) or not callout_id:
+                raise ValueError("callout kimliği gerekli")
+            state = callout_models.callout_state(r, callout_id)
+            if state is None:
+                raise ValueError(f"callout bulunamadı: {callout_id}")
+            scale = (note_sketch({"options": r["options"], "decisions": r["decisions"]}).get("sketch")
+                     or {}).get("px_per_mm")
+            proposals = callout_bind.propose_targets(r, callout_id, scale_px_per_mm=scale)
+            target = next((item for item in (r["decisions"].get("callout_targets") or [])
+                           if item.get("callout_id") == callout_id), None)
+            return {"callout_id": callout_id, "geometry_version": r.get("geometry_version"),
+                    "scale_px_per_mm": scale, "state": state, "target": target,
+                    "proposals": [item.model_dump(mode="json") for item in proposals]}
+
+    def readiness(self, token):
+        """G8: what the build waits on, per callout and per sheet — the categories, not prose."""
+        with self.lock:
+            r = self.load(token)
+            readiness = callout_readiness.build_readiness(r, sheet_issues=_sheet_issues(r))
+            readiness["questions_text"] = [row["text"] for row in readiness["questions"]]
+            readiness["sheet_questions"] = questions(Decisions.model_validate(r["decisions"]),
+                                                     r.get("sketch"), r["options"])
+            return readiness
+
+    def review_export(self, token):
+        """GX: the session review bundle an external reviewer works from (PLAN §12)."""
+        with self.lock:
+            r = self.load(token)
+            images = {}
+            for row in callout_models.effective_callouts(r):
+                name = r.get("callout_crops", {}).get(row["id"])
+                if name:
+                    images[row["id"]] = name
+            return callout_review.export_bundle(r, artifacts=images)
+
+    def review_import(self, token, revision, bundle):
+        """GX: import an external review — same validation, history, revision and log as the UI (PLAN §12).
+
+        Untrusted input meets the store's own gates: `validate_import` checks the bundle against this
+        very record (all-or-nothing) and every surviving action is applied through the same command and
+        commit paths a user's click would take — with `external_review` as its explicit provenance.
+        """
+        with self.lock:
+            r = self.load(token)
+            if type(revision) is not int or revision != r["revision"]:
+                raise ValueError("oturum değişti; yeniden açın")
+            plan = callout_review.validate_import(r, bundle)
+            if not plan["ok"]:
+                first = plan["errors"][0]
+                raise ValueError("içe aktarma reddedildi: " + str(first.get("reason"))
+                                 + (f" ({first.get('detail')})" if first.get("detail") else "")
+                                 + (f" [+{len(plan['errors']) - 1} hata]" if len(plan["errors"]) > 1 else ""))
+            decisions = json.loads(json.dumps(r["decisions"]))
+            events: list[tuple] = []
+            produced: list[tuple] = []
+            for item in plan["actions"]:
+                action, callout_id, payload = item["action"], item["callout_id"], dict(item["payload"])
+                # The command layer takes the id from the payload it is handed — the import's id is the
+                # validated one, so it travels with the payload rather than being trusted twice.
+                payload["callout_id"] = callout_id
+                if action == "transcribe":
+                    region = payload.pop("region", None)
+                    if region is not None:
+                        extra, rows = _apply_callout_command(r, decisions, "edit_region",
+                                                             {"callout_id": callout_id, "region": region},
+                                                             actor="external_review")
+                        events += extra
+                        produced += rows
+                    extra, rows = _apply_callout_command(r, decisions, "transcribe", payload,
+                                                         actor="external_review")
+                elif action in ("ignore", "restore"):
+                    extra, rows = _apply_callout_command(r, decisions, "set_ignored",
+                                                         {"callout_id": callout_id,
+                                                          "ignored": action == "ignore"},
+                                                         actor="external_review")
+                else:
+                    extra, rows = _review_target(r, decisions, callout_id, action, payload)
+                events += extra
+                produced += rows
+            return self._commit(token, revision, decisions=decisions, events=events,
+                                produced=produced, actor="external_review")
 
     def accept(self,token,revision,fields=None):
         """The user takes the reading's own proposals in one step. Values stay the user's decision."""
@@ -2301,7 +2499,19 @@ class GuidedStore:
             if r.get("geometry_stale"):
                 raise ValueError("temel geometri kaynaktan yenilenemedi ("+str((r["geometry_stale"] or {}).get("reason"))
                                  +"); eski sonuç tarihsel, yeniden üretilemez")
-            plan=make_plan(r)
+            # G8 (PLAN §14): the build waits on the categories, not on prose — and a callout conflict
+            # is named and refused, never patched over (PLAN §13). A callout the user declared
+            # unbindable is a scope decision, so it is not a blocker.
+            readiness = callout_readiness.build_readiness(r, sheet_issues=_sheet_issues(r))
+            if not readiness["ready"]:
+                raise ValueError("üretim için eksik/uyumsuz girdiler var: "
+                                 + " ".join(row["text"] for row in readiness["questions"][:3]))
+            compiled = callout_compile.compile_callouts(r)
+            if compiled["conflicts"]:
+                raise ValueError("callout kararları çelişiyor: "
+                                 + " ".join(str(item.get("detail") or item.get("reason"))
+                                            for item in compiled["conflicts"][:3]))
+            plan=make_plan({**r, "decisions": callout_compile.apply_compiled(r["decisions"], compiled)})
             folder=self.folder(token)/f"build-{revision}-{uuid.uuid4().hex[:8]}"
             # P01-b.1: an output belongs to one source digest, one geometry version and one decision
             # revision — the build carries all three, so a later migration or edit cannot inherit it.
@@ -2310,6 +2520,13 @@ class GuidedStore:
             r["build"]={"revision":revision,"status":"running","folder":str(folder),**identity}
             _log(r,"system","build","build",None,{"revision":revision,"folder":str(folder)},
                  "Üretim başladı: kararlar GeneralPlan'a çevrildi, STEP kuruluyor.")
+            # G7 (PLAN §13): what the callout chain contributed rides in the log, so the generated
+            # part can be traced back to the text the user confirmed.
+            summary = callout_compile.compiled_summary(compiled)
+            if summary["compiled_holes"] or summary["compiled_bindings"]:
+                _log(r,"system","build","callout_compile",None,summary,
+                     f"Callout zincirinden {summary['compiled_holes']} delik ve "
+                     f"{summary['compiled_bindings']} ölçü bağı derlendi.")
             _atomic(self.folder(token)/"session.json",note_sketch(r))
         try:
             build_general(plan,r["source"],folder)

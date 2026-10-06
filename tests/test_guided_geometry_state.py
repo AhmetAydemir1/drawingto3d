@@ -67,6 +67,17 @@ def plan_of(store, token):
     return make_plan(store.load(token))
 
 
+def _declare_callouts_out_of_scope(store, token):
+    """G8 (`PLAN.md` §14): üretim, her callout için bir karar bekler.
+
+    Bu testin konusu temel geometrinin yerinde kalması; paftanın metin bölgeleri de kapsam dışı
+    bırakılır — sessizce düşürülmez, kullanıcı kararı olarak kayda geçer ve denetimde görünür.
+    """
+    for row in store.public(store.load(token))["callouts"]:
+        store.edit_callout(token, store.load(token)["revision"], "set_ignored",
+                           {"callout_id": row["id"], "ignored": True})
+
+
 def test_measure_add_build_remove_build_undo_reopen_keeps_base_geometry(tmp_path):
     store = GuidedStore(tmp_path / "store")
     opened = store.create(PLATE_SHEET.read_bytes())
@@ -75,6 +86,8 @@ def test_measure_add_build_remove_build_undo_reopen_keeps_base_geometry(tmp_path
 
     wire, circles, decisions = decisions_for(opened["options"])
     revision = store.save(token, opened["revision"], decisions)["revision"]
+    _declare_callouts_out_of_scope(store, token)          # G8: kapsam kararı olmadan üretim beklemede
+    revision = store.load(token)["revision"]
     built = store.build(token, revision)
     assert built["build_status"] == "complete", built.get("error")
     folder = Path(store.load(token)["build"]["folder"])

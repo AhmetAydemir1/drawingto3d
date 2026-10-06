@@ -658,6 +658,10 @@ def test_a_target_edit_also_makes_the_old_step_historical(store):
 
 def test_a_build_that_finishes_late_never_attaches_to_newer_decisions(store, monkeypatch):
     _transcribed(store)
+    # G8: kapsam kararı verilmeden üretim başlamaz — bu callout "bağlanamaz" ilan edilir ve testin
+    # konusu (geç biten üretimin yeni kararlara bağlanmaması) aynen korunur.
+    store.edit_callout(TOKEN, store.load(TOKEN)["revision"], "set_unbindable",
+                       {"callout_id": "k1", "unbindable": True})
     entered, release = threading.Event(), threading.Event()
 
     def slow(plan, source, folder):

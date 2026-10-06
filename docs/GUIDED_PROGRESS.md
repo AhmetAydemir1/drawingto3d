@@ -398,3 +398,39 @@ Uygulanan kapsam (bu turda): **G4** deterministik parser + store türetmesi, **G
   bağlanması (`_commit`/`build` yolunda derleme + readiness kapısı), `/api/guided/propose|export|import`
   uçları, guided.js/guided.html, G9 Plate golden path, G10 manifest, G11–G13 koşu + raporlar.
   G4/G7 yokken callout metninin STEP'e uygulandığı iddia edilmez.
+
+
+## G6/GX/G7/G8 — uçbirim yüzeyi, üretim kapısı, aktarım (tur 2)
+
+Aynı fazın *bağlanma* turu: katmanlar saf kaldı, ama artık mağaza ve HTTP üzerinden erişilebilir.
+
+- **G5 okuması**: `GuidedStore.propose(token, callout_id)` + `POST /api/guided/propose` — yalnız okur
+  (revizyon ve oturum dosyası bayt bayt aynı kalır), önerileri kanıt katmanına göre sıralı döner,
+  ölçeği kullanıcının kalibrasyonundan alır (`note_sketch`), hiçbir onay yazmaz.
+- **G8 hazırlık**: `GuidedStore.readiness(token)` + `POST /api/guided/readiness` — kaydın kendi
+  `questions()`i otorite olarak kalır; `_sheet_issues()` aynı koşulları makine kategorilerine çevirir
+  (profil, kalibrasyon, kalınlık, iz onayı, bağ ekseni, görüş) ve callout katmanının kategorileriyle
+  birleşir. Sorular `action` alanıyla panelin hangi düğmesi olduğunu söyler.
+- **Üretim kapısı** (`PLAN.md` §14 "Build only when all relevant inputs current/resolved"):
+  `build()` artık hazırlık geçmeden ve derleme çelişkisi varken *hiç başlamaz* — ne `build-*` klasörü
+  açar ne `build` durumu yazar; durdurma gerekçesi callout kimliğiyle birlikte hatada görünür.
+  Derleme sonucu (`compiled_summary`) üretim log'una `callout_compile` alanıyla geçer (denetim izi).
+- **G6 kapsam kararı**: yeni komut `set_unbindable` ("bağlanamaz") — kullanıcı kararı olarak
+  `callout_reviews`'a yazılır, log'da `unbindable_callout` olarak görünür, `ignored` ile birbirini
+  dışlar ve bekleyen callout'u kapatır (sessiz düşürme değil, bildirilmiş kapsam kararı).
+- **GX aktarımı**: `GuidedStore.review_export` / `review_import` + `POST /api/guided/export|import`.
+  İçe aktarma *güvenilmeyen girdidir*: paket bu kayda karşı doğrulanır (sürüm/şema/oturum/kaynak/
+  base_revision/eylem/kimlik/geometri), ya tümü uygulanır ya hiçbiri; uygulanan her satır aynı
+  `_commit` yolundan geçer (kilit, revizyon, geçmiş, undo), metinler `entered_by="external_review"`
+  damgası ve `actor="external_review"` log'u taşır — dış inceleme kullanıcı gibi görünmez.
+
+Kanıt: `tests/test_guided_callout_chain.py` (19 test) — okuma-önermesi kaydı değiştirmiyor,
+hazırlık kategorileri, "bağlanamaz" kararının üretimi açması, çelişkide üretimin durması (üretici
+çağrılmadan), derlemenin plana geçmesi ve log'a düşmesi, paket/aktarım turu, geri alma, kurcalanmış
+paketin revizyonu değiştirmemesi, iki yeni uç noktanın gerçek HTTP'de yanıtı. Hedefli set:
+`tests/test_guided_*.py tests/test_callout*.py tests/test_planner.py` → **455 passed** (98 s).
+G8 kapısı iki eski beklentiyi bilinçli olarak değiştirdi: `geometry_state` testindeki pafta callout'ları
+artık kapsam dışı ilan ediliyor, geç-biten-üretim testindeki callout "bağlanamaz" işaretleniyor.
+
+Açık: G6 paneli (static/guided.js) ve tarayıcı kabulü; H0 tam baseline koşusu bu turda yarıda
+kesildi (yarısında G4+ değişiklikleri geldi) — tam koşu G13'te yeniden alınmalı.

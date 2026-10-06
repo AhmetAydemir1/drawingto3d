@@ -2367,6 +2367,11 @@ class GuidedStore:
             target = next((item for item in (r["decisions"].get("callout_targets") or [])
                            if item.get("callout_id") == callout_id), None)
             return {"callout_id": callout_id, "geometry_version": r.get("geometry_version"),
+                    # G6: the panel must build a confirmation the store will accept — the parser
+                    # version and the transcription revision it binds to come from the reading,
+                    # never from the browser's own guess.
+                    "parser_version": callout_models.CALLOUT_PARSER_VERSION,
+                    "transcription_revision": (state.get("transcription") or {}).get("revision"),
                     "scale_px_per_mm": scale, "state": state, "target": target,
                     "proposals": [item.model_dump(mode="json") for item in proposals]}
 

@@ -99,7 +99,12 @@ def test_flange_sheet_builds_the_sheets_printed_flange(tmp_path):
     store = GuidedStore(tmp_path / "store")
     opened = store.create(SHEET_10.read_bytes())
     state = store.accept(opened["token"], opened["revision"])
-    state = store.build(opened["token"], state["revision"])
+    # G8 (PLAN §14): üretim her callout için bir karar bekler. Bu paftanın metin bölgeleri bu testin
+    # konusu değil, o yüzden kullanıcı kararı olarak kapsam dışı bırakılır (sessizce düşürülmez).
+    for row in store.public(store.load(opened["token"]))["callouts"]:
+        store.edit_callout(opened["token"], store.load(opened["token"])["revision"], "set_ignored",
+                           {"callout_id": row["id"], "ignored": True})
+    state = store.build(opened["token"], store.load(opened["token"])["revision"])
     build = state.get("build") or store.load(opened["token"])["build"]
     assert build["status"] == "complete", build.get("error")
     geometry = json.loads((Path(build["folder"]) / "geometry.json").read_text())

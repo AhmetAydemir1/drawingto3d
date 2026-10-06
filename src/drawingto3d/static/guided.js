@@ -85,7 +85,8 @@ const MODE_HINT={calibration:'Bilinen ölçünün iki ucuna tıklayın. Yakın u
  hole:'Çizimde bir daireye tıklayın; çapını ve türünü aşağıda belirtin.',
  callout:'İncelenecek callout kutusuna tıklayın; listeden de seçebilirsiniz.',
  'callout-draw':'Yeni callout alanı için çizim üzerinde bir kutu sürükleyin. Escape iptal eder.',
- 'callout-edit':'Alanı düzeltmek için çizim üzerinde yeni kutuyu sürükleyin. Escape iptal eder.'};
+ 'callout-edit':'Alanı düzeltmek için çizim üzerinde yeni kutuyu sürükleyin. Escape iptal eder.',
+ 'target':'Hedef seçmek için çizimde daireye, yaya, köşeye ya da konturun içine tıklayın; çoklu seçimde hepsi birikir. Escape seçimi bırakır.'};
 function setMode(value){mode=value;text('mode',MODE_HINT[mode]||'Dış konturun kenarına tıklayın veya listeden seçin.');$('bind-cancel').hidden=mode!=='bind';}
 function updatePoints(){text('points',`${points.length}/2 nokta seçildi${points.length===2?` · çizimde ${Math.hypot(points[1][0]-points[0][0],points[1][1]-points[0][1]).toFixed(1)} piksel`:''}`);}
 function scale(){return Math.min(sheet.width/picture.width,sheet.height/picture.height);}
@@ -122,6 +123,7 @@ function draw(){ctx.clearRect(0,0,sheet.width,sheet.height);if(!picture.width||!
   ctx.save();ctx.setLineDash(row.ignored?[5,4]:[]);ctx.lineWidth=on?3:2;
   ctx.strokeStyle=row.ignored?'#9a938a':(on?'#178a51':'#2f6ea8');ctx.strokeRect(x,y,w,h);
   ctx.fillStyle=row.ignored?'#9a938a':'#2f6ea8';ctx.font='13px system-ui';ctx.fillText(row.label,x+3,Math.max(12,y-4));ctx.restore();}
+ drawTargetHighlight();   // G6: seçili/önerilen hedefin kendisi çizimde görünür
  if(calloutDrag){const box=regionBox(normalizedRegion(calloutDrag.start,calloutDrag.current));
   ctx.save();ctx.setLineDash([6,4]);ctx.strokeStyle='#b56519';ctx.lineWidth=2;
   ctx.strokeRect(box.x*s,box.y*s,box.w*s,box.h*s);ctx.restore();}}
@@ -251,6 +253,15 @@ function renderSketch(){const box=$('sketch'),s=state.sketch||{};box.replaceChil
 sheet.onclick=async event=>{if(!state||pending)return;
  if(suppressClick){suppressClick=false;return;}   // §7.2: sürüklemenin ardından gelen click başka modu seçmez
  const rect=sheet.getBoundingClientRect(),s=scale(),displayed=rect.width/picture.width,p=imagePoint(event);
+ if(mode==='target'){const hit=targetHit(p,displayed);
+  if(!hit)return status(targetKind==='arc'?'Bu noktada yay yok: yay kenarına tıklayın.'
+   :targetKind==='vertex_pair'?'Bu noktada köşe yok: kontur köşesine yakın tıklayın.'
+   :targetKind==='profile'?'Bu noktada kontur yok: bir konturun içine tıklayın.'
+   :'Bu noktada daire yok: dairenin kenarına ya da içine tıklayın.',true);
+  if(targetKind==='circle_group'){targetPick=targetPick.includes(hit)?targetPick.filter(x=>x!==hit):[...targetPick,hit];}
+  else if(targetKind==='vertex_pair'){targetPick=targetPick.filter(x=>x!==hit);targetPick=[...targetPick,hit].slice(-2);}
+  else targetPick=[hit];
+  renderTarget();draw();return;}
  if(mode==='callout'||mode==='callout-draw'||mode==='callout-edit'){const hit=calloutAt(p);
   if(hit){selectedCallout=hit.id;render();}else{selectedCallout=null;render();status('Bu noktada callout alanı yok; listeden seçin ya da “Yeni alan çiz” ile çizin.');}return;}
  if(mode==='calibration'){const candidates=[...state.options.profiles.flatMap(p=>p.edges?.flatMap(e=>[e.start,e.end])||[]),...state.options.circles.map(c=>c.center)];let point=p,best=12/displayed;for(const v of candidates){const d=Math.hypot(v[0]-p[0],v[1]-p[1]);if(d<best){best=d;point=v;}}if(points.length===2)points=[];points.push(point);updatePoints();draw();}
@@ -283,6 +294,8 @@ $('circle').onchange=fillDiameter;$('hole-kind').onchange=syncDepth;
 $('add-hole').onclick=()=>{const h={circle_id:$('circle').value,kind:$('hole-kind').value,diameter:Number($('hole-diameter').value),depth:$('hole-kind').value==='pocket'?Number($('hole-depth').value):null};if(!h.circle_id)return status('Bir daire seçin.',true);save({...state.decisions,holes:[...state.decisions.holes.filter(x=>x.circle_id!==h.circle_id),h]});};
 $('undo').onclick=async()=>{busy(true);try{state=await api('/api/guided/undo',{token:state.token,revision:state.revision});points=[];status('Son karar geri alındı.');}catch(e){status(e.message,true);}finally{busy(false);}};
 document.addEventListener('keydown',event=>{if(event.key!=='Escape')return;
+ if(targetPick.length){targetPick=[];proposalHighlight=null;setMode('callout');
+  status('Hedef seçimi bırakıldı; hiçbir karar yazılmadı.');renderTarget();draw();return;}
  if(calloutDrag){calloutDrag=null;status('Alan çizimi iptal edildi.');draw();return;}
  if(mode==='callout-draw'||mode==='callout-edit')setMode('callout');});
 // --- G3 kullanıcı komutları (PLAN-21 §6.4/§7.4) --------------------------------------------------------
@@ -317,3 +330,137 @@ sheet.addEventListener('pointerup',event=>{if(!calloutDrag)return;const drag=cal
 sheet.addEventListener('pointercancel',()=>{if(!calloutDrag)return;calloutDrag=null;status('Alan çizimi iptal edildi.',true);draw();});
 $('build').onclick=async()=>{busy(true);status('Kararlardan 3B taslak hazırlanıyor; STEP yeniden açılarak kontrol ediliyor…');try{state=await api('/api/guided/build',{token:state.token,revision:state.revision});render();if(state.error)throw Error(state.error);if(state.stl)await showStl(state.stl,$('preview'));status('Taslak hazır. Geometrik kontrol tamam; çizimle ölçü doğruluğunu ayrıca inceleyin.');}catch(e){status(e.message,true);}finally{busy(false);}};
 (async()=>{const token=new URLSearchParams(location.search).get('session');if(token){busy(true);try{const r=await fetch('/api/guided/'+token);const data=await r.json();if(!r.ok)throw Error(data.error);state=data;await loadImage();render();if(state.stl)await showStl(state.stl,$('preview'));status('Kaydedilmiş oturum açıldı.');}catch(e){status(e.message,true);}finally{busy(false);}}})().catch(()=>{});
+
+// --- G6 hedef onayı (PLAN §11): öneri → kullanıcı onayı ya da kendi seçimi, kanıtıyla birlikte -------
+// Sunucu ne okuduysa onu gösterir; burada üretilen tek şey kullanıcının *kararıdır* (hedef satırı) ya
+// da kapsam kararı ("bağlanamaz"). Öneri kendiliğinden onaylanmaz.
+let targetInfo=null,targetKey=null,targetLoading=null,targetPick=[],proposalHighlight=null,targetKind='circle';
+let readiness=null,readinessRevision=null;
+const TARGET_KIND_LABEL={circle:'tek daire',circle_group:'daire grubu',arc:'yay',vertex_pair:'iki uç',profile:'kontur'};
+const TARGET_STATE_LABEL={missing:'hedef onaylanmadı',current:'hedef güncel',stale:'hedef eskidi',missing_transcription:'önce metni yazın'};
+function pickedTranscription(){return (state.decisions.transcriptions||[]).find(row=>row.callout_id===selectedCallout)||null;}
+function calloutStateRow(id){return calloutStates()[id]||null;}
+function isStaleTarget(){const row=calloutStateRow(selectedCallout);return Boolean(row&&row.target&&row.target.state==='stale');}
+function vertexOf(edgeId,which){for(const profile of state.options.profiles||[])for(const edge of profile.edges||[])if(edge.id===edgeId)return which==='end'?edge.end:edge.start;return null;}
+function insideProfile(profile,p){const pts=profile.points||[];let inside=false;
+ for(let i=0,j=pts.length-1;i<pts.length;j=i++){const [xi,yi]=pts[i],[xj,yj]=pts[j];
+  if(((yi>p[1])!==(yj>p[1]))&&(p[0]<(xj-xi)*(p[1]-yi)/((yj-yi)||1e-9)+xi))inside=!inside;}return inside;}
+function targetHit(p,displayed){   // test modu: tür kullanıcının seçimidir, kimlik çizimden gelir
+ if(targetKind==='arc'){let best=null;for(const prim of state.options.primitives||[]){if(prim.kind!=='arc')continue;
+  const delta=Math.abs(Math.hypot(p[0]-prim.center[0],p[1]-prim.center[1])-prim.radius);
+  if(delta*displayed<18&&(!best||delta<best.delta))best={id:prim.id,delta};}return best?best.id:null;}
+ if(targetKind==='profile'){let found=null;for(const profile of state.options.profiles||[])if(insideProfile(profile,p))found=profile.id;return found;}
+ if(targetKind==='vertex_pair'){const end=snapEnd(p,displayed);return end&&end.kind==='vertex'?end.id:null;}
+ const hit=holeAt(p,displayed);return hit?hit.id:null;}
+function targetHighlight(){if(targetPick.length)return {kind:targetKind,ids:targetPick};
+ if(proposalHighlight)return proposalHighlight;
+ const stored=(targetInfo&&targetInfo.target)||null;return stored?{kind:stored.target_kind,ids:stored.target_ids}:null;}
+function drawTargetHighlight(){const show=targetHighlight();if(!show||!state)return;const s=scale();
+ ctx.save();ctx.setLineDash([6,4]);ctx.lineWidth=3;ctx.strokeStyle='#7a2ea8';
+ for(const id of show.ids){
+  const circle=(state.options.circles||[]).find(c=>c.id===id);
+  if(circle){ctx.beginPath();ctx.arc(circle.center[0]*s,circle.center[1]*s,(circle.radius+3/ (scale()||1))*s,0,2*Math.PI);ctx.stroke();continue;}
+  const profile=(state.options.profiles||[]).find(item=>item.id===id);
+  if(profile){ctx.beginPath();(profile.points||[]).forEach((v,i)=>i?ctx.lineTo(v[0]*s,v[1]*s):ctx.moveTo(v[0]*s,v[1]*s));ctx.closePath();ctx.stroke();continue;}
+  const arc=(state.options.primitives||[]).find(item=>item.kind==='arc'&&item.id===id);
+  if(arc){ctx.beginPath();ctx.arc(arc.center[0]*s,arc.center[1]*s,arc.radius*s,0,2*Math.PI);ctx.stroke();continue;}
+  const [edge,which]=String(id).split(':');const end=vertexOf(edge,which);
+  if(end){ctx.beginPath();ctx.arc(end[0]*s,end[1]*s,8,0,2*Math.PI);ctx.stroke();}}
+ ctx.restore();}
+function renderTarget(){const panel=$('target-panel');if(!panel)return;const row=calloutRow(selectedCallout);
+ if(!row){panel.hidden=true;targetInfo=null;targetKey=null;targetPick=[];proposalHighlight=null;return;}
+ panel.hidden=false;
+ const key=`${row.id}@${state.revision}`;
+ if(targetKey!==key){proposalHighlight=null;targetPick=[];targetKey=key;targetInfo=null;}
+ if(targetKey===key&&!targetInfo&&targetLoading!==key){targetLoading=key;loadTarget(key);}
+ const stored=(targetInfo&&targetInfo.target)||null,stateRow=calloutStateRow(row.id)||{};
+ const target=stateRow.target||{state:'missing',reason:null};
+ text('target-state',row.unbindable?'bağlanamaz ilan edildi':(TARGET_STATE_LABEL[target.state]||target.state));
+ const summary=$('target-summary');
+ summary.textContent=row.unbindable?'Bu callout kapsam dışı: hedef onayı beklenmiyor ve üretimi engellemiyor.'
+  :(targetInfo===null?'Öneriler alınıyor…':(target.state==='stale'?`Hedef eskidi (${target.reason||'—'}); yeniden onaylayın — onay eski geometriye bağlanmaz.`
+   :(stored?`Onaylı: ${targetDescription(stored)} · ${evidenceText(stored)}`:'Henüz hedef onaylanmadı.')));
+ const box=$('target-proposals');box.replaceChildren();
+ const proposals=(targetInfo&&targetInfo.proposals)||[];
+ if(targetInfo&&targetInfo.error){const p=document.createElement('p');p.className='muted';p.textContent=`Öneri alınamadı: ${targetInfo.error}`;box.append(p);}
+ for(const [index,item] of proposals.entries()){const div=document.createElement('div');div.className='feature';
+  const choose=document.createElement('button');choose.className='secondary';choose.textContent='Seç';
+  choose.onclick=()=>confirmProposal(item);
+  const label=document.createElement('span');label.style.cursor='pointer';
+  label.textContent=`${index+1}. ${targetDescription(item)} · ${evidenceText(item)}`;
+  label.onclick=()=>{proposalHighlight={kind:item.target_kind,ids:item.target_ids};renderTarget();draw();};
+  div.append(choose,label);box.append(div);}
+ if(!proposals.length&&!(targetInfo&&targetInfo.error)){const p=document.createElement('p');p.className='muted';
+  p.textContent=pickedTranscription()?'Bu bölgede öneri yok: “Başka hedef seç” ile çizimden seçin.':'Önce metni kaydedin: hedef onayı güncel bir okumaya bağlanır.';box.append(p);}
+ const top=proposals[0]||null;
+ $('target-confirm').disabled=pending||row.ignored||!top;
+ $('target-other').disabled=pending||row.ignored;$('target-group').disabled=pending||row.ignored;
+ $('target-unbindable').disabled=pending;$('target-unbindable').textContent=row.unbindable?'Kapsam kararını geri al':'Bağlama yok / desteklenmiyor';
+ $('target-kind').disabled=pending||row.ignored;
+ const picked=$('target-picked');
+ picked.textContent=targetPick.length?`Seçilen ${targetPick.length} hedef: ${targetPick.join(', ')} — tür: ${TARGET_KIND_LABEL[targetKind]}.`:'';
+ $('target-apply').hidden=!targetPick.length;$('target-cancel').hidden=!targetPick.length;
+ $('target-apply').disabled=pending;
+ text('target-note',target.state==='stale'&&stored?'Onay, taşıdığı geometri anahtarı eski kaldığı için "reconfirm" olarak yeniden yazılır; eski onay üretime girmez.'
+  :'Onayladığınız hedef, metnin okumasıyla birlikte delik/ölçü kararına derlenir.');}
+function targetDescription(row){return `${TARGET_KIND_LABEL[row.target_kind]||row.target_kind} · ${(row.target_ids||[]).join(', ')}`;}
+function evidenceText(row){const e=(row.evidence||[])[0]||{};return `${row.evidence_tier||''}${e.detail?` · ${e.detail}`:e.ref?` · ${e.ref}`:e.kind?` · ${e.kind}`:''}`;}
+async function loadTarget(key){try{const data=await api('/api/guided/propose',{token:state.token,callout_id:selectedCallout});
+  if(targetLoading===key)targetInfo={key,...data};}
+ catch(e){if(targetLoading===key)targetInfo={key,error:e.message,proposals:[],target:null};}
+ finally{if(targetLoading===key)targetLoading=null;}
+ renderTarget();draw();}
+function saveTarget(kind,ids,evidence,reconfirm){const t=pickedTranscription();
+ if(!t){status('Önce metni kaydedin: hedef onayı güncel bir okumaya bağlanır.',true);return;}
+ if(!kind||!ids.length){status('Hedef türü ve kimlikleri gerekli.',true);return;}
+ const row={callout_id:selectedCallout,target_kind:kind,target_ids:ids,transcription_revision:t.revision,
+  parser_version:(targetInfo&&targetInfo.parser_version)||null,evidence:evidence,reconfirm:Boolean(reconfirm)};
+ save({...state.decisions,callout_targets:[...(state.decisions.callout_targets||[]).filter(item=>item.callout_id!==selectedCallout),row]});}
+function confirmProposal(item){if(!item)return status('Onaylanacak öneri yok.',true);
+ saveTarget(item.target_kind,item.target_ids,[{kind:'proposal',ref:`${item.evidence_tier} · ${(item.target_ids||[]).join(', ')}`}],isStaleTarget());}
+function beginTargetPick(kind){targetKind=kind;$('target-kind').value=kind;targetPick=[];proposalHighlight=null;
+ setMode('target');renderTarget();draw();
+ status('Çizim üzerinde hedefi seçin: tür seçimi sizin, kimlikler çizimden gelir.');}
+// --- G8 hazırlık (PLAN §14): üretim yalnız "hazır" iken başlar ---------------------------------------
+async function loadReadiness(){if(!state)return;
+ if(readiness&&readinessRevision===state.revision){renderReadiness();return;}
+ try{const r=await fetch('/api/guided/readiness',{method:'POST',headers:{'Content-Type':'application/json'},
+   body:JSON.stringify({token:state.token})});if(r.ok){readiness=await r.json();readinessRevision=state.revision;}}
+ catch(e){/* hazırlık okunamadı: panel eski değeriyle kalır, üretim düğmesi kapanır */readiness=null;}
+ renderReadiness();}
+function renderReadiness(){const list=$('readiness-questions');if(!list)return;const r=readiness,summary=$('readiness-summary');
+ if(!r){summary.textContent='Hazırlık okunuyor…';list.replaceChildren();return;}
+ const counts=Object.entries(r.categories||{}).map(([name,value])=>`${name} ${value}`).join(' · ');
+ summary.textContent=r.ready?`Hazır: ${r.compiled.callouts} callout derlendi · ${r.compiled.compiled_holes} delik · ${r.compiled.compiled_bindings} ölçü bağı${r.excluded&&r.excluded.length?` · ${r.excluded.length} kapsam dışı`:''}.`
+  :`Üretim beklemede: ${r.questions.length} konu çözülmeli${counts?` (${counts})`:''}.`;
+ list.replaceChildren();
+ for(const q of r.questions){const li=document.createElement('li');li.textContent=q.text;li.dataset.category=q.category;list.append(li);}
+ const build=$('build');build.disabled=pending||!r.ready;
+ build.title=r.ready?'':'Üretim yalnız tüm girdiler güncel/çözülmüşken başlar.';}
+// --- GX inceleme paketi (PLAN §12): paket taşır, karar içe aktarılınca doğar -------------------------
+function bundleName(){return `inceleme-${String(state.token).slice(0,8)}-r${state.revision}.json`;}
+$('review-export').onclick=async()=>{busy(true);
+ try{const bundle=await api('/api/guided/export',{token:state.token});
+  const url=URL.createObjectURL(new Blob([JSON.stringify(bundle,null,2)],{type:'application/json'}));
+  const link=document.createElement('a');link.href=url;link.download=bundleName();link.click();URL.revokeObjectURL(url);
+  status('İnceleme paketi indirildi: paket bu okumanın kendisini taşır, karar içe aktarılınca doğar.');}
+ catch(e){status(e.message,true);}finally{busy(false);}};
+$('review-import').onchange=async event=>{const file=event.target.files[0];event.target.value='';if(!file)return;
+ busy(true);status('Paket doğrulanıyor…');
+ try{const bundle=JSON.parse(await file.text());
+  state=await api('/api/guided/import',{token:state.token,revision:state.revision,bundle});
+  status('İnceleme içe aktarıldı: eylemler bu kaydın doğrulamasından geçti ve “dış inceleme” olarak işaretlendi.');}
+ catch(e){status(e.message,true);}finally{busy(false);}};
+// --- bağlanma: var olan düğmeler ve çizim döngüsü -----------------------------------------------
+$('target-confirm').onclick=()=>{const top=(targetInfo&&targetInfo.proposals||[])[0];
+ if(!top)return status('Onaylanacak öneri yok; “Başka hedef seç” ile çizimden seçin.',true);confirmProposal(top);};
+$('target-other').onclick=()=>beginTargetPick($('target-kind').value||'circle');
+$('target-group').onclick=()=>beginTargetPick('circle_group');
+$('target-kind').onchange=()=>{targetKind=$('target-kind').value;renderTarget();};
+$('target-apply').onclick=()=>{if(!targetPick.length)return status('Önce çizimden hedef seçin.',true);
+ saveTarget(targetKind,targetPick,[{kind:'user_click',ref:`${targetKind} · ${targetPick.join(', ')}`}],isStaleTarget());};
+$('target-cancel').onclick=()=>{targetPick=[];proposalHighlight=null;setMode('callout');renderTarget();draw();};
+$('target-unbindable').onclick=()=>{const row=calloutRow(selectedCallout);if(!row)return status('Önce bir callout seçin.',true);
+ command('set_unbindable',{callout_id:row.id,unbindable:!row.unbindable});};
+// render() sarmalayıcısı: her yeniden çizimde hedef paneli ve hazırlık tazelenir (okuma, karar değil).
+render=(base=>function(){base();renderTarget();loadReadiness();})(render);

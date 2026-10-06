@@ -116,10 +116,14 @@ def test_callout_text_is_never_rendered_as_markup():
     assert "$('callout-text').value" in script
 
 
-def test_the_production_panel_admits_callout_text_is_not_used_yet():
-    """PLAN-21 §5/§7.1: the UI must not imply the saved text reached the STEP."""
+def test_the_production_panel_says_the_saved_text_reaches_the_build_and_gates_it():
+    """PLAN §13/§14: since G7/G8 the saved text is compiled and the build waits — the panel may say
+    neither that the text is unused (the old admission, now false) nor that a build may start with a
+    callout still unresolved."""
     html = (ROOT / "guided.html").read_text(encoding="utf-8")
-    assert "Kaydedilen callout metinleri bu taslak üretiminde henüz kullanılmıyor." in html
+    assert "Kaydedilen callout metinleri artık üretime girer" in html
+    assert "hazırlık geçmeden üretim başlamaz" in html
+    assert "Kaydedilen callout metinleri bu taslak üretiminde henüz kullanılmıyor" not in html
 
 
 def test_the_empty_callout_list_gives_the_detectors_own_reason():

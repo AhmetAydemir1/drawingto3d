@@ -1,0 +1,218 @@
+{
+  "app": "http://127.0.0.1:8765",
+  "drawing": "/Users/aydemir/Desktop/drawingto3d/examples/pdf with steps/5/Plate With A Pocket Drawing.PDF",
+  "steps": [
+    {
+      "step": "çizim açıldı ve callout alanları listelendi",
+      "passed": true,
+      "detail": {
+        "callouts": 45
+      }
+    },
+    {
+      "step": "gerçek tıklamayla bir callout seçildi (daireye en yakın bölge)",
+      "passed": true,
+      "detail": {
+        "callout": "599ad74670dd5582e216b0e8c56c12bebc3b57a66a1c6f1457dbe32ff233bde4",
+        "circle": "g61",
+        "distance_px": 55.0
+      }
+    },
+    {
+      "step": "metin kaydedildi ve okuma panelde görünüyor",
+      "passed": true,
+      "detail": {
+        "state": "hedef onaylanmadı",
+        "proposals": [
+          "Seç1. tek daire · g61 · T3 · biçim uyumlu (ölçek yok: ölçü karşılaştırılmadı)"
+        ]
+      }
+    },
+    {
+      "step": "öneri satırı çizimde vurgulanıyor (tuval gerçekten değişti)",
+      "passed": true,
+      "detail": {
+        "before": "G2Ab0LwNMAYz/rINsA2wDbANsA2wDbANsA2wDXhvA/8BAAD//4msfmkAAAAGSURBVAMA7HjkQ6XuisQAAAAASUVORK5CYII=",
+        "after": "B1gHWAdYB1gHWAdYBwZFHWD/nX131gHWAdYB1gFPqwP/AQAA///04b3iAAAABklEQVQDAOBBc1KQMtdMAAAAAElFTkSuQmCC"
+      }
+    },
+    {
+      "step": "[Onayla] onaylanan hedefi kanıtıyla birlikte kaydetti",
+      "passed": true,
+      "detail": {
+        "target": {
+          "callout_id": "599ad74670dd5582e216b0e8c56c12bebc3b57a66a1c6f1457dbe32ff233bde4",
+          "target_kind": "circle",
+          "target_ids": [
+            "g61"
+          ],
+          "geometry_version": 3,
+          "geometry_key": "b855515015714e12cb2262866f9e98c06316c482e589c0a54ed5958daeee1da8",
+          "profile_id": null,
+          "transcription_revision": 1,
+          "parser_version": "callout-parser/1",
+          "evidence": [
+            {
+              "kind": "proposal",
+              "ref": "T3 · g61"
+            }
+          ],
+          "status": "confirmed",
+          "reconfirm": false
+        }
+      }
+    },
+    {
+      "step": "panel onaylanan hedefi gösteriyor",
+      "passed": true,
+      "detail": {
+        "summary": "Onaylı: tek daire · g61 ·  · T3 · g61"
+      }
+    },
+    {
+      "step": "yeniden açıldığında onay aynı okumadan geliyor",
+      "passed": true,
+      "detail": {
+        "summary": "Onaylı: tek daire · g61 ·  · T3 · g61",
+        "state": "hedef güncel"
+      }
+    },
+    {
+      "step": "aynı paftada başka bir kontur var (geometri değişimi için)",
+      "passed": true,
+      "detail": {
+        "profile": "outline_1"
+      }
+    },
+    {
+      "step": "kontur değişince hedef 'eskidi' olarak işaretlendi ve nedeni yazıldı",
+      "passed": true,
+      "detail": {
+        "summary": "Hedef eskidi (geometry_changed); yeniden onaylayın — onay eski geometriye bağlanmaz."
+      }
+    },
+    {
+      "step": "hazırlık kapısı eskimiş hedefi listeliyor ve üretimi kapatıyor",
+      "passed": true,
+      "detail": {
+        "questions": [
+          "«b1aea745ec1f819dfc763387c51e067d1368623fa3041d511f6ecb365b7a1139» için callout metnini yazın.",
+          "«0670ce69c0ee72e81790d00424114230846968a444d0a650072f03b59e8d7716» için callout metnini yazın.",
+          "«0f05d4f95f0930bfcad90a774841151f09bb56be5dd0c40cd7139ea67b269415» için callout metnini yazın."
+        ],
+        "buildDisabled": true
+      }
+    },
+    {
+      "step": "elle hedef seçiminde tıklanan daire panelde birikiyor",
+      "passed": true,
+      "detail": {
+        "picked": "Seçilen 1 hedef: g61 — tür: tek daire."
+      }
+    },
+    {
+      "step": "elle seçilen hedef 'user_click' kanıtıyla yeniden onaylandı",
+      "passed": true,
+      "detail": {
+        "target": {
+          "callout_id": "599ad74670dd5582e216b0e8c56c12bebc3b57a66a1c6f1457dbe32ff233bde4",
+          "target_kind": "circle",
+          "target_ids": [
+            "g61"
+          ],
+          "geometry_version": 3,
+          "geometry_key": "680ee23d8803a00390024098c1ac5ba17389759f656b5913855d60270ced2085",
+          "profile_id": "outline_1",
+          "transcription_revision": 1,
+          "parser_version": "callout-parser/1",
+          "evidence": [
+            {
+              "kind": "user_click",
+              "ref": "circle · g61"
+            }
+          ],
+          "status": "confirmed",
+          "reconfirm": false
+        }
+      }
+    },
+    {
+      "step": "yeniden onaylanan hedef yeni geometri anahtarını taşıyor",
+      "passed": true,
+      "detail": {
+        "profile_id": "outline_1",
+        "expected": "outline_1"
+      }
+    },
+    {
+      "step": "inceleme paketi bu oturumun okumasını taşıyor",
+      "passed": true,
+      "detail": {
+        "callouts": 45,
+        "raw_text": "Ø8 THRU"
+      }
+    },
+    {
+      "step": "geri alma son onayı geri aldı (kayıt tarihsel kaldı)",
+      "passed": true,
+      "detail": {
+        "target": {
+          "callout_id": "599ad74670dd5582e216b0e8c56c12bebc3b57a66a1c6f1457dbe32ff233bde4",
+          "target_kind": "circle",
+          "target_ids": [
+            "g61"
+          ],
+          "geometry_version": 3,
+          "geometry_key": "b855515015714e12cb2262866f9e98c06316c482e589c0a54ed5958daeee1da8",
+          "profile_id": null,
+          "transcription_revision": 1,
+          "parser_version": "callout-parser/1",
+          "evidence": [
+            {
+              "kind": "proposal",
+              "ref": "T3 · g61"
+            }
+          ],
+          "status": "confirmed",
+          "reconfirm": false
+        }
+      }
+    },
+    {
+      "step": "geri alma sonrası yeniden açılış tutarlı",
+      "passed": true,
+      "detail": {
+        "target": {
+          "callout_id": "599ad74670dd5582e216b0e8c56c12bebc3b57a66a1c6f1457dbe32ff233bde4",
+          "target_kind": "circle",
+          "target_ids": [
+            "g61"
+          ],
+          "geometry_version": 3,
+          "geometry_key": "b855515015714e12cb2262866f9e98c06316c482e589c0a54ed5958daeee1da8",
+          "profile_id": null,
+          "transcription_revision": 1,
+          "parser_version": "callout-parser/1",
+          "evidence": [
+            {
+              "kind": "proposal",
+              "ref": "T3 · g61"
+            }
+          ],
+          "status": "confirmed",
+          "reconfirm": false
+        }
+      }
+    },
+    {
+      "step": "beklenmeyen konsol hatası yok",
+      "passed": true,
+      "detail": {
+        "unexpected": [],
+        "failures": []
+      }
+    }
+  ],
+  "console": [],
+  "rejected_requests": []
+}

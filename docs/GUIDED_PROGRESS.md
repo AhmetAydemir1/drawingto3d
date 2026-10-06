@@ -434,3 +434,34 @@ artık kapsam dışı ilan ediliyor, geç-biten-üretim testindeki callout "bağ
 
 Açık: G6 paneli (static/guided.js) ve tarayıcı kabulü; H0 tam baseline koşusu bu turda yarıda
 kesildi (yarısında G4+ değişiklikleri geldi) — tam koşu G13'te yeniden alınmalı.
+
+
+## G6 — hedef onayı UX'i + gerçek tarayıcı kabulü
+
+Panel artık öneriyi gösterir, kullanıcı onaylar ya da kendi seçer; karar `CalloutTargetDecision`
+sözleşmesinden geçer ve kanıtı (`proposal` / `user_click`) satırda durur.
+
+- **Panel** (`static/guided.html` + `guided.js`): hedef bölümü — durum (`hedef onaylanmadı/güncel/eskidi`),
+  kanıtıyla sıralı öneri listesi (tıklayınca çizimde vurgulanır), `[Onayla]` `[Başka hedef seç]`
+  `[Birden fazla hedef seç]` `[Bağlama yok / desteklenmiyor]`, tür seçimi
+  (`target-circle` / `target-group` / `target-arc` / `target-endpoints` / `target-profile`).
+- **Seçim çizimden gelir**: daire, yay, köşe (`edge:start|end`) ve kontur vuruşu; çoklu seçim birikir,
+  `Seçimi onayla` ile yazılır. Eskimiş hedefte onay `reconfirm` olarak yeniden yazılır.
+- **Hazırlık panosu**: `readiness` kategorileri cümle olarak listelenir ve **üretim düğmesi** hazır
+  değilken kapanır (`PLAN §14`).
+- **GX düğmeleri**: `İnceleme paketini indir` gerçek indirme, `Paket içe aktar` gerçek dosya seçimi →
+  sunucunun doğrulaması; hata kullanıcıya olduğu gibi söylenir.
+- Önerinin/onayın panelde görünmesi için gereken sunucu alanları (`parser_version`,
+  `transcription_revision`) `propose` okumasına eklendi — tarayıcı bunları tahmin etmez.
+
+**Kanıt — gerçek tarayıcı** (`eval/audits/20261006-guided-g6-target/`, `DELIVERY.md` + `g6-steps.json`):
+`17/17 G6 browser steps passed`, beklenmeyen konsol hatası ve reddedilen istek yok. Adımlar: çizim aç
+(45 callout) → callout seç → `Ø8 THRU` yaz → öneri vurgusu (tuval pikselleri değişti) → `[Onayla]`
+(`evidence kind=proposal`, `T3`) → yeniden aç (onay kayıttan) → konturu değiştir →
+`hedef eskidi (geometry_changed)` + hazırlık kapısı kapandı → elle daire seç → `Seçimi onayla`
+(`user_click`, yeni `geometry_key`/`profile_id`) → geri al → yeniden aç → paket indir.
+
+Regresyon: `pytest -k "guided or callout or app or html or static or observe"` → **471 passed**, ve
+G8 kapısının getirdiği iki bilinçli test güncellemesi: `geometry_state` paftası ile `test_guided.py`'nin
+flange testi callout'ları kapsam dışı ilan ediyor; `test_guided_html.py` artık panelin *doğru*
+cümlesini pinliyor (metin kullanılmıyor değil — derleniyor ve kapıyı besliyor).

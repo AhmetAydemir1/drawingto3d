@@ -1,11 +1,11 @@
 # Guided progress
 
-Scope: G0 + G1 (düzeltme turu 1 dahil)  
-Active plan: `docs/PLAN-20.md`  
+Scope: G0 + G1 (düzeltme turu 1 ve 2 dahil)  
+Active plan: kök `PLAN.md` (G1 düzeltme turu 2) + `docs/PLAN-20.md`  
 Initial HEAD: `5175f373f1d6892e481341ed2cbcfd89dec29e36`  
-Current HEAD: `5175f37` + G0 `373e096` + G1.2/G1.3 `554f5ae` + G1.4–G1.7 `e59c5eb` + düzeltme turu 1 (bu commit)  
+Current HEAD: `5175f37` + G0 `373e096` + G1.2/G1.3 `554f5ae` + G1.4–G1.7 `e59c5eb` + düzeltme turu 1 `67ff518` + düzeltme turu 2 (bu commit)  
 Initial worktree changes: `?? PLAN-17-HERMES.md` (kullanıcının verdiği plan kaynağı; **korunur, stage edilmez**)  
-Current task: **G1 + düzeltme turu 1 tamam** — teslim edildi; G2+ hâlâ açılmadı
+Current task: **G1 + düzeltme turu 1 ve 2 tamam** — teslim edildi; G2+ hâlâ açılmadı
 
 | İş | Durum | Kanıt | Kalan |
 |---|---|---|---|
@@ -32,6 +32,19 @@ Current task: **G1 + düzeltme turu 1 tamam** — teslim edildi; G2+ hâlâ aç�
 
 Ek: eski akışı kodlayan 4 mevcut test yeni açık mekanizmaya taşındı (evidence-reconfirm → `reconfirm` bayrağı; "hedef düzenlemesi" → gerçek seçim değişikliği). **RED kanıtı:** düzeltme öncesi hedefli koşum **8 failed / 2 passed** (yalnız yeni testler; hata 2 birebir: `assert 'outline_1' == 'outline_2'`); düzeltme sonrası aynı hedef küme **11 passed**. İlk yeşil koşumda ek bir hata yakalandı ve düzeltildi: `reconfirm` bayrağının `_prepare_callouts` içinde erken tüketilmesi doğrulamayı atlatıyordu (`DID NOT RAISE`) → tüketim `_consume_reconfirm` ile doğrulamadan sonraya alındı.
 
+## Düzeltme turu 2 (bağımsız inceleme #2, kök `PLAN.md`) — önce/sonra
+
+**Önceki kabulün (tur 1) eksikleri (dürüst kayıt):** (a) `_check_target_geometry` uçları ham `options.profiles[].edges` üzerinden çözüyordu — aynı save'in kontur düzeltmesi (`contour.drop`) uygulanmıyordu ve `vN` düzeltilmiş listenin yeni indisine bağlanabiliyordu; (b) `_log_callout_changes` yalnız `target_kind`/`target_ids` eşitliğine bakıyordu — bağlamı değişmiş *gerçek* yeniden onay (stale→current) log'a yazılmıyordu.
+
+| # | Bulgu | Önce (`probe-results-before.json`, HEAD `67ff518`) | Sonra (düzeltme + kanıt) |
+|---|---|---|---|
+| G1R2-01 | Çıkarılan kenarın ucu geçerli hedef olarak kaydedilebiliyordu (düzeltilmiş kontur geçerli olmasına rağmen) | `rejection=null`, `record_unchanged=false`, `target=current` — aynı save'de `d2` çıkarılıp `d2:start` onaylanabiliyordu | Doğrulama **etkin kontur** üzerinde: `correct_profile` build ile birebir aynı parametrelerle çalışma kopyasında uygulanır (`record.options` yerinde değişmez); kimlik önce **kayıtlı bağlamda** kararlı `<edge_id>:start\|end`'e çözülür, düzeltmede yoksa `"hedef uç kimliği bu düzeltmeden sonra konturda yok (yeniden seçin)"` ile reddedilir; `vN` asla düzeltilmiş listenin yeni indisine bağlanmaz; yeni onay kararlı kimlikle **saklanır**; fiziksel eşitlik koordinat + `RASTER_JOIN_TOLERANCE_PX` ile (ham sıra numarasıyla değil). `rejection="…(yeniden seçin): d2:start"`, `record_unchanged=true` — `probe-results-after.json`, exit 0 |
+| G1R2-02 | Gerçek yeniden onayın (stale→current) log izi yoktu | `new_log_actions=[]`, `new_confirm_events=0` (rev 3→4 yazıldı ama olay yok) | `_confirmation_context_same`: taşınan onay = aynı seçim **artı aynı onay bağlamı** (`geometry_key`/`geometry_version`/`profile_id` + transcription/parser bağı); bağlam değişmişse tam 1 yeni `user/confirm_target` yazılır; evidence'ta `callout_id`/`geometry_key`/`profile_id`/`transcription_revision`/`parser_version` incelenebilir (kişisel metin kopyalanmaz). `new_confirm_events=1`, target current — `probe-results-after.json`, exit 0 |
+
+**Zorunlu matris karşılığı (kalıcı, gerçek store testleri — mock yok):** R1-A `test_a_removed_endpoint_can_never_be_confirmed_in_the_same_save` · R1-B `test_a_saved_correction_keeps_refusing_its_removed_endpoint` · R1-C `test_a_removed_edge_stales_its_target_and_refuses_the_reconfirm` · R1-D `test_a_confirmation_on_the_corrected_contour_uses_the_new_context` · R1-E `test_an_unrelated_edit_leaves_a_carried_stale_target_and_logs_no_confirmation` · R1-F `test_undo_and_reopen_after_a_correction_never_resurrect_a_mismatched_target` · R1-G genişletilen `test_a_vertex_pair_rejects_the_same_physical_point_twice` · R1-H `test_v_names_resolve_in_the_recorded_context_never_the_corrected_list` · R2-A `test_a_stale_to_current_reconfirm_is_written_to_the_log` · R2-B `test_a_reconfirmation_on_a_new_transcription_binding_is_logged` · R2-C genişletilen `test_a_carried_target_keeps_its_persisted_server_fields` (sürüklenme onay üretmez) · R2-D `test_a_reconfirm_against_a_failed_parse_changes_nothing[unsupported/ambiguous/çelişkili]` · R2-E `test_reopen_and_public_freshness_write_no_confirmation_events` · R2-F `test_an_undo_after_a_reconfirmation_logs_no_fake_confirmation` · §5.2 notu `test_a_reconfirm_in_the_unchanged_context_stays_a_noop` (değişmeyen bağlamda no-op korunur — testle belgelendi).
+
+**RED kanıtı:** düzeltme öncesi aynı testlerle `tests/test_guided_callouts.py` → **7 failed, 46 passed** (R1-A/B/C, R1-H, R2-A, R2-B + güncellenen wrap testi; hatalar "DID NOT RAISE" / "0 == 1"); düzeltme sonrası **54 passed**. Eski beklenti düzeltmesi: `test_a_vertex_pair_wraps_around_the_selected_contour` artık kararlı kimliğin saklandığını doğrular (eski `["v3","v0"]` beklentisi sözleşmeye göre düzeltildi; kalan kontroller gevşetilmedi). R1-F dürüst ayrım: undo ile düzeltme geri alınınca hedef **o zamanki** (düzeltmesiz) geometriye uyar — current olması beklenen durum; "uymayan hedef current olmaz" tarafı reopen senaryosuyla doğrulanır.
+
 ## G1 kabul tablosu (PLAN-20 §13) — düzeltme turu sonrası
 
 | Kabul maddesi | Durum | Kanıt |
@@ -56,6 +69,10 @@ T01 round-trip → models testleri · T02 raw/reopen → `test_save_persists_a_t
 
 ## Son doğrulamalar
 
+- **Düzeltme turu 2 bağımsız tekrar**: `PYTHONPATH=src .venv/bin/python eval/audits/20261006-guided-g1-review/review_probes.py` → **exit 0**, iki bulgu da `passed=true` — `eval/audits/20261006-guided-g1-review/probe-results-after.json` (öncesi: `probe-results-before.json`)
+- **Düzeltme turu 2 odak**: `test_guided_callouts` + `test_callout_models` + `test_contour_fix` + `test_binding_end_meaning` → exit 0, **98 passed** — `out/guided-transcription/g1r2-focus.log`
+- **Düzeltme turu 2 birleşik**: 15 dosya → exit **0**, **198 passed** (80.05 s) — `out/guided-transcription/g1r2-final.log`; `git diff --check` temiz
+- **Düzeltme turu 2 RED**: hedefli `tests/test_guided_callouts.py` koşumu düzeltme öncesi **7 failed / 46 passed** → sonra **54 passed**
 - **Düzeltme turu 1 birleşik**: 15 dosya (models + callouts + odak 6 + guided'a dokunan 7) → exit **0**, **183 passed** (78.31 s) — `out/guided-transcription/g1-fix1-final.log`
 - **Düzeltme turu 1 odak**: `test_callout_models.py` + `test_guided_callouts.py` → exit 0, **74 passed** — `out/guided-transcription/g1-fix1-models-callouts.log`
 - **RED kanıtı** (düzeltme öncesi hedefli `-k`): **8 failed / 2 passed**; hata 2'nin birebir çıktısı `assert 'outline_1' == 'outline_2'`
@@ -84,6 +101,7 @@ T01 round-trip → models testleri · T02 raw/reopen → `test_save_persists_a_t
   - Store denetimi (yeni/değişen kayıtlar; taşınan kayıt incelenebilir kalır ve başka düzenlemeyi engellemez): callout bu oturumda/kaynakta; exact parse **tek ve `status='parsed'`** (çelişkili kayıtlar reddedilir); güncel transcription revision'ı; hedef kimlikleri bu save'in profilinde gerçek (`circle`/`circle_group` ∈ `options["circles"]`; `vertex_pair` → `<edge_id>:start|end` veya kanonik `v{index}`, iki **farklı fiziksel** uç, komşuluk şartı yok); açık `count` = benzersiz hedef sayısı.
   - No-op karşılaştırması `_normalized_decisions` (dosya hiç yazılmaz). `callout_schema_version` ile sürümleme; `geometry_version` artmaz. Alan eklenmesi geriye uyumlu olduğundan (varsayılanlı, kayıtta tüketilen) numara artırılmadı; yapısal değişimde artırılır.
   - Log: `transcribe`/`edit_transcription`/`confirm_target` yalnız kullanıcı olayı; parser olayı yazılmaz; freshness hesapları olay değil.
+- **Sunucu kuralları (düzeltme turu 2 eki):** vertex hedef doğrulaması **etkin konturda** yapılır (seçili profil + bu save'in `contour` düzeltmesi; `correct_profile` build ile aynı parametrelerle, çalışma kopyasında — `record.options`/temel kenarlar yerinde değişmez). `v{index}` kayıtlı bağlamdaki kenar ucuna çevrilir ve yeni onay **kararlı kimlikle saklanır**; düzeltmede kaybolan uç açık ret (`yeniden seçin`), sessiz yeniden bağlama yok; fiziksel eşitlik koordinat + `RASTER_JOIN_TOLERANCE_PX` ile denetlenir. `confirm_target` olayı yalnız gerçek onayda yazılır (yeni seçim, onay bağlamı/bağı değişimi veya açık `reconfirm`); taşınan onay ve istemci sürüklenmesi olay üretmez; değişmeyen bağlamdaki `reconfirm` no-op kalır (testle belgelendi). Yalnız-kontur-düzeltmesi kaydı ve eski stale hedefin taşınması engellenmez.
 - **`source_unavailable` semantiği:** kaynak değişmiş/okunamaz (geometry_stale) ise parse kaydı "current veri" olarak sunulmaz (PLAN-20 §7 satırı) — transcription tarihsel kalır, target stale, build `historical`, current indirme yok.
 - **Bulunan/düzeltilen hatalar:** (a) fixture sınıfı: `_fake_build` `revision: 0` sabitliyordu → `record["revision"]`; (b) ürün, dar: `_prepare_callouts` pin anahtarı bu save'in bağlamından; (c) düzeltme turu 1 içi: `reconfirm` bayrağının erken tüketilmesi doğrulamayı atlatıyordu (`DID NOT RAISE`) → `_consume_reconfirm` doğrulamadan sonraya alındı.
 - Test fixture'larındaki parse/target hazırlık verisidir; ürün parser/önerici kanıtı sayılmaz. G1'de gerçek parser yok; `CALLOUT_PARSER_VERSION="callout-parser/1"` G4'e açık parametre; public'te `missing/needs_parse` görünür; log'a parse olayı yazılmaz.
@@ -91,4 +109,4 @@ T01 round-trip → models testleri · T02 raw/reopen → `test_save_persists_a_t
 
 ## Yeniden başlarken ilk somut işlem
 
-- G1 + düzeltme turu 1 teslim edildi; **G2+ hâlâ açılmadı.** Kullanıcı G2'yi açarsa: `docs/PLAN-20.md` §11.1'i oku; Observations → callout candidate adaptörünü `source_digest + page_index + canonical region + detector_version + source_kind` deterministik kimliğiyle küçük iş paketlerine böl; sahte kutu üretme kuralını koru.
+- G1 + düzeltme turu 1 ve 2 teslim edildi (tur 2: G1R2-01 + G1R2-02 kapatıldı; bağımsız tekrar exit 0; birleşik **198 passed**); **G2+ hâlâ açılmadı.** Kullanıcı G2'yi açarsa: kök `PLAN.md` §8 ve `docs/PLAN-20.md` §11.1'i oku; Observations → callout candidate adaptörünü `source_digest + page_index + canonical region + detector_version + source_kind` deterministik kimliğiyle küçük iş paketlerine böl; sahte kutu üretme kuralını koru.

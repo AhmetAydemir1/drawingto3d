@@ -11,7 +11,7 @@ from pathlib import Path
 
 import pytest
 
-from drawingto3d import callout_models, guided
+from drawingto3d import callout_models, contour_audit, guided
 from drawingto3d.callout_models import CALLOUT_PARSER_VERSION
 from drawingto3d.guided import GuidedStore, _atomic, drawing_options
 from drawingto3d.observe import Observations
@@ -359,12 +359,15 @@ def test_a_target_confirmation_is_pinned_and_current(store):
 
 def test_a_vertex_pair_wraps_around_the_selected_contour(store):
     _transcribed(store)
+    edges = _selected_edges(store)
     payload = current_payload(store)
     payload["callout_targets"] = [_target_payload(target_kind="vertex_pair", target_ids=["v3", "v0"],
                                                   evidence=[{"kind": "user_click", "ref": "v3"}])]
     state = store.save(TOKEN, store.load(TOKEN)["revision"], payload)
     stored = state["decisions"]["callout_targets"][0]
-    assert stored["target_kind"] == "vertex_pair" and stored["target_ids"] == ["v3", "v0"]
+    # G1R2-01 kimlik kuralı: `vN` kayıtlı bağlamdaki kararlı uç kimliğine çevrilerek saklanır
+    assert stored["target_kind"] == "vertex_pair"
+    assert stored["target_ids"] == [f"{edges[3]['id']}:start", f"{edges[0]['id']}:start"]
     assert state["callouts"][0]["target"]["state"] == "current"
 
 
@@ -706,6 +709,7 @@ def test_a_carried_target_keeps_its_persisted_server_fields(store):
     assert store.public(before)["callouts"][0]["target"] == {"state": "stale", "reason": "geometry_changed"}
 
     # istemci sunucu alanlarını kendisi güncelleyip onayı yeniden "current" yapmayı deniyor
+    start = len(store.load(TOKEN)["log"])
     forged = dict(pinned)
     forged.update({"geometry_key": callout_models.geometry_key(before),
                    "geometry_version": before["geometry_version"], "profile_id": wires[1]})
@@ -725,6 +729,8 @@ def test_a_carried_target_keeps_its_persisted_server_fields(store):
     state = store.save(TOKEN, store.load(TOKEN)["revision"], payload)
     assert state["decisions"]["callout_targets"][0]["evidence"] == pinned["evidence"]
     assert state["callouts"][0]["target"]["state"] == "stale"
+    assert not [row for row in store.load(TOKEN)["log"][start:]          # G1R2-02: sürüklenme onay değil
+                if row["action"] == "confirm_target"]
 
 
 def test_a_real_reconfirmation_is_an_explicit_act(store):
@@ -809,9 +815,278 @@ def test_a_vertex_pair_uses_the_stable_endpoint_ids(store):
 def test_a_vertex_pair_rejects_the_same_physical_point_twice(store):
     _transcribed(store)
     edges = _selected_edges(store)
+    cases = [["v0", f"{edges[3]['id']}:end"],                         # kanonik ad ↔ komşu kenar ucu
+             [f"{edges[0]['id']}:start", f"{edges[3]['id']}:end"]]   # iki kenarın aynı köşedeki uçları
+    for ids in cases:
+        payload = current_payload(store)
+        payload["callout_targets"] = [_target_payload(
+            target_kind="vertex_pair", target_ids=ids,
+            evidence=[{"kind": "user_click", "ref": "same-corner"}])]
+        with pytest.raises(ValueError, match="aynı fiziksel nokta"):
+            store.save(TOKEN, store.load(TOKEN)["revision"], payload)
+
+
+# --- düzeltme turu 2 (bağımsız inceleme): G1R2-01 etkin kontur doğrulaması, G1R2-02 yeniden onay günlüğü
+
+
+def _other_wire(store):
+    record = store.load(TOKEN)
+    wires = [row["id"] for row in record["options"]["profiles"] if row["kind"] == "wire"]
+    return next(wire for wire in wires if wire != record["decisions"]["profile_id"])
+
+
+def _duplicate_side_session(store):
+    """İnceleme tekrarındaki sentetik kontur: tekrarlı yarım kenar `d2`, kullanıcı çıkaracak (G1R2-01)."""
+    seed_callouts(store)
     payload = current_payload(store)
-    payload["callout_targets"] = [_target_payload(
-        target_kind="vertex_pair", target_ids=["v0", f"{edges[3]['id']}:end"],
-        evidence=[{"kind": "user_click", "ref": "same-corner"}])]
-    with pytest.raises(ValueError, match="aynı fiziksel nokta"):
+    payload["transcriptions"] = [_transcription(raw="100 mm")]
+    store.save(TOKEN, 0, payload)
+
+    def line(edge_id, start, end):
+        return {"id": edge_id, "kind": "line", "start": list(start), "end": list(end)}
+
+    record = store.load(TOKEN)
+    profile = next(row for row in record["options"]["profiles"]
+                   if row["id"] == record["decisions"]["profile_id"])
+    edges = [line("a", (20, 20), (120, 20)), line("d2", (70, 20), (120, 20)),
+             line("b", (120, 20), (120, 80)), line("c", (120, 80), (20, 80)),
+             line("d", (20, 80), (20, 20))]
+    profile["edges"] = edges
+    profile["points"] = [edge["start"] for edge in edges]
+    _atomic(_session_path(store), record)
+    seed_callouts(store, candidate=False,
+                  parses=[_parse_row(form="linear", size=100, termination=None, unit="mm")])
+    return store.load(TOKEN)
+
+
+def _corrected_duplicate_contour():
+    """`correct_profile`'ın bu düzeltme için gerçek çıktısı — düzeltilmiş kontur geçerlidir."""
+    profile = {"id": "wire", "kind": "wire", "edges": [
+        {"id": "a", "kind": "line", "start": [20, 20], "end": [120, 20]},
+        {"id": "d2", "kind": "line", "start": [70, 20], "end": [120, 20]},
+        {"id": "b", "kind": "line", "start": [120, 20], "end": [120, 80]},
+        {"id": "c", "kind": "line", "start": [120, 80], "end": [20, 80]},
+        {"id": "d", "kind": "line", "start": [20, 80], "end": [20, 20]}]}
+    return guided.correct_profile(profile, guided.ContourFix(drop=["d2"]),
+                                  join_tolerance_px=guided.RASTER_JOIN_TOLERANCE_PX,
+                                  mid_join_px=guided.RASTER_JOIN_TOLERANCE_PX / 2.0)
+
+
+def _removed_vertex_target():
+    return _target_payload(target_kind="vertex_pair", target_ids=["d2:start", "c:start"],
+                           evidence=[{"kind": "user_click", "ref": "d2:start,c:start"}])
+
+
+def test_a_removed_endpoint_can_never_be_confirmed_in_the_same_save(store):          # R1-A
+    _duplicate_side_session(store)
+    corrected = _corrected_duplicate_contour()                    # düzeltilmiş kontur geçerlidir
+    assert [edge["id"] for edge in corrected["edges"]] == ["a", "b", "c", "d"]
+    assert contour_audit.audit_contour(corrected["edges"])["ok"] is True
+    payload = current_payload(store, contour={"drop": ["d2"], "approve_join": False})
+    payload["callout_targets"] = [_removed_vertex_target()]
+    before, revision = _session_path(store).read_bytes(), store.load(TOKEN)["revision"]
+    with pytest.raises(ValueError, match="düzeltmeden sonra"):
+        store.save(TOKEN, revision, payload)
+    assert _session_path(store).read_bytes() == before            # ret: kalıcı kayıt değişmez
+    record = store.load(TOKEN)
+    assert record["revision"] == revision
+    assert not (record["decisions"].get("contour") or {}).get("drop")
+
+
+def test_a_saved_correction_keeps_refusing_its_removed_endpoint(store):              # R1-B
+    _duplicate_side_session(store)
+    state = store.save(TOKEN, 1, current_payload(store, contour={"drop": ["d2"], "approve_join": False}))
+    assert state["decisions"]["contour"]["drop"] == ["d2"]        # yalnız düzeltme kaydı engellenmez
+    assert state["decisions"]["callout_targets"] == []
+    payload = current_payload(store)
+    payload["callout_targets"] = [_removed_vertex_target()]
+    before = _session_path(store).read_bytes()
+    with pytest.raises(ValueError, match="düzeltmeden sonra"):
         store.save(TOKEN, store.load(TOKEN)["revision"], payload)
+    assert _session_path(store).read_bytes() == before            # düzeltme kaydı korunur
+
+
+def test_a_removed_edge_stales_its_target_and_refuses_the_reconfirm(store):          # R1-C
+    _duplicate_side_session(store)
+    payload = current_payload(store)
+    payload["callout_targets"] = [_removed_vertex_target()]
+    state = store.save(TOKEN, 1, payload)                         # d2 yerindeyken onay kabul edilir
+    assert state["callouts"][0]["target"] == {"state": "current", "reason": None}
+    state = store.save(TOKEN, 2, current_payload(store, contour={"drop": ["d2"], "approve_join": False}))
+    assert state["callouts"][0]["target"] == {"state": "stale", "reason": "geometry_changed"}
+    stored = store.load(TOKEN)["decisions"]["callout_targets"][0]
+    payload = current_payload(store)
+    payload["callout_targets"] = [dict(stored, reconfirm=True)]
+    before = _session_path(store).read_bytes()
+    with pytest.raises(ValueError, match="düzeltmeden sonra"):    # eski hedefe yeniden onay reddedilir
+        store.save(TOKEN, store.load(TOKEN)["revision"], payload)
+    assert _session_path(store).read_bytes() == before
+    assert store.public(store.load(TOKEN))["callouts"][0]["target"] == \
+        {"state": "stale", "reason": "geometry_changed"}          # eski hedef stale kalır
+
+
+def test_a_confirmation_on_the_corrected_contour_uses_the_new_context(store):        # R1-D
+    _duplicate_side_session(store)
+    payload = current_payload(store, contour={"drop": ["d2"], "approve_join": False})
+    payload["callout_targets"] = [_target_payload(target_kind="vertex_pair",
+                                                  target_ids=["a:start", "c:start"],
+                                                  evidence=[{"kind": "user_click", "ref": "a:start,c:start"}])]
+    state = store.save(TOKEN, 1, payload)
+    stored = state["decisions"]["callout_targets"][0]
+    assert state["callouts"][0]["target"] == {"state": "current", "reason": None}
+    assert stored["profile_id"] == state["decisions"]["profile_id"]
+    assert stored["geometry_key"] == callout_models.geometry_key(store.load(TOKEN))
+
+
+def test_an_unrelated_edit_leaves_a_carried_stale_target_and_logs_no_confirmation(store):   # R1-E
+    _confirmed_target(store)
+    store.save(TOKEN, store.load(TOKEN)["revision"], current_payload(store, profile_id=_other_wire(store)))
+    start = len(store.load(TOKEN)["log"])
+    payload = current_payload(store)
+    payload["thickness"] = 12.0
+    state = store.save(TOKEN, store.load(TOKEN)["revision"], payload)
+    assert state["callouts"][0]["target"] == {"state": "stale", "reason": "geometry_changed"}
+    assert not [row for row in store.load(TOKEN)["log"][start:]
+                if row["action"] == "confirm_target"]
+
+
+def test_undo_and_reopen_after_a_correction_never_resurrect_a_mismatched_target(store):     # R1-F
+    _duplicate_side_session(store)
+    payload = current_payload(store)
+    payload["callout_targets"] = [_removed_vertex_target()]
+    store.save(TOKEN, 1, payload)
+    store.save(TOKEN, 2, current_payload(store, contour={"drop": ["d2"], "approve_join": False}))
+
+    reopened = GuidedStore(store.root)                            # reopen: tazelik yeniden hesaplanır
+    assert reopened.public(reopened.load(TOKEN))["callouts"][0]["target"] == \
+        {"state": "stale", "reason": "geometry_changed"}          # uymayan hedef current olmaz
+
+    state = reopened.save(TOKEN, 3, undo=True)                    # düzeltmeden önceki tutarlı duruma dönüş
+    assert state["decisions"]["contour"]["drop"] == []            # düzeltme geri alındı
+    assert state["decisions"]["callout_targets"][0]["target_ids"] == ["d2:start", "c:start"]
+    assert state["callouts"][0]["target"] == {"state": "current", "reason": None}   # o zamanki geometriye uyar
+
+
+def test_v_names_resolve_in_the_recorded_context_never_the_corrected_list(store):    # R1-H
+    _duplicate_side_session(store)
+    payload = current_payload(store, contour={"drop": ["d2"], "approve_join": False})
+    payload["callout_targets"] = [_target_payload(target_kind="vertex_pair", target_ids=["v1", "c:start"],
+                                                  evidence=[{"kind": "user_click", "ref": "v1,c"}])]
+    before = _session_path(store).read_bytes()
+    with pytest.raises(ValueError, match="yeniden seçin"):        # v1 = kayıtlı bağlamda d2:start; yok
+        store.save(TOKEN, 1, payload)
+    assert _session_path(store).read_bytes() == before
+
+    payload = current_payload(store, contour={"drop": ["d2"], "approve_join": False})
+    payload["callout_targets"] = [_target_payload(target_kind="vertex_pair", target_ids=["v0", "v2"],
+                                                  evidence=[{"kind": "user_click", "ref": "v0,v2"}])]
+    state = store.save(TOKEN, 1, payload)                         # anlam korunuyorsa kararlı kimliğe çevrilir
+    assert state["decisions"]["callout_targets"][0]["target_ids"] == ["a:start", "b:start"]
+    assert state["callouts"][0]["target"] == {"state": "current", "reason": None}
+
+
+def test_a_stale_to_current_reconfirm_is_written_to_the_log(store):                  # R2-A
+    _confirmed_target(store)
+    other = _other_wire(store)
+    store.save(TOKEN, store.load(TOKEN)["revision"], current_payload(store, profile_id=other))
+    stored = store.load(TOKEN)["decisions"]["callout_targets"][0]
+    assert store.public(store.load(TOKEN))["callouts"][0]["target"] == \
+        {"state": "stale", "reason": "geometry_changed"}
+    start = len(store.load(TOKEN)["log"])
+    payload = current_payload(store)
+    payload["callout_targets"] = [dict(stored, reconfirm=True)]
+    state = store.save(TOKEN, store.load(TOKEN)["revision"], payload)
+    assert state["callouts"][0]["target"] == {"state": "current", "reason": None}
+    confirms = [row for row in store.load(TOKEN)["log"][start:]
+                if row["actor"] == "user" and row["action"] == "confirm_target"]
+    assert len(confirms) == 1                                     # tam 1 yeni onay olayı
+    evidence, fresh = confirms[0]["evidence"], state["decisions"]["callout_targets"][0]
+    assert evidence["callout_id"] == "k1" and evidence["profile_id"] == other
+    assert evidence["geometry_key"] == fresh["geometry_key"]
+    assert evidence["transcription_revision"] == 1
+    assert fresh["reconfirm"] is False                            # istek tüketildi
+
+
+def test_a_reconfirmation_on_a_new_transcription_binding_is_logged(store):           # R2-B
+    _confirmed_target(store)
+    payload = current_payload(store)
+    payload["transcriptions"] = [_transcription(raw="Ø10 THRU")]
+    store.save(TOKEN, store.load(TOKEN)["revision"], payload)
+    revision = store.load(TOKEN)["decisions"]["transcriptions"][0]["revision"]
+    assert revision != 1
+    assert store.public(store.load(TOKEN))["callouts"][0]["target"] == \
+        {"state": "stale", "reason": "transcription_changed"}
+    seed_callouts(store, candidate=False, parses=[_parse_row(transcription_revision=revision)])
+    stored = store.load(TOKEN)["decisions"]["callout_targets"][0]
+    start = len(store.load(TOKEN)["log"])
+    payload = current_payload(store)
+    payload["callout_targets"] = [dict(stored, transcription_revision=revision, reconfirm=True)]
+    state = store.save(TOKEN, store.load(TOKEN)["revision"], payload)
+    assert state["callouts"][0]["target"] == {"state": "current", "reason": None}
+    confirms = [row for row in store.load(TOKEN)["log"][start:] if row["action"] == "confirm_target"]
+    assert len(confirms) == 1
+    assert confirms[0]["evidence"]["transcription_revision"] == revision   # yeni bağ audit'te görünür
+
+
+@pytest.mark.parametrize("parses", [
+    [_parse_row(status="unsupported")],
+    [_parse_row(status="ambiguous")],
+    [_parse_row(), _parse_row(size=10.0)],
+])
+def test_a_reconfirm_against_a_failed_parse_changes_nothing(store, parses):          # R2-D
+    _confirmed_target(store)
+    seed_callouts(store, candidate=False, parses=parses)
+    revision = store.load(TOKEN)["revision"]
+    stored = store.load(TOKEN)["decisions"]["callout_targets"][0]
+    payload = current_payload(store)
+    payload["callout_targets"] = [dict(stored, reconfirm=True)]
+    before = _session_path(store).read_bytes()
+    with pytest.raises(ValueError, match="parse"):
+        store.save(TOKEN, revision, payload)
+    assert _session_path(store).read_bytes() == before            # log/revision/history değişmez
+    assert store.load(TOKEN)["revision"] == revision
+
+
+def test_reopen_and_public_freshness_write_no_confirmation_events(store):            # R2-E
+    _confirmed_target(store)
+    other = _other_wire(store)
+    store.save(TOKEN, store.load(TOKEN)["revision"], current_payload(store, profile_id=other))
+    stored = store.load(TOKEN)["decisions"]["callout_targets"][0]
+    payload = current_payload(store)
+    payload["callout_targets"] = [dict(stored, reconfirm=True)]
+    store.save(TOKEN, store.load(TOKEN)["revision"], payload)
+    log, revision = store.load(TOKEN)["log"], store.load(TOKEN)["revision"]
+    reopened = GuidedStore(store.root)                            # reopen + public tekrarları
+    record = reopened.load(TOKEN)
+    reopened.public(record)
+    after = reopened.load(TOKEN)
+    assert after["log"] == log and after["revision"] == revision  # yeni onay olayı yok
+
+
+def test_a_reconfirm_in_the_unchanged_context_stays_a_noop(store):                   # §5.2 tercihi
+    _confirmed_target(store)
+    revision, start = store.load(TOKEN)["revision"], len(store.load(TOKEN)["log"])
+    stored = store.load(TOKEN)["decisions"]["callout_targets"][0]
+    payload = current_payload(store)
+    payload["callout_targets"] = [dict(stored, reconfirm=True)]
+    state = store.save(TOKEN, revision, payload)
+    assert state["revision"] == revision                          # güncel bağlamda değişiklik yok: yazılmaz
+    assert state["callouts"][0]["target"] == {"state": "current", "reason": None}
+    assert not [row for row in store.load(TOKEN)["log"][start:] if row["action"] == "confirm_target"]
+
+
+def test_an_undo_after_a_reconfirmation_logs_no_fake_confirmation(store):            # R2-F
+    _confirmed_target(store)
+    other = _other_wire(store)
+    store.save(TOKEN, store.load(TOKEN)["revision"], current_payload(store, profile_id=other))
+    stored = store.load(TOKEN)["decisions"]["callout_targets"][0]
+    payload = current_payload(store)
+    payload["callout_targets"] = [dict(stored, reconfirm=True)]
+    store.save(TOKEN, store.load(TOKEN)["revision"], payload)
+    start = len(store.load(TOKEN)["log"])
+    state = store.save(TOKEN, store.load(TOKEN)["revision"], undo=True)
+    assert state["callouts"][0]["target"] == {"state": "stale", "reason": "geometry_changed"}
+    assert state["build_status"] is None and state["step"] is None
+    events = store.load(TOKEN)["log"][start:]
+    assert any(row["action"] == "undo" for row in events)         # undo kendi olayını kullanır
+    assert not [row for row in events if row["action"] == "confirm_target"]

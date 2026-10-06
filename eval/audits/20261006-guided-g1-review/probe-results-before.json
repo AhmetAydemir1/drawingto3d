@@ -1,0 +1,40 @@
+{
+  "probes": [
+    {
+      "id": "G1R2-01",
+      "expected": "removed endpoint confirmation is rejected without a write",
+      "corrected_contour_ok": true,
+      "corrected_edge_ids": [
+        "a",
+        "b",
+        "c",
+        "d"
+      ],
+      "submitted_target_ids": [
+        "d2:start",
+        "c:start"
+      ],
+      "rejection": null,
+      "record_unchanged": false,
+      "target_state": {
+        "state": "current",
+        "reason": null
+      },
+      "passed": false
+    },
+    {
+      "id": "G1R2-02",
+      "expected": "stale-to-current explicit reconfirm writes one user/confirm_target event",
+      "revision_before": 3,
+      "revision_after": 4,
+      "target_state": {
+        "state": "current",
+        "reason": null
+      },
+      "new_log_actions": [],
+      "new_confirm_events": 0,
+      "passed": false
+    }
+  ],
+  "passed": false
+}

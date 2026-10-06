@@ -1,0 +1,39 @@
+{
+  "probes": [
+    {
+      "id": "G1R2-01",
+      "expected": "removed endpoint confirmation is rejected without a write",
+      "corrected_contour_ok": true,
+      "corrected_edge_ids": [
+        "a",
+        "b",
+        "c",
+        "d"
+      ],
+      "submitted_target_ids": [
+        "d2:start",
+        "c:start"
+      ],
+      "rejection": "hedef uç kimliği bu düzeltmeden sonra konturda yok (yeniden seçin): d2:start",
+      "record_unchanged": true,
+      "target_state": null,
+      "passed": true
+    },
+    {
+      "id": "G1R2-02",
+      "expected": "stale-to-current explicit reconfirm writes one user/confirm_target event",
+      "revision_before": 3,
+      "revision_after": 4,
+      "target_state": {
+        "state": "current",
+        "reason": null
+      },
+      "new_log_actions": [
+        "confirm_target"
+      ],
+      "new_confirm_events": 1,
+      "passed": true
+    }
+  ],
+  "passed": true
+}

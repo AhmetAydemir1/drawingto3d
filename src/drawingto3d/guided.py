@@ -28,6 +28,7 @@ import numpy as np
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from drawingto3d import advise
+from drawingto3d import callout_models
 from drawingto3d.general import GeneralPlan, build_general
 from drawingto3d.ingest import load_page
 from drawingto3d.observe import observe
@@ -138,6 +139,21 @@ class Decisions(BaseModel):
     trace_acknowledged: bool = False
     contour: ContourFix = Field(default_factory=ContourFix)
     view: ViewConfirm | None = None
+    # PLAN-20 §6.1: the callout layer's user decisions live here, in the undo-scoped decisions; a
+    # parse result never becomes a "decision" — it rides in the session's `callout_parses`.
+    transcriptions: list[callout_models.TranscriptionDecision] = Field(default_factory=list, max_length=200)
+    callout_targets: list[callout_models.CalloutTargetDecision] = Field(default_factory=list, max_length=200)
+
+    @model_validator(mode="after")
+    def one_callout_entry_each(self):
+        """PLAN-20 §6.5: one current entry per callout — never silently pick the last."""
+        for name, rows in (("transcriptions", self.transcriptions), ("callout_targets", self.callout_targets)):
+            seen = set()
+            for row in rows:
+                if row.callout_id in seen:
+                    raise ValueError(f"aynı callout için birden fazla {name} kaydı olamaz: {row.callout_id}")
+                seen.add(row.callout_id)
+        return self
 
 
 def _digest(path: Path) -> str:
@@ -1407,6 +1423,199 @@ def _same_geometry(old: dict, fresh: dict) -> bool:
     return _geometry_ids(old or {}) == _geometry_ids(fresh or {})
 
 
+# --- callout layer (PLAN-20 §6–§8): the store boundary around the four callout records -----------
+
+def _transcription_carried(prior: dict | None, row: dict) -> bool:
+    """The user's own text or the region they reviewed changed? Then this is a new revision — not a carry."""
+    return (prior is not None and prior.get("raw_text") == row.get("raw_text")
+            and prior.get("source_region") == row.get("source_region"))
+
+
+def _target_carried(prior: dict | None, row: dict) -> bool:
+    """An untouched confirmation is carried as it is; anything else is a new confirmation to pin."""
+    return (prior is not None and prior.get("target_kind") == row.get("target_kind")
+            and prior.get("target_ids") == row.get("target_ids")
+            and prior.get("transcription_revision") == row.get("transcription_revision")
+            and prior.get("parser_version") == row.get("parser_version")
+            and prior.get("evidence") == row.get("evidence"))
+
+
+def _merge_callout_defaults(record: dict, decisions):
+    """PLAN-20 §8.7: for the two callout fields only, a missing key keeps the stored value while an
+    explicit list (an empty one included) is the client's own statement. Every other field keeps the
+    old save contract exactly as it was."""
+    if not isinstance(decisions, dict):
+        return decisions
+    merged = dict(decisions)
+    stored = record.get("decisions") or {}
+    for key in ("transcriptions", "callout_targets"):
+        if key not in merged:
+            merged[key] = stored.get(key, [])
+    return merged
+
+
+def _prepare_callouts(record: dict, decisions: Decisions) -> Decisions:
+    """The server's own derivations at the save boundary (PLAN-20 §6.3/§6.5).
+
+    `normalized_text` is the server's separate field, re-derived from the raw text; a transcription
+    whose text or region changed gets the *new* revision id (a client cannot keep an old one alive
+    across an edit) while an untouched one keeps its stored id. A new target confirmation is pinned
+    to the geometry/context fingerprint this save is happening in; a carried one stays byte-for-byte
+    as it was confirmed.
+    """
+    stored = record.get("decisions") or {}
+    prior_transcriptions = {row.get("callout_id"): row for row in stored.get("transcriptions") or []}
+    prior_targets = {row.get("callout_id"): row for row in stored.get("callout_targets") or []}
+    next_revision = (record.get("revision") or 0) + 1
+    key = callout_models.geometry_key(record)
+    payload = decisions.model_dump(mode="json")
+    for row in payload.get("transcriptions") or []:
+        prior = prior_transcriptions.get(row.get("callout_id"))
+        if prior is not None and _transcription_carried(prior, row):
+            row["revision"] = prior.get("revision", 0)
+        else:
+            row["revision"] = next_revision
+        row["normalized_text"] = callout_models.normalize_text(row["raw_text"])
+    for row in payload.get("callout_targets") or []:
+        if _target_carried(prior_targets.get(row.get("callout_id")), row):
+            continue
+        row["geometry_key"] = key
+        row["geometry_version"] = record.get("geometry_version")
+        row["profile_id"] = stored.get("profile_id")
+    return Decisions.model_validate(payload)
+
+
+def _validate_callouts(record: dict, decisions: Decisions) -> None:
+    """Store-boundary checks Pydantic alone cannot make (PLAN-20 §6.5).
+
+    They run against what this save adds or edits; a stale record merely carried along stays
+    inspectable — its staleness must never block another legitimate edit.
+    """
+    candidates = {row.get("id"): row for row in record.get("callout_candidates") or []}
+    source = record.get("source_sha256")
+    parses = record.get("callout_parses") or []
+    expected = callout_models.CALLOUT_PARSER_VERSION
+    stored = record.get("decisions") or {}
+    prior_transcriptions = {row.get("callout_id"): row for row in stored.get("transcriptions") or []}
+    prior_targets = {row.get("callout_id"): row for row in stored.get("callout_targets") or []}
+    payload = decisions.model_dump(mode="json")
+    transcriptions = {row.get("callout_id"): row for row in payload.get("transcriptions") or []}
+    for row in payload.get("transcriptions") or []:
+        if _transcription_carried(prior_transcriptions.get(row.get("callout_id")), row):
+            continue
+        _require_callout(candidates, source, row.get("callout_id"))
+    for row in payload.get("callout_targets") or []:
+        if _target_carried(prior_targets.get(row.get("callout_id")), row):
+            continue
+        callout_id = row.get("callout_id")
+        _require_callout(candidates, source, callout_id)
+        transcription = transcriptions.get(callout_id)
+        if transcription is None:
+            raise ValueError(f"hedef onayı güncel bir transcription gerektirir: {callout_id}")
+        if row.get("transcription_revision") != transcription.get("revision"):
+            raise ValueError(f"hedef onayı güncel transcription revision'ına bağlanmalı: {callout_id}")
+        if row.get("parser_version") != expected:
+            raise ValueError(f"hedef onayı beklenen parser sürümüne bağlanmalı ({expected}): {callout_id}")
+        exact = [item for item in parses if item.get("callout_id") == callout_id
+                 and item.get("transcription_revision") == transcription.get("revision")
+                 and item.get("parser_version") == row.get("parser_version")]
+        if not exact:
+            raise ValueError(f"hedef onayı için geçerli parse yok: {callout_id}")
+        _check_target_geometry(record, row)
+        count = next((item.get("count") for item in exact if item.get("status") == "parsed"), None)
+        targets = set(row.get("target_ids") or [])
+        if count is not None and len(targets) != count:
+            raise ValueError(f"parse'taki adet ({count}) ile benzersiz hedef sayısı "
+                             f"({len(targets)}) uyuşmuyor: {callout_id}")
+
+
+def _require_callout(candidates: dict, source: str | None, callout_id: str) -> None:
+    row = candidates.get(callout_id)
+    if row is None:
+        raise ValueError(f"bu oturumda böyle bir callout yok: {callout_id}")
+    if row.get("source_digest") != source:
+        raise ValueError(f"callout bu oturumun kaynağına ait değil: {callout_id}")
+
+
+def _check_target_geometry(record: dict, row: dict) -> None:
+    """PLAN-20 §6.5: the ids must name real geometry, of the right type, in the selected profile —
+    vertex names follow the constraint core's `v{edge_index}` on that contour."""
+    options = record.get("options") or {}
+    circles = {str(circle.get("id")) for circle in options.get("circles") or []}
+    if row.get("target_kind") in ("circle", "circle_group"):
+        missing = [target for target in row.get("target_ids") or [] if target not in circles]
+        if missing:
+            raise ValueError(f"hedef geometri bulunamadı: {', '.join(missing)}")
+        return
+    profile = next((item for item in options.get("profiles") or []
+                    if item.get("id") == (record.get("decisions") or {}).get("profile_id")), None)
+    edges = (profile or {}).get("edges") or []
+    first, second = (_vertex_index(edges, target) for target in row.get("target_ids") or [])
+    if (first + 1) % len(edges) != second and (second + 1) % len(edges) != first:
+        raise ValueError(f"vertex_pair bu profilde ardışık iki uç ister: {list(row.get('target_ids') or [])}")
+
+
+def _vertex_index(edges: list[dict], target: str) -> int:
+    raw = str(target)
+    if not (raw.startswith("v") and raw[1:].isdigit() and edges):
+        raise ValueError(f"hedef uç kimliği seçili profilin kenarlarında yok: {target}")
+    index = int(raw[1:])
+    if not 0 <= index < len(edges):
+        raise ValueError(f"hedef uç kimliği seçili profilin kenarlarında yok: {target}")
+    return index
+
+
+def _normalized_decisions(record: dict) -> dict:
+    """The stored decisions with the schema's own defaults filled in — the one side the write and the
+    byte-level no-op check both compare against, so "nothing changed" never inflates history."""
+    return Decisions.model_validate(record["decisions"]).model_dump(mode="json")
+
+
+def _stamp_callout_version(record: dict) -> None:
+    """PLAN-20 §8.2: the callout layer carries its own version — adding it never bumps
+    `geometry_version`; the stamp lands the first time real callout data is in the session."""
+    if record.get("callout_schema_version") is not None:
+        return
+    decisions = record.get("decisions") or {}
+    if (record.get("callout_candidates") or record.get("callout_parses")
+            or decisions.get("transcriptions") or decisions.get("callout_targets")):
+        record["callout_schema_version"] = callout_models.CALLOUT_SCHEMA_VERSION
+
+
+def _log_callout_changes(record: dict, before: dict, payload: dict) -> None:
+    """The user's own callout acts become user events (PLAN-20 §7/§9-G1.5); the freshness the server
+    computes is not an event. G1 has no parser — a parse is never logged as if it had happened."""
+    before_transcriptions = {row.get("callout_id"): row for row in before.get("transcriptions") or []}
+    after_transcriptions = {row.get("callout_id"): row for row in payload.get("transcriptions") or []}
+    for callout_id, row in after_transcriptions.items():
+        prior = before_transcriptions.get(callout_id)
+        evidence = {"callout_id": callout_id, "source_region": row.get("source_region")}
+        if prior is None:
+            _log(record, "user", "transcribe", f"callout:{callout_id}", row.get("raw_text"), evidence,
+                 "Kullanıcı callout metnini yazdı.")
+        elif prior.get("raw_text") != row.get("raw_text") or prior.get("source_region") != row.get("source_region"):
+            _log(record, "user", "edit_transcription", f"callout:{callout_id}", row.get("raw_text"), evidence,
+                 "Kullanıcı callout metnini düzenledi.")
+    for callout_id in before_transcriptions:
+        if callout_id not in after_transcriptions:
+            _log(record, "user", "veto", f"callout:{callout_id}", None, None,
+                 "Kullanıcı callout metnini kaldırdı.")
+    before_targets = {row.get("callout_id"): row for row in before.get("callout_targets") or []}
+    after_targets = {row.get("callout_id"): row for row in payload.get("callout_targets") or []}
+    for callout_id, row in after_targets.items():
+        prior = before_targets.get(callout_id)
+        if (prior is not None and prior.get("target_kind") == row.get("target_kind")
+                and prior.get("target_ids") == row.get("target_ids")):
+            continue
+        _log(record, "user", "confirm_target", f"callout:{callout_id}",
+             {"kind": row.get("target_kind"), "ids": row.get("target_ids")},
+             {"callout_id": callout_id}, "Kullanıcı callout hedefini onayladı.")
+    for callout_id in before_targets:
+        if callout_id not in after_targets:
+            _log(record, "user", "veto", f"callout:{callout_id}", None, None,
+                 "Kullanıcı callout hedef onayını kaldırdı.")
+
+
 class GuidedStore:
     def __init__(self, root: Path):
         self.root=Path(root)
@@ -1521,6 +1730,7 @@ class GuidedStore:
         record={"version":1,"geometry_version":GEOMETRY_VERSION,"token":token,"revision":0,"source":str(source.resolve()),
                 "source_sha256":_digest(source),"options":options,"decisions":Decisions().model_dump(mode="json"),
                 "archetype":archetype,
+                "callout_schema_version":callout_models.CALLOUT_SCHEMA_VERSION,"callout_candidates":[],"callout_parses":[],
                 "reading":reading,"proposals":suggested,"history":[],"build":None,"log":[]}
         _log(record,"system","open","drawing",None,{"source_sha256":record["source_sha256"],
              "profiles":len(options["profiles"]),"circles":len(options["circles"]),
@@ -1556,13 +1766,16 @@ class GuidedStore:
                 for field,value in _changed_fields(before,r["decisions"]):
                     _log(r,"user","undo",field,value,None,"Geri alma ile eski değere döndü.")
             else:
-                d,written=_with_end_evidence(r,Decisions.model_validate(decisions))
+                merged=_merge_callout_defaults(r,decisions)
+                d,written=_with_end_evidence(r,Decisions.model_validate(merged))
+                d=_prepare_callouts(r,d)
                 validate_decisions(r["options"],d)
+                _validate_callouts(r,d)
                 payload=d.model_dump(mode="json")
                 if written:
                     _log(r,"user","edit","bindings",None,None,
                          f"{written} bağ ucunun kanıtı yazıldı (seçildiği kontur, geometri sürümü, fiziksel uç).")
-                if payload==r["decisions"]: return self.public(r)
+                if payload==_normalized_decisions(r): return self.public(r)
                 before=r["decisions"]
                 r["history"].append(r["decisions"])
                 r["decisions"]=payload
@@ -1575,6 +1788,8 @@ class GuidedStore:
                         _log(r,"user","veto",field,None,None,"Kullanıcı bu kararı kaldırdı.")
                     else:
                         _log(r,"user","edit",field,value,None,"Kullanıcı bu kararı kendi girdi.")
+                _log_callout_changes(r,before,payload)
+            _stamp_callout_version(r)
             r["revision"]+=1;r["build"]=None
             _atomic(self.folder(token)/"session.json",note_sketch(r))
             return self.public(r)
@@ -1611,13 +1826,15 @@ class GuidedStore:
                             raise ValueError("Yeni kör cep için derinlik de gerekli; cep ve derinlik önerilerini birlikte onaylayın veya cebi derinliğiyle elle ekleyin.")
                     payload["holes"]=[hole for hole in payload["holes"] if hole["circle_id"]!=row["circle_id"]]+[row]
             if any(item["field"]=="profile_id" for item in chosen): payload["trace_acknowledged"]=True
-            new,written=_with_end_evidence(r,Decisions.model_validate(payload))
+            new,written=_with_end_evidence(r,_prepare_callouts(r,Decisions.model_validate(payload)))
             validate_decisions(r["options"],new)
+            _validate_callouts(r,new)
             if written:
                 _log(r,"user","edit","bindings",None,None,
                      f"{written} bağ ucunun kanıtı yazıldı (seçildiği kontur, geometri sürümü, fiziksel uç).")
-            if new.model_dump(mode="json")==r["decisions"]: return self.public(r)
+            if new.model_dump(mode="json")==_normalized_decisions(r): return self.public(r)
             r["history"].append(r["decisions"]);r["decisions"]=new.model_dump(mode="json")
+            _stamp_callout_version(r)
             r["revision"]+=1;r["build"]=None
             _log(r,"user","accept","proposals",None,{"fields":[item["field"] for item in chosen]},
                  f"Okumanın {len(chosen)} önerisi tek adımda onaylandı.")
@@ -1686,6 +1903,10 @@ class GuidedStore:
         return {**{key:r[key] for key in ("token","revision","options","decisions")},
                 "questions":questions(Decisions.model_validate(r["decisions"]), r.get("sketch"), r["options"]), "can_undo":bool(r["history"]),
                 "proposals":r.get("proposals",[]), "log":r.get("log",[]),
+                "callout_schema_version":r.get("callout_schema_version"),
+                "callout_candidates":r.get("callout_candidates") or [],
+                "callout_parses":r.get("callout_parses") or [],
+                "callouts":callout_models.callout_states(r),
                 "archetype":r.get("archetype"), "sketch":note_sketch({"options":r["options"],"decisions":r["decisions"]}).get("sketch"),
                 "reading":{"printed":reading.get("printed",[]),"outline_mm":reading.get("outline_mm"),
                            "refusals":reading.get("refusals",[]),"refused":reading.get("refused"),

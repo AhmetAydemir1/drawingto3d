@@ -235,8 +235,11 @@ def test_settings_record_is_the_run_record_fields() -> None:
     assert record["num_ctx"] == 8192 and record["num_predict"] == 2048
     assert record["response_format"] == "text"
     assert record["images_layout"] == "single_message", "çerçeveleme de çağrının bir ayarıdır"
+    # Tekrar cezası da çağrının cevabını değiştirir (elbow-V döngüsü), dolayısıyla koşu kaydında adı geçer.
+    assert record["repeat_penalty"] is None and record["repeat_last_n"] is None, "ayarlanmadıysa uydurulmaz"
     assert set(record) == {"model", "num_ctx", "temperature", "num_predict", "keep_alive", "timeout_s",
-                           "image_max_side", "images_per_call", "response_format", "images_layout"}
+                           "image_max_side", "images_per_call", "response_format", "repeat_penalty",
+                           "repeat_last_n", "images_layout"}
 
 
 def test_the_plan_schema_is_sent_as_the_decoder_grammar() -> None:

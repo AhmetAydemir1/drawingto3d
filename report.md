@@ -1,11 +1,30 @@
-# SEMREAD — durum raporu (yaşam belgesi; aktif deney: SEMREAD-001D)
+# drawingto3d — durum raporu (yaşam belgesi)
 
-**Tarih:** 2026-10-06 · **Aktif deney:** SEMREAD-001D · **Aktif plan:** `docs/PLAN-19.md` (SEMREAD-001D; PLAN_LATEST; bayt kopya sha256 `d2148cb9…` — "Static preflight yeşil sonrası: Round 1 → offline semantic evaluation → tek karar noktası" planı; PLAN-19 §38: bu plan repo authority yapılacaksa `docs/PLAN-19.md` olarak **yeni history entry** ve **PLAN-18 overwrite edilmemeli** — öyle yapıldı; PLAN-18 **rewrite edilmedi**, son izlenen revizyonuyla `ec49e985…` geçmişte donar; PLAN-17 `1bdd4987…`; PLAN-16 `73f81009…`; PLAN-15 `909e46cb…`; PLAN-14 son izlenen revizyonuyla `39cf9b84…` (+ önceki `a027cb4a…`, `f2d249b7…`) geçmiş olarak korunur; PLAN-13 + PLAN-12 + kök PLAN.md history)
-**001C durumu (aşağıdaki 001C kaydı — HISTORICAL):** §21 dev kapısı **8/8 GEÇTİ**; §37 semantik değerlendirme TAMAM (V/VE degenerate — §2b); §35 #5 requalification **KOŞULDU: §8 resmî kapı 7/8 (elbow-VE `schema_coordinate`; paylaşımlı ayar 8/8 ✓, stop 8/8 ✓, içerik 0/8 — §2c)** · **KAPANIŞ (2026-10-05): 001C final yok — READ-ONLY kapandı (Kapanış); karar: yeni experiment version = SEMREAD-001D; closure snapshot: `eval/semread_001c_closure.json`; kayıt: handoff §1t.**
+**Tarih:** 2026-10-06 · **Aktif ürün yönü:** **guided transcription** (callout alanları → kullanıcı metni → deterministik parser → kullanıcı onayı → mevcut guided CAD yolu → STEP; ürün hedefi: 10 çizimde 10 geometrik doğru STEP — G10–G13) · **Aktif plan:** `docs/PLAN-20.md` · **İlerleme:** `docs/GUIDED_PROGRESS.md` · **İlk kapsam:** G0 + G1
+**Park edilen araştırma:** SEMREAD-001D = **PARKED RESEARCH — Round 1 FAIL** (formal 0/4; dev bütçe **4/12** donduruldu; yeni requalification/001E/VLM ayarı yok) · eski planlar, attempt kayıtları, dev-report, preflight ve input identity kayıtları tarihsel kanıt olarak korunur.
 
 ---
 
-## 0. Aktif deney — SEMREAD-001D (current; 2026-10-06)
+## Aktif ürün yönü — guided transcription (current; 2026-10-06)
+
+- **Pivot (PLAN-20 §2.1):** otomatik VLM okuması kritik yoldan çıkarıldı. Yeni akış: callout alanları → kullanıcı metni yazar/doğrular → deterministik parser → kullanıcı parse önizlemesini onaylar → sistem geometri hedefi önerir → kullanıcı hedefi onaylar → eksik fiziksel anlam/birim/eksen kararları tamamlanır → mevcut guided kararlar → GeneralPlan → CAD → STEP → STEP yeniden açılır + bağımsız geometri kontrolü.
+- **İlk uygulama:** G0 + G1 (callout veri sözleşmesi: dört model, kalıcılık ve eski oturum uyumu, revision, tazelik, undo, build stale). **G2–G13 kapsam dışı**; kullanıcı faz açmadan başlanmaz.
+- **Kayıtlar:** plan `docs/PLAN-20.md` (yeni history entry; `docs/PLAN-19.md` ve öncesi korunur) · ilerleme `docs/GUIDED_PROGRESS.md` (iş kalemleri + komut/exit-code/kanıt).
+- **Çağrı disiplini:** bu pivotta yeni model çağrısı yok; SEMREAD dev bütçesi **4/12** · final **0/20** park kararıyla donduruldu.
+
+## Park kaydı — SEMREAD-001D (PARKED RESEARCH — Round 1 FAIL; 2026-10-06)
+
+- **Durum:** Round 1 dört canlı çağrıyla koşuldu → **FAIL (formal 0/4)**; ayrıntı aşağıdaki HISTORICAL bölümde.
+- **Bütçe:** dev **4/12** · final **0/20** (toplam 4/32); yeni 001D requalification çağrısı yok, 001E yok, VLM prompt tuning / model değişimi / yeni OCR-VLM servisi kurulumu yok (PLAN-20 §2.3).
+- **Korunan kanıt:** eski planlar (`docs/PLAN-19.md`, `PLAN-18.md`, …), attempts, raw responses, dev-report, preflight ve input identities kayıtları değiştirilmez; eski "sıradaki requalification" ifadeleri artık tarihseldir, aktif talimat değildir.
+
+> **Aşağıdaki SEMREAD bölümleri (## 0 ve sonrası): HISTORICAL arşiv.** Aktif yönlendirme yukarıdaki iki bölümdür; bu kayıtlar silinmez ve değiştirilmez. Önceki izleme başlığı ve 001C durumu (o dönemin kaydı) alıntı olarak korunur:
+> **Tarih:** 2026-10-06 · **Aktif deney:** SEMREAD-001D · **Aktif plan:** `docs/PLAN-19.md` (SEMREAD-001D; PLAN_LATEST; bayt kopya sha256 `d2148cb9…` — "Static preflight yeşil sonrası: Round 1 → offline semantic evaluation → tek karar noktası" planı; PLAN-19 §38: bu plan repo authority yapılacaksa `docs/PLAN-19.md` olarak **yeni history entry** ve **PLAN-18 overwrite edilmemeli** — öyle yapıldı; PLAN-18 **rewrite edilmedi**, son izlenen revizyonuyla `ec49e985…` geçmişte donar; PLAN-17 `1bdd4987…`; PLAN-16 `73f81009…`; PLAN-15 `909e46cb…`; PLAN-14 son izlenen revizyonuyla `39cf9b84…` (+ önceki `a027cb4a…`, `f2d249b7…`) geçmiş olarak korunur; PLAN-13 + PLAN-12 + kök PLAN.md history)
+> **001C durumu (aşağıdaki 001C kaydı — HISTORICAL):** §21 dev kapısı **8/8 GEÇTİ**; §37 semantik değerlendirme TAMAM (V/VE degenerate — §2b); §35 #5 requalification **KOŞULDU: §8 resmî kapı 7/8 (elbow-VE `schema_coordinate`; paylaşımlı ayar 8/8 ✓, stop 8/8 ✓, içerik 0/8 — §2c)** · **KAPANIŞ (2026-10-05): 001C final yok — READ-ONLY kapandı (Kapanış); karar: yeni experiment version = SEMREAD-001D; closure snapshot: `eval/semread_001c_closure.json`; kayıt: handoff §1t.**
+
+---
+
+## 0. SEMREAD-001D dev kaydı (HISTORICAL — Round 1 FAIL ile park edildi)
 
 - **Bütçe:** dev **0/12** · final **0/20** (toplam **0/32**) — PLAN-18 başlığı; artış yok; ledger
   (`out/lab/semread-001d/`) henüz kurulmadı (ilk dev çağrısında kurulur).
@@ -83,7 +102,7 @@
   byte'ı canlı koşuda da aynı (`794fdedc…`) ve VE kanıt görüntüsü ayrı hash'li. Dev raporu (§15,
   0 inference): `out/lab/semread-001d/dev-report.{json,md}` — `complete: HAYIR`, eligible 4/8,
   ölçülü 0, semantic-valid 0, `round_1` kapısı **AÇIK** (6 açık koşul).
-- **Sıradaki (§29–§33 / §42):** Round 1 FAIL → offline forensic tanı **yapıldı** (yukarıdaki arıza
+- **(HISTORICAL — PLAN-20 park kararıyla geçersiz; yeni çağrı yetkisi yok.) Sıradaki (§29–§33 / §42):** Round 1 FAIL → offline forensic tanı **yapıldı** (yukarıdaki arıza
   biçimi; yeni çağrı yok); §30/§31 gereği en fazla **tek deklare jenerik sözleşme revizyonu** + aynı
   dört hücrenin requalification'ı (4 dev çağrı; kalan dev bütçesi 8/12). Karar noktası operatörde
   (sözleşme/prompt revizyonu); ikinci FAIL olursa §33: 001D kapanır, Round 2 yok, yeni deney 001E.

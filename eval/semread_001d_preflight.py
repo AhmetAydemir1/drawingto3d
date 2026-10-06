@@ -1,4 +1,8 @@
-"""SEMREAD-001D — static preflight (PLAN-18 §32–§41; PLAN-17 §42–§52 karşılığı).
+"""SEMREAD-001D — static preflight (PLAN-19 §4/§11/§49; PLAN-18 §32–§41 karşılığı).
+
+Numaralandırma notu: kod içindeki `§` atıfları kapı tanımlarının yazıldığı PLAN-18
+numaralandırmasını izler; PLAN-19'daki karşılıkları §4 (static preflight kanıtı), §11
+(pre-dispatch invariant) ve §49 (Round 1 öncesi son acceptance listesi)'dir.
 
 Canlı inference öncesi **0 inference** ile kapanan statik kapı (dördüncü adımın ön koşulu):
 
@@ -70,9 +74,10 @@ from drawingto3d.llama import _chat_request  # noqa: E402 - istek gövdesinin te
 EXPERIMENT = "semread-001d"
 SCHEMA = "semread-001d-static-preflight/1"
 RECORD_NAME = "static-preflight.json"
-PLAN_PATH = ROOT / "docs" / "PLAN-18.md"
+PLAN_PATH = ROOT / "docs" / "PLAN-19.md"
 
-# PLAN-18 §33 beyanı: bu beklenen kimlikler burada **bilinçli olarak** pinlidir (sessizce geçmesin).
+# PLAN-18 §33 beyanı (numaralandırma notu: kapı tanımları PLAN-18 §32–§41'de yaşar; PLAN-19
+# karşılığı §4/§11/§49): bu beklenen kimlikler burada **bilinçli olarak** pinlidir (sessizce geçmesin).
 EXPECTED_VERSIONS = {"contract_version": "semread-001d-run-contract/2",
                      "schema_version": "semread-candidates/3",
                      "reader_version": "semread-candidate-reader/3"}
@@ -389,7 +394,7 @@ def run_preflight() -> dict:
     fail_open = [check["check"] for check in checks if not check["ok"]]
     return {
         "schema": SCHEMA, "created_at": _now(), "experiment": EXPERIMENT,
-        "plan": {"path": "docs/PLAN-18.md",
+        "plan": {"path": "docs/PLAN-19.md",
                  "sha256": _sha256_bytes(PLAN_PATH.read_bytes()) if PLAN_PATH.exists() else None},
         "inference_calls": 0,
         "versions": EXPECTED_VERSIONS, "identities": {"producer_identity": pilot.producer_identity(),

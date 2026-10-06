@@ -1,13 +1,12 @@
 # HERMES — SEMREAD-001D handoff günlüğü
 
-**Plan:** `docs/PLAN-17.md` — SEMREAD-001D ("`001d/1` producer identity sonrası: dev-report → 001D
-dev input kurulumu → static preflight → Round 1 semantic proof"). PLAN_LATEST olarak izlenir (bayt
-kopya, sha256 `1bdd49873d5375196da6dd3e072e59299534e2676cefc44177ee7358ea0b9546`). PLAN-17 §4:
-**yeni history entry** — taslağın beyan ettiği PLAN-16 slotu zaten doluydu (b2e1218), bu yüzden
-sıradaki serbest numara verildi; PLAN-16 rewrite edilmedi, son izlenen revizyonuyla (`73f81009…`)
-geçmişte donar; PLAN-15 (`909e46cb…`); PLAN-14 son izlenen revizyonuyla (`39cf9b84…`; önceki
-revizyonlar `a027cb4a…`, `f2d249b7…`) geçmiş olarak korunur; PLAN-13 + PLAN-12 + kök PLAN.md history
-olarak korunur.
+**Plan:** `docs/PLAN-19.md` — SEMREAD-001D ("Static preflight yeşil sonrası: Round 1 → offline
+semantic evaluation → tek karar noktası"). PLAN_LATEST olarak izlenir (bayt kopya, sha256
+`d2148cb94955e5ed5d7651fc70dbe3be4dad6ea894bcfaaa4319efe023142381`). PLAN-19 §38: **yeni history
+entry** — taslağın beyan ettiği PLAN-19 slotu boştu, numara verildi; PLAN-18 rewrite edilmedi, son
+izlenen revizyonuyla (`ec49e985…`) geçmişte donar; PLAN-17 (`1bdd4987…`); PLAN-16 (`73f81009…`);
+PLAN-15 (`909e46cb…`); PLAN-14 son izlenen revizyonuyla (`39cf9b84…`; önceki revizyonlar `a027cb4a…`,
+`f2d249b7…`) geçmiş olarak korunur; PLAN-13 + PLAN-12 + kök PLAN.md history olarak korunur.
 **Kayıt biçimi:** PLAN-12 §47 — *CURRENT HEAD / CURRENT EXPERIMENT / IMMUTABLE HISTORY / WHAT
 CHANGED / TEST EVIDENCE / INFERENCE BUDGET / OPEN GATE / NEXT SINGLE STEP*.
 **Kural:** 001C kaydı `docs/HERMES_SEMREAD_001C_HANDOFF.md` ve `out/lab/semread-001c/**`
@@ -498,3 +497,105 @@ CHANGED / TEST EVIDENCE / INFERENCE BUDGET / OPEN GATE / NEXT SINGLE STEP*.
 - **OPEN GATE:** §74 listesi bu revizyonla kapandı; sıradaki iş **Round 1 gönderimi** (4 çağrı).
 - **NEXT SINGLE STEP:** Round 1 — dört Round-1 hücresi canlı gönderim (`planned_real_calls 4`,
   bütçe 0/12, preflight `/2` yeşil).
+
+---
+
+## 1k. PLAN-19 izlendi (Round 1 planı) + P4 ön-gönderim kapısı — 2026-10-06
+
+- **CURRENT HEAD:** `8efbec0` (bu kayıttan önce; bu commit PLAN-19 izleme + P4 kapısı + Round 1
+  gönderimini taşır)
+- **CURRENT EXPERIMENT:** SEMREAD-001D. **Yeni plan entry izlendi:** `docs/PLAN-19.md` bayt kopya
+  (sha256 `d2148cb94955e5ed5d7651fc70dbe3be4dad6ea894bcfaaa4319efe023142381`; başlık: "Static
+  preflight yeşil sonrası: Round 1 → offline semantic evaluation → tek karar noktası"). PLAN-19 §38
+  gereği **PLAN-18 overwrite edilmedi**: son izlenen revizyonuyla (`ec49e985…`) geçmişte donar; PLAN-17
+  (`1bdd4987…`), PLAN-16 (`73f81009…`), PLAN-15 (`909e46cb…`), PLAN-14 (`39cf9b84…`) zinciri
+  korunur. 001C **CLOSED / READ-ONLY**.
+- **IMMUTABLE HISTORY:** değişmedi — `eval/semread_001b_gold/FREEZE.json`,
+  `eval/semread_001c_closure.{py,json}`, `out/lab/semread-001c/**`; closure `--verify` bu commit'te
+  tekrar koşuldu: **45/45**.
+- **WHAT CHANGED (izleme katmanı, 0 inference):**
+  1. `docs/PLAN-19.md` bayt kopya olarak eklendi (`cmp` ile girdiyle birebir; sha elle pinlendi).
+  2. `tests/test_semread_001d_skeleton.py`: PLAN pin'i PLAN-19'a çevrildi; **yeni geçmiş-pin testi**
+     `test_plan18_history_is_preserved` (PLAN-18 `ec49e985…` olarak donar) eklendi; handoff
+     denetimi PLAN-18/`ec49e985` görünürlüğünü de arar.
+  3. `eval/semread_001d_preflight.py`: yetki dokümanı `PLAN_PATH` → `docs/PLAN-19.md`; kayıt alanı
+     `plan.path` PLAN-19'a çevrildi; docstring numaralandırma notu (kod içi `§` atıfları PLAN-18
+     numaralandırmasını izler; PLAN-19 karşılığı §4/§11/§49).
+  4. `report.md` aktif-plan pointer'ı + handoff başlığı PLAN-19'a çevrildi.
+- **TEST EVIDENCE (izleme katmanı + P4 ön-gönderim kapısı):** odak süiti **155 passed** (154 → +1
+  yeni geçmiş-pin testi); hızlı SEMREAD süitleri (lifecycle + identity + gold-manifest + reference +
+  `test_semread_001b`) **119 passed**; gates dosyası tamamı **34/34** (1015.27 s / 16:55 — ağır
+  BLAS/numpy ön-işlemeli test); 001C closure `--verify` **45/45**; `eval/check_tables.py`
+  **21 satır / 0 tutmuyor**. P4 kanıt listesi (focused + gates + closure + D regresyonu) bu koşuyla
+  tamam; loglar `~/.hermes/cache/scratch/semread-001d-gates-p4.log`.
+- **§11 PRE-DISPATCH INVARIANT (kanıt, 0 inference):** `eval/semread_001d_preflight.py --write`
+  → **10/10 YEŞİL**, `ok=true`; kayıt `out/lab/semread-001d/corpus/static-preflight.json`; `plan =
+  {path: docs/PLAN-19.md, sha256: d2148cb9…}`; `planned_real_calls 4`; flange-book-VE headroom
+  **+1.140**; runtime 0.32.1 + digest `0533d74300e4…` birebir; session hygiene: `/api/ps` boş
+  (aktif istek yok).
+- **INFERENCE BUDGET:** 001D dev **0/12**, final **0/20** — Round 1 gönderiminden önceki son durum;
+  Round 1 gönderiminde dört hücre sıralı olarak rezerve edilir (§12) ve bütçe 4/12'ye çıkar.
+- **OPEN GATE:** PLAN-19 §49 (Round 1 öncesi son acceptance) + §11 (kayıtlı `static-preflight.json`
+  `ok == true`, `contract == /2`, `planned_real_calls == 4`) → §48 Round 1.
+- **NEXT SINGLE STEP:** PLAN-19 §48: Round 1 — dört canlı çağrı (plate-pocket V/VE, flange-book V/VE),
+  sıralı, retry yok; ardından §15 offline `eval/semread_001d_dev_report.py`.
+
+---
+
+## 1l. ROUND 1 — dört canlı çağrı KOŞULDU; sonuç FAIL (formal 0/4) + offline forensic — 2026-10-06
+
+- **CURRENT HEAD:** `8efbec0` (bu kayıtla aynı commit'i taşır)
+- **CURRENT EXPERIMENT:** SEMREAD-001D; yürürlükteki kimlikler: `semread-candidates/3` ·
+  `semread-candidate-reader/3` · `semread-001d-run-contract/2` · producer `c51c760089acf4e9…`.
+- **GÖNDERİM (PLAN-19 §8/§9/§12/§13/§14):** komut `eval/semread_001b_pilot.py --experiment
+  semread-001d --live --phase dev --pages dev-plate-pocket,dev-flange-book --arms V,VE`; **sıralı**
+  (hiç eşzamanlı gönderim yok), **retry yok**, **manuel kill yok**. Dört hücrenin dördü de
+  `send_state = sent`. Log: `~/.hermes/cache/scratch/semread-001d-round1-live.log` (`LIVE_EXIT=0`).
+- **BÜTÇE:** dev **4/12** · final **0/20** (toplam **4/32**), `by_arm {V:2, VE:2}`,
+  `by_send_state {sent:4}`, `over_budget false`; attempt defteri **4 attempt / hepsi `parse_error`**
+  (`dispatched 4`). Kalan dev bütçesi **8/12** (8 primary'den 4'ü + 4 tanı rezervi).
+- **SONUÇ — formal 0/4 (Round 1 FAIL, PLAN-19 §42):**
+
+| hücre | süre | aday | farklı bölge | parse sonucu | done_reason | prompt / eval token |
+|---|---|---|---|---|---|---|
+| dev-plate-pocket-V | 84.8 s | 2 | 1 | `schema_semantic_empty` | stop | 1963 / 386 |
+| dev-plate-pocket-VE | 704.6 s | **32 (maxItems)** | 32 | `schema_semantic_empty` | stop | 6034 / 4912 |
+| dev-flange-book-V | 737.2 s | **32 (maxItems)** | 32 | `schema_coordinate` (aday 17: `y1 = 1.0311 > 1`) | stop | 2083 / 5936 |
+| dev-flange-book-VE | 676.8 s | 25 | 20 | `schema_semantic_empty` | stop | 14.427 / 3641 |
+
+- **ARIZA BİÇİMİ (jenerik; dört hücrede aynı):** model **yalnız bölge iskeleti** döndürüyor —
+  `source.image_id = "image-1"`, `source.region` = `source.callout_region` (birebir aynı kutu),
+  `target.observation_id` boş/`null`, `target.state = "unknown"`; **hiçbir adayda semantik alan dolu
+  değil** (callout metni, form R/Ø, ölçü, basılı adet, sonlanma, derinlik, fiziksel yorum: dört
+  yanıtta **0**). §24 kopya guard'ı: plate-pocket-V'de 2 aday **tek** bölgeyi paylaşıyor;
+  §25 maxItems: iki VE/V hücresi **32** adayla tavana vuruyor (sayfa bölgesi enumerasyonu).
+- **KANIT — zarf/taşıma sağlam, sorun içerikte:** dördünde de `done_reason stop`, kesilme yok
+  (`not_truncated`), sızıntı yok (`no_leakage`), `metadata_complete true`, `inference_calls 1`.
+  Ölçülen prompt token'ları tahminin **altında** (1963 / 6034 / 2083 / **14.427** vs tahmin
+  3409 / 6844 / 3409 / 15.244) → `num_ctx 24.576` zarfı ve §4 headroom kanıtı canlı koşuda
+  doğrulandı; `num_ctx` revizyonu **gerekli ve yeterli** çıktı. V/VE ham görüntü byte'ı canlı koşuda
+  da aynı (flange-book `794fdedc…`; plateau `2d23e601…`) ve VE kanıt görüntüsü ayrı hash'li
+  (§6 değişmezi gönderimde de tuttu).
+- **DEV RAPORU (§15, 0 inference):** `eval/semread_001d_dev_report.py --write` →
+  `out/lab/semread-001d/dev-report.{json,md}`; `complete: HAYIR` (eligible 4/8, ölçülü 0,
+  semantic-valid 0, semantik-valid çıktı yok); `round_1` kapısı **AÇIK** — açık koşullar:
+  formal_valid_all · semantic_valid_all · v_gold_match · ve_gold_match · v_field_accuracy_positive ·
+  ve_field_accuracy_positive. Dört Round-1 hücresi `parse_error`, diğer dört dev hücre `missing`
+  (fallback yok — 001B/001C attempt'i kullanılmadı).
+- **TEST EVIDENCE:** bu commit'te kod/prompt/şema **değişmedi** (yalnız izleme dokümanları +
+  dev-report kaydı); P4 kapısı Round 1 öncesi tamamlandı — odak **155** · hızlı **119** · gates
+  **34/34** (1015.27 s) · closure `--verify` **45/45** · check_tables **21/0** · preflight `/2`
+  **10/10 yeşil**. Round 1 gönderimi bu kapıların ardından yapıldı.
+- **IMMUTABLE HISTORY:** değişmedi — `eval/semread_001b_gold/FREEZE.json`,
+  `eval/semread_001c_closure.{py,json}`, `out/lab/semread-001c/**` (closure `--verify` 45/45).
+- **INFERENCE BUDGET:** 001D dev **4/12**, final **0/20** (toplam **4/32**) — bu kayıtla birlikte
+  canlı sayaç 0 → 4.
+- **OPEN GATE:** Round 1 FAIL (PLAN-19 §25/§42). §29 forensic tanı **tamam** (yukarıda); §30/§31
+  yalnız **tek deklare jenerik sözleşme revizyonu** hakkı verir (yasak: sayfaya özel prompt, tek
+  hücre hack'i, gold değeri, sampling sweep, model değiştirme, geçene kadar deneme); §32 gereği
+  revizyon sonrası **aynı dört hücre** bütünüyle yeniden koşar. §33: ikinci FAIL → 001D kapanır,
+  Round 2 yok, yeni deney `SEMREAD-001E`.
+- **NEXT SINGLE STEP:** **karar noktası (operatör):** (a) önerilen — jenerik sözleşme revizyonu
+  deklare et ve dört hücreyi requalification'da yeniden koş (≤4 dev çağrı, kalan bütçe 8/12);
+  (b) 001D'yi Round 1 sonucuyla kapat, yeni experiment version (001E) planla. Yeni çağrı bu karar
+  verilmeden yapılmaz (§30: revision öncesi/sonrası çağrı yok).

@@ -1,6 +1,6 @@
 # SEMREAD — durum raporu (yaşam belgesi; aktif deney: SEMREAD-001D)
 
-**Tarih:** 2026-10-06 · **Aktif deney:** SEMREAD-001D · **Aktif plan:** `docs/PLAN-18.md` (SEMREAD-001D; PLAN_LATEST; bayt kopya sha256 `ec49e985…` — "Güncel rota: dev-report → dev input kurulumu → static preflight → Round 1 semantic proof" planı; PLAN-18 §3: yeni history entry — taslağın beyan ettiği slotlar doluydu (PLAN-16 `b2e1218` · PLAN-17 `7097288`), sıradaki serbest numara verildi; PLAN-17 **rewrite edilmedi**, son izlenen revizyonuyla `1bdd4987…` geçmişte donar; PLAN-16 `73f81009…`; PLAN-15 `909e46cb…`; PLAN-14 son izlenen revizyonuyla `39cf9b84…` (+ önceki `a027cb4a…`, `f2d249b7…`) geçmiş olarak korunur; PLAN-13 + PLAN-12 + kök PLAN.md history)
+**Tarih:** 2026-10-06 · **Aktif deney:** SEMREAD-001D · **Aktif plan:** `docs/PLAN-19.md` (SEMREAD-001D; PLAN_LATEST; bayt kopya sha256 `d2148cb9…` — "Static preflight yeşil sonrası: Round 1 → offline semantic evaluation → tek karar noktası" planı; PLAN-19 §38: bu plan repo authority yapılacaksa `docs/PLAN-19.md` olarak **yeni history entry** ve **PLAN-18 overwrite edilmemeli** — öyle yapıldı; PLAN-18 **rewrite edilmedi**, son izlenen revizyonuyla `ec49e985…` geçmişte donar; PLAN-17 `1bdd4987…`; PLAN-16 `73f81009…`; PLAN-15 `909e46cb…`; PLAN-14 son izlenen revizyonuyla `39cf9b84…` (+ önceki `a027cb4a…`, `f2d249b7…`) geçmiş olarak korunur; PLAN-13 + PLAN-12 + kök PLAN.md history)
 **001C durumu (aşağıdaki 001C kaydı — HISTORICAL):** §21 dev kapısı **8/8 GEÇTİ**; §37 semantik değerlendirme TAMAM (V/VE degenerate — §2b); §35 #5 requalification **KOŞULDU: §8 resmî kapı 7/8 (elbow-VE `schema_coordinate`; paylaşımlı ayar 8/8 ✓, stop 8/8 ✓, içerik 0/8 — §2c)** · **KAPANIŞ (2026-10-05): 001C final yok — READ-ONLY kapandı (Kapanış); karar: yeni experiment version = SEMREAD-001D; closure snapshot: `eval/semread_001c_closure.json`; kayıt: handoff §1t.**
 
 ---
@@ -68,11 +68,28 @@
   açıklaması aynı asgari sözleşmeyi söyler (§4; `anyOf` **eklenmedi** — §5) → acceptance
   ölçüm-kapısı düzeltmesi (§5/§6) → **§60/§61: run-contract `001d/1` + producer identity**
   (0 inference; §9–§15).
-- **Sıradaki (§42–§45 → §46+):** pre-live gate kanıtı kapandı (aşağıdaki test bullet'ı:
-  focused/gates/closure). **Round 1 (4 çağrı)** gönderimi — dört Round-1 hücresi, preflight `/2`
-  yeşil, bütçe 0/12; bu commit'te henüz canlı çağrı yapılmadı (0 inference).
-- **Test kanıtı (current, `/2`):** odak **154** · hızlı **119** · gates **34/34** (1005.67 s) ·
-  001C closure `--verify` **45/45** · check_tables **21/0**; hepsi 0 inference koşumlar.
+- **ROUND 1 KOŞULDU (2026-10-06, dört canlı çağrı; PLAN-19 §48) — SONUÇ: FAIL (formal 0/4).**
+  Dört hücre de gönderildi (`send_state sent`, sıralı, retry yok), bütçe dev **4/12** · final **0/20**
+  (toplam 4/32); attempt defteri 4 attempt / hepsi `parse_error`; dördünde de `done_reason stop`,
+  kesilme yok, sızıntı yok, metadata tam. Ortak arıza biçimi: model **yalnız bölge iskeleti**
+  üretiyor (`source.region` + `callout_region` + `target.state:"unknown"`), **hiçbir adayda semantik
+  alan yok** (dört yanıtın tamamında anlamlı alan sayısı **0**). Ayrıntı: `dev-plate-pocket-V`
+  `schema_semantic_empty` (2 aday, tek bölge; 84.8 s) · `dev-plate-pocket-VE`
+  `schema_semantic_empty` (**32 aday = maxItems tavanı**, 32 farklı bölge; 704.6 s) ·
+  `dev-flange-book-V` `schema_coordinate` (32 aday; aday 17 bölgesi `y1 = 1.0311 > 1`; 737.2 s) ·
+  `dev-flange-book-VE` `schema_semantic_empty` (25 aday, 20 farklı bölge; 676.8 s). Ölçülen prompt
+  token'ları tahminin **altında** kaldı (1963 / 6034 / 2083 / **14.427** vs tahmin 3409 / 6844 /
+  3409 / 15.244) → context zarfı yetti (§4 headroom kanıtı canlı koşuda doğrulandı). V/VE ham görüntü
+  byte'ı canlı koşuda da aynı (`794fdedc…`) ve VE kanıt görüntüsü ayrı hash'li. Dev raporu (§15,
+  0 inference): `out/lab/semread-001d/dev-report.{json,md}` — `complete: HAYIR`, eligible 4/8,
+  ölçülü 0, semantic-valid 0, `round_1` kapısı **AÇIK** (6 açık koşul).
+- **Sıradaki (§29–§33 / §42):** Round 1 FAIL → offline forensic tanı **yapıldı** (yukarıdaki arıza
+  biçimi; yeni çağrı yok); §30/§31 gereği en fazla **tek deklare jenerik sözleşme revizyonu** + aynı
+  dört hücrenin requalification'ı (4 dev çağrı; kalan dev bütçesi 8/12). Karar noktası operatörde
+  (sözleşme/prompt revizyonu); ikinci FAIL olursa §33: 001D kapanır, Round 2 yok, yeni deney 001E.
+- **Test kanıtı (current, `/2`):** odak **155** · hızlı **119** · gates **34/34** (1015.27 s) ·
+  001C closure `--verify` **45/45** · check_tables **21/0**; hepsi 0 inference koşumlar (P4
+  ön-gönderim kapısı tamam; preflight `/2` PLAN-19 yetkisiyle **10/10 yeşil**).
 - **Bonus koşu bulgusu (0 inference, §1d/§1e):** 001B acceptance süiti ölçümsüz kapanabilen bir rapor
   kapısı gösterdi (`report_evidence.measured` sıfır satırlı `vs_d`'yi ölçüm sayıyordu) — tek kaynak
   `arms_with_measurement()` ile düzeltildi + pin testi; süit tamamı **27 passed** (31:48).

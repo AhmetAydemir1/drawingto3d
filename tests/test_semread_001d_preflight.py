@@ -1,4 +1,4 @@
-"""SEMREAD-001D — static preflight aracının testleri (PLAN-18 §32–§41).
+"""SEMREAD-001D — static preflight aracının testleri (PLAN-19 §4/§11/§49; PLAN-18 §32–§41).
 
 Kapsam (hepsi 0 inference; deftere **yazılmaz**):
 

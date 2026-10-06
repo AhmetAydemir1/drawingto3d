@@ -350,3 +350,51 @@ Ortam: uygulama `PYTHONPATH=src .venv/bin/python -m drawingto3d.app` (gerçek 87
 - **Açık kalanlar:** (1) tam takım bu turda koşulmadı; (2) önceden mevcut `test_planner::test_settings_record_is_the_run_record_fields` kırmızısı; (3) **G4 (deterministik parser + parse onayı) ve sonrası açılmadı** — bu görevde uygulanması istenmiyor; (4) G4/G7 yokken callout metninin STEP'e uygulandığı iddia edilmez.
 - Kullanıcı G4'ü açarsa: kök `PLAN.md` §10 sonundaki yönlendirme + `docs/PLAN-20.md`; parser/parse onayı/target önericisi kapsamı. G3R teslim kanıtları: `docs/GUIDED_PROGRESS.md` (bu bölüm) + `eval/audits/20261006-guided-g3r-fix-review/DELIVERY.md`.
 - Önceki turlar: G2 teslimi yukarıdaki G2 bölümünde (birleşik **242 passed / 130.66 s / EXIT=0**, full pytest **1479 passed / 1 failed** — tek kırmızı G2 dışı `test_planner` pini); G3 + G1R3-01 `2cdb4d0` commit'iyle kapandı (G3 turu: birleşik 285 passed, tarayıcı **28/28**).
+
+## G4/G5/GX/G7/G8 — callout okuma → hedef → karar zinciri (kök `PLAN.md` §7–§14)
+
+Uygulanan kapsam (bu turda): **G4** deterministik parser + store türetmesi, **G5** deterministik hedef
+önerisi, **GX** inceleme dışa/içe aktarma doğrulaması, **G7** onaylı callout → mevcut karar derleyicisi,
+**G8** build hazırlığı + callout başına denetim zinciri. **G6 (tarayıcı UX), G9–G13 açılmadı.**
+
+- **G4** `src/drawingto3d/callout_parse.py`: saf, deterministik `parse_callout` / `semantic_parse`
+  (`TranscriptionDecision.raw_text → CalloutReading`); dosya/ağ/model/OCR/referans yok; no-guess
+  (`unsupported_syntax`, `ambiguous_number`, `conflicting_symbols`, `unit_unresolved`, `unit_differs_from_sheet`).
+  Pozitif matris (PLAN §8) ve negatif matris testli: `tests/test_callout_parse.py`.
+  **Store türetmesi:** `guided._refresh_callout_parses` — kaydedilen her metin için gerçek parser'ın *tek*
+  okuması, bağlı olduğu transcription revizyonu + `CALLOUT_PARSER_VERSION` ile; güncel satır yeniden
+  yazılmaz (byte no-op), eskiyen satır yenilenir, alanı taşınan metin eskiyerek kalır (okuma uydurulmaz),
+  eski kayıtta anahtar yoksa yok kalmır. Okuma bir kullanıcı olayı değil: geçmiş adımı ve log satırı yok;
+  `/save` istemciden okuma kabul etmez. `tests/test_guided_callout_parse.py` (15 test).
+- **G5** `src/drawingto3d/callout_bind.py`: `TargetProposal` + T0–T5 kanıt sırası (mevcut onay, ipucu
+  çizgisi, basılı ölçü, biçim/ölçü uyumu, adet, yakınlık); deterministik sıralama; adet geometri uydurmaz;
+  ölçüsü tutmayan aday `size_mismatch` ile dürüstçe T5'te kalır; birim metinde yoksa sayfanın beyan edilen
+  birimi (kalibrasyon) çözer ve kaynağı yazılır, o da yoksa karşılaştırma yapılmaz. `tests/test_callout_bind.py`.
+- **GX** `src/drawingto3d/callout_review.py`: `export_bundle` (PLAN §12 asgari alanlar + öneriler/onay/tazelik)
+  ve `validate_import` — oturum/kaynak özeti/`base_revision`/şema/callout/geometri doğrulaması, kartellik,
+  bölge sınırları, metin sınırı, kanıt biçimi, **all-or-nothing** ve kaydı hiç değiştirmeme. `tests/test_callout_review.py`.
+- **G7** `src/drawingto3d/callout_compile.py`: PLAN §13 örnekleri birebir (Ø8 THRU+onaylı daire → through
+  delik; 4×Ø8 THRU → 4 karar; düz ölçü + iki uç → mevcut `Binding`, eksen/yön onaylanan uçlardan);
+  THRU/BLIND yoksa delik *değil*, kör derinlik yoksa uydurulmaz, R yay → açık `unsupported_cad_feature`,
+  kullanıcının kendi kararı asla ezilmez, `apply_compiled` yalnız ekler. `tests/test_callout_compile.py`.
+- **G8** `src/drawingto3d/callout_readiness.py`: PLAN §14 kategorileri + callout başına zincir
+  (callout → metin → parser sürümü → semantik → hedef → geometri anahtarı → derlenen karar → üretilen özellik).
+  Kapsam dışı bırakılan callout engel değil, **beyan edilmiş dışlama**.
+- **Sözleşme (v3):** `CalloutTargetDecision.target_kind` artık `arc`/`profile` de kabul eder (PLAN §10/§11
+  modları için zorunlu; üç eski tür aynen geçerli); `CalloutReviewDecision.unbindable` ("bağlanamaz"
+  kullanıcı kararı — sessiz eksik yerine beyan); `TranscriptionDecision.entered_by` `external_review`
+  (GX kaynağı satırda). Birim çözümü `callout_models.sheet_unit()`.
+- **Kanıt:** birleşik callout kümesi **311 passed / 63.5 s / EXIT=0**
+  (`test_callout_models`, `test_callout_parse`, `test_guided_callout_parse`, `test_callout_bind`,
+  `test_callout_compile`, `test_callout_review`, `test_guided_callouts`, `test_guided_callout_review`,
+  `test_guided_callout_candidates`, `test_guided_callout_http`). Parser/preview katmanı gerçek fonksiyon
+  çağrılarıyla; hiçbir kapı skip/xfail ile geçilmedi.
+- **G4 nedeniyle değişen tarihsel pinler (bilinçli, gerekçeli):** metin düzenlenince okuma artık *yenilenir*
+  (PLAN §9 "Transcription değişirse parse stale" eski satırın kaderidir; yeni revizyonun okuması hemen
+  türetilir, hedef ise eskiyerek kalır) — `test_editing_the_text_replaces_the_stored_reading_and_keeps_history`,
+  `test_saving_the_text_again_on_the_new_region_is_a_new_user_decision` ve
+  `test_the_base_candidates_and_the_reading_never_move_from_a_review` bu gerçeği pinler; şema pini 3.
+- **Açık kalanlar:** G6 tarayıcı kabulü (onay paneli/öneri vurgusu/elle yeniden seçim), G7/G8'in build'e
+  bağlanması (`_commit`/`build` yolunda derleme + readiness kapısı), `/api/guided/propose|export|import`
+  uçları, guided.js/guided.html, G9 Plate golden path, G10 manifest, G11–G13 koşu + raporlar.
+  G4/G7 yokken callout metninin STEP'e uygulandığı iddia edilmez.

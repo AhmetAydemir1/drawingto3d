@@ -376,8 +376,8 @@ def test_wrong_targets_are_refused_without_touching_the_record(store):
         (_target_payload(target_ids=["ghost"]), "bulunamadı"),
         (_target_payload(target_kind="circle_group", target_ids=["c0", "ghost"]), "bulunamadı"),
         (_target_payload(target_kind="circle_group", target_ids=["c0", "c0"]), "benzersiz"),
-        (_target_payload(target_kind="vertex_pair", target_ids=["v0", "v2"]), "ardışık"),
         (_target_payload(target_kind="vertex_pair", target_ids=["v0", "v9"]), "kenarlarında yok"),
+        (_target_payload(target_kind="vertex_pair", target_ids=["v0", "zzz"]), "kenarlarında yok"),
     ]
     for row, match in cases:
         payload = current_payload(store)
@@ -463,8 +463,8 @@ def test_a_profile_change_stales_the_target_within_the_same_geometry_version(sto
     assert stored["geometry_key"] == pinned["geometry_key"]
 
     payload = current_payload(store)
-    payload["callout_targets"] = [{**stored, "evidence": [{"kind": "user_click", "ref": "c0-again"}]}]
-    state = store.save(TOKEN, store.load(TOKEN)["revision"], payload)    # açık yeniden onay
+    payload["callout_targets"] = [dict(stored, reconfirm=True)]           # açık yeniden onay
+    state = store.save(TOKEN, store.load(TOKEN)["revision"], payload)
     assert state["callouts"][0]["target"] == {"state": "current", "reason": None}
     assert store.load(TOKEN)["decisions"]["callout_targets"][0]["profile_id"] == wires[1]
 
@@ -523,8 +523,7 @@ def test_an_old_parser_version_fixture_stales_its_parse_and_target(store):
     assert callout["target"] == {"state": "stale", "reason": "parser_version_changed"}
 
     payload = current_payload(store)
-    payload["callout_targets"] = [dict(payload["callout_targets"][0],
-                                       evidence=[{"kind": "user_click", "ref": "again"}])]
+    payload["callout_targets"] = [dict(payload["callout_targets"][0], reconfirm=True)]  # yeni onay denemesi
     with pytest.raises(ValueError, match="parser sürümüne bağlanmalı"):
         store.save(TOKEN, store.load(TOKEN)["revision"], payload)
 
@@ -570,8 +569,8 @@ def test_undo_does_not_make_an_old_target_current_again(store):
     store.save(TOKEN, 2, current_payload(store, profile_id=wires[1]))          # B bağlamı
     stored = store.load(TOKEN)["decisions"]["callout_targets"][0]
     payload = current_payload(store)
-    payload["callout_targets"] = [{**stored, "evidence": [{"kind": "user_click", "ref": "b"}]}]
-    store.save(TOKEN, 3, payload)                                              # B'de yeniden onay
+    payload["callout_targets"] = [dict(stored, reconfirm=True)]
+    store.save(TOKEN, 3, payload)                                              # B'de açık yeniden onay
     assert store.public(store.load(TOKEN))["callouts"][0]["target"]["state"] == "current"
 
     state = store.save(TOKEN, 4, undo=True)      # A onayı geri gelir, bağlam B kalır
@@ -642,7 +641,7 @@ def test_a_target_edit_also_makes_the_old_step_historical(store):
     assert store.public(store.load(TOKEN))["step"]
     stored = store.load(TOKEN)["decisions"]["callout_targets"][0]
     payload = current_payload(store)
-    payload["callout_targets"] = [{**stored, "evidence": [{"kind": "user_click", "ref": "again"}]}]
+    payload["callout_targets"] = [{**stored, "target_ids": ["c1"]}]      # gerçek hedef düzenlemesi
     state = store.save(TOKEN, store.load(TOKEN)["revision"], payload)
     assert state["step"] is None and state["build_status"] is None
     assert (folder / "part.step").exists()
@@ -678,3 +677,141 @@ def test_a_build_that_finishes_late_never_attaches_to_newer_decisions(store, mon
     record = store.load(TOKEN)
     assert record.get("build") is None                          # geç sonuç yeni kararlara bağlanmaz
     assert store.public(record)["build_status"] is None
+
+
+# --- düzeltme turu 1 (bağımsız inceleme): sunucu alanları, tek-save bağlamı, parse kapısı, uç sözleşmesi
+
+def _selected_edges(store):
+    record = store.load(TOKEN)
+    return next(row["edges"] for row in record["options"]["profiles"]
+                if row["id"] == record["decisions"]["profile_id"])
+
+
+def _confirmed_target(store):
+    """k1 transkript edilmiş, parse hazır, hedef onaylanmış — turun ortak başlangıç noktası."""
+    _transcribed(store)
+    payload = current_payload(store)
+    payload["callout_targets"] = [_target_payload()]
+    state = store.save(TOKEN, store.load(TOKEN)["revision"], payload)
+    assert state["callouts"][0]["target"]["state"] == "current"
+    return state
+
+
+def test_a_carried_target_keeps_its_persisted_server_fields(store):
+    state = _confirmed_target(store)
+    wires = [row["id"] for row in store.load(TOKEN)["options"]["profiles"] if row["kind"] == "wire"]
+    store.save(TOKEN, store.load(TOKEN)["revision"], current_payload(store, profile_id=wires[1]))
+    before = store.load(TOKEN)
+    pinned = before["decisions"]["callout_targets"][0]
+    assert store.public(before)["callouts"][0]["target"] == {"state": "stale", "reason": "geometry_changed"}
+
+    # istemci sunucu alanlarını kendisi güncelleyip onayı yeniden "current" yapmayı deniyor
+    forged = dict(pinned)
+    forged.update({"geometry_key": callout_models.geometry_key(before),
+                   "geometry_version": before["geometry_version"], "profile_id": wires[1]})
+    payload = current_payload(store)
+    payload["callout_targets"] = [forged]
+    state = store.save(TOKEN, store.load(TOKEN)["revision"], payload)
+    stored = state["decisions"]["callout_targets"][0]
+    assert stored["geometry_key"] == pinned["geometry_key"]
+    assert stored["profile_id"] == wires[0]
+    assert state["callouts"][0]["target"] == {"state": "stale", "reason": "geometry_changed"}
+
+    # evidence metnini değiştirmek de yeniden onay değildir: kalıcı kayıt değişmez
+    drifted = dict(pinned)
+    drifted["evidence"] = [{"kind": "user_click", "ref": "forged"}]
+    payload = current_payload(store)
+    payload["callout_targets"] = [drifted]
+    state = store.save(TOKEN, store.load(TOKEN)["revision"], payload)
+    assert state["decisions"]["callout_targets"][0]["evidence"] == pinned["evidence"]
+    assert state["callouts"][0]["target"]["state"] == "stale"
+
+
+def test_a_real_reconfirmation_is_an_explicit_act(store):
+    _confirmed_target(store)
+    wires = [row["id"] for row in store.load(TOKEN)["options"]["profiles"] if row["kind"] == "wire"]
+    store.save(TOKEN, store.load(TOKEN)["revision"], current_payload(store, profile_id=wires[1]))
+    assert store.public(store.load(TOKEN))["callouts"][0]["target"]["state"] == "stale"
+
+    row = dict(store.load(TOKEN)["decisions"]["callout_targets"][0])
+    row["reconfirm"] = True
+    payload = current_payload(store)
+    payload["callout_targets"] = [row]
+    state = store.save(TOKEN, store.load(TOKEN)["revision"], payload)
+    stored = state["decisions"]["callout_targets"][0]
+    assert stored["profile_id"] == wires[1]
+    assert stored["geometry_key"] == callout_models.geometry_key(store.load(TOKEN))
+    assert stored["reconfirm"] is False                        # istek tüketildi, kayıtta kalmaz
+    assert state["callouts"][0]["target"] == {"state": "current", "reason": None}
+
+
+def test_a_profile_switch_and_a_new_confirmation_in_one_save_agree(store):
+    _transcribed(store)
+    wires = [row["id"] for row in store.load(TOKEN)["options"]["profiles"] if row["kind"] == "wire"]
+    payload = current_payload(store, profile_id=wires[1])
+    payload["callout_targets"] = [_target_payload()]           # aynı save'de profil değişimi + yeni onay
+    state = store.save(TOKEN, store.load(TOKEN)["revision"], payload)
+    stored = state["decisions"]["callout_targets"][0]
+    assert stored["profile_id"] == wires[1]                    # pinlenen bağlam = seçili bağlam
+    assert stored["geometry_key"] == callout_models.geometry_key(store.load(TOKEN))
+    assert state["callouts"][0]["target"] == {"state": "current", "reason": None}
+
+
+def test_a_new_confirmation_is_checked_against_the_new_context(store):
+    _transcribed(store)
+    record = store.load(TOKEN)
+    old_edges = next(row["edges"] for row in record["options"]["profiles"]
+                     if row["id"] == record["decisions"]["profile_id"])
+    wires = [row["id"] for row in record["options"]["profiles"] if row["kind"] == "wire"]
+    new_wire = next(row for row in wires if row != record["decisions"]["profile_id"])
+    payload = current_payload(store, profile_id=new_wire)
+    payload["callout_targets"] = [_target_payload(
+        target_kind="vertex_pair",
+        target_ids=[f"{old_edges[0]['id']}:start", f"{old_edges[2]['id']}:start"],
+        evidence=[{"kind": "user_click", "ref": "old-contour"}])]
+    with pytest.raises(ValueError, match="kenarlarında yok"):   # eski konturun ucu yeni bağlamda geçersiz
+        store.save(TOKEN, store.load(TOKEN)["revision"], payload)
+
+
+@pytest.mark.parametrize("status", ["unsupported", "ambiguous"])
+def test_a_failed_parse_cannot_be_the_basis_of_a_target_confirmation(store, status):
+    _transcribed(store, parses=[_parse_row(status=status)])
+    before = _session_path(store).read_bytes()
+    payload = current_payload(store)
+    payload["callout_targets"] = [_target_payload()]
+    with pytest.raises(ValueError, match="parse durumu"):
+        store.save(TOKEN, store.load(TOKEN)["revision"], payload)
+    assert _session_path(store).read_bytes() == before
+
+
+def test_conflicting_parse_records_refuse_a_target_confirmation(store):
+    _transcribed(store, parses=[_parse_row(), _parse_row(size=10.0)])
+    payload = current_payload(store)
+    payload["callout_targets"] = [_target_payload()]
+    with pytest.raises(ValueError, match="çelişkili"):
+        store.save(TOKEN, store.load(TOKEN)["revision"], payload)
+
+
+def test_a_vertex_pair_uses_the_stable_endpoint_ids(store):
+    _transcribed(store)
+    edges = _selected_edges(store)
+    payload = current_payload(store)
+    payload["callout_targets"] = [_target_payload(
+        target_kind="vertex_pair",
+        target_ids=[f"{edges[0]['id']}:start", f"{edges[2]['id']}:start"],
+        evidence=[{"kind": "user_click", "ref": "g0-start"}])]
+    state = store.save(TOKEN, store.load(TOKEN)["revision"], payload)
+    stored = state["decisions"]["callout_targets"][0]
+    assert stored["target_ids"] == [f"{edges[0]['id']}:start", f"{edges[2]['id']}:start"]
+    assert state["callouts"][0]["target"]["state"] == "current"
+
+
+def test_a_vertex_pair_rejects_the_same_physical_point_twice(store):
+    _transcribed(store)
+    edges = _selected_edges(store)
+    payload = current_payload(store)
+    payload["callout_targets"] = [_target_payload(
+        target_kind="vertex_pair", target_ids=["v0", f"{edges[3]['id']}:end"],
+        evidence=[{"kind": "user_click", "ref": "same-corner"}])]
+    with pytest.raises(ValueError, match="aynı fiziksel nokta"):
+        store.save(TOKEN, store.load(TOKEN)["revision"], payload)

@@ -1432,12 +1432,18 @@ def _transcription_carried(prior: dict | None, row: dict) -> bool:
 
 
 def _target_carried(prior: dict | None, row: dict) -> bool:
-    """An untouched confirmation is carried as it is; anything else is a new confirmation to pin."""
-    return (prior is not None and prior.get("target_kind") == row.get("target_kind")
+    """A confirmation carried along untouched — same selection, no explicit `reconfirm` request.
+
+    Server-owned fields (fingerprint, geometry version, profile) and the evidence text are *not*
+    part of the comparison: a carried row keeps its persisted bytes, so client-side drift in those
+    fields can never rewrite an old confirmation into a new context, and editing the evidence text
+    is never a re-confirmation mechanism — only the explicit request is (PLAN-20 düzeltme turu 1).
+    """
+    return (prior is not None and not row.get("reconfirm")
+            and prior.get("target_kind") == row.get("target_kind")
             and prior.get("target_ids") == row.get("target_ids")
             and prior.get("transcription_revision") == row.get("transcription_revision")
-            and prior.get("parser_version") == row.get("parser_version")
-            and prior.get("evidence") == row.get("evidence"))
+            and prior.get("parser_version") == row.get("parser_version"))
 
 
 def _merge_callout_defaults(record: dict, decisions):
@@ -1478,12 +1484,27 @@ def _prepare_callouts(record: dict, decisions: Decisions) -> Decisions:
         else:
             row["revision"] = next_revision
         row["normalized_text"] = callout_models.normalize_text(row["raw_text"])
+    prepared_targets: list[dict] = []
     for row in payload.get("callout_targets") or []:
-        if _target_carried(prior_targets.get(row.get("callout_id")), row):
+        prior = prior_targets.get(row.get("callout_id"))
+        if prior is not None and _target_carried(prior, row):
+            prepared_targets.append(dict(prior))        # kalıcı kayıt aynen korunur; istemci sürüklenmesi yazılmaz
             continue
+        row = dict(row)
         row["geometry_key"] = key
         row["geometry_version"] = record.get("geometry_version")
-        row["profile_id"] = stored.get("profile_id")
+        row["profile_id"] = payload.get("profile_id")   # pinlenen bağlam = bu save'in bağlamı
+        prepared_targets.append(row)
+    payload["callout_targets"] = prepared_targets
+    return Decisions.model_validate(payload)
+
+
+def _consume_reconfirm(decisions: Decisions) -> Decisions:
+    """The explicit re-confirmation request is a one-shot signal (PLAN-20 düzeltme turu 1): it stays
+    on the row until validation has seen it, then it is consumed here and never persisted as true."""
+    payload = decisions.model_dump(mode="json")
+    for row in payload.get("callout_targets") or []:
+        row["reconfirm"] = False
     return Decisions.model_validate(payload)
 
 
@@ -1523,8 +1544,15 @@ def _validate_callouts(record: dict, decisions: Decisions) -> None:
                  and item.get("parser_version") == row.get("parser_version")]
         if not exact:
             raise ValueError(f"hedef onayı için geçerli parse yok: {callout_id}")
-        _check_target_geometry(record, row)
-        count = next((item.get("count") for item in exact if item.get("status") == "parsed"), None)
+        # Düzeltme turu 3: tazelik hesabı ile anlamsal geçerlilik ayrıdır — başarısız ya da çelişkili
+        # bir parse, hiçbir hesapta geçerli hedef onayına dayanak olamaz.
+        distinct = {json.dumps(item, sort_keys=True, ensure_ascii=False, default=str) for item in exact}
+        if len(distinct) > 1:
+            raise ValueError(f"aynı kimlikli çelişkili parse kayıtları hedef onaya dayanak olamaz: {callout_id}")
+        if exact[0].get("status") != "parsed":
+            raise ValueError(f"parse durumu '{exact[0].get('status')}' iken hedef onayı kaydedilemez: {callout_id}")
+        _check_target_geometry(record, row, payload.get("profile_id"))
+        count = exact[0].get("count")
         targets = set(row.get("target_ids") or [])
         if count is not None and len(targets) != count:
             raise ValueError(f"parse'taki adet ({count}) ile benzersiz hedef sayısı "
@@ -1539,9 +1567,10 @@ def _require_callout(candidates: dict, source: str | None, callout_id: str) -> N
         raise ValueError(f"callout bu oturumun kaynağına ait değil: {callout_id}")
 
 
-def _check_target_geometry(record: dict, row: dict) -> None:
-    """PLAN-20 §6.5: the ids must name real geometry, of the right type, in the selected profile —
-    vertex names follow the constraint core's `v{edge_index}` on that contour."""
+def _check_target_geometry(record: dict, row: dict, profile_id: str | None) -> None:
+    """PLAN-20 §6.5 + düzeltme turu 4: the ids must name real geometry, of the right type, in the
+    profile *this save* selects. A vertex pair is two valid, distinct endpoints — not necessarily
+    adjacent — each resolved through the same stable endpoint identities the binding path uses."""
     options = record.get("options") or {}
     circles = {str(circle.get("id")) for circle in options.get("circles") or []}
     if row.get("target_kind") in ("circle", "circle_group"):
@@ -1549,22 +1578,32 @@ def _check_target_geometry(record: dict, row: dict) -> None:
         if missing:
             raise ValueError(f"hedef geometri bulunamadı: {', '.join(missing)}")
         return
-    profile = next((item for item in options.get("profiles") or []
-                    if item.get("id") == (record.get("decisions") or {}).get("profile_id")), None)
+    profile = next((item for item in options.get("profiles") or [] if item.get("id") == profile_id), None)
     edges = (profile or {}).get("edges") or []
-    first, second = (_vertex_index(edges, target) for target in row.get("target_ids") or [])
-    if (first + 1) % len(edges) != second and (second + 1) % len(edges) != first:
-        raise ValueError(f"vertex_pair bu profilde ardışık iki uç ister: {list(row.get('target_ids') or [])}")
+    first, second = (_vertex_name(edges, target) for target in row.get("target_ids") or [])
+    if first == second:
+        raise ValueError(f"vertex_pair aynı fiziksel noktayı iki kez seçemez: {list(row.get('target_ids') or [])}")
 
 
-def _vertex_index(edges: list[dict], target: str) -> int:
+def _vertex_name(edges: list[dict], target: str) -> str:
+    """One callout vertex target → the contour's canonical `v{index}` name (PLAN §8.7/§8.8 forms).
+
+    `<edge_id>:start|end` resolves through the same edge lookup the binding resolver uses; the
+    canonical `v{index}` name itself is accepted too. A bare index without a stored click point is
+    ambiguous and is not accepted here.
+    """
     raw = str(target)
-    if not (raw.startswith("v") and raw[1:].isdigit() and edges):
-        raise ValueError(f"hedef uç kimliği seçili profilin kenarlarında yok: {target}")
-    index = int(raw[1:])
-    if not 0 <= index < len(edges):
-        raise ValueError(f"hedef uç kimliği seçili profilin kenarlarında yok: {target}")
-    return index
+    if raw.startswith("v") and raw[1:].isdigit():
+        index = int(raw[1:])
+        if edges and 0 <= index < len(edges):
+            return f"v{index}"
+        raise ValueError(f"hedef uç kimliği bu profilin kenarlarında yok: {target}")
+    edge_key, separator, tail = raw.rpartition(":")
+    index = (next((i for i, edge in enumerate(edges) if str(edge.get("id")) == edge_key), None)
+             if separator and tail in ("start", "end") else None)
+    if index is None:
+        raise ValueError(f"hedef uç kimliği bu profilin kenarlarında yok: {target}")
+    return f"v{index}" if tail == "start" else f"v{(index + 1) % len(edges)}"
 
 
 def _normalized_decisions(record: dict) -> dict:
@@ -1773,6 +1812,7 @@ class GuidedStore:
                 d=_prepare_callouts(r,d)
                 validate_decisions(r["options"],d)
                 _validate_callouts(r,d)
+                d=_consume_reconfirm(d)
                 payload=d.model_dump(mode="json")
                 if written:
                     _log(r,"user","edit","bindings",None,None,
@@ -1831,6 +1871,7 @@ class GuidedStore:
             new,written=_with_end_evidence(r,_prepare_callouts(r,Decisions.model_validate(payload)))
             validate_decisions(r["options"],new)
             _validate_callouts(r,new)
+            new=_consume_reconfirm(new)
             if written:
                 _log(r,"user","edit","bindings",None,None,
                      f"{written} bağ ucunun kanıtı yazıldı (seçildiği kontur, geometri sürümü, fiziksel uç).")

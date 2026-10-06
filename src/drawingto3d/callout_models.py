@@ -184,6 +184,8 @@ class CalloutTargetDecision(BaseModel):
 
     `status` is the *historical* fact that the user confirmed this; whether it still holds is
     computed separately (`callout_states`) from the parse binding and the geometry fingerprint.
+    `reconfirm` is the client's explicit re-confirmation request — consumed at save time and never
+    persisted as true: a carried record is not re-confirmed by incidental field drift.
     """
 
     model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
@@ -198,6 +200,7 @@ class CalloutTargetDecision(BaseModel):
     parser_version: str = Field(min_length=1, max_length=120)
     evidence: list[EvidenceRef] = Field(min_length=1, max_length=50)
     status: Literal["confirmed"] = "confirmed"
+    reconfirm: bool = False   # açık yeniden-onay isteği; kaydederken tüketilir (kayıtta daima false)
 
     @field_validator("geometry_version", "transcription_revision", mode="before")
     @classmethod

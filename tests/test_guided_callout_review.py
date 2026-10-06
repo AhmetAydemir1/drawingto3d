@@ -390,3 +390,290 @@ def test_the_base_candidates_and_the_reading_never_move_from_a_review(store):
     assert json.dumps(after["options"], sort_keys=True) == options
     assert (after.get("callout_parses") or []) == []               # hiçbir parse uydurulmadı
     assert after["callout_schema_version"] == 2                    # G3 yazımı yeni sürümü damgalar
+
+
+# --- düzeltme turu 4 (PLAN-22 §4, G3R-01): eski /save yeni komut kurallarını atlayamaz ----------
+
+def test_a_public_save_cannot_create_or_change_a_manual_region(store):
+    """İstemci kendi `manual:` kaydını /save ile yazamaz; alanı yalnız add_region üretir."""
+    helpers.seed_callouts(store)
+    before = bytes_of(store)
+    forged = {"id": "manual:" + "0" * 32, "source_digest": OTHER_SOURCE, "page_index": 7,
+              "region": [0.2, 0.2, 0.3, 0.3], "revision": 999}
+    payload = helpers.current_payload(store)
+    payload["manual_callouts"] = [forged]
+    with pytest.raises(ValueError, match="add_region"):
+        store.save(TOKEN, 0, payload)
+    assert bytes_of(store) == before
+
+    state = command(store, "add_region", {"region": [0.2, 0.2, 0.3, 0.3]})
+    manual_id = _manual_id(state)
+    stored = next(row for row in record_of(store)["decisions"]["manual_callouts"] if row["id"] == manual_id)
+    before = bytes_of(store)
+    moved = {**stored, "region": [0.5, 0.5, 0.6, 0.6]}              # var olanın bölgesini değiştirme denemesi
+    payload = helpers.current_payload(store)
+    payload["manual_callouts"] = [moved]
+    with pytest.raises(ValueError, match="edit_region"):
+        store.save(TOKEN, record_of(store)["revision"], payload)
+    assert bytes_of(store) == before
+
+    carried = store.save(TOKEN, record_of(store)["revision"], helpers.current_payload(store))
+    assert carried["decisions"]["manual_callouts"] == [stored]      # aynen taşıma serbest
+    cleared = store.save(TOKEN, record_of(store)["revision"],
+                         {**helpers.current_payload(store), "manual_callouts": []})
+    assert cleared["decisions"]["manual_callouts"] == []            # açık [] = kullanıcının kaldırması
+    events = [row["action"] for row in record_of(store)["log"] if row["actor"] == "user"]
+    assert events.count("veto") == 1                                # kaldırma gerçek olay olarak kayda geçti
+
+
+def test_a_public_save_cannot_set_a_review_decision(store):
+    """Yok sayma/bölge kararı /save ile doğmaz: bilinmeyen referans da, tanıdık kimlik de reddedilir."""
+    helpers.seed_callouts(store)
+    before = bytes_of(store)
+    payload = helpers.current_payload(store)
+    payload["callout_reviews"] = [{"callout_id": "unknown-callout", "ignored": True, "revision": 999}]
+    with pytest.raises(ValueError, match="set_ignored"):
+        store.save(TOKEN, 0, payload)
+    payload = helpers.current_payload(store)
+    payload["callout_reviews"] = [{"callout_id": "k1", "ignored": True}]
+    with pytest.raises(ValueError, match="set_ignored"):
+        store.save(TOKEN, 0, payload)
+    payload = helpers.current_payload(store)
+    payload["callout_reviews"] = [{"callout_id": "k1", "region_override": [0.3, 0.3, 0.4, 0.4]}]
+    with pytest.raises(ValueError, match="edit_region"):
+        store.save(TOKEN, 0, payload)
+    assert bytes_of(store) == before
+    assert record_of(store)["revision"] == 0
+
+
+def test_clearing_the_review_list_is_a_real_restore_not_a_silent_edit(store):
+    helpers.seed_callouts(store)
+    command(store, "set_ignored", {"callout_id": "k1", "ignored": True})
+    state = store.save(TOKEN, record_of(store)["revision"],
+                       {**helpers.current_payload(store), "callout_reviews": []})
+    assert state["decisions"]["callout_reviews"] == []
+    assert states_of(state)["k1"]["ignored"] is False
+    events = [row["action"] for row in record_of(store)["log"] if row["actor"] == "user"]
+    assert events.count("restore_callout") == 1                     # komut bir kez, fark günlüğü tekrar etmez
+
+
+def test_a_public_save_cannot_write_text_to_an_ignored_callout(store):
+    helpers.seed_callouts(store)
+    command(store, "set_ignored", {"callout_id": "k1", "ignored": True})
+    before = bytes_of(store)
+    payload = helpers.current_payload(store)
+    payload["transcriptions"] = [helpers._transcription()]
+    with pytest.raises(ValueError, match="geri alın"):
+        store.save(TOKEN, record_of(store)["revision"], payload)
+    assert bytes_of(store) == before
+    carried = store.save(TOKEN, record_of(store)["revision"], helpers.current_payload(store))
+    assert carried["decisions"]["transcriptions"] == []             # aynen taşınan eski metin yok: ret yok
+
+
+def test_a_public_save_checks_the_text_region_against_the_effective_region(store):
+    """Metnin kaynak bölgesi sunucunun etkin bölgesi olmalı; istemci kendi snapshot'ını yazamaz."""
+    helpers.seed_callouts(store)
+    before = bytes_of(store)
+    payload = helpers.current_payload(store)
+    payload["transcriptions"] = [{**helpers._transcription(), "source_region": [0.6, 0.6, 0.7, 0.7]}]
+    with pytest.raises(ValueError, match="etkin bölge"):
+        store.save(TOKEN, 0, payload)
+    assert bytes_of(store) == before
+    payload = helpers.current_payload(store)
+    payload["transcriptions"] = [helpers._transcription(raw="4x Ø8 THRU")]      # doğru bölge: kabul
+    state = store.save(TOKEN, 0, payload)
+    assert state["decisions"]["transcriptions"][0]["source_region"] == [0.1, 0.2, 0.4, 0.5]
+    assert states_of(state)["k1"]["transcription"]["state"] == "current"
+
+
+def test_an_unrelated_full_save_carries_every_g3_row_verbatim(store):
+    helpers.seed_callouts(store)
+    state = command(store, "add_region", {"region": [0.2, 0.2, 0.3, 0.3]})
+    manual_id = _manual_id(state)
+    command(store, "transcribe", {"callout_id": manual_id, "raw_text": "Ø12"})
+    command(store, "set_ignored", {"callout_id": "k1", "ignored": True})
+    before = record_of(store)["decisions"]
+    state = store.save(TOKEN, record_of(store)["revision"],
+                       helpers.current_payload(store, thickness=12.0))
+    assert state["decisions"]["thickness"] == 12.0
+    for key in ("manual_callouts", "callout_reviews", "transcriptions"):
+        assert state["decisions"][key] == before[key]               # ilgisiz kayıt G3 satırlarını bozmaz
+
+
+def test_the_full_review_flow_still_works_end_to_end(store):
+    """add_region → transcribe → edit_region → yeniden kaydet → ignore → restore → undo."""
+    helpers.seed_callouts(store)
+    state = command(store, "add_region", {"region": [0.2, 0.2, 0.3, 0.3]})
+    manual_id = _manual_id(state)
+    first = command(store, "transcribe", {"callout_id": manual_id, "raw_text": "Ø12"})
+    revision = first["decisions"]["transcriptions"][0]["revision"]
+    state = command(store, "edit_region", {"callout_id": manual_id, "region": [0.22, 0.22, 0.32, 0.32]})
+    assert states_of(state)[manual_id]["transcription"] == {"state": "stale", "revision": revision,
+                                                            "reason": "region_changed"}
+    state = command(store, "transcribe", {"callout_id": manual_id, "raw_text": "Ø12"})
+    row = states_of(state)[manual_id]["transcription"]
+    assert row["state"] == "current" and row["revision"] != revision
+    state = command(store, "set_ignored", {"callout_id": manual_id, "ignored": True})
+    state = command(store, "set_ignored", {"callout_id": manual_id, "ignored": False})
+    assert states_of(state)[manual_id]["ignored"] is False
+    assert rows_of(state, "effective_callouts")[manual_id]["region"] == [0.22, 0.22, 0.32, 0.32]
+    state = store.save(TOKEN, record_of(store)["revision"], undo=True)
+    assert state["can_undo"] is True
+    assert len(state["decisions"]["manual_callouts"]) == 1          # undo alanı silmez
+    assert state["decisions"]["transcriptions"][0]["raw_text"] == "Ø12"
+
+
+# --- düzeltme turu 4 (PLAN-22 §5, G3R-02): yeni onayın tazeliği --------------------------------
+
+def test_a_new_confirmation_after_a_region_move_needs_a_current_text_and_parse(store):
+    record = helpers._transcribed(store)
+    payload = helpers.current_payload(store)
+    payload["callout_targets"] = [helpers._target_payload()]
+    state = store.save(TOKEN, record["revision"], payload)
+    assert state["callouts"][0]["target"] == {"state": "current", "reason": None}
+
+    state = command(store, "edit_region", {"callout_id": "k1", "region": [0.6, 0.6, 0.7, 0.7]})
+    assert state["callouts"][0]["transcription"]["state"] == "stale"
+    before = bytes_of(store)
+    payload = helpers.current_payload(store)
+    payload["callout_targets"] = [{**helpers._target_payload(), "target_ids": ["c1"]}]  # yeni onay denemesi
+    with pytest.raises(ValueError, match="transcription"):
+        store.save(TOKEN, record_of(store)["revision"], payload)
+    assert bytes_of(store) == before                                # ret: dosya/log/history aynı
+
+    # Pozitif kontrol: metni yeni etkin bölgede açıkça yeniden kaydet, güncel parse fixture'ı hazırla
+    state = command(store, "transcribe", {"callout_id": "k1", "raw_text": "4x Ø8 THRU"})
+    revision = state["decisions"]["transcriptions"][0]["revision"]
+    helpers.seed_callouts(store, candidate=False,
+                          parses=[helpers._parse_row(transcription_revision=revision)])
+    start = len(record_of(store)["log"])
+    payload = helpers.current_payload(store)
+    payload["callout_targets"] = [{**helpers._target_payload(), "target_ids": ["c1"],
+                                   "transcription_revision": revision}]
+    state = store.save(TOKEN, record_of(store)["revision"], payload)
+    assert state["callouts"][0]["target"] == {"state": "current", "reason": None}
+    confirms = [row for row in record_of(store)["log"][start:] if row["action"] == "confirm_target"]
+    assert len(confirms) == 1                                       # tek gerçek onay olayı
+
+
+def test_a_region_move_and_a_target_confirmation_in_one_save_cannot_skip_freshness(store):
+    """R-01 dış mutasyonu reddeder; ortak commit yolu kendi son durumunu yine denetler."""
+    helpers._transcribed(store)
+    review = {"callout_id": "k1", "region_override": [0.6, 0.6, 0.7, 0.7], "ignored": False}
+    payload = helpers.current_payload(store)
+    payload["callout_reviews"] = [review]
+    payload["callout_targets"] = [{**helpers._target_payload(), "target_ids": ["c1"]}]
+    before = bytes_of(store)
+    with pytest.raises(ValueError):
+        store.save(TOKEN, record_of(store)["revision"], payload)
+    assert bytes_of(store) == before
+    # taşınan kayıt satırı ile (kullanıcı komutuyla kaydedilmiş) bölge değişimi: yine ret
+    command(store, "edit_region", {"callout_id": "k1", "region": [0.6, 0.6, 0.7, 0.7]})
+    before = bytes_of(store)
+    payload = helpers.current_payload(store)
+    payload["callout_targets"] = [{**helpers._target_payload(), "target_ids": ["c1"]}]
+    with pytest.raises(ValueError, match="transcription"):
+        store.save(TOKEN, record_of(store)["revision"], payload)
+    assert bytes_of(store) == before
+    assert record_of(store)["decisions"]["callout_targets"] == []
+
+
+def test_an_ignored_callout_cannot_be_confirmed_and_a_carried_target_is_untouched(store):
+    helpers.seed_callouts(store)
+    state = command(store, "set_ignored", {"callout_id": "k1", "ignored": True})
+    before = bytes_of(store)
+    payload = helpers.current_payload(store)
+    payload["callout_targets"] = [helpers._target_payload()]
+    with pytest.raises(ValueError, match="geri alın"):
+        store.save(TOKEN, record_of(store)["revision"], payload)
+    assert bytes_of(store) == before
+
+
+def test_a_carried_stale_target_survives_an_unrelated_full_save(store):
+    """PLAN.md §5: aynen taşınan stale target + ilgisiz kalınlık kaydı çalışır; satır bayt aynı kalır."""
+    record = helpers._transcribed(store)
+    payload = helpers.current_payload(store)
+    payload["callout_targets"] = [helpers._target_payload()]
+    state = store.save(TOKEN, record["revision"], payload)
+    assert state["callouts"][0]["target"]["state"] == "current"
+
+    command(store, "edit_region", {"callout_id": "k1", "region": [0.6, 0.6, 0.7, 0.7]})
+    stale = store.public(store.load(TOKEN))
+    assert stale["callouts"][0]["target"]["state"] == "stale"       # eski onay current değil
+    target_before = record_of(store)["decisions"]["callout_targets"]
+    assert target_before                                                # taşınacak gerçek satır var
+
+    state = store.save(TOKEN, record_of(store)["revision"],
+                       helpers.current_payload(store, thickness=12.0))  # ilgisiz tam kayıt
+    assert state["decisions"]["thickness"] == 12.0
+    assert state["decisions"]["callout_targets"] == target_before       # ne yeniden damga ne düşme
+    assert state["callouts"][0]["target"]["state"] == "stale"           # stale kalır, current olmaz
+
+
+# --- düzeltme turu 4 (PLAN-22 §6, G3R-03): şema damgası gerçek yazımda ------------------------
+
+def test_a_v1_session_is_stamped_by_its_first_real_write_and_reads_stay_read_only(store):
+    helpers.seed_callouts(store)
+    record = store.load(TOKEN)
+    record["callout_schema_version"] = 1
+    _atomic(helpers._session_path(store), record)
+    before = bytes_of(store)
+    public = store.public(store.load(TOKEN))
+    assert public["callout_schema_version"] == 1                    # okuma sürümü yükseltmez
+    assert bytes_of(store) == before
+    noop = store.save(TOKEN, 0, helpers.current_payload(store))
+    assert noop["callout_schema_version"] == 1 and bytes_of(store) == before   # no-op yazmaz
+    state = command(store, "add_region", {"region": [0.2, 0.2, 0.3, 0.3]})
+    assert state["callout_schema_version"] == callout_models.CALLOUT_SCHEMA_VERSION == 2
+    assert store.load(TOKEN)["callout_schema_version"] == 2
+
+
+def test_a_versionless_legacy_session_is_stamped_on_a_real_write_only(store):
+    helpers.seed_callouts(store)
+    record = store.load(TOKEN)
+    record.pop("callout_schema_version", None)
+    record["callout_candidates"] = []
+    record.pop("callout_detection", None)
+    _atomic(helpers._session_path(store), record)
+    assert store.public(store.load(TOKEN))["callout_schema_version"] is None
+    state = store.save(TOKEN, 0, helpers.current_payload(store, with_callouts=False, thickness=12.0))
+    assert state["revision"] == 1 and state["callout_schema_version"] == 2
+
+
+def test_a_future_unknown_schema_version_is_never_downgraded(store):
+    helpers.seed_callouts(store)
+    record = store.load(TOKEN)
+    record["callout_schema_version"] = 7                            # bilinmeyen ileri şema
+    _atomic(helpers._session_path(store), record)
+    state = store.save(TOKEN, 0, helpers.current_payload(store, thickness=12.0))
+    assert state["callout_schema_version"] == 7
+
+
+def test_undo_never_lowers_the_callout_schema_version(store):
+    helpers.seed_callouts(store)
+    record = store.load(TOKEN)
+    record["callout_schema_version"] = 1
+    record["history"] = [record["decisions"]]
+    record["revision"] = 1
+    _atomic(helpers._session_path(store), record)
+    state = store.save(TOKEN, 1, undo=True)
+    assert state["revision"] == 2
+    assert state["callout_schema_version"] == 2                      # history'de sürüm alanı yok: geriye düşmez
+
+
+# --- düzeltme turu 4 (PLAN-22 §7, G3R-04): tespit metadata'sı public'te -----------------------
+
+def test_the_public_state_serves_the_detection_metadata_and_admits_its_absence(store):
+    helpers.seed_callouts(store)
+    record = store.load(TOKEN)
+    record["callout_detection"] = {"detector_version": "callout-detector/1",
+                                   "diagnostics": [{"code": "source_digest_mismatch", "observation_id": None}]}
+    _atomic(helpers._session_path(store), record)
+    public = store.public(store.load(TOKEN))
+    assert public["callout_detection"] == record["callout_detection"]        # round-trip, uydurma yok
+    record = store.load(TOKEN)
+    record.pop("callout_detection", None)
+    _atomic(helpers._session_path(store), record)
+    public = store.public(store.load(TOKEN))
+    assert public["callout_detection"] is None                      # eski kayıt: açık "yok"
+    assert public["callout_candidates"][0]["id"] == "k1"            # mevcut davranış bozulmadı

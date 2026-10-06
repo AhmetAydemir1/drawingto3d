@@ -1,0 +1,287 @@
+.................................FFFFF..FFF.FF.FFFF.......F              [100%]
+=================================== FAILURES ===================================
+__________ test_a_public_save_cannot_create_or_change_a_manual_region __________
+
+store = <drawingto3d.guided.GuidedStore object at 0x1043f5df0>
+
+    def test_a_public_save_cannot_create_or_change_a_manual_region(store):
+        """İstemci kendi `manual:` kaydını /save ile yazamaz; alanı yalnız add_region üretir."""
+        helpers.seed_callouts(store)
+        before = bytes_of(store)
+        forged = {"id": "manual:" + "0" * 32, "source_digest": OTHER_SOURCE, "page_index": 7,
+                  "region": [0.2, 0.2, 0.3, 0.3], "revision": 999}
+        payload = helpers.current_payload(store)
+        payload["manual_callouts"] = [forged]
+>       with pytest.raises(ValueError, match="add_region"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ValueError
+
+tests/test_guided_callout_review.py:405: Failed
+_______________ test_a_public_save_cannot_set_a_review_decision ________________
+
+store = <drawingto3d.guided.GuidedStore object at 0x1050e0530>
+
+    def test_a_public_save_cannot_set_a_review_decision(store):
+        """Yok sayma/bölge kararı /save ile doğmaz: bilinmeyen referans da, tanıdık kimlik de reddedilir."""
+        helpers.seed_callouts(store)
+        before = bytes_of(store)
+        payload = helpers.current_payload(store)
+        payload["callout_reviews"] = [{"callout_id": "unknown-callout", "ignored": True, "revision": 999}]
+>       with pytest.raises(ValueError, match="set_ignored"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ValueError
+
+tests/test_guided_callout_review.py:435: Failed
+______ test_clearing_the_review_list_is_a_real_restore_not_a_silent_edit _______
+
+store = <drawingto3d.guided.GuidedStore object at 0x1050e13a0>
+
+    def test_clearing_the_review_list_is_a_real_restore_not_a_silent_edit(store):
+        helpers.seed_callouts(store)
+        command(store, "set_ignored", {"callout_id": "k1", "ignored": True})
+        state = store.save(TOKEN, record_of(store)["revision"],
+                           {**helpers.current_payload(store), "callout_reviews": []})
+        assert state["decisions"]["callout_reviews"] == []
+        assert states_of(state)["k1"]["ignored"] is False
+        events = [row["action"] for row in record_of(store)["log"] if row["actor"] == "user"]
+>       assert events.count("restore_callout") == 1                     # komut bir kez, fark günlüğü tekrar etmez
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: assert 0 == 1
+E        +  where 0 = <built-in method count of list object at 0x10e8cb840>('restore_callout')
+E        +    where <built-in method count of list object at 0x10e8cb840> = ['edit', 'edit', 'ignore_callout'].count
+
+tests/test_guided_callout_review.py:457: AssertionError
+__________ test_a_public_save_cannot_write_text_to_an_ignored_callout __________
+
+store = <drawingto3d.guided.GuidedStore object at 0x1050e32f0>
+
+    def test_a_public_save_cannot_write_text_to_an_ignored_callout(store):
+        helpers.seed_callouts(store)
+        command(store, "set_ignored", {"callout_id": "k1", "ignored": True})
+        before = bytes_of(store)
+        payload = helpers.current_payload(store)
+        payload["transcriptions"] = [helpers._transcription()]
+>       with pytest.raises(ValueError, match="geri alın"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ValueError
+
+tests/test_guided_callout_review.py:466: Failed
+____ test_a_public_save_checks_the_text_region_against_the_effective_region ____
+
+store = <drawingto3d.guided.GuidedStore object at 0x1050e3c20>
+
+    def test_a_public_save_checks_the_text_region_against_the_effective_region(store):
+        """Metnin kaynak bölgesi sunucunun etkin bölgesi olmalı; istemci kendi snapshot'ını yazamaz."""
+        helpers.seed_callouts(store)
+        before = bytes_of(store)
+        payload = helpers.current_payload(store)
+        payload["transcriptions"] = [{**helpers._transcription(), "source_region": [0.6, 0.6, 0.7, 0.7]}]
+>       with pytest.raises(ValueError, match="etkin bölge"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ValueError
+
+tests/test_guided_callout_review.py:479: Failed
+__ test_a_new_confirmation_after_a_region_move_needs_a_current_text_and_parse __
+
+store = <drawingto3d.guided.GuidedStore object at 0x10429d910>
+
+    def test_a_new_confirmation_after_a_region_move_needs_a_current_text_and_parse(store):
+        record = helpers._transcribed(store)
+        payload = helpers.current_payload(store)
+        payload["callout_targets"] = [helpers._target_payload()]
+        state = store.save(TOKEN, record["revision"], payload)
+        assert state["callouts"][0]["target"] == {"state": "current", "reason": None}
+
+        state = command(store, "edit_region", {"callout_id": "k1", "region": [0.6, 0.6, 0.7, 0.7]})
+        assert state["callouts"][0]["transcription"]["state"] == "stale"
+        before = bytes_of(store)
+        payload = helpers.current_payload(store)
+        payload["callout_targets"] = [{**helpers._target_payload(), "target_ids": ["c1"]}]  # yeni onay denemesi
+>       with pytest.raises(ValueError, match="transcription"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ValueError
+
+tests/test_guided_callout_review.py:540: Failed
+_ test_a_region_move_and_a_target_confirmation_in_one_save_cannot_skip_freshness _
+
+store = <drawingto3d.guided.GuidedStore object at 0x1050ed3a0>
+
+    def test_a_region_move_and_a_target_confirmation_in_one_save_cannot_skip_freshness(store):
+        """R-01 dış mutasyonu reddeder; ortak commit yolu kendi son durumunu yine denetler."""
+        helpers._transcribed(store)
+        review = {"callout_id": "k1", "region_override": [0.6, 0.6, 0.7, 0.7], "ignored": False}
+        payload = helpers.current_payload(store)
+        payload["callout_reviews"] = [review]
+        payload["callout_targets"] = [{**helpers._target_payload(), "target_ids": ["c1"]}]
+        before = bytes_of(store)
+>       with pytest.raises(ValueError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ValueError
+
+tests/test_guided_callout_review.py:567: Failed
+_ test_an_ignored_callout_cannot_be_confirmed_and_a_carried_target_is_untouched _
+
+store = <drawingto3d.guided.GuidedStore object at 0x1050ee540>
+
+    def test_an_ignored_callout_cannot_be_confirmed_and_a_carried_target_is_untouched(store):
+        helpers.seed_callouts(store)
+        state = command(store, "set_ignored", {"callout_id": "k1", "ignored": True})
+        before = bytes_of(store)
+        payload = helpers.current_payload(store)
+        payload["callout_targets"] = [helpers._target_payload()]
+>       with pytest.raises(ValueError, match="geri alın"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'geri alın'
+E         Actual message: 'hedef onayı güncel bir transcription gerektirir: k1'
+
+tests/test_guided_callout_review.py:587: AssertionError
+_ test_a_v1_session_is_stamped_by_its_first_real_write_and_reads_stay_read_only _
+
+store = <drawingto3d.guided.GuidedStore object at 0x1050e32f0>
+
+    def test_a_v1_session_is_stamped_by_its_first_real_write_and_reads_stay_read_only(store):
+        helpers.seed_callouts(store)
+        record = store.load(TOKEN)
+        record["callout_schema_version"] = 1
+        _atomic(helpers._session_path(store), record)
+        before = bytes_of(store)
+        public = store.public(store.load(TOKEN))
+        assert public["callout_schema_version"] == 1                    # okuma sürümü yükseltmez
+        assert bytes_of(store) == before
+        noop = store.save(TOKEN, 0, helpers.current_payload(store))
+        assert noop["callout_schema_version"] == 1 and bytes_of(store) == before   # no-op yazmaz
+        state = command(store, "add_region", {"region": [0.2, 0.2, 0.3, 0.3]})
+>       assert state["callout_schema_version"] == callout_models.CALLOUT_SCHEMA_VERSION == 2
+E       assert 1 == 2
+E        +  where 2 = callout_models.CALLOUT_SCHEMA_VERSION
+
+tests/test_guided_callout_review.py:627: AssertionError
+______ test_a_versionless_legacy_session_is_stamped_on_a_real_write_only _______
+
+store = <drawingto3d.guided.GuidedStore object at 0x1043e4440>
+
+    def test_a_versionless_legacy_session_is_stamped_on_a_real_write_only(store):
+        helpers.seed_callouts(store)
+        record = store.load(TOKEN)
+        record.pop("callout_schema_version", None)
+        record["callout_candidates"] = []
+        record.pop("callout_detection", None)
+        _atomic(helpers._session_path(store), record)
+        assert store.public(store.load(TOKEN))["callout_schema_version"] is None
+        state = store.save(TOKEN, 0, helpers.current_payload(store, with_callouts=False, thickness=12.0))
+>       assert state["revision"] == 1 and state["callout_schema_version"] == 2
+E       assert (1 == 1 and None == 2)
+
+tests/test_guided_callout_review.py:640: AssertionError
+______________ test_undo_never_lowers_the_callout_schema_version _______________
+
+store = <drawingto3d.guided.GuidedStore object at 0x1050e7800>
+
+    def test_undo_never_lowers_the_callout_schema_version(store):
+        helpers.seed_callouts(store)
+        record = store.load(TOKEN)
+        record["callout_schema_version"] = 1
+        record["history"] = [record["decisions"]]
+        record["revision"] = 1
+        _atomic(helpers._session_path(store), record)
+        state = store.save(TOKEN, 1, undo=True)
+        assert state["revision"] == 2
+>       assert state["callout_schema_version"] == 2                      # history'de sürüm alanı yok: geriye düşmez
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       assert 1 == 2
+
+tests/test_guided_callout_review.py:661: AssertionError
+__ test_the_public_state_serves_the_detection_metadata_and_admits_its_absence __
+
+store = <drawingto3d.guided.GuidedStore object at 0x10429e540>
+
+    def test_the_public_state_serves_the_detection_metadata_and_admits_its_absence(store):
+        helpers.seed_callouts(store)
+        record = store.load(TOKEN)
+        record["callout_detection"] = {"detector_version": "callout-detector/1",
+                                       "diagnostics": [{"code": "source_digest_mismatch", "observation_id": None}]}
+        _atomic(helpers._session_path(store), record)
+        public = store.public(store.load(TOKEN))
+>       assert public["callout_detection"] == record["callout_detection"]        # round-trip, uydurma yok
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'callout_detection'
+
+tests/test_guided_callout_review.py:673: KeyError
+________________ test_http_save_cannot_bypass_the_callout_rules ________________
+
+live = <function live.<locals>.post at 0x10e91da80>
+store = <drawingto3d.guided.GuidedStore object at 0x10429f110>
+
+    def test_http_save_cannot_bypass_the_callout_rules(live, store):
+        helpers.seed_callouts(store)
+        code, body = live("/api/guided/callout", {"token": TOKEN, "revision": 0, "action": "set_ignored",
+                                                  "payload": {"callout_id": "k1", "ignored": True}})
+        assert code == 200, body
+        revision = body["revision"]
+        before = helpers._session_path(store).read_bytes()
+        code, body = live("/api/guided/callout", {"token": TOKEN, "revision": revision, "action": "transcribe",
+                                                  "payload": {"callout_id": "k1", "raw_text": "Ø8"}})
+        assert code == 400 and "geri alın" in body["error"]            # komut yolu doğru reddediyor
+        assert helpers._session_path(store).read_bytes() == before
+        decisions = helpers.current_payload(store)
+        decisions["transcriptions"] = [helpers._transcription("Ø8")]
+        code, body = live("/api/guided/save", {"token": TOKEN, "revision": revision, "decisions": decisions})
+>       assert code == 400 and "geri alın" in body["error"]            # aynı metin /save'den geçemez
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       assert (200 == 400)
+
+tests/test_guided_callout_http.py:66: AssertionError
+___________ test_http_save_cannot_confirm_a_target_on_a_stale_region ___________
+
+live = <function live.<locals>.post at 0x10e91dc60>
+store = <drawingto3d.guided.GuidedStore object at 0x10e94a1b0>
+
+    def test_http_save_cannot_confirm_a_target_on_a_stale_region(live, store):
+        helpers._transcribed(store)
+        revision = store.load(TOKEN)["revision"]
+        code, body = live("/api/guided/callout", {"token": TOKEN, "revision": revision, "action": "edit_region",
+                                                  "payload": {"callout_id": "k1", "region": [0.6, 0.6, 0.7, 0.7]}})
+        assert code == 200, body
+        revision = body["revision"]
+        before = helpers._session_path(store).read_bytes()
+        decisions = helpers.current_payload(store)
+        decisions["callout_targets"] = [helpers._target_payload()]
+        code, body = live("/api/guided/save", {"token": TOKEN, "revision": revision, "decisions": decisions})
+>       assert code == 400 and "transcription" in body["error"]        # tazelik kapısı HTTP'de de kapalı
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       assert (200 == 400)
+
+tests/test_guided_callout_http.py:91: AssertionError
+__________ test_the_empty_callout_list_gives_the_detectors_own_reason __________
+
+    def test_the_empty_callout_list_gives_the_detectors_own_reason():
+        """G3R-04: an empty list is not automatically "a text-less drawing" — the stored detection decides.
+
+        The panel distinguishes the detector's normal empty result (`no_text_observations`) from a run
+        that could not produce candidates, says honestly when an old record carries no detection
+        information at all, and warns while still listing the candidates it did find.
+        """
+        script = (ROOT / "guided.js").read_text(encoding="utf-8")
+>       assert "state.callout_detection" in script                     # public alan gerçekten tüketiliyor
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       assert 'state.callout_detection' in "import {showStl} from './preview.js';\nconst $=id=>document.getElementById(id), sheet=$('sheet'), ctx=sheet.getContex...'));status('Kaydedilmiş oturum açıldı.');}catch(e){status(e.message,true);}finally{busy(false);}}})().catch(()=>{});\n"
+
+tests/test_guided_html.py:133: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_guided_callout_review.py::test_a_public_save_cannot_create_or_change_a_manual_region
+FAILED tests/test_guided_callout_review.py::test_a_public_save_cannot_set_a_review_decision
+FAILED tests/test_guided_callout_review.py::test_clearing_the_review_list_is_a_real_restore_not_a_silent_edit
+FAILED tests/test_guided_callout_review.py::test_a_public_save_cannot_write_text_to_an_ignored_callout
+FAILED tests/test_guided_callout_review.py::test_a_public_save_checks_the_text_region_against_the_effective_region
+FAILED tests/test_guided_callout_review.py::test_a_new_confirmation_after_a_region_move_needs_a_current_text_and_parse
+FAILED tests/test_guided_callout_review.py::test_a_region_move_and_a_target_confirmation_in_one_save_cannot_skip_freshness
+FAILED tests/test_guided_callout_review.py::test_an_ignored_callout_cannot_be_confirmed_and_a_carried_target_is_untouched
+FAILED tests/test_guided_callout_review.py::test_a_v1_session_is_stamped_by_its_first_real_write_and_reads_stay_read_only
+FAILED tests/test_guided_callout_review.py::test_a_versionless_legacy_session_is_stamped_on_a_real_write_only
+FAILED tests/test_guided_callout_review.py::test_undo_never_lowers_the_callout_schema_version
+FAILED tests/test_guided_callout_review.py::test_the_public_state_serves_the_detection_metadata_and_admits_its_absence
+FAILED tests/test_guided_callout_http.py::test_http_save_cannot_bypass_the_callout_rules
+FAILED tests/test_guided_callout_http.py::test_http_save_cannot_confirm_a_target_on_a_stale_region
+FAILED tests/test_guided_html.py::test_the_empty_callout_list_gives_the_detectors_own_reason
+15 failed, 44 passed in 2.07s

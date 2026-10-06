@@ -577,3 +577,16 @@ def callout_states(record: dict, expected_parser_version: str | None = None) -> 
                                     key, record, expected, region_changed),
         })
     return rows
+
+
+def callout_state(record: dict, callout_id: str, decisions: dict | None = None,
+                  expected_parser_version: str | None = None) -> dict | None:
+    """One callout's freshness row, computed against an explicit decision set (PLAN-22 §5.1).
+
+    The store judges a pending confirmation with exactly the picture the public state would show for
+    the decisions the operation is about to leave — one rule shared with `callout_states`, never a
+    second implementation that could drift from it. Pure: reads, writes nothing.
+    """
+    pending = {**record, "decisions": record.get("decisions") if decisions is None else decisions}
+    return next((row for row in callout_states(pending, expected_parser_version)
+                 if row.get("id") == callout_id), None)

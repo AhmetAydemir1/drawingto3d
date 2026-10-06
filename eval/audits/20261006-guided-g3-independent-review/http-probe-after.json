@@ -1,0 +1,10 @@
+{
+  "reviewed_baseline": "2cdb4d0",
+  "command_status": 400,
+  "command_error": "yok sayılan bir callout'a metin yazılamaz; önce geri alın",
+  "command_unchanged": true,
+  "save_status": 400,
+  "save_unchanged": true,
+  "saved_callout": null,
+  "passed": true
+}

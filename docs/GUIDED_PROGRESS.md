@@ -1,13 +1,14 @@
 # Guided progress
 
-Scope: G0 + G1 (düzeltme turu 1 ve 2 dahil) + G2 (tamamlandı) + **G3 + G1R3-01 (PLAN-21, tamamlandı)**  
-Active plan: kök `PLAN.md` (PLAN-21 = inceleme planı; bayt kopya `docs/PLAN-22.md` sha256 `5743bb06…`; önceki kök arşivi `docs/PLAN_ROOT_BEFORE_G3_REVIEW_20261006.md` sha256 `09e18c82…`) + `docs/PLAN-20.md`  
-Initial HEAD: `5175f373f1d6892e481341ed2cbcfd89dec29e36`  
-G2 initial HEAD: `316518eb8d67c7a4ad81eed59c09e6c59ef4df37`  
-G3 initial HEAD: `ff97295065260ba8d46bf6fcd2c6e864e63dfcef` (`ff97295` = G2)  
-Current HEAD: G0 `373e096` + G1.2/G1.3 `554f5ae` + G1.4–G1.7 `e59c5eb` + düzeltme turu 1 `67ff518` + düzeltme turu 2 `316518e` + G2 `ff97295` + **G3 (commit edilmedi)**  
-Initial worktree changes: `?? PLAN-17-HERMES.md` (kullanıcının verdiği plan kaynağı; **korunur, stage edilmez**)  
-Current task: **G1R3-01 + G3 (PLAN-21) tamamlandı** — G1R3-01 ve G3.0–G3.6 PASS; G4+ açılmadı, model çağrısı 0  
+- Scope: G0 + G1 (düzeltme turu 1 ve 2 dahil) + G2 (tamamlandı) + G3 + G1R3-01 (PLAN-21, tamamlandı) + **G3R-01–04 kayıt sınırı düzeltmeleri (kök `PLAN.md`, tamamlandı)**
+- Active plan: kök `PLAN.md` (G3R turu; önceki kök arşivleri `docs/PLAN_ROOT_BEFORE_G3_REVIEW_20261006.md` sha256 `09e18c82…` ve `docs/PLAN_ROOT_BEFORE_G3_ACCEPTANCE_REVIEW_20261006.md` sha256 `5743bb06…` = `docs/PLAN-22.md`) + `docs/PLAN-20.md`
+- Initial HEAD: `5175f373f1d6892e481341ed2cbcfd89dec29e36`
+- G2 initial HEAD: `316518eb8d67c7a4ad81eed59c09e6c59ef4df37`
+- G3 initial HEAD: `ff97295065260ba8d46bf6fcd2c6e864e63dfcef` (`ff97295` = G2)
+- G3R initial HEAD: `2cdb4d0424b17e4299d625066c24e6a0eab4de6d` (`2cdb4d0` = G3 + G1R3-01 kabul commit'i; eski “G3 commit edilmedi” ifadesi artık geçerli değil)
+- Current HEAD: `2cdb4d0` + **G3R-01–04 çalışma ağacında (commit yok)**
+- Initial worktree changes: `?? PLAN-17-HERMES.md` (kullanıcının verdiği plan kaynağı; **korunur, stage edilmez**)
+- Current task: **G3R-01–04 tamamlandı** — dört dar düzeltme + anlamlı kırmızı regresyonlar + dört bağımsız probe + gerçek tarayıcı kabulü PASS; commit yok; G4+ açılmadı, model çağrısı 0
 
 | İş | Durum | Kanıt | Kalan |
 |---|---|---|---|
@@ -237,7 +238,73 @@ Ek: eski akışı kodlayan 4 mevcut test yeni açık mekanizmaya taşındı (evi
 
 T01 round-trip → models testleri · T02 raw/reopen → `test_save_persists_a_transcription_and_reopen_keeps_raw_text` · T03 hint → `test_a_machine_text_hint_never_becomes_a_decision` · T04 eski session → `test_an_old_session_opens_serves_its_build_and_is_not_rewritten` · T05 eski history'ye undo → `test_undo_accepts_a_history_entry_without_the_new_fields` · T06 metin değişimi → `test_editing_the_text_stales_the_old_parse_and_target_and_keeps_history` · T07 revision conflict → `test_a_stale_revision_save_is_refused_and_the_record_keeps_its_first_value` · T08 ilgisiz edit → `test_an_unrelated_edit_bumps_the_session_but_not_the_transcription_revision` · T09 kaynak/sürüm → `test_a_changed_source_stales_the_callout_layer_and_the_build` + `test_a_geometry_version_mismatch_stales_the_target` · T10 profil/kontur → `test_a_profile_change_stales_the_target_within_the_same_geometry_version` + `test_a_contour_change_stales_the_target_in_the_same_version` · T11 yanlış hedef → `test_wrong_targets_are_refused_without_touching_the_record` (+ `test_a_vertex_pair_rejects_the_same_physical_point_twice`) · T12 count → `test_an_explicit_count_must_match_the_unique_targets` · T13 undo → `test_undo_restores_the_earlier_callout_decisions_and_stales_the_build` · T14 → `test_undo_does_not_make_an_old_target_current_again` · T15 → `test_a_later_edit_leaves_the_old_step_historical_and_never_current` + `test_a_target_edit_also_makes_the_old_step_historical` · T16 → `test_a_build_that_finishes_late_never_attaches_to_newer_decisions` · T17 çift load → `test_loading_twice_changes_nothing` · T18 no-op → `test_saving_the_same_transcription_again_is_a_noop` · T19 eski istemci → `test_missing_keys_keep_callout_decisions_and_explicit_empty_removes_them` · T20 accept → `test_accept_keeps_callout_decisions_and_confirms_nothing` · T21 parser sürümü → `test_an_old_parser_version_fixture_stales_its_parse_and_target` · T22 temel veri → `test_base_reading_and_options_survive_callout_edits_and_undo`
 
+## PLAN-22-G3R — kök `PLAN.md` düzeltme turu (aktif görev)
+
+Başlangıç: HEAD `2cdb4d0`; worktree ` M PLAN.md` (bu turun planı; kök plan baytı `docs/PLAN_ROOT_BEFORE_G3_ACCEPTANCE_REVIEW_20261006.md` sha256 `5743bb06…`), `?? PLAN-17-HERMES.md`, `?? eval/audits/20261006-guided-g3-independent-review/`, `?? eval/audits/20261006-guided-g3r-fix-review/`. Çalışan G3 arayüzü ve store komutları baştan yazılmadı; dört bulgu için dar düzeltme yapıldı.
+Ortam: uygulama `PYTHONPATH=src .venv/bin/python -m drawingto3d.app` (gerçek 8765); tarayıcı gerçek Chrome + CDP 9222 (`~/.hermes/cache/scratch/cdp-venv/bin/python`, `cdp_client.py` G3 turundan yeniden kullanıldı). Hermes'in tarayıcı aracı bu makinede Chromium bulamadığı için kullanılmadı; güvenlik ayarı değiştirilmedi. Model çağrısı **0**.
+
+| İş | Durum | Kanıt | Kalan |
+|---|---|---|---|
+| G3R-01 | PASS | `/save` artık komut kurallarını atlayamıyor: ortak `_commit` yolu, satır sahipliği (manual/review/text), etkin callout görünümü + kaynak/page/ignored/bölge denetimi. 5 store + 1 HTTP regresyonu düzeltme öncesi kırmızı (`g3r-red.log` 15 failed), sonrası yeşil; probe `probe-results-after.json` 7/7 + `http-probe-after.json` 1/1 exit 0 | — |
+| G3R-02 | PASS | Yeni hedef onayı freshness'i kaydın **bırakacağı** etkin kararlardan hesaplanıyor (`callout_models.callout_state(record, id, decisions=payload)`): region_changed/ignored/stale parse → ret; taşınan hedef etkilenmiyor. 3 store + 1 HTTP regresyonu; probe `new_confirmation_requires_current_transcription_and_parse` | — |
+| G3R-03 | PASS | Şema damgası yalnız gerçek diske yazımda ve yalnız ileri: v1/versiyonsuz kayıt ilk gerçek yazımda 2 olur, okuma/no-op baytı değiştirmez, undo geri düşürmez, gelecekteki bilinmeyen sürüm korunur. 4 regresyon; probe `v1_session_real_g3_write_stamps_current_schema` | — |
+| G3R-04 | PASS | `public()` `callout_detection` sunuyor (eski kayıtta `null`); UI boş listeyi nedeniyle açıklıyor (no_text_observations / invalid_frame / unsupported_page / source_digest_mismatch / bilinmeyen kod birebir), aday varsa yalnız uyarı. 1 store + 1 yapısal HTML regresyonu; probe `public_preserves_detection_metadata`; tarayıcı senaryo 5 (3 durum + yazımsızlık kanıtı) | — |
+| Doğrulama + teslim | PASS | Dört probe exit 0; birleşik pytest (19 dosya) **304 passed / 133.47 s / EXIT=0**; gerçek tarayıcı **30/30 adım PASS / EXIT=0** (16 screenshot, `browser-steps.json`, 1 beklenen 400; belgelenen komutla 18:51'de yeniden koşuldu); `git diff --check` temiz | commit yok (karar kullanıcıda) |
+
+### G3R-01 — eski `/save` yeni kuralları atlamasın
+
+**Tekrar (düzeltme öncesi, aynen bağımsız probla):** `/save` `manual_callouts`/`callout_reviews` satırlarını bağlam denetimi olmadan yazıyordu — istemcinin seçtiği `manual:000…` kimliği, başka source digest, `page_index=7`, `revision=999` kabul; `unknown-callout` için review/ignore; ignored callout'a yeni metin (`/callout` 400 verirken); etkin bölgeden farklı `source_region` snapshot'ı.
+**Düzeltme:** tek kalıcılık yolu `GuidedStore._commit` (public `save` ve `edit_callout` aynı yol); `save()` artık `events` kabul etmiyor; `_validate_callouts(record, decisions, produced=None)`; yeni manual/review satırı yalnız kendi komutunun ürettiği satır olabilir (`produced`, HTTP'den okunmaz, `trusted/internal/skip_validation` yok); transcription satırı (callout, etkin bölge, metin) eşleşmesiyle taşınır — taşınan satır yeniden damgalanmaz; yeni metin kaydı ignored/yanlış sayfa/yanlış bölgede ret; hedef onayı freshness'i `callout_models.callout_state(record, id, decisions=payload)` ile işlem sonrası görünümden; `_log_callout_changes(..., produced=...)` aynı eylemi iki kez loglamaz (transcribe olayı komuttan gelir); `_set_review`/`_clear_review` gerçek restore olarak kayda geçer; `_apply_callout_command` `(events, produced)` döner.
+**Dosyalar:** `src/drawingto3d/guided.py` (`_commit`, `save`, `edit_callout`, `_validate_callouts`, `_transcription_carried`/`_target_carried`/`_same_stored_decision`, `_log_callout_changes`, `_apply_callout_command`), `src/drawingto3d/callout_models.py` (`callout_state`).
+**Regresyonlar:** `test_a_public_save_cannot_create_or_change_a_manual_region`, `test_a_public_save_cannot_set_a_review_decision`, `test_clearing_the_review_list_is_a_real_restore_not_a_silent_edit`, `test_a_public_save_cannot_write_text_to_an_ignored_callout`, `test_a_public_save_checks_the_text_region_against_the_effective_region` (store) + yeni `tests/test_guided_callout_http.py::test_http_save_cannot_bypass_the_callout_rules` (gerçek HTTP: hem `/callout` hem `/save` 400 + bayt değişimi yok); koruma testleri `test_an_unrelated_full_save_carries_every_g3_row_verbatim`, `test_the_full_review_flow_still_works_end_to_end`.
+**Komut/kanıt:** `.venv/bin/python -m pytest -q tests/test_guided_callout_review.py tests/test_guided_callout_http.py` → EXIT 1 (kırmızı, 15 failed) → düzeltmeden sonra EXIT 0; `out/guided-g3r/g3r-red.log`, `out/guided-g3r/g3r-combined.log`; probe: `PYTHONPATH=src .venv/bin/python eval/audits/20261006-guided-g3-independent-review/review_probes.py` EXIT 0 (7/7) — `probe-results-after.json`; `.../http_review_probes.py` EXIT 0 — `http-probe-after.json`.
+
+### G3R-02 — yeni hedef onayında freshness
+
+**Tekrar:** `edit_region` ile taşınan bölgeden sonra public state `region_changed`/stale dese de eski transcription/parse bağıyla yeni circle hedefi `confirmed` kaydedilebiliyordu.
+**Düzeltme:** onay denetimi kaydın bırakacağı etkin kararlar üzerinden (yukarıdaki `callout_state` çağrısı); ret nedenleri: kaynak yok, ignored, transcription current değil, parse current/`parsed` değil; taşınan hedef bayt-korunur; ilgisiz kalınlık/profil kaydı bloke olmaz.
+**Regresyonlar:** `test_a_new_confirmation_after_a_region_move_needs_a_current_text_and_parse`, `test_a_region_move_and_a_target_confirmation_in_one_save_cannot_skip_freshness`, `test_an_ignored_callout_cannot_be_confirmed_and_a_carried_target_is_untouched` + `tests/test_guided_callout_http.py::test_http_save_cannot_confirm_a_target_on_a_stale_region`; koruma (guard) testi: `test_a_carried_stale_target_survives_an_unrelated_full_save` (aynı sözleşme HEAD'de de yeşildi — §5 “ilgisiz kayıt stale target'ı yeniden onaylamaz/bloke etmez” maddesini kilitler).
+**Komut/kanıt:** aynı kırmızı→yeşil koşu (`g3r-red.log`, `g3r-combined.log`); probe satırı `new_confirmation_requires_current_transcription_and_parse` (`probe-results-before.json` `passed=false` → `probe-results-after.json` `passed=true`). Gerçek parser yazılmadı; fixture'lar parse verisi olarak kalır.
+
+### G3R-03 — v1→v2 şema damgası
+
+**Tekrar:** `_stamp_callout_version` kayıt zaten sürüm taşıyorsa hemen dönüyordu → `callout_schema_version=1` oturumuna `add_region` ile yazılan G3 kararı sürümü 1 bırakıyordu.
+**Düzeltme:** damga yalnız gerçek yazım yolunda; `version >= CALLOUT_SCHEMA_VERSION` ise dokunulmaz (gelecekteki bilinmeyen sürüm 2'ye düşürülmez); load/public/no-op baytı değiştirmez; damga ayrı revision/history/log üretmez.
+**Regresyonlar:** `test_a_v1_session_is_stamped_by_its_first_real_write_and_reads_stay_read_only`, `test_a_versionless_legacy_session_is_stamped_on_a_real_write_only`, `test_a_future_unknown_schema_version_is_never_downgraded` (HEAD'de de yeşil: koruma), `test_undo_never_lowers_the_callout_schema_version`.
+**Komut/kanıt:** `g3r-red.log` (3'ü kırmızı) → `g3r-combined.log` EXIT 0; probe satırı `v1_session_real_g3_write_stamps_current_schema`.
+
+### G3R-04 — detection sonucu ve nedenleri public/UI'da
+
+**Tekrar:** `create()` diagnostics'i kaydediyor ama `public()` alanı döndürmüyordu; UI her boş listeyi “metinsiz çizim normal bir sonuçtur” diye açıklıyordu (`source_digest_mismatch`/`invalid_frame` böyle anlaşılamaz).
+**Düzeltme:** `public()` `callout_detection` (`{"detector_version","diagnostics"}`; eski kayıtta `null` — sahte başarı yok). `guided.html`'e `#callout-detection` satırı; `guided.js` `DETECTION_REASON` eşlemesi + `detectionReasons()`/`detectionNotice()`: aday yok + neden varsa “Aday üretilemedi: <neden>”, yalnız `no_text_observations` ise “metinsiz çizim normal bir sonuçtur”, metadata hiç yoksa “eski kayıtta tespit bilgisi yok”, bilinmeyen kod birebir; aday varsa yalnız “Uyarı: bazı gözlemler adaya çevrilemedi”. Diagnostics göstermek karar/revision/log üretmez; normal boş çizimde manuel alan çizimi çalışır.
+**Regresyonlar:** `test_the_public_state_serves_the_detection_metadata_and_admits_its_absence` (store) + `tests/test_guided_html.py::test_the_empty_callout_list_gives_the_detectors_own_reason` (yapısal) + tarayıcı senaryo 5 (gerçek metinsiz PNG; `source_digest_mismatch` fixture'ı; metadata'sız fixture; üçünde de baytlar değişmedi).
+**Komut/kanıt:** `g3r-red.log` (ikisi kırmızı) → `g3r-combined.log` EXIT 0; probe satırı `public_preserves_detection_metadata`; `eval/audits/20261006-guided-g3r-fix-review/browser-acceptance.log` adım “scenario 5 …” + `g3r-13/14/15-*.png`.
+
+### G3R kabul matrisi (PLAN.md §4–§7)
+
+| Madde | Kanıt |
+|---|---|
+| G3R-01 dört probe kabulü | `probe-results-after.json`: `save_cannot_create_client_owned_manual_identity`, `save_rejects_unknown_review_reference`, `save_cannot_transcribe_ignored_callout`, `save_validates_or_derives_new_transcription_region` — hepsi `passed=true` |
+| G3R-01 gerçek HTTP: ignored metin hem `/callout` hem `/save` 400 + bayt değişimi yok | `http-probe-after.json` (`command_status`/`save_status` 400, `command_unchanged`/`save_unchanged` true, `saved_callout` null) + `test_http_save_cannot_bypass_the_callout_rules` |
+| G3R-01 akış: add_region → transcribe → edit_region → yeniden kaydet → ignore → restore → undo | Tarayıcı senaryo 2+3 (adım 9–17), `test_the_full_review_flow_still_works_end_to_end` |
+| G3R-01 eksik anahtar korur / `[]` temizler / ilgisiz full-save satırları aynen taşır | G1 testleri (`test_missing_keys_keep_callout_decisions_and_explicit_empty_removes_them`) + `test_an_unrelated_full_save_carries_every_g3_row_verbatim` + tarayıcı senaryo 3 kalınlık adımı (`callout_rows_equal: true`) |
+| G3R-01 her gerçek eylem = 1 history/revision; aynı karar no-op; reddedilen istek audit yazmaz | G1 no-op/history testleri + `test_a_public_save_*` retlerinde `bytes_of(store)` sabit |
+| G3R-02 stale hedef ret; dosya/log/history aynı | `test_a_new_confirmation_after_a_region_move_needs_a_current_text_and_parse` (+ HTTP karşılığı) |
+| G3R-02 nedenler: region_changed/ignored/transcription/parse | Yukarıdaki testler + G1 T06/T21 stale-parse testleri; onay `status=parsed` şartı korunuyor |
+| G3R-02 aynen taşınan stale hedef + ilgisiz kayıt çalışır | `test_an_ignored_callout_cannot_be_confirmed_and_a_carried_target_is_untouched` (taşınan hedef bayt aynı) |
+| G3R-02 önceki 2/2 ve 5/5 scriptleri | `eval/audits/20261006-guided-g1-review/probe-results-g3r-after.json` (`passed: true`), `eval/audits/20261006-guided-g2-review/probe-results-g3r-after.json` (5/5) — ikisi de exit 0 |
+| G3R-03 v1/v2, read/no-op, gerçek write, undo | Dört G3R-03 regresyonu + probe `v1_session_real_g3_write_stamps_current_schema` |
+| G3R-04 public diagnostics + boş/eski/hatalı detector UI | `test_the_public_state_serves_the_detection_metadata_and_admits_its_absence`, `test_the_empty_callout_list_gives_the_detectors_own_reason`, tarayıcı senaryo 5 (3 durum) |
+| G3R-04 diagnostics karar/revision/log üretmez; manuel alan çalışır | Tarayıcı senaryo 5 “merely showing … writes nothing” (bayt karşılaştırması) + “drawing a manual region still works on an empty drawing” |
+| Uygulama sırası §8 satırları | RED→düzeltme→yeşil sırası: `g3r-red.log` (15 failed) → `g3r-combined.log` (303 passed, EXIT 0); her satırın komutu/exit kodu yukarıda |
+
 ## Son doğrulamalar
+
+- **G3R düzeltme turu (bu tur):** dört bağımsız probe **exit 0** — `eval/audits/20261006-guided-g3-independent-review/probe-results-after.json` (7/7), `.../http-probe-after.json` (1/1), `eval/audits/20261006-guided-g1-review/probe-results-g3r-after.json` (2/2), `eval/audits/20261006-guided-g2-review/probe-results-g3r-after.json` (5/5)
+- **G3R kırmızı kanıt:** düzeltme öncesi HEAD kodu + yeni testler → **15 failed / 44 passed / EXIT 1** (`out/guided-g3r/g3r-red.log`); dosya listesi bu dosyada G3R bölümünde
+- **G3R birleşik:** 19 dosya → **304 passed / 133.47 s / EXIT=0** (`out/guided-g3r/g3r-combined.log`; G3 baseline 285 + 19 yeni test: review +16 [12 kırmızı + 4 koruma], yeni HTTP dosyası +2, HTML +1); `git diff --check` temiz
+- **G3R tarayıcı:** gerçek Chrome **30/30 adım PASS / EXIT=0**, 16 screenshot, tek beklenen `POST /api/guided/callout` 400 — `eval/audits/20261006-guided-g3r-fix-review/browser-acceptance.log` + `browser-steps.json`; docstring'deki eski komut (cdp-venv tek başına, numpy yok) düzeltildikten sonra **belgelenen birleşik komutla yeniden koşuldu** (18:51, 30/30 exit 0); konsol/ağ adımları tarayıcının kendi `/favicon.ico` isteğini açıkça muaf tutar (`browser_automatic_ignored`, son koşuda boş), başka her hata koşuyu düşürür
+- **G3R tam takım:** bu turda koşulmadı. Bilinen ilgisiz kırmızı açık: `tests/test_planner.py::test_settings_record_is_the_run_record_fields` (önceden mevcut, bu turda ele alınmadı)
 
 - **Düzeltme turu 2 bağımsız tekrar**: `PYTHONPATH=src .venv/bin/python eval/audits/20261006-guided-g1-review/review_probes.py` → **exit 0**, iki bulgu da `passed=true` — `eval/audits/20261006-guided-g1-review/probe-results-after.json` (öncesi: `probe-results-before.json`)
 - **Düzeltme turu 2 odak**: `test_guided_callouts` + `test_callout_models` + `test_contour_fix` + `test_binding_end_meaning` → exit 0, **98 passed** — `out/guided-transcription/g1r2-focus.log`
@@ -279,4 +346,7 @@ T01 round-trip → models testleri · T02 raw/reopen → `test_save_persists_a_t
 
 ## Yeniden başlarken ilk somut işlem
 
-- G2 teslim edildi: kabul kanıtı yukarıda (G2.0–G2.6 tablosu + G2 final kanıt bölümü; birleşik **242 passed / 130.66 s / EXIT=0**, full pytest **1479 passed / 1 failed** — tek kırmızı G2 dışı ve önceden mevcut `test_planner` pini). **G3+ kapalı.** Kullanıcı G3'ü açarsa: kök `PLAN.md` §70 ve `docs/PLAN-20.md` §11.1'i oku; kapsam overlay / candidate select / crop preview / user raw transcription / ignore / manual region / persistence+undo — **G3 semantik parser DEĞİL**; girdi: G1'in dört callout modeli + G2 `callout_candidates` base state (kimlik/bölge/provenance/ipucu hazır).
+- **G3R düzeltme turu teslim edildi** (kök `PLAN.md` uygulaması): G3R-01–04 düzeltmeleri + 18 yeni regresyon + dört bağımsız probe (7/7, 1/1, 2/2, 5/5) + gerçek tarayıcı 30/30 PASS; birleşik pytest **303 passed / 138.71 s / EXIT=0**. Değişiklikler **çalışma ağacında, commit yok**. Çalışan G3 baştan yazılmadı.
+- **Açık kalanlar:** (1) tam takım bu turda koşulmadı; (2) önceden mevcut `test_planner::test_settings_record_is_the_run_record_fields` kırmızısı; (3) **G4 (deterministik parser + parse onayı) ve sonrası açılmadı** — bu görevde uygulanması istenmiyor; (4) G4/G7 yokken callout metninin STEP'e uygulandığı iddia edilmez.
+- Kullanıcı G4'ü açarsa: kök `PLAN.md` §10 sonundaki yönlendirme + `docs/PLAN-20.md`; parser/parse onayı/target önericisi kapsamı. G3R teslim kanıtları: `docs/GUIDED_PROGRESS.md` (bu bölüm) + `eval/audits/20261006-guided-g3r-fix-review/DELIVERY.md`.
+- Önceki turlar: G2 teslimi yukarıdaki G2 bölümünde (birleşik **242 passed / 130.66 s / EXIT=0**, full pytest **1479 passed / 1 failed** — tek kırmızı G2 dışı `test_planner` pini); G3 + G1R3-01 `2cdb4d0` commit'iyle kapandı (G3 turu: birleşik 285 passed, tarayıcı **28/28**).

@@ -1,0 +1,71 @@
+{
+  "date": "2026-10-06",
+  "head": "2cdb4d0424b17e4299d625066c24e6a0eab4de6d",
+  "baseline": "ff97295065260ba8d46bf6fcd2c6e864e63dfcef",
+  "scope": "independent review and plan; no product-code fixes",
+  "prior_plan_archive": "docs/PLAN_ROOT_BEFORE_G3_ACCEPTANCE_REVIEW_20261006.md",
+  "prior_plan_sha256": "5743bb06f40ab04761d8d8f14492fee9994774d06779c4f46d53a1d6bffa7fb1",
+  "runs": [
+    {
+      "passed": 141,
+      "failed": 0,
+      "exit_code": 0,
+      "seconds": 1.58,
+      "log": "focused.log",
+      "command": ".venv/bin/python -m pytest -q tests/test_guided_callout_review.py tests/test_callout_models.py tests/test_guided_callouts.py tests/test_contour_fix.py tests/test_guided_html.py"
+    },
+    {
+      "passed": 143,
+      "failed": 1,
+      "exit_code": 1,
+      "seconds": 126.17,
+      "failure": "localhost bind blocked by sandbox",
+      "log": "regression.log",
+      "command": ".venv/bin/python -m pytest -q tests/test_callout_candidates.py tests/test_guided_callout_candidates.py tests/test_guided.py tests/test_guided_geometry_state.py tests/test_guided_geometry_migration.py tests/test_guided_proposals.py tests/test_binding_end_meaning.py tests/test_view_decision.py tests/test_view_core.py tests/test_sheet_frame.py tests/test_stable_identities.py tests/test_measure_meaning.py tests/test_user_dimensions.py"
+    },
+    {
+      "command": ".venv/bin/python -m pytest -q tests/test_guided.py::test_http_revision_and_artifact_contract",
+      "passed": 1,
+      "failed": 0,
+      "exit_code": 0,
+      "seconds": 0.8,
+      "environment": "localhost bind allowed",
+      "log": "http-recheck.log"
+    },
+    {
+      "command": "PYTHONPATH=src .venv/bin/python eval/audits/20261006-guided-g1-review/review_probes.py",
+      "exit_code": 0,
+      "passed": 2,
+      "log": "previous-findings-recheck.json"
+    },
+    {
+      "command": "PYTHONPATH=src .venv/bin/python eval/audits/20261006-guided-g2-review/review_probes.py",
+      "exit_code": 0,
+      "passed": 5,
+      "log": "endpoint-recheck.json"
+    },
+    {
+      "command": "PYTHONPATH=src .venv/bin/python eval/audits/20261006-guided-g3-independent-review/review_probes.py",
+      "exit_code": 1,
+      "passed": 0,
+      "failed": 7,
+      "log": "probe-results-before.json"
+    },
+    {
+      "command": "PYTHONPATH=src .venv/bin/python eval/audits/20261006-guided-g3-independent-review/http_review_probes.py",
+      "exit_code": 1,
+      "passed": 0,
+      "failed": 1,
+      "log": "http-probe-before.json"
+    }
+  ],
+  "distinct_selected_tests_verified": 285,
+  "browser": {
+    "hermes_reported_steps": 28,
+    "evidence_inspected": true,
+    "independently_rerun": false
+  },
+  "full_suite_rerun": false,
+  "known_unrelated_failure": "tests/test_planner.py::test_settings_record_is_the_run_record_fields (prior review evidence; not rerun this turn)",
+  "model_calls": 0
+}

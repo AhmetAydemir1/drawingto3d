@@ -151,6 +151,22 @@ function drawCrop(row){const canvas=$('callout-crop');if(!canvas)return;const cx
  const sx=canvas.width/crop.w,sy=canvas.height/crop.h;
  cx.strokeStyle='#178a51';cx.lineWidth=2;cx.strokeRect((region.x-crop.x)*sx,(region.y-crop.y)*sy,region.w*sx,region.h*sy);
  text('callout-crop-note','Kırpma yalnız inceleme kolaylığıdır; doğruluk kararı değildir.');}
+// --- G3R-04: tespit sonucu ve nedeni — boş liste tek bir "metinsiz çizim" açıklamasına indirgenmez ----
+const DETECTION_REASON={invalid_frame:'çizim çerçevesi okunamadı',unsupported_page:'bu sayfa desteklenmiyor',
+ invalid_bbox_nonfinite:'metin kutusu sonlu değil',invalid_bbox_area:'metin kutusu boş',
+ bbox_outside_frame:'metin kutusu sayfa dışında',unknown_text_method:'bilinmeyen metin yöntemi',
+ region_collapsed:'metin kutusu bölgede sıfıra çöküyor',duplicate_hint_conflict:'aynı bölgede çelişen metinler',
+ provenance_ids_capped:'kanıt listesi üst sınıra ulaştı',source_digest_mismatch:'gözlem kaydı bu oturumun kaynağıyla eşleşmiyor'};
+function detectionReasons(diagnostics){return [...new Set((diagnostics||[]).map(row=>row.code))]
+ .filter(code=>code!=='no_text_observations').map(code=>DETECTION_REASON[code]||`bilinmeyen neden: ${code}`);}
+function detectionNotice(hasRows){const detection=state.callout_detection||null;
+ if(!detection)return hasRows?'':'Aday bulunmuyor; bu eski kayıtta tespit bilgisi yok. Alanı “Yeni alan çiz” ile siz çizebilirsiniz.';
+ const reasons=detectionReasons(detection.diagnostics);
+ if(hasRows)return reasons.length?`Uyarı: bazı gözlemler adaya çevrilemedi (${reasons.join('; ')}).`:'';
+ if(reasons.length)return `Aday üretilemedi: ${reasons.join('; ')}. Alanı “Yeni alan çiz” ile siz çizebilirsiniz.`;
+ const textOnly=(detection.diagnostics||[]).some(row=>row.code==='no_text_observations');
+ if(textOnly)return 'Bu çizimde basılı metin bulunamadı: metinsiz çizim normal bir sonuçtur. Alanı “Yeni alan çiz” ile siz çizebilirsiniz.';
+ return 'Tespit bu okumada aday üretmedi; nedeni kayıtta yok. Alanı “Yeni alan çiz” ile siz çizebilirsiniz.';}
 function renderCallouts(){const list=$('callout-list');if(!list)return;const rows=calloutList(),states=calloutStates();
  if(selectedCallout&&!rows.some(row=>row.id===selectedCallout))selectedCallout=null;
  list.replaceChildren();
@@ -163,7 +179,8 @@ function renderCallouts(){const list=$('callout-list');if(!list)return;const row
  const ignored=all.filter(row=>row.ignored).length;
  const reviewed=all.filter(row=>{const t=(states[row.id]||{}).transcription;return t&&t.state!=='missing';}).length;
  text('callout-summary',all.length?`${(state.callout_candidates||[]).length} makine adayı · ${all.length} etkin alan · ${reviewed} incelendi · ${ignored} yok sayıldı`
-  :'Bu okumada callout adayı yok: metinsiz çizim normal bir sonuçtur, alanı “Yeni alan çiz” ile siz çizebilirsiniz.');
+  :'Bu okumada callout alanı yok.');
+ text('callout-detection',detectionNotice(all.length));
  const row=calloutRow(selectedCallout);$('callout-detail').hidden=!row;
  if(!row)return;
  text('callout-title',`${row.label} · ${row.source_kind==='manual'?'elle çizilen alan':'makine tespiti'}${row.region_override?' · alan düzeltildi':''}`);

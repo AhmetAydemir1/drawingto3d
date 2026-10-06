@@ -1,0 +1,76 @@
+{
+  "reviewed_baseline": "2cdb4d0",
+  "cases": [
+    {
+      "case": "save_cannot_create_client_owned_manual_identity",
+      "expected": "reject_without_write; creation belongs to add_region",
+      "error": "manual callout alanını yalnız 'add_region' ekler; kayıtlı alanın kimliği, kaynağı, sayfası ve bölgesi yalnız 'edit_region' ile düzeltilir: manual:00000000000000000000000000000000",
+      "unchanged": true,
+      "persisted": null,
+      "passed": true
+    },
+    {
+      "case": "save_rejects_unknown_review_reference",
+      "error": "gözden geçirme kararı yalnız 'set_ignored'/'edit_region' komutlarıyla değişir: unknown-callout",
+      "persisted": null,
+      "passed": true
+    },
+    {
+      "case": "save_cannot_transcribe_ignored_callout",
+      "error": "yok sayılan bir callout'a metin yazılamaz; önce geri alın",
+      "callout_state": null,
+      "passed": true
+    },
+    {
+      "case": "save_validates_or_derives_new_transcription_region",
+      "error": "metnin kaynak bölgesi bu callout'un etkin bölgesi değil; bölgeyi 'edit_region' düzeltir: k1",
+      "persisted_region": null,
+      "effective_region": [
+        0.1,
+        0.2,
+        0.4,
+        0.5
+      ],
+      "passed": true
+    },
+    {
+      "case": "new_confirmation_requires_current_transcription_and_parse",
+      "before": {
+        "id": "k1",
+        "page_index": 0,
+        "source_kind": "vector_text",
+        "manual": false,
+        "ignored": false,
+        "transcription": {
+          "state": "stale",
+          "revision": 1,
+          "reason": "region_changed"
+        },
+        "parse": {
+          "state": "stale",
+          "reason": "region_changed"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "error": "hedef onayı güncel bir transcription gerektirir (region_changed): k1",
+      "persisted": null,
+      "passed": true
+    },
+    {
+      "case": "v1_session_real_g3_write_stamps_current_schema",
+      "read_unchanged": true,
+      "expected_version": 2,
+      "actual_version": 2,
+      "passed": true
+    },
+    {
+      "case": "public_preserves_detection_metadata",
+      "present": true,
+      "passed": true
+    }
+  ],
+  "passed": true
+}

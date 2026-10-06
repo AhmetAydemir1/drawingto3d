@@ -1,0 +1,141 @@
+{
+  "reviewed_baseline": "2cdb4d0",
+  "cases": [
+    {
+      "case": "save_cannot_create_client_owned_manual_identity",
+      "expected": "reject_without_write; creation belongs to add_region",
+      "error": null,
+      "unchanged": false,
+      "persisted": [
+        {
+          "id": "manual:00000000000000000000000000000000",
+          "source_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "page_index": 7,
+          "region": [
+            0.2,
+            0.2,
+            0.3,
+            0.3
+          ],
+          "revision": 999
+        }
+      ],
+      "passed": false
+    },
+    {
+      "case": "save_rejects_unknown_review_reference",
+      "error": null,
+      "persisted": [
+        {
+          "callout_id": "unknown-callout",
+          "region_override": null,
+          "ignored": true,
+          "revision": 999
+        }
+      ],
+      "passed": false
+    },
+    {
+      "case": "save_cannot_transcribe_ignored_callout",
+      "error": null,
+      "callout_state": {
+        "id": "k1",
+        "page_index": 0,
+        "source_kind": "vector_text",
+        "manual": false,
+        "ignored": true,
+        "transcription": {
+          "state": "current",
+          "revision": 2,
+          "reason": null
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "passed": false
+    },
+    {
+      "case": "save_validates_or_derives_new_transcription_region",
+      "error": null,
+      "persisted_region": [
+        0.6,
+        0.6,
+        0.7,
+        0.7
+      ],
+      "effective_region": [
+        0.1,
+        0.2,
+        0.4,
+        0.5
+      ],
+      "passed": false
+    },
+    {
+      "case": "new_confirmation_requires_current_transcription_and_parse",
+      "before": {
+        "id": "k1",
+        "page_index": 0,
+        "source_kind": "vector_text",
+        "manual": false,
+        "ignored": false,
+        "transcription": {
+          "state": "stale",
+          "revision": 1,
+          "reason": "region_changed"
+        },
+        "parse": {
+          "state": "stale",
+          "reason": "region_changed"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "error": null,
+      "persisted": [
+        {
+          "callout_id": "k1",
+          "target_kind": "circle",
+          "target_ids": [
+            "c0"
+          ],
+          "geometry_version": 3,
+          "geometry_key": "dea25226a3ffa5187151e112dde655140a4bb29bd0a316061d9ba662ad056d70",
+          "profile_id": "outline_1",
+          "transcription_revision": 1,
+          "parser_version": "callout-parser/1",
+          "evidence": [
+            {
+              "kind": "user_click",
+              "ref": "c0"
+            }
+          ],
+          "status": "confirmed",
+          "reconfirm": false
+        }
+      ],
+      "passed": false
+    },
+    {
+      "case": "v1_session_real_g3_write_stamps_current_schema",
+      "read_unchanged": true,
+      "expected_version": 2,
+      "actual_version": 1,
+      "passed": false
+    },
+    {
+      "case": "public_preserves_detection_metadata",
+      "present": false,
+      "passed": false
+    }
+  ],
+  "passed": false
+}

@@ -1,0 +1,31 @@
+{
+  "head": "2cdb4d0",
+  "command_status": 400,
+  "command_error": "yok sayılan bir callout'a metin yazılamaz; önce geri alın",
+  "command_unchanged": true,
+  "save_status": 200,
+  "save_unchanged": false,
+  "saved_callout": [
+    {
+      "id": "k1",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "manual": false,
+      "ignored": true,
+      "transcription": {
+        "state": "current",
+        "revision": 2,
+        "reason": null
+      },
+      "parse": {
+        "state": "missing",
+        "reason": "needs_parse"
+      },
+      "target": {
+        "state": "missing",
+        "reason": "needs_target"
+      }
+    }
+  ],
+  "passed": false
+}

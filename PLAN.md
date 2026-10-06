@@ -1,417 +1,238 @@
-# drawingto3d — Hermes: kısa uç düzeltmesi → G3 callout review UI
+# drawingto3d — Hermes: G3 kayıt sınırlarını düzelt ve kabulü tamamla
 
-**Hazırlanma:** 2026-10-06\
-**İncelenen HEAD:** `ff97295`\
-**Ana ürün planı:** [docs/PLAN-20.md](docs/PLAN-20.md)\
-**Tamamlanan G2 planı:** [docs/PLAN-21.md](docs/PLAN-21.md)\
-**Önerilen sonraki uygulama kapsamı:** G1R3-01 dar düzeltmesi, ardından G3\
-**G4+ / model çağrıları / yeni CAD motoru:** Kapsam dışı.
+**Tarih:** 2026-10-06\
+**İncelenen HEAD:** `2cdb4d0424b17e4299d625066c24e6a0eab4de6d` (`2cdb4d0`)\
+**Ana ürün yönü:** [PLAN-20](docs/PLAN-20.md) · **Önceki G3 uygulama planı:** [PLAN-22](docs/PLAN-22.md)\
+**Bu görev:** G3R-01 → G3R-02 → G3R-03 → G3R-04 → doğrulama ve teslim.\
+**G4 ve sonrası:** Bu görev kapsamında uygulanmayacak.
 
-Bu dosya, “yapılanları kontrol et ve plan.md hazırla” isteği üzerine hazırlandı. Bu inceleme ürün kodunu değiştirmedi ve G3'ü uygulamadı. **Kullanıcı bu dosyayı Hermes'e “uygula” diye verdiğinde görev G1R3-01 + G3 olur:** düzeltme kapısı geçince G3'e devam et; iki adım arasında tekrar kapsam onayı isteme. G4'e geçme.
+Bu dosya, kullanıcının “yapılanları kontrol et ve plan.md hazırla” isteği için hazırlanmıştır. İnceleme sırasında ürün kodu değiştirilmedi. Buradaki uygulama talimatları, kullanıcı bu planı Hermes'e **“uygula”** diye verdiğinde yürütülecek görevdir. Dört düzeltme arasında tekrar faz onayı isteme; hepsi aynı işin kapsamıdır. Kabul kapısı geçmeden parser geliştirmesine başlama.
 
-Önceki kök plan baytları korunarak [arşivlendi](docs/PLAN_ROOT_BEFORE_G3_REVIEW_20261006.md); SHA-256 `09e18c8252ca8d3456864ad75e7fe0e15a7c05f9da1f1e75c7167d45b62b4259`. Bu dosya `docs/PLAN-21.md` ile aynı G2 planıdır. Diske göre `plan.md` ve `PLAN.md` aynı dosyaya gider; Git'teki mevcut `PLAN.md` adı korundu.
+Önceki kök planın baytları [arşivde](docs/PLAN_ROOT_BEFORE_G3_ACCEPTANCE_REVIEW_20261006.md) korunmuştur; SHA-256: `5743bb06f40ab04761d8d8f14492fee9994774d06779c4f46d53a1d6bffa7fb1`. Bu içerik `docs/PLAN-22.md` ile aynıdır. Bu diskte `plan.md` ve `PLAN.md` aynı dosyaya gider; mevcut Git adı korunmuştur.
 
-## 1. Hermes'e başlangıç mesajı
+## 1. Hermes'e verilecek mesaj
 
-> Kök PLAN.md'yi uygula. Önce G1R3-01'deki yanlış nokta eşitliği toleransını küçük regresyon testleriyle düzelt. Kapı geçince mevcut /guided uygulamasında G3'ü tamamla: callout overlay, seçim, crop, kullanıcı metni, ignore/geri al, manuel alan ve bölge düzeltme. Veri kararları mevcut history/revision/store yolunu kullanmalı. Gerçek tarayıcı kabulünü yap. Parser, target önericisi ve callout→CAD compiler yazma; G4+ kapalı. İş paketleri arasında ilerleme dosyasını güncelle ve aynı işi baştan yapma. G3 kabul tablosuyla teslim et.
+> Kök PLAN.md'yi uygula. G3 arayüzü ve kısa uç düzeltmesi mevcut; bunları baştan yazma. Önce yeni review scriptindeki yedi ihlali ve gerçek HTTP tekrarındaki /save bypass'ını doğrula. G3R-01–04'ü sırayla düzelt: bütün kayıt yollarında aynı kullanıcı kararı kuralları, yeni hedef onayında gerçek freshness kontrolü, v1→v2 şema damgası ve detection diagnostics'in public/UI'a taşınması. Her işte önce anlamlı kırmızı regresyon, sonra dar düzeltme ve yeşil test yap. Eksik alanı koruma, açık boş liste, eski kararları aynen taşıma, undo, no-op ve build stale davranışlarını bozma. İlgili HTTP ve tarayıcı kabulünü tamamla. G4/parser/target önericisi/CAD compile/model çağrısı yok. İlerleme kaydını güncelle; dört düzeltmenin kabul tablosuyla teslim et.
 
-**Okuma sırası:** İnceleme sonucu ve çalışma kuralları (§2–3) → dar düzeltme (§4) → G3 sözleşmesi (§5–7) → iş paketleri (§8) → test/teslim (§9–11). Eski 100+ başlıklı G2 planını yeniden uygulama listesine dönüştürme.
+**Okuma sırası:** §2 inceleme → §3 çalışma sınırları → §4–7 düzeltmeler → §8–10 test ve teslim. Eski numaralı planlardaki tamamlanmış fazları yeniden açma.
 
-## 2. Bağımsız inceleme sonucu
+## 2. Bağımsız inceleme: ne tamam, ne eksik?
 
 ### 2.1 Doğrulanan ilerleme
 
-- `316518e`: önceki iki bulgu düzeltildi. Çıkarılmış kenar hedefi reddediliyor; gerçek stale→current yeniden onayı tam bir `user/confirm_target` olayı yazıyor.
-- Eski bağımsız tekrar scripti güncel HEAD'de tekrar çalıştırıldı: iki bulgu da `passed=true`, exit 0.
-- `ff97295`: G2 `Observations → CalloutCandidate` adaptörü var; `GuidedStore.create()` aynı observations nesnesini kullanarak adayları ve detection metadata'yı saklıyor.
-- G2 adaptörü normalize bölge, kararlı kimlik, exact dedup, provenance, metin ipucu ve açık diagnostics üretiyor. Kullanıcı transcription/parse/target oluşturmuyor.
-- Yeni oturum, reopen, eski oturum ve gerçek vektör/raster testleri geçti. İncelenen G2 değişikliğinde ayrıca doğrulanmış yeni bir adapter hatası bulunmadı.
-- Henüz callout overlay, transcription paneli, manuel region ve ignore kullanıcı yolu yok. Sıradaki ürün işi G3.
+- G3 için `ManualCalloutDecision`, `CalloutReviewDecision`, `effective_callouts()`, dört store komutu ve `/api/guided/callout` var.
+- UI'da overlay, seçim/crop, kullanıcı metni, makine ipucunu bilinçli alma, ignore/restore, manuel alan, bölge düzenleme ve kaydedilmemiş metin taslağı var.
+- Bölge düzenleme komutu eski transcription snapshot'ını koruyor; public state `stale/region_changed` gösteriyor.
+- Kısa kenar düzeltmesi doğru: fiziksel nokta eşitliği 0.5 px; kontur onarım bütçesi 20 px ayrı kalmış. Bağımsız scriptte 5/10/20/21 px uçlar kabul, aynı köşenin alias'ları ret: **5/5**.
+- Önceki çıkarılmış kenar / yeniden onay günlüğü bulguları kapalı: bağımsız tekrar **2/2**.
+- Gerçek parser, parse onayı, target önericisi ve callout→CAD compile hâlâ yok. Testte hazırlanmış parse verisi çalışan parser kanıtı değildir.
 
-### 2.2 Bu turda gerçekten çalıştırılan testler
+**Karar:** G3 uygulaması önemli ölçüde mevcut; aşağıdaki kayıt sözleşmesi açıkları yüzünden bağımsız kabul tamamlanmış sayılmaz. G3'ü silip yeniden yazma. G4'ten önce bu dar düzeltmeleri bitir.
 
-| Kontrol | Sonuç |
+### 2.2 Bu incelemede gerçekten çalıştırılanlar
+
+| Kontrol | Gerçek sonuç |
 |---|---|
-| `test_callout_candidates`, `test_guided_callout_candidates`, `test_callout_models`, `test_guided_callouts` | **133 passed / 50.05 s / exit 0** |
-| Diğer 13 ilgili guided/geometri/UI yapısı test dosyası | **108 passed, 1 failed / 76.58 s / exit 1**; tek failure localhost portuna sandbox izni |
-| Aynı HTTP testi izinli localhost ortamında tekrar | **1 passed / 1.29 s / exit 0** |
-| Toplam seçili küme | **242 farklı test doğrulandı; üç koşunun birleşimi**, tek koşu diye raporlama |
-| Önceki G1R2 bağımsız tekrarları | 2/2 geçti, exit 0 |
-| Yeni kısa kenar tekrarı | 5, 10, 20 px farklı uçlar yanlış reddediliyor; 21 px kabul; aynı köşenin alias'ları doğru reddediliyor |
-| Bilinen `test_planner.py::test_settings_record_is_the_run_record_fields` | **1 failed / 0.12 s**; testin eski anahtar kümesinde `repeat_penalty` ve `repeat_last_n` yok |
+| Beş dosya: callout review/models/store, contour fix, guided HTML | **141 passed / 1.58 s / exit 0** |
+| Kalan 13 ilgili test dosyası | **143 passed, 1 failed / 126.17 s / exit 1**; tek failure sandbox'ın localhost bind engeli |
+| Aynı HTTP testi localhost izniyle tekrar | **1 passed / 0.80 s / exit 0** |
+| Seçili kümenin toplamı | **285 farklı test doğrulandı**; üç koşunun birleşimi, tek koşu değildir |
+| Önceki G1 review scripti | **2/2, exit 0** |
+| Önceki kısa kenar review scripti | **5/5, exit 0** |
+| Yeni bağımsız store/public kontrolleri | **7 ihlal, exit 1**; §4–7'de dört iş olarak gruplanmıştır |
+| Yeni gerçek HTTP tekrarı | **exit 1**: `/callout` doğru 400; aynı yasak metin `/save` üzerinden 200 |
 
-`test_planner` hatası G2 diff'inde değişmeyen test/ayar sözleşmesine aittir; yeni G2 hatası olarak sayılmadı. **Tam test takımı yeşil değildir.** Önceki teslimin `1479 passed, 1 failed` tam koşu raporu tarihsel kanıttır; bu tur 75 dakikalık tüm takım tekrar çalıştırılmadı. Bu planın odak işi dışında kalan test beklentisini sessizce gevşetme veya model ayarlarını kaldırma.
+Kanıt dizini: [eval/audits/20261006-guided-g3-independent-review](eval/audits/20261006-guided-g3-independent-review).
 
-Kanıt klasörü: [eval/audits/20261006-guided-g2-review](eval/audits/20261006-guided-g2-review).
+- [Tam komutlar ve koşu metadata'sı](eval/audits/20261006-guided-g3-independent-review/review-metadata.json)
+- [Odak testleri](eval/audits/20261006-guided-g3-independent-review/focused.log), [regresyonlar](eval/audits/20261006-guided-g3-independent-review/regression.log), [HTTP tekrar](eval/audits/20261006-guided-g3-independent-review/http-recheck.log)
+- [Yedi ihlalin çıktısı](eval/audits/20261006-guided-g3-independent-review/probe-results-before.json), [HTTP bypass kanıtı](eval/audits/20261006-guided-g3-independent-review/http-probe-before.json)
+- [Kısa kenar tekrarları](eval/audits/20261006-guided-g3-independent-review/endpoint-recheck.json), [önceki bulgular](eval/audits/20261006-guided-g3-independent-review/previous-findings-recheck.json)
 
-- [focused.log](eval/audits/20261006-guided-g2-review/focused.log)
-- [regression.log](eval/audits/20261006-guided-g2-review/regression.log)
-- [http-recheck.log](eval/audits/20261006-guided-g2-review/http-recheck.log)
-- [previous-findings-recheck.json](eval/audits/20261006-guided-g2-review/previous-findings-recheck.json)
-- [Yeni bulgu: probe-results-before.json](eval/audits/20261006-guided-g2-review/probe-results-before.json)
-- [Bilinen planner test hatası](eval/audits/20261006-guided-g2-review/known-planner-failure.log)
+Hermes'in [G3 browser logu](eval/audits/20261006-guided-g3-review/browser-acceptance.log) **28/28 PASS** bildiriyor. Kabul scripti, log/step kaydı ve ekran görüntüsü incelendi; **bu bağımsız turda tarayıcı senaryoları yeniden yürütülmedi**. Bu sonucu kendi yeni tarayıcı koşun gibi raporlama.
 
-### 2.3 İncelemede bulunan yeni gerileme
+Tam test takımı yeniden çalıştırılmadı. Bilinen `tests/test_planner.py::test_settings_record_is_the_run_record_fields` failure'ı önceki incelemede doğrulandı: beklenen anahtar kümesinde `repeat_penalty` ve `repeat_last_n` yok. [Önceki kanıt](eval/audits/20261006-guided-g2-review/known-planner-failure.log) korunuyor. “Tüm testler yeşil” deme; bu hatayı kapatmak için ilgisiz ayar/test değiştirme.
 
-`guided._check_target_geometry()` fiziksel nokta eşitliği için `RASTER_JOIN_TOLERANCE_PX = 20.0` kullanıyor. Bu değer bozuk konturdaki bir açıklığın onarılmasına izin veren mesafedir; iki ayrı ölçü ucunun aynı nokta olduğunu göstermez.
+## 3. Çalışma ve yetki sınırları
 
-Geçerli bir konturda `(20,20)` ve `(30,20)` uçlarını seçince:
+1. `git status --short`, HEAD ve varsa yeni diff'i oku; geçerli `AGENTS.md` talimatlarını kontrol et. `2cdb4d0` üstüne yeni iş geldiyse eski satır numaraları yerine fonksiyon adlarıyla ilerle.
+2. `PLAN-17-HERMES.md`, numaralı planlar ve geçmiş kanıtlar korunacak. `*-before` çıktısını sonraki koşuyla ezme; `*-after` kullan. Yeni numaralı kopya gerekiyorsa önce boş numarayı kontrol et; `PLAN-22`'yi ezme.
+3. `docs/GUIDED_PROGRESS.md` içine bu dört iş için yeni tablo ekle: `BEKLİYOR / DEVAM / GEÇTİ / ENGELLİ`. Yeniden başlayınca önce bu tabloyu ve diff'i oku; biten işi tekrarlama.
+4. Tek küçük iş döngüsü: hatayı tekrar et → regresyon → dar düzeltme → ilgili test → komut/exit code/log/sonraki adımı kaydet.
+5. Üç başarısız denemeden sonra kör değişiklik yapma. Küçük tekrar ve hipotez kaydet; bağımsız kapsam içi işe devam edebilirsin. Engeli başarı diye işaretleme.
+6. Yeni framework, ikinci store/undo sistemi, CAD motoru, OCR servisi, model çağrısı veya SEMREAD çalışması yok. Araştırma `PARKED`, dev bütçesi 4/12 olarak kalır.
+7. Mevcut `.venv/bin/python` kullan. Yardımcı araç için proje ortamını yeniden çözümleme/senkronlama; `uv run` ile bağımlılıkları istemeden kaldırma. Ortam hatasında önce gerçek nedeni belirle.
+8. Tarayıcı aracı localhost'a izin vermiyorsa aracın güvenlik engelini dolanma veya genel güvenlik ayarını kapatma. İzinli yerel tarayıcı/test yolunu kullan; gereken ortam iznini somut engelle raporla.
+9. Testi skip/xfail ederek veya bekleneni bozuk davranışa uydurarak kapı geçme. Test kanıtını uydurma; store testi, gerçek HTTP testi ve tarayıcı testi ayrı şeylerdir.
+10. Yalnız ilgili değişiklikleri açık dosya adlarıyla stage et. Push/merge/deploy teslim koşulu değil. Kaynak çizim dışındaki gold/reference STEP bilgisi producer'a giremez.
 
-```text
-Beklenen: 10 px uzaklıktaki iki farklı uç kabul edilir.
-Gerçek: "vertex_pair aynı fiziksel noktayı iki kez seçemez" hatası.
-```
+## 4. G3R-01 — Eski `/save` yeni kuralları atlamasın
 
-Aşağıdaki ilk iş bu dar gerilemeyi kapatır; G2'yi baştan yazmak gerekmez.
+**Yer:** `guided.py`: `save`, `edit_callout`, `_prepare_callouts`, `_validate_callouts`; `app.py` dispatch.
 
-## 3. Çalışma kuralları
+### Kanıt
 
-1. Başlangıç HEAD/worktree durumunu kaydet. `ff97295` sonrasında yeni değişiklik varsa ilgili diff'i oku; bu planın satır numaralarını sabit kabul etme.
-2. Geçerli `AGENTS.md` dosyalarını kontrol et. Kullanıcının değişikliklerini, numaralı planları ve `PLAN-17-HERMES.md` dosyasını koru.
-3. `docs/GUIDED_PROGRESS.md` içine bu görev için yeni bölüm aç. Eski test ve teslim kayıtlarını silme. G2.6 hâlâ `DEVAM`, current HEAD eski gibi kalmış özetleri gerçek durumla tutarlı hale getir; geçmiş sonuçları yeniden yazma.
-4. Bir seferde tek küçük iş: davranışı tanımla → kritik store/geometri davranışı için kırmızı test → dar uygulama → ilgili yeşil test → ilerleme kaydı.
-5. Her iş sonunda komut, exit code, sonuç sayıları ve log yolunu yaz. Yeniden başlarken önce ilerleme dosyası ve diff'i oku; biten fazı baştan yapma.
-6. Üç başarısız denemeden sonra kör değişiklik yerine küçük tekrar, hipotez ve engeli kaydet. Bağımsız kapsam içi işler sürdürülür; engel başarı sayılmaz.
-7. Yeni paralel uygulama, UI framework göçü, CAD motoru, OCR servisi, model çağrısı ve SEMREAD requalification yok. 001D park edilmiş kalır; 001E açılmaz.
-8. Testi skip/xfail yaparak veya beklentiyi hataya uydurarak kabul kapısı geçme. Ortam engeli, ürün hatası ve bilinen eski failure ayrı raporlanır.
-9. Kaynak çizim dışındaki gold/reference STEP bilgisi producer'a giremez. Dosya adı, case no veya kaynak hash'i ile özel CAD davranışı yazma.
-10. Commit gerekiyorsa yalnız ilgili dosyaları açık adlarıyla stage et. Push/merge/deploy bu planın teslim şartı değildir.
+Mevcut komut doğrulamaları `_apply_callout_command` içinde. Eski `save` ise yeni `manual_callouts` / `callout_reviews` alanlarını Pydantic şekil kontrolünden sonra bağlamlarını doğrulamadan kalıcılaştırıyor. Bağımsız tekrarlar şunları kabul ettirdi:
 
-## 4. G1R3-01 — Nokta eşitliği ve kontur onarım toleransını ayır
+- İstemcinin seçtiği `manual:000…`, başka source digest'i, `page_index=7`, `revision=999`.
+- `unknown-callout` için review/ignore kararı ve istemci revision'ı.
+- Ignored callout'a yeni transcription; `/callout` ret verirken `/save` metni `current` olarak kaydediyor.
+- Yeni transcription için gerçek etkin bölgeden farklı `source_region` snapshot'ı.
 
-**Öncelik:** P2; küçük ama gerçek ölçüler seçilemiyor.\
-**Yer:** `src/drawingto3d/guided.py`, `_check_target_geometry`, `math.dist(points[0], points[1]) <= RASTER_JOIN_TOLERANCE_PX` kontrolü.
+Bu yerel uygulamada kayıt bütünlüğü sorunudur. UI'nın şu an yalnız doğru komutu çağırması API sözleşmesini düzeltmez.
 
-### 4.1 Önce tekrar
+### Yapılacak iş
 
-```sh
-PYTHONPATH=src .venv/bin/python eval/audits/20261006-guided-g2-review/review_probes.py
-```
+**Dışarıdan gelen tam karar kaydı ile sunucunun ürettiği G3 komutunu ayır; ortak atomic commit/history yolunu koru.** Somut uygulanabilir yol:
 
-Mevcut HEAD'de exit 1. Script yalnız geçici sentetik session kullanır; her konturun `audit_contour(...).ok=true` olduğunu ayrıca doğrular. Test fixture'ı kontur denetiminin çizgi kalınlığı sınırının üstünde tutulmuştur; geçersiz 1 px konturla hata iddia edilmez.
+1. Ortak doğrulama/commit bölümünü gerekiyorsa private store yardımcısına çıkar. Public `save` ve `edit_callout` aynı tek kalıcılık yoluna ulaşsın.
+2. Yeni manual kimlik, kaynak, page ve revision yalnız `add_region` tarafından sunucuda üretilsin. Public `/save` üzerinden manual kayıt ekleme veya var olanın kimlik/kaynak/page/region/revision'ını değiştirme reddedilsin; kullanıcı region düzenlemesini `edit_region` yapar.
+3. Yeni/değişmiş G3 review kararları ilgili komut yolundan geçsin. Public `/save` mevcut `manual_callouts` / `callout_reviews` satırlarını aynen taşıyabilsin. Eksik anahtar mevcut veriyi korusun; açık `[]` mevcut açık kaldırma sözleşmesini korusun.
+4. Bu ayrım için HTTP payload'ından alınan `trusted`, `internal`, `skip_validation` gibi bayrak ekleme. İçeride hazırlanan karar da ilişki ve model doğrulamasından geçsin.
+5. Public `/save` ile yeni/değişmiş transcription desteklenmeye devam edecekse aynı kaynak/callout/ignored ve source-region kurallarını uygula. Yanlış snapshot'ı reddet veya yalnız açık yeni metin eyleminde sunucuda türet. **Taşınan eski transcription'ı yeniden damgalama.**
+6. Etkin callout görünümünü işlemin bırakacağı kararlara göre hesapla; sadece önceki record'a bakma. Yeni/değişmiş review referansı bu oturuma ait, mevcut ve desteklenen page'de olmalı.
+7. Kullanıcı olaylarını ortak karar farkından veya doğrulanmış komuttan üret; aynı eylemi iki kez loglama. Açık list temizleme de gerçek kaldırma/restore olarak kayda geçsin. Public istemci log olaylarını belirleyemesin.
+8. Reddedilen işlem dosyayı, revision/history/log/build'i değiştirmesin. İlgisiz kalınlık/profil kaydı, aynen taşınan eski/stale kararlar yüzünden reddedilmesin.
 
-### 4.2 Yapılacak dar düzeltme
+**Önemli ayrım:** Yeni karar doğrulanır; eski kararın aynen taşınması yeni onay değildir. Önceden kalmış yabancı/orphan/stale veriyi bu düzeltme içinde sessizce düzeltme veya silme. Undo güvenilir history snapshot'ını geri yükler; istemcinin keyfi snapshot yüklemesi değildir.
 
-- `correct_profile()` için kullanılan 20 px onarım sınırını değiştirme; bu başka bir davranıştır.
-- Etkin konturdaki iki ucun fiziksel olarak aynı olup olmadığını küçük geometrik eşitlik toleransıyla denetle. Mevcut `contour_audit.TOLERANCE_PX = 0.5` nokta/kapanma sözleşmesini inceleyerek ortak kullan; 20 px onarım bütçesini kullanma. Farklı tolerans gerekiyorsa anlamını bağımsız gerekçeyle belgeleyip sınır testlerini ekle.
-- Etkin kontur, kararlı endpoint ID, `vN` dönüşümü, çıkarılmış kenar reddi ve yeniden onay audit düzeltmeleri korunmalı.
-- Sadece bu karşılaştırma için geometri sürümünü/detector sürümünü artırma veya tüm session'ları migrate etme; geometri üretimi değişmiyor.
+### Kabul
 
-### 4.3 Kabul testleri
+- Yukarıdaki dört probe geçer; gerçek HTTP'de ignored transcription hem `/callout` hem `/save` için 400 ve kayıtta bayt değişimi yoktur.
+- `add_region → transcribe → edit_region → yeniden metin kaydet → ignore → restore → undo` hâlâ çalışır.
+- Eksik G3 anahtarları korur; açık `[]` temizler; unrelated full-save mevcut G3 satırlarını/revision'larını aynen taşır.
+- Her gerçek eylem bir history adımı/global revision; aynı karar no-op. Başarısız request hiçbir audit olayı yazmaz.
+- Undo önceki manual/review/metin snapshot'ını döndürür; temel detector adaylarını değiştirmez ve eski STEP'i current yapmaz.
 
-1. Geçerli konturda 5, 10, 20, 21 px aralıklı farklı uçlar kabul edilir.
-2. Aynı fiziksel köşenin `edge_a:end` / `edge_b:start` alias'ları reddedilir; kalıcı kayıt değişmez.
-3. Seçilen eşitlik toleransının hemen altı/sınırı/üstü küçük saf geometri testiyle pinlenir; geometri üreticinin destek sınırı ile karıştırılmaz.
-4. Çıkarılmış kenar yeni onay ve `reconfirm=true` için hâlâ reddedilir.
-5. Önceki review scripti geçer; yeni script tüm satırlarda `passed=true`, exit 0 verir.
+## 5. G3R-02 — Yeni hedef onayında freshness gerçekten zorunlu olsun
 
-Kalıcı regresyonları mevcut `tests/test_guided_callouts.py` ve uygun geometri testine ekle. Yeni çıktıyı `probe-results-after.json` gibi ayrı yola yaz; `before` kanıtını ezme.
+**Yer:** `_validate_callouts` ve `callout_models` freshness yardımcıları.
 
-**Geçiş kapısı:** Bu işin yeni testleri + `test_guided_callouts`, `test_contour_fix`, `test_binding_end_meaning` yeşil olunca G3'e devam et. Kısa düzeltmeden sonra tekrar tüm G2 corpus'unu işlemeye başlama.
+### Kanıt
 
-## 5. G3'ün somut ürün sonucu ve sınırı
+`k1` metni revision 1 ve test fixture parse'ı mevcutken bölge komutla taşındı. Public state hem transcription hem parse için `stale/region_changed` dedi. Buna rağmen eski transcription/parse bağıyla yeni circle hedefi kaydedilebildi; `status=confirmed` ve kullanıcı onay olayı oluştu.
 
-Kullanıcı mevcut `/guided` ekranında şunları yapabilmeli:
+Public freshness hedefi sonrasında stale gösterebilir; bulgu **stale veriye dayanarak yeni onayın kalıcı kabul edilmesi**dir. Buradan yanlış STEP üretildiği iddia edilmiyor; compiler henüz yok.
 
-```text
-Çizimi aç → callout kutularını gör → birini seç → crop'u incele
-→ basılı metni yaz veya makine ipucunu bilinçli kullan → kaydet
-→ sayfayı yenile / aynı session URL'ini aç → metin duruyor
-→ alanı düzelt / yeni alan çiz / callout değil de → undo
-```
+### Yapılacak iş
 
-G3 **metin ve alan incelemesidir**. Bu görevde parser, parse onayı, target önericisi, target seçim UI'sı veya callout→CAD compiler yoktur. `Ø8` yazıldı diye hole/thru/mm/count=1 üretme.
+1. Yeni veya `reconfirm=true` hedef için, kaydın bırakacağı **etkin kararlar** üzerinden transcription ve parse freshness'ini hesapla.
+2. Kaynak doğrulanamıyorsa, callout ignored ise, transcription current değilse veya parse current değilse yeni onayı reddet. Parse ayrıca `status=parsed` olmalı; `current` freshness tek başına sözdizimsel başarı demek değildir.
+3. Revision/parser-version bağı, parse conflict, geometri kimliği, benzersiz hedef/adet ve etkin kontur kontrolleri korunacak. Aynı freshness kuralını farklı kodlarda tutarsız tekrar etme; saf yardımcıları paylaşabilirsin.
+4. Eski hedef aynen taşınıyorsa kabul et ve tarihsel bağını koru. İlgisiz bir karar kaydı eski stale target'ı yeniden onaylamasın veya yüzünden bloke olmasın.
+5. Bölge değişimi metin snapshot'ını veya parser fixture'ını otomatik current hale getirmesin. Yeni bölgeyi kullanıcı açıkça yeniden okutup kaydetmeden onaya izin verme.
 
-Mevcut eski kalibrasyon/profil/delik/binding/STEP akışları çalışmaya devam eder. Callout metni henüz CAD'e gitmediğinden UI bu metnin STEP'e uygulanmış olduğunu ima etmemeli. Üretim alanında gerektiğinde açık ürün açıklaması göster: **“Kaydedilen callout metinleri bu taslak üretiminde henüz kullanılmıyor.”** G3 için yeni CAD/readiness sistemi kurma; G7/G8'in işi.
+### Kabul
 
-## 6. G3 veri sözleşmesi — UI'dan önce
+- Yeni probe'daki stale-region hedefi reddedilir; dosya/log/history aynı kalır.
+- Yeni onay ve `reconfirm=true` için: region_changed, source_unavailable, ignored, transcription_missing/changed, parser_version_changed, parse_conflict → ret.
+- Aynı işlemde region/ignore değişimi ile hedef onayını birleştirmeye çalışmak da bu kontrolü atlayamaz. R-01 ilgili dış mutasyonu daha önce reddediyorsa bu da geçerli rettir; ortak commit yolu kendi son durumunu yine denetler.
+- Aynen taşınan stale target + ilgisiz kalınlık/profil değişimi çalışır; hedef kaydı bayt düzeyinde aynı kalır.
+- Pozitif kontrol: metni yeni etkin bölgede açıkça tekrar kaydet, güncel revision'a bağlı parse fixture'ı hazırla, yeni hedefi onayla → current, tek gerçek confirm olayı.
+- Önceki 2/2 ve 5/5 review scriptleri geçmeye devam eder. Bu iş için gerçek parser yazma.
 
-### 6.1 Mevcut verinin yeri korunacak
+## 6. G3R-03 — Eski oturumun ilk gerçek yazımında şema damgasını yükselt
 
-```text
-session.callout_candidates[]      G2'nin temel makine adayları; değişmez
-session.callout_detection         G2 metadata/diagnostics; değişmez
-session.callout_parses[]          computed; G3 parser üretmez
-session.decisions
-  transcriptions[]               mevcut G1 kullanıcı kararları
-  callout_targets[]              mevcut G1 onayları; UI bu fazda üretmez
-  manual_callouts[]               G3 yeni kullanıcı alanları; undo kapsamı
-  callout_reviews[]               G3 region override + ignore; undo kapsamı
-```
+**Yer:** `_stamp_callout_version`, save/accept/undo'nun kalıcı yazım sınırı.
 
-Yeni alanları `Decisions` altında tut. Temel `callout_candidates` listesini kullanıcı alanı eklemek, kutuyu taşımak veya ignore yapmak için değiştirme. `localStorage`ı doğruluk kaynağı yapma; yalnız henüz kaydedilmemiş edit taslağı olabilir.
+### Kanıt
 
-Gerekli en küçük iki ek model:
+`CALLOUT_SCHEMA_VERSION=2` olmasına rağmen `_stamp_callout_version`, kayıt zaten bir sürüm taşıyorsa hemen dönüyor. `callout_schema_version=1` oturumuna `add_region` ile G3 manual karar yazıldığında sürüm hâlâ 1 kalıyor.
 
-| Model | Alanlar ve kural |
-|---|---|
-| `ManualCalloutDecision` | `id`, `source_digest`, `page_index`, `region`, `revision`; kaynak/page/revision sunucudan; ID bir kez sunucuda atanır ve kalıcıdır |
-| `CalloutReviewDecision` | `callout_id`, `region_override` (opsiyonel), `ignored` (default false), `revision`; callout başına tek kayıt |
+### Yapılacak iş ve kabul
 
-- Mevcut region doğrulamasını kullan: normalize `[x0,y0,x1,y1]`, sonlu, 0..1, pozitif alan; ilk sürüm page 0.
-- `manual_callouts` ve `callout_reviews` bağımsız boş liste default'u alır; eski `Decisions/history` kayıtları yüklenebilir.
-- Eksik yeni alan = mevcut değeri koru; açık `[]` = açık kaldırma isteği. G1'in eski istemci korumasını yeni alanlara genişlet.
-- Manual ID için `manual:<uuid>` gibi ayrı namespace kullan. UUID yasağı G2 deterministik detector içindi; kullanıcı tarafından yeni alan yaratma ayrı bir olaydır. İstemci başka session'ın ID/kaynak kimliğini kabul ettiremez.
-- Manual alan aynı yerde tekrar yaratılırsa ikinci kullanıcı eylemi olarak ayrı ID alabilir. Detected adayla yakınlığına bakarak otomatik merge etme.
-- Manuel alanı bu fazda kalıcı silme gerekmiyor; ignore + undo yeterli. UI bir kaldırma sunacaksa history/provenance korumalı ve anlamı açık olmalı.
-- G3 persist edilen yapıya yeni alan eklediği için `callout_schema_version`ı bilinçli yönet; yeni/yazılan kayıt için yeni sürüm, eski kayıtta yalnız load yüzünden disk rewrite yok. Geometry/detector sürümleri gereksiz artırılmaz.
+- Desteklenen eski/no-version kayıt, G3 şemasıyla **gerçekten diske yazılırken** geçerli callout sürümüne geçsin.
+- Sadece load/public veya no-op save disk rewrite, history, log ya da revision artışı yapmasın. Şema damgası ayrı kullanıcı eylemi değildir.
+- v1 oturum: load/public → baytlar aynı; gerçek add/edit/save → sürüm 2. Güncel v2 kayıt v2 kalır.
+- Undo karar snapshot'ını geri getirir; oturumun şema sürümünü eski history'den geriye düşürmez. Eski history'de yeni alanların bulunmaması yüklemeyi bozmaz.
+- Geometry/detector/parser sürümleri değişmez. Gelecekteki bilinmeyen büyük şemayı sessizce 2'ye düşürme.
+- Yeni version bump 3 gerekmez: amaç mevcut v2 sözleşmesini doğru damgalamaktır.
 
-### 6.2 Tek etkin callout görünümü
+## 7. G3R-04 — Detection sonucu ve nedenleri public/UI'da kaybolmasın
 
-Tek saf helper ile aşağıdakini türet:
+**Yer:** `GuidedStore.public`, `guided.js` içindeki `renderCallouts`; gerekirse `guided.html`.
 
-```text
-G2 base candidates + user manual_callouts + user reviews
-→ effective callouts: id, page, source kind, base/effective region,
-                     crop region, hint, ignored, provenance
-```
+### Kanıt
 
-- Manual alan public görünümde `source_kind=manual`, boş observation IDs ve `machine_text_hint=null` taşır. Bunu makine tespiti diye loglama.
-- Region override orijinal detected region/provenance'ı silmez; yalnız etkin bölgeyi değiştirir.
-- Ignored alanın kararı ve tarihsel metni durur. UI'da gizlenebilir ama “Yok sayılanları göster” ile geri bulunur.
-- `public()` mevcut `callout_candidates` alanını temel veri olarak korur; G3 için `effective_callouts` ve `callout_detection` metadata'sını ayrıca sunar.
-- Store referans doğrulaması, freshness ve UI aynı etkin listeyi kullanır. `_require_callout()` yalnız temel makine listesine bakmaya devam ederse manual transcription reddedilir; bunu entegrasyonda kapat.
-- `callout_states` manual callout'ları da kapsar. Effective listeyi üretmek kullanıcı kararı oluşturmaz, history/log/revision yazmaz.
+`create()` detection metadata/diagnostics'i kaydediyor; `public()` bu alanı döndürmüyor. İlerleme dosyasında döndüğü yazılmış olsa da gerçek çıktı eksik. UI da her boş listeyi “metinsiz çizim normal bir sonuçtur” diye açıklıyor; `source_digest_mismatch` / `invalid_frame` gibi sebepler böyle anlaşılamaz.
 
-### 6.3 Bölge değişimi metni yeniden onaylanmış yapmaz
+### Yapılacak iş ve kabul
 
-`TranscriptionDecision.source_region` kullanıcının metni yazarken incelediği alanın snapshot'ıdır.
+- `callout_detection` metadata'sını public yanıtta sun. Eski kayıt için açık boş/yok davranışı tanımla; çalışmamış detector için sahte başarı/diagnostic üretme.
+- `no_text_observations` normal boş sonucu ile invalid frame, unsupported page, source mismatch gibi aday üretilememesini ayır. UI kullanıcıya kısa, anlaşılır neden göstersin; bütün iç alanları teknik dump olarak göstermesi gerekmez.
+- Metadata bulunmayan eski oturumda sadece “Aday bulunmuyor; eski kayıtta tespit bilgisi yok” gibi dürüst açıklama kullan. Metinsiz olduğu sonucunu çıkarma.
+- Var olan adaylar uyarıyla birlikte gösterilebilsin. Diagnostic göstermek manual/transcription/parse/target kararı, revision veya log üretmesin.
+- Normal boş çizimde manuel alan çizimi çalışmaya devam etsin. Kaynak/geometry stale için mevcut güvenlik kapılarını gevşetme.
+- Testler: normal aday, no_text_observations, source_digest_mismatch ve metadata'sız eski oturum. Public metadata round-trip ve UI metni doğrulansın.
 
-| İşlem | Beklenen |
-|---|---|
-| İlk metin kaydı | Raw text aynen; source_region mevcut etkin bölgeden sunucuda; yeni transcription revision |
-| Sadece kutuyu taşı/büyüt | Eski raw text ve eski source_region saklanır; transcription `stale/region_changed`; parse/target varsa stale |
-| Yeni bölgeyi inceleyip aynı metni açıkça tekrar kaydet | Yeni source_region + yeni transcription revision; eski parse/target otomatik geçerli olmaz |
-| Sadece ignore | Metin silinmez; kullanıcı ignore kararı kaydedilir; build mevcut revision kuralıyla stale |
-| Ignore'u geri al | Veri geri görünür; mevcut freshness yeniden hesaplanır, sahte metin/target onayı oluşmaz |
-| Undo | Önceki karar snapshot'ı döner; global revision artar; STEP otomatik current olmaz |
+## 8. Uygulama sırası ve küçük geçiş kapıları
 
-Region edit sırasında transcription.source_region'ı yeni kutuya sessizce kopyalama. Bu, kullanıcı yeni alanı okumuş gibi sahte kanıt üretir. İstemcinin gönderdiği yanlış source_region'ı server-side etkin bölgeye göre doğrula/türet.
-
-Ignore kararı UI render state'inden tahmin edilemez. Hâlâ ignored olan callout'a metin girilecekse kullanıcı önce “Geri al” eylemini yapmalı veya UI bu iki işlemi açık tek kullanıcı komutuyla gerçekleştirmeli; gizli unignore yok.
-
-### 6.4 Store/API işlem yolu
-
-Mevcut store kilidi, optimistic revision, atomic save, history, stale build ve log yolunu kullan.
-
-Önerilen tek komut giriş noktası: `GuidedStore.edit_callout(token, revision, action, payload)` ve `/api/guided/callout` dispatch'i. İsim farklı olabilir; ayrı bir kalıcılık/undo motoru kurulamaz.
-
-Komutlar: `add_region`, `edit_region`, `set_ignored`, `transcribe`. Her komut sunucuda etkin source/callout/page'ı doğrular, yeni `Decisions` çalışma kopyasını hazırlar ve mevcut save yoluna verir. `add_region` ID'sini sunucu üretir. UI'nın save entegrasyonu daha basitse aynı kurallar korunarak mevcut `/save` genişletilebilir; manual kimlik/kaynak alanları istemciden körlemesine alınamaz.
-
-Her kullanıcı komutu tek history adımı ve tek global revision değişimidir. Aynı kararın tekrarı no-op olabilir. Başarısız validation/conflict kararları veya dosyayı kısmen yazmamalı. Eski `/accept` callout ipucunu, yeni alanı veya ignore kararını kendiliğinden onaylayamaz.
-
-Log olayları: `user/add_callout_region`, `user/edit_callout_region`, `user/ignore_callout`, `user/restore_callout`, mevcut `user/transcribe` / `user/edit_transcription`; undo mevcut yoluyla. Parser olayı veya otomatik user actor üretme.
-
-## 7. G3 arayüz sözleşmesi
-
-### 7.1 Mevcut ekranı genişlet
-
-Dosyalar:
-
-- `src/drawingto3d/static/guided.html`
-- `src/drawingto3d/static/guided.js`
-- `src/drawingto3d/app.py`
-- `src/drawingto3d/guided.py`, `callout_models.py` ve gerekiyorsa küçük saf yardımcı modül.
-
-Aynı çizim canvas'ı ve sağ panel düzeni kullanılır. Yeni web uygulaması/framework yok. Canvas araçlarına `Callout incele` ve `Yeni alan çiz` ekle. Mevcut profile/calibration/hole/bind modlarıyla çakışmayan tek aktif mod olsun.
-
-Panelin asgari içeriği:
-
-```text
-Callout C4                    [İncelenmedi / Metin kaydedildi / Alan değişti / Yok sayıldı]
-[crop preview]
-Makine ipucu: 4 × Ø8 THRU     [İpucunu metne al]
-Basılı metin: [                         ]
-[Metni kaydet] [Bu callout değil] [Alanı düzelt]
-```
-
-- Crop kaynak drawing image'dan alınır; doğruluk kararı değildir.
-- İpucu ayrı ve `öneri` niteliğinde gösterilir. Alan açılır açılmaz kullanıcı metnine/persisted transcription'a dönüşmez.
-- “İpucunu metne al” yalnız edit taslağını doldurur; “Metni kaydet” gerçek kullanıcı kararıdır.
-- Bu fazda “Kaydet ve ayrıştır”, “Parsed”, “Bound” gibi çalışmayan başarı eylemleri gösterme. “Metin kaydedildi” yeterlidir.
-- Callout sayısı, incelenmiş/ignored sayısı ve boş aday halinde “Yeni alan çiz” yolu görünür olsun. Metinsiz raster normal bir sonuçtur; sahte kutu çizilmez.
-- Listeden seçim fallback'i olsun. Örtüşen kutularda kararlı hit-test uygula: en küçük kapsayan kutu, eşitlikte ID; diğer kutuya listeden ulaşılabilir.
-- Metni `textContent` / textarea.value ile göster; kullanıcı/hint içeriğini HTML olarak çalıştırma.
-
-### 7.2 Koordinat dönüşümü tek yerde olsun
-
-Mevcut canvas'ta `scale()` görüntüyü sığdırıyor; CSS boyutu canvas piksel boyutundan farklı olabilir. Sadece event.clientX'i image pikseli sayma.
-
-```text
-client pointer
-→ getBoundingClientRect + canvas backing dimensions
-→ image draw offset/scale
-→ source image pixel
-→ normalize page region
-```
-
-Çizme, hit-test, sürükleme ve crop aynı dönüşüm yardımcılarını kullanmalı. Sayfa 0 görüntüsü için `picture.width/height` ile source frame boyutlarının aynı anlamda olduğunu kontrol et. Image yüklenmeden seçim/kayıt yapma.
-
-- Farklı pencere genişliği ve responsive tek kolon görünümünde kutular aynı kaynak alanında kalmalı.
-- Drag yönünden bağımsız `min/max` ile region kur; server ters/sıfır/taşmış alanı reddeder.
-- Canvas dışına taşan pointer veya görüntü dışı boş alanı callout sayma. Pointer capture + cancel/Escape ile yarım drag iptal edilebilmeli; iptal kayıt oluşturmaz.
-- UI kenarda crop padding'i kırpabilir; base/effective region sırf crop için değiştirilemez.
-- Pointer drag'ından sonra oluşan click yanlışlıkla profile/hole seçmemeli. Click ve drag modlarını tek dispatcher'da açık ayır.
-
-### 7.3 Metin taslağı ve hata davranışı
-
-- Mevcut `busy()` yalnız button/input/select kapsıyor; textarea ve yeni araçlar için pending davranışını da düzenle.
-- Kullanıcının henüz kaydetmediği metni hover, seçim/render veya başarısız save yüzünden kaybetme.
-- Session revision conflict'te sessiz last-write-wins yok. Hata açık görünür; kullanıcının typed draft'ı korunur; güncel state alındıktan sonra yeniden bilinçli kaydedilebilir.
-- Refresh/reopen için garanti verilen veri server'a başarıyla kaydedilmiş karardır; unsaved taslağı kaydedilmiş gibi gösterme.
-- Ignore, restore, region edit ve manual add tam bir undo adımı olmalı. Selected callout undo sonrası yoksa seçim güvenle temizlenir; hayalet panel kalmaz.
-
-## 8. G3 küçük iş paketleri ve sırayla geçilecek kapılar
-
-### G3.0 — Başlangıç ve durum kaydı
-
-Dar düzeltme testleri geçtiğinde G3'ü aç. Bu planın sürümünü yeni history entry olarak izlemek istersen boş numarayı kullan (bu incelemede `docs/PLAN-22.md` yoktu); mevcut planı ezme. `report.md` güncel ürün pointer'ını ve `GUIDED_PROGRESS` iş tablosunu tutarlı güncelle. Araştırma geçmişi değişmez.
-
-### G3.1 — Kullanıcı region/ignore sözleşmesi
-
-§6 modelleri, default'lar, effective callout helper ve kaynak/ID ilişkilerini ekle. Synthetic store testleriyle detected base değişmezliği, manual kimlik, region override ve ignored restore davranışını kanıtla. Bu adımda UI çizme.
-
-**Kapı:** Manual alan + detected override + ignore kararları round-trip ve history içinde; temel adaylar bayt/değer olarak aynı; bilinmeyen source/callout reddi.
-
-### G3.2 — Store ve HTTP; eski session uyumu
-
-Komut/save yolu, API dispatch, public effective state, transcription region freshness ve log'u bağla. Eski istemcinin eksik yeni alanlarının veriyi silmediğini, eski history'ye undo'nun çalıştığını doğrula. G2 adaptörü load/save/undo sırasında tekrar çalışmamalı.
-
-**Kapı:** Gerçek HTTP revision conflict/invalid command testleri ve gerçek store reopen/undo; manual callout transcription için `_require_callout` sorunu yok; source_region değişimi testleri geçiyor.
-
-### G3.3 — Overlay, seçim ve crop
-
-Canvas araçları, kutular, display label, liste seçimi, crop ve durum görünümü ekle. ID olarak `C1` kullanma; label yeniden sıralanabilir, gerçek ID değişmez. Sadece seçim veya crop üretimi mutation değildir.
-
-**Kapı:** Vektör ve raster görüntüde overlay/crop aynı alanı gösterir; responsive görünümde seçim kaymıyor; mevcut profile/calibration/hole/bind click modları korunuyor.
-
-### G3.4 — Transcription ve ignore
-
-Metin alanı, açık hint kopyalama, kaydet, ignore/restore ve dirty draft davranışını ekle. G1 normalize/raw ayrımı kullanılır; frontend raw metni trim edip değiştirme. Kalıcı kayıtta server revision ve source_region doğrulanır.
-
-**Kapı:** Gerçek tarayıcı click→type→save→refresh→aynı session URL→undo; raw text aynen, ignore geri alınabilir. Hata/conflict draft'ı kaybetmiyor.
-
-### G3.5 — Manuel alan ve bölge düzenleme
-
-Add/edit drag, cancel, aynı callout ID'sinde region override ve eski metnin `region_changed` durumu. Manual add→text save→edit→undo→reopen zincirini kur. Base detection tekrar koşulmaz; model/parse çalışmaz.
-
-**Kapı:** Metinsiz raster/boş adayda manuel yol çalışır; edit yeni kullanıcı kararıdır; eski source_region sessiz güncellenmez; manual ID refresh/undo boyunca kararlı.
-
-### G3.6 — Birleşik kabul ve teslim
-
-Kalıcı testler + gerçek browser senaryoları + önceki iki bağımsız review scripti. Yeni parse/CAD başarısı iddiası yok. G3 bittiğinde dur; G4 ayrı görevdir.
-
-## 9. Zorunlu G3 davranış matrisi
-
-| ID | Senaryo | Beklenen |
+| Sıra | İş | Tamamlanmadan sonraki bağımlı işe geçme |
 |---|---|---|
-| U01 | G2 detected aday aç | Kutu/list/crop var; açmak kullanıcı kararı üretmez |
-| U02 | Hint var, user input yok | Transcription boş; ipucu ayrı; otomatik accept yok |
-| U03 | `"  4 × Ø8 THRU  "` kaydet ve reopen | Raw aynen; normalized ayrı; source_region doğru |
-| U04 | Boş/whitespace metni kaydet | Açık ret; geçmiş/karar değişmez |
-| U05 | Manual region ekle→metin kaydet→reopen | Aynı manual ID; source/page sunucuya ait; karar kalıcı |
-| U06 | Detected region'ı düzenle | Base candidate aynı; effective region yeni; eski metin stale |
-| U07 | Yeni region'da aynı metni açıkça kaydet | Yeni transcription revision/source_region; eski parse/target stale |
-| U08 | Ignore→refresh→restore→undo | Metin/provenance silinmez; her mutation doğru tek history adımı |
-| U09 | Add/edit/ignore/transcribe→undo→yeni store instance | Önceki kararlar; global revision artar; STEP current dirilmez |
-| U10 | Eski session/history/istemci save | Yeni alanlar default/preserve; load dosyayı yeniden yazmaz |
-| U11 | Stale revision ile API komutu | Açık conflict; ilk kayıt değişmez; UI draft korunur |
-| U12 | Başka session ID/source digest veya bilinmeyen callout | Ret; sahte candidate/transcription yazılmaz |
-| U13 | Ters drag, iptal, sıfır kutu, dış alan | Normalize doğru veya açık ret; iptal mutation değil |
-| U14 | Normal/geniş ve dar pencere görünümü | Kutu, hit-test ve crop aynı kaynak bölgede |
-| U15 | Overlay açıkken mevcut calibration/profile/hole/bind/undo | Önceki görevler çalışır; event çakışması yok |
-| U16 | Input `<img src=x onerror=...>` gibi metin | Metin olarak görünür; script çalışmaz |
-| U17 | Manuel alan ve reviews mevcutken eski `/accept` | Yeni kullanıcı kararları korunur; otomatik callout onayı yok |
-| U18 | save/load/undo/public tekrarları | G2 adaptörü/OCR/model yeniden çağrılmaz; base adaylar aynı |
-| U19 | Source eksik/değişmiş session | Kararlar/alanlar korunur; stale görünür; yanlış current output yok |
-| U20 | Metin girilmişken eski STEP üretim bölümü | Callout metni CAD'e uygulandı iddiası yok; taslak sınırı açık |
+| 0 | Başlangıç kaydı + mevcut hataları tekrar | HEAD/diff kaydı; yeni scriptin yedi ihlali ve HTTP bypass kanıtı anlaşılmış |
+| 1 | G3R-01 | Store/API sınır testleri, legacy taşıma/[]/undo/no-op testleri yeşil |
+| 2 | G3R-02 | Stale yeni hedef/reconfirm ret; pozitif güncel onay; eski iki review scripti yeşil |
+| 3 | G3R-03 | v1/v2, read/no-op, gerçek write ve undo sürüm testleri yeşil |
+| 4 | G3R-04 | Public diagnostics ve boş/eski/hatalı detector UI senaryoları yeşil |
+| 5 | Birleşik test + tarayıcı + teslim | Aşağıdaki kapıların hepsi gerçek kanıtla kapalı |
 
-Fixture parse/target kullanımı U06/U07 invalidation testlerinde mümkündür; gerçek parser geliştirmek değildir. Beklenen davranışı testte bağımsız kur; ürün helper'ının çıktısını tekrar aynı helper'la hesaplayarak test yazma.
+Her satır için işin başında en küçük ilgili test kümesini kullan. Son birleşik koşu geçince gerekçe olmadan bütün testleri tekrar tekrar çalıştırma.
 
-## 10. Test ve browser kabul yöntemi
+## 9. Son doğrulama
 
-### 10.1 Kalıcı testler
+### 9.1 Kalıcı regresyonlar ve bağımsız tekrarlar
 
-Önerilen yeni dosya: `tests/test_guided_callout_review.py` (models/store/API). İsim başka seçilirse ilerleme ve komutları gerçek dosya adıyla güncelle. Mevcut `tests/test_guided_html.py` yapısal kontrolleri genişleyebilir; bu dosya gerçek browser testi yerine geçmez.
-
-G1R3 sonrası hızlı küme:
+Mevcut `tests/test_guided_callout_review.py` ve `tests/test_guided_callouts.py` dosyalarını genişlet; API için mevcut ephemeral localhost test desenini kullan. Gerekirse küçük bir HTTP test dosyası ekle. **Sadece `store.edit_callout()` çağırmak HTTP testi değildir.**
 
 ```sh
-.venv/bin/python -m pytest -q tests/test_guided_callouts.py tests/test_callout_models.py tests/test_contour_fix.py tests/test_binding_end_meaning.py
-```
-
-G3 son birleşik küme (yeni test dosyası gerçekten oluşturulduktan sonra):
-
-```sh
-.venv/bin/python -m pytest -q tests/test_guided_callout_review.py tests/test_callout_candidates.py tests/test_guided_callout_candidates.py tests/test_callout_models.py tests/test_guided_callouts.py tests/test_guided.py tests/test_guided_geometry_state.py tests/test_guided_geometry_migration.py tests/test_guided_proposals.py tests/test_binding_end_meaning.py tests/test_guided_html.py tests/test_view_decision.py tests/test_view_core.py tests/test_sheet_frame.py tests/test_stable_identities.py tests/test_contour_fix.py tests/test_measure_meaning.py tests/test_user_dimensions.py
-```
-
-Mevcut test sayısını 242'ye zorla sabitleme; yeni testlerle artar. Doğru testleri yeni API düzenine uyarlarken eski korumaları kaldırma. Değişiklik/başarısızlık yoksa aynı pahalı suite'i tekrar tekrar koşma. Bilinen planner failure'ını ayrı açık olarak koru; tüm takım yeşil demezsin. Full suite yalnız kapsam değişimi veya yeni geniş etki bunu gerektirirse çalıştırılır.
-
-### 10.2 Gerçek tarayıcı
-
-Mevcut uygulama başlatma yolu:
-
-```sh
-PYTHONPATH=src .venv/bin/python -m drawingto3d.app
-```
-
-Varsayılan `/guided` yerel adresini uygulama çıktısından doğrula. Zaten çalışan servis varsa önce kullandığın kod sürümünü doğrula; başka kullanıcının sürecini körlemesine öldürme.
-
-Mevcut browser/Playwright/automation imkânını kullan. G3 için en az şu gerçek etkileşimler gerekir:
-
-1. Gerçek vektör Plate dosyasını aç → kutu seç → crop → metin yaz → kaydet → refresh/reopen → raw kontrol → undo.
-2. Bir detected alanı ignore et → ignored listeden geri getir; kalıcılığı kontrol et.
-3. Metinsiz raster veya açıklamalı boş aday oturumunda manual alan çiz → metin kaydet → crop'u kontrol et.
-4. Metinli callout'un region'ını taşı → eski metnin yeniden inceleme uyarısı → açık kaydet → undo/reopen.
-5. Geniş ve dar pencere görünümünde aynı kutuyu seç; crop/hit-test kaymıyor.
-6. API revision conflict oluştur; UI hata verirken yazılan draft korunur.
-7. Mevcut calibration/profile/hole/bind ve undo araçlarından smoke akışları; console error yok.
-
-Mümkün olduğunda açık kaynak çizimle 1–2 screenshot ve browser adım kaydı sakla. API'ye doğrudan veri gönderip browser click/type olmuş gibi raporlama. Browser aracı yoksa API/model testlerini bitir, eksik tarayıcı kabulünü `BLOCKED_BROWSER/NOT_RUN` yaz; **G3 tamam** deme. Fixture parse veya scripted input, gerçek kullanıcıdan alınmış karar diye raporlanmaz.
-
-### 10.3 Son denetim
-
-```sh
+PYTHONPATH=src .venv/bin/python eval/audits/20261006-guided-g3-independent-review/review_probes.py
+PYTHONPATH=src .venv/bin/python eval/audits/20261006-guided-g3-independent-review/http_review_probes.py
 PYTHONPATH=src .venv/bin/python eval/audits/20261006-guided-g1-review/review_probes.py
 PYTHONPATH=src .venv/bin/python eval/audits/20261006-guided-g2-review/review_probes.py
-git diff --check
-git diff --stat
-git status --short
 ```
 
-HTTP testi yalnız sandbox port engeline takılırsa izinli localhost ortamında tek testi tekrar doğrula; skip ederek başarı yazma. Yeni kodu veya test beklentisini port izni hatası yüzünden değiştirme. Logdaki gerçek exit code'u koru.
+Dördünün de exit 0 olması gerekir. Çıktıları yeni `*-after.json` / log yollarında sakla. Probe beklentisini sadece mevcut yanlış kod yeşil görünsün diye değiştirme. Yeni fixture yapısı gerekiyorsa aynı invariant'ı ve önceki kanıtı koruyarak gerekçeyi kaydet.
 
-## 11. Definition of Done ve teslim
+Birleşik mevcut küme (yeni test dosyası eklediysen ayrıca komuta kat):
 
-- [ ] G1R3-01 geçiyor; kısa fakat farklı ölçü uçları seçilebiliyor; aynı köşe reddediliyor.
-- [ ] G2 detector/ID/provenance/base candidate davranışları korunuyor.
-- [ ] Kutular/list/crop ve responsive koordinat dönüşümü gerçek browser'da doğrulandı.
-- [ ] Kullanıcı metni aynen kalıcı; hint yalnız açık eylemle taslağa, save ile karara geçiyor.
-- [ ] Manual region / region edit / ignore / restore / undo / reopen çalışıyor.
-- [ ] Alan değişimi eski transcription snapshot'ını sahte biçimde güncellemiyor; stale zinciri açık.
-- [ ] Eski session/history/istemci yeni kararları kaybetmiyor.
-- [ ] Yanlış kaynak, stale revision ve geçersiz region kalıcı kaydı bozmuyor.
-- [ ] Mevcut guided araçları ve artifact stale davranışı korunuyor.
-- [ ] Parser, target önericisi veya callout→CAD uygulanmış gibi UI/audit iddiası yok.
-- [ ] Test, browser kanıtı ve bilinen açıkların güncel kaydı var.
-- [ ] G4+ uygulanmadı.
-
-İlerleme tablosu en az `G1R3-01`, `G3.0` … `G3.6` satırlarını içerir. Her satırda `TODO/IN_PROGRESS/PASS/FAIL/BLOCKED_*`, kanıt yolu ve kalan tek iş bulunur.
-
-Teslim:
-
-```text
-HEAD / worktree:
-G1R3-01 önce/sonra ve kanıt:
-G3.0–G3.6 durumları:
-Kalıcı kullanıcı akışları:
-Gerçek pytest komutları, sonuçları ve exit code:
-Gerçek browser senaryoları ve kanıt:
-Değişen dosyalar:
-Bilinen eski planner failure / diğer açıklar:
-Model çağrısı: 0
-G4+ durumu: açılmadı
+```sh
+.venv/bin/python -m pytest -q \
+  tests/test_guided_callout_review.py tests/test_callout_candidates.py \
+  tests/test_guided_callout_candidates.py tests/test_callout_models.py \
+  tests/test_guided_callouts.py tests/test_guided.py \
+  tests/test_guided_geometry_state.py tests/test_guided_geometry_migration.py \
+  tests/test_guided_proposals.py tests/test_binding_end_meaning.py \
+  tests/test_guided_html.py tests/test_view_decision.py tests/test_view_core.py \
+  tests/test_sheet_frame.py tests/test_stable_identities.py tests/test_contour_fix.py \
+  tests/test_measure_meaning.py tests/test_user_dimensions.py
 ```
 
-**Şimdi uygulanacak sıra: G1R3-01 → G3.0 → G3.1 → G3.2 → G3.3 → G3.4 → G3.5 → G3.6 → teslim.**
+Baseline 285'tir; eklenen gerçek regresyonlar toplamı artıracaktır. Toplamı önceden uydurma. Loga gerçek komut/exit code/sayı/süre yaz. Localhost izin engeli varsa bunu ürün hatasından ayır ve izinli yerel ortamda ilgili HTTP testini yeniden doğrula. `git diff --check` temiz olmalı.
+
+### 9.2 Gerçek tarayıcı kabulü
+
+Gerçek `/guided` sayfasında ve test için ayrılmış oturumlarda:
+
+1. Mevcut PDF aç → aday seç/crop → metin kaydet → reload → aynı metin. Seçim ve taslak koruması çalışır.
+2. Manuel alan ekle → metin yaz → alanı değiştir → “Alan değişti” → aynı metni açıkça yeniden kaydet → güncel metin; parser çalıştı iddiası yok.
+3. Ignore → yok sayılanları göster → restore → undo. Eski full-save kullanan kalınlık/profil işlemleri callout kararlarını bozmaz.
+4. Kaydedilmemiş taslak + revision conflict → hata görünür, metin durur, güncel state sonrası tekrar kayıt çalışır.
+5. Normal boş detection, hata nedeniyle boş detection ve metadata'sız eski kayıt doğru açıklanır. Bu özel durumlar açık test fixture'ı olabilir; gerçek detector bu sonucu üretti diye sunma.
+6. Dar/geniş görünümde seçim/crop ve bir eski guided kontrolü smoke testinden geçer. Yeni UI metinlerinde HTML çalıştırma yok.
+
+HTTP ret kanıtını UI senaryosu yerine sayma. Sonuçları gerçekten yürütülen adım sayısıyla, console/network hataları ve screenshot yollarıyla kaydet. G4/G7 yokken callout metninin STEP'e uygulandığını söyleme.
+
+## 10. Teslim ve ilerleme kaydı
+
+`docs/GUIDED_PROGRESS.md` ve `report.md` güncel özetlerinde:
+
+- Şimdiki başlangıç HEAD'i `2cdb4d0`. Eski “G3 commit edilmedi / HEAD ff97295” ifadeleri artık current olmamalı. Geçmiş teslim metnini tarihsel kayıt olarak koru; yeni bölümle düzelt.
+- Eski rapordaki 25/25 ile logdaki 28/28 ayrımını düzelt. Yeni koşunun sayısını eskisinin yerine uydurma.
+- `public callout_detection` ve “HTTP testleri” iddialarını gerçekten yapılan değişiklik/test adlarıyla eşleştir.
+- G3R-01–04 için: değişen davranış, dosyalar, regresyon adı, komut, gerçek exit code ve kanıt yolu.
+- Yeni yedi store/public kontrolü, HTTP bypass kontrolü, önceki 2/2 ve 5/5 kontrollerin son durumu.
+- Seçili test kümesi sonucu, gerçek tarayıcı sonucu, bilinen ilgisiz planner failure'ı; tam takım koşulmadıysa bunu açıkça yaz.
+- Gerçek commit/worktree durumu; commit yoksa “yok”. Commit içindeki rapora imkânsız bir kendi-commit hash'i yazmaya çalışma; test edilen başlangıç/çalışma ağacı ve commit sonrası teslim bilgisi ayrılabilir.
+- Model çağrısı 0; G4+ uygulanmadı. Açık engel varsa başarı tablosunda gizleme.
+
+**Bu görevin bitişi:** G3R-01–04, geriye uyumluluk ve kabul kapıları tamam. Sonraki ürün işi G4 deterministik parser + parse onayıdır; bu dosyada uygulanması istenmiyor. G3 teslimindeki hataları kapatmadan “G4'e hazır” yazma.

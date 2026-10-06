@@ -120,3 +120,21 @@ def test_the_production_panel_admits_callout_text_is_not_used_yet():
     """PLAN-21 §5/§7.1: the UI must not imply the saved text reached the STEP."""
     html = (ROOT / "guided.html").read_text(encoding="utf-8")
     assert "Kaydedilen callout metinleri bu taslak üretiminde henüz kullanılmıyor." in html
+
+
+def test_the_empty_callout_list_gives_the_detectors_own_reason():
+    """G3R-04: an empty list is not automatically "a text-less drawing" — the stored detection decides.
+
+    The panel distinguishes the detector's normal empty result (`no_text_observations`) from a run
+    that could not produce candidates, says honestly when an old record carries no detection
+    information at all, and warns while still listing the candidates it did find.
+    """
+    script = (ROOT / "guided.js").read_text(encoding="utf-8")
+    assert "state.callout_detection" in script                     # public alan gerçekten tüketiliyor
+    assert "'no_text_observations'" in script
+    assert "source_digest_mismatch" in script and "invalid_frame" in script
+    assert "eski kayıtta tespit bilgisi yok" in script             # uydurma açıklama yok
+    assert "Aday üretilemedi" in script and "Uyarı: bazı gözlemler adaya çevrilemedi" in script
+    collector = parse()
+    assert collector.by_id.get("callout-detection") == "div"
+    assert collector.counts["callout-detection"] == 1

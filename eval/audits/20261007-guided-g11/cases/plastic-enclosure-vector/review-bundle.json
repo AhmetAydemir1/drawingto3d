@@ -1,0 +1,3161 @@
+{
+  "bundle_version": 1,
+  "schema_version": 3,
+  "parser_version": "callout-parser/2",
+  "session": "760d83f8589d4f8dac3cd2df6bdd13c9",
+  "base_revision": 7,
+  "source_digest": "7698e830ca02ad46aa89f910c67f2efb6b1c930ff63d30bb0b80a8585519da4d",
+  "source": "/Users/aydemir/Desktop/drawingto3d/out/guided/760d83f8589d4f8dac3cd2df6bdd13c9/source.pdf",
+  "page": 0,
+  "created_at": "2026-10-07T01:40:50+00:00",
+  "detector_version": "callout-detector/1",
+  "geometry_version": 3,
+  "geometry_key": "bfba03cfa04c3bba2de03b5e7d21436e1a9f9ce42453243318c9ee2182d1f46c",
+  "callouts": [
+    {
+      "callout_id": "2b1604dfbdbffab10101f780e97ce3388d32fb0be7e74c680009b406d9f89556",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.18414752,
+        0.018649,
+        0.19679565,
+        0.0319581
+      ],
+      "base_region": [
+        0.18414752,
+        0.018649,
+        0.19679565,
+        0.0319581
+      ],
+      "crop_region": [
+        0.18414752,
+        0.018649,
+        0.19679565,
+        0.0319581
+      ],
+      "machine_text_hint": "4",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "25487cc1a4899de4d1c7cbf5948d809b87248d5d842d2d8114fa599323f34c4b",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.39862757,
+        0.018649,
+        0.4107497,
+        0.03225737
+      ],
+      "base_region": [
+        0.39862757,
+        0.018649,
+        0.4107497,
+        0.03225737
+      ],
+      "crop_region": [
+        0.39862757,
+        0.018649,
+        0.4107497,
+        0.03225737
+      ],
+      "machine_text_hint": "3",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "9a545c3fcdb09897b8873ed529497c374eb19ce29613024533fd2897491620e2",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.63653567,
+        0.018649,
+        0.64883313,
+        0.0319581
+      ],
+      "base_region": [
+        0.63653567,
+        0.018649,
+        0.64883313,
+        0.0319581
+      ],
+      "crop_region": [
+        0.63653567,
+        0.018649,
+        0.64883313,
+        0.0319581
+      ],
+      "machine_text_hint": "2",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "977774c838ffcfb39a436396330fe80d88a97e7209279f6dcc1d1e956f3775cc",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.85358525,
+        0.01896965,
+        0.85822249,
+        0.03195383
+      ],
+      "base_region": [
+        0.85358525,
+        0.01896965,
+        0.85822249,
+        0.03195383
+      ],
+      "crop_region": [
+        0.85358525,
+        0.01896965,
+        0.85822249,
+        0.03195383
+      ],
+      "machine_text_hint": "1",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "d84ba2a9b684b0337418b3ace44c21093bd636f1b4735c2899e02c17b8c6641a",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.50461911,
+        0.0632065,
+        0.56846433,
+        0.07520735
+      ],
+      "base_region": [
+        0.50461911,
+        0.0632065,
+        0.56846433,
+        0.07520735
+      ],
+      "crop_region": [
+        0.50461911,
+        0.0632065,
+        0.56846433,
+        0.07520735
+      ],
+      "machine_text_hint": "1 20.00",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "a78f2bd69b4f6fbcda971e1783a2bcf8752adace620b181fc47878b163235f6e",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.65287787,
+        0.08341171,
+        0.69209794,
+        0.09541257
+      ],
+      "base_region": [
+        0.65287787,
+        0.08341171,
+        0.69209794,
+        0.09541257
+      ],
+      "crop_region": [
+        0.65287787,
+        0.08341171,
+        0.69209794,
+        0.09541257
+      ],
+      "machine_text_hint": "1.50",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "0514b060785b83f7641ea83a201e524a0ff3558b318eb44cd951649cc543679a",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.07944982,
+        0.09218469,
+        0.0885127,
+        0.10516888
+      ],
+      "base_region": [
+        0.07944982,
+        0.09218469,
+        0.0885127,
+        0.10516888
+      ],
+      "crop_region": [
+        0.07944982,
+        0.09218469,
+        0.0885127,
+        0.10516888
+      ],
+      "machine_text_hint": "F",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "2c43e7bd71d46a35e92585467372e1936887a541f9eaaa1b9d1d0ec4a98a9b0d",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.96016929,
+        0.09218469,
+        0.96923216,
+        0.10516888
+      ],
+      "base_region": [
+        0.96016929,
+        0.09218469,
+        0.96923216,
+        0.10516888
+      ],
+      "crop_region": [
+        0.96016929,
+        0.09218469,
+        0.96923216,
+        0.10516888
+      ],
+      "machine_text_hint": "F",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "2f7af4aa401d90464553577cdf30255777326746a3b914106eca9acf37580791",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.81961911,
+        0.10684053,
+        0.83659008,
+        0.13641727
+      ],
+      "base_region": [
+        0.81961911,
+        0.10684053,
+        0.83659008,
+        0.13641727
+      ],
+      "crop_region": [
+        0.81961911,
+        0.10684053,
+        0.83659008,
+        0.13641727
+      ],
+      "machine_text_hint": "4.80",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "21f4fef6be47e1e948367fdff4c37958b56079bcd9bfcb180feee8ceca5212ed",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.76250302,
+        0.10751603,
+        0.779474,
+        0.13709277
+      ],
+      "base_region": [
+        0.76250302,
+        0.10751603,
+        0.779474,
+        0.13709277
+      ],
+      "crop_region": [
+        0.76250302,
+        0.10751603,
+        0.779474,
+        0.13709277
+      ],
+      "machine_text_hint": "4.00",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "775ee60e9a7d5bfd927182e74c82a8cfa6642fce0309c131959825f18ef88d50",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.73392987,
+        0.10836255,
+        0.75090085,
+        0.1377811
+      ],
+      "base_region": [
+        0.73392987,
+        0.10836255,
+        0.75090085,
+        0.1377811
+      ],
+      "crop_region": [
+        0.73392987,
+        0.10836255,
+        0.75090085,
+        0.1377811
+      ],
+      "machine_text_hint": "3.00",
+      "ignored": false,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "current",
+          "revision": 5,
+          "reason": null
+        },
+        "parse": {
+          "state": "current",
+          "reason": null
+        },
+        "target": {
+          "state": "current",
+          "reason": null
+        }
+      },
+      "raw_text": "Ø3 THRU",
+      "transcription_revision": 5,
+      "semantic_parse": {
+        "callout_id": "775ee60e9a7d5bfd927182e74c82a8cfa6642fce0309c131959825f18ef88d50",
+        "parser_version": "callout-parser/2",
+        "transcription_revision": 5,
+        "status": "parsed",
+        "form": "diameter",
+        "size": 3,
+        "count": null,
+        "termination": "thru",
+        "depth": null,
+        "unit": null,
+        "warnings": [
+          "unit_unresolved"
+        ]
+      },
+      "target_proposals": [
+        {
+          "callout_id": "775ee60e9a7d5bfd927182e74c82a8cfa6642fce0309c131959825f18ef88d50",
+          "target_kind": "circle_group",
+          "target_ids": [
+            "g58",
+            "g62"
+          ],
+          "geometry_version": 3,
+          "evidence_tier": "T0",
+          "evidence": [
+            {
+              "kind": "stored_confirmation",
+              "ref": "kullanıcı bu hedefi onaylamıştı · revizyon 5 · callout-parser/2"
+            }
+          ]
+        },
+        {
+          "callout_id": "775ee60e9a7d5bfd927182e74c82a8cfa6642fce0309c131959825f18ef88d50",
+          "target_kind": "circle",
+          "target_ids": [
+            "g58"
+          ],
+          "geometry_version": 3,
+          "evidence_tier": "T3",
+          "evidence": [
+            {
+              "kind": "semantic_geometry",
+              "ref": "çizilen Ø2.998 mm ≈ yazılan Ø3.0 mm"
+            },
+            {
+              "kind": "spatial_proximity",
+              "ref": "merkez bölge dışında · 239.12 px"
+            }
+          ]
+        },
+        {
+          "callout_id": "775ee60e9a7d5bfd927182e74c82a8cfa6642fce0309c131959825f18ef88d50",
+          "target_kind": "circle",
+          "target_ids": [
+            "g62"
+          ],
+          "geometry_version": 3,
+          "evidence_tier": "T3",
+          "evidence": [
+            {
+              "kind": "semantic_geometry",
+              "ref": "çizilen Ø3.008 mm ≈ yazılan Ø3.0 mm"
+            },
+            {
+              "kind": "spatial_proximity",
+              "ref": "merkez bölge dışında · 281.99 px"
+            }
+          ]
+        }
+      ],
+      "confirmed_target": {
+        "callout_id": "775ee60e9a7d5bfd927182e74c82a8cfa6642fce0309c131959825f18ef88d50",
+        "target_kind": "circle_group",
+        "target_ids": [
+          "g58",
+          "g62"
+        ],
+        "geometry_version": 3,
+        "geometry_key": "bfba03cfa04c3bba2de03b5e7d21436e1a9f9ce42453243318c9ee2182d1f46c",
+        "profile_id": "outline_2",
+        "transcription_revision": 5,
+        "parser_version": "callout-parser/2",
+        "evidence": [
+          {
+            "kind": "user_click",
+            "ref": "circle_group · g58, g62"
+          }
+        ],
+        "status": "confirmed",
+        "reconfirm": false
+      },
+      "image": null
+    },
+    {
+      "callout_id": "9a2027008644d98c977c559fb6024834b1c4aa2647113c32a82ce4511cbdc195",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.79104595,
+        0.11089354,
+        0.80801693,
+        0.14047029
+      ],
+      "base_region": [
+        0.79104595,
+        0.11089354,
+        0.80801693,
+        0.14047029
+      ],
+      "crop_region": [
+        0.79104595,
+        0.11089354,
+        0.80801693,
+        0.14047029
+      ],
+      "machine_text_hint": "4.00",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "40c57826618ed4a21ba04e431b96c82ae1c286c08dd29aeebb59468eb2decedc",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.70535671,
+        0.11507909,
+        0.72232769,
+        0.14281317
+      ],
+      "base_region": [
+        0.70535671,
+        0.11507909,
+        0.72232769,
+        0.14281317
+      ],
+      "crop_region": [
+        0.70535671,
+        0.11507909,
+        0.72232769,
+        0.14281317
+      ],
+      "machine_text_hint": "1.50",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "102fbef5a5a38b2687492e7f1491dc835868626d338bb138f2532df4e27a4829",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.33493349,
+        0.15641727,
+        0.35190447,
+        0.1928602
+      ],
+      "base_region": [
+        0.33493349,
+        0.15641727,
+        0.35190447,
+        0.1928602
+      ],
+      "crop_region": [
+        0.33493349,
+        0.15641727,
+        0.35190447,
+        0.1928602
+      ],
+      "machine_text_hint": "1 0.00",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "55b09c42200ed4cad6a264591501197164395c5306888f7e1b6b3e791a82bcce",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.87673519,
+        0.16436511,
+        0.89370617,
+        0.20198375
+      ],
+      "base_region": [
+        0.87673519,
+        0.16436511,
+        0.89370617,
+        0.20198375
+      ],
+      "crop_region": [
+        0.87673519,
+        0.16436511,
+        0.89370617,
+        0.20198375
+      ],
+      "machine_text_hint": "60.00",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "5e0180e05fcef159cb68959c89f4f7a0f3005ce722a4e8606d54e178a0b2580e",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.29887545,
+        0.20045319,
+        0.31584643,
+        0.23689611
+      ],
+      "base_region": [
+        0.29887545,
+        0.20045319,
+        0.31584643,
+        0.23689611
+      ],
+      "crop_region": [
+        0.29887545,
+        0.20045319,
+        0.31584643,
+        0.23689611
+      ],
+      "machine_text_hint": "1 8.00",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "3f108f70e67a548112f633cd118e0e7f4ea6c3b36a18855271c2844697aea057",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.07882104,
+        0.24125267,
+        0.08920193,
+        0.25423685
+      ],
+      "base_region": [
+        0.07882104,
+        0.24125267,
+        0.08920193,
+        0.25423685
+      ],
+      "crop_region": [
+        0.07882104,
+        0.24125267,
+        0.08920193,
+        0.25423685
+      ],
+      "machine_text_hint": "E",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "3626c78f9f52564d2db76b88e1a255a02a8bdfa5f9d2e64659106afbd069c5c0",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.95954051,
+        0.24125267,
+        0.9699214,
+        0.25423685
+      ],
+      "base_region": [
+        0.95954051,
+        0.24125267,
+        0.9699214,
+        0.25423685
+      ],
+      "crop_region": [
+        0.95954051,
+        0.24125267,
+        0.9699214,
+        0.25423685
+      ],
+      "machine_text_hint": "E",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "b5cc856366519978f59cb99267f201a2ba5550f71741c1000d731bcd571910e5",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.59623942,
+        0.25320222,
+        0.65037485,
+        0.26520308
+      ],
+      "base_region": [
+        0.59623942,
+        0.25320222,
+        0.65037485,
+        0.26520308
+      ],
+      "crop_region": [
+        0.59623942,
+        0.25320222,
+        0.65037485,
+        0.26520308
+      ],
+      "machine_text_hint": "46.00",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "737f226f8123c357345a4226bf54e886dbe01db020a4238a37effedfef825595",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.28304716,
+        0.26896537,
+        0.33285973,
+        0.304177
+      ],
+      "base_region": [
+        0.28304716,
+        0.26896537,
+        0.33285973,
+        0.304177
+      ],
+      "crop_region": [
+        0.28304716,
+        0.26896537,
+        0.33285973,
+        0.304177
+      ],
+      "machine_text_hint": "R8.00",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "0e7c8594fe59e9f1c11114b79852b2c949f8c79ff84539f0e555797e682c183b",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.32243652,
+        0.30197093,
+        0.3394075,
+        0.33841385
+      ],
+      "base_region": [
+        0.32243652,
+        0.30197093,
+        0.3394075,
+        0.33841385
+      ],
+      "crop_region": [
+        0.32243652,
+        0.30197093,
+        0.3394075,
+        0.33841385
+      ],
+      "machine_text_hint": "1 0.00",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "68cc905a84aaa505651293e4acb7a667947ac206c39a0019f1d8fc83aa4eb6ca",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.07615478,
+        0.40946986,
+        0.09140266,
+        0.42245404
+      ],
+      "base_region": [
+        0.07615478,
+        0.40946986,
+        0.09140266,
+        0.42245404
+      ],
+      "crop_region": [
+        0.07615478,
+        0.40946986,
+        0.09140266,
+        0.42245404
+      ],
+      "machine_text_hint": "D",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "b9a11aec2ab6815f45996c83a826af8c3d384b667b69af7734ef2599f4ac83f7",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.95687424,
+        0.40946986,
+        0.97212213,
+        0.42245404
+      ],
+      "base_region": [
+        0.95687424,
+        0.40946986,
+        0.97212213,
+        0.42245404
+      ],
+      "crop_region": [
+        0.95687424,
+        0.40946986,
+        0.97212213,
+        0.42245404
+      ],
+      "machine_text_hint": "D",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "16dc9f3295489173be7cc50942f06ff4caa59bd567949d71bba8c99e3ef770c5",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.70535671,
+        0.43469004,
+        0.72232769,
+        0.47289012
+      ],
+      "base_region": [
+        0.70535671,
+        0.43469004,
+        0.72232769,
+        0.47289012
+      ],
+      "crop_region": [
+        0.70535671,
+        0.43469004,
+        0.72232769,
+        0.47289012
+      ],
+      "machine_text_hint": "25.00",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "8411859a85e324196a72fea6997be15c5ea5eabc44e4979056233d05a364dd6f",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.07446191,
+        0.57747328,
+        0.09213422,
+        0.59108166
+      ],
+      "base_region": [
+        0.07446191,
+        0.57747328,
+        0.09213422,
+        0.59108166
+      ],
+      "crop_region": [
+        0.07446191,
+        0.57747328,
+        0.09213422,
+        0.59108166
+      ],
+      "machine_text_hint": "C",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "0b26907e1c97ebf1f42aeda819529266b5395fae28e8c3bca31d40dbbf7a94e7",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.95518138,
+        0.57747328,
+        0.97285369,
+        0.59108166
+      ],
+      "base_region": [
+        0.95518138,
+        0.57747328,
+        0.97285369,
+        0.59108166
+      ],
+      "crop_region": [
+        0.95518138,
+        0.57747328,
+        0.97285369,
+        0.59108166
+      ],
+      "machine_text_hint": "C",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "e272c089bbf8671d4c89ff59d0ba22f9cc1fdbec3aca5e0eb8e0837e61ba4ec3",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.07834341,
+        0.74622061,
+        0.08919589,
+        0.75920479
+      ],
+      "base_region": [
+        0.07834341,
+        0.74622061,
+        0.08919589,
+        0.75920479
+      ],
+      "crop_region": [
+        0.07834341,
+        0.74622061,
+        0.08919589,
+        0.75920479
+      ],
+      "machine_text_hint": "B",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "34f80bbbaf1b583c4bae45af5fa440c8c8a14e698ceb6d6e1c15c262de25ac7b",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.95906288,
+        0.74622061,
+        0.96991536,
+        0.75920479
+      ],
+      "base_region": [
+        0.95906288,
+        0.74622061,
+        0.96991536,
+        0.75920479
+      ],
+      "crop_region": [
+        0.95906288,
+        0.74622061,
+        0.96991536,
+        0.75920479
+      ],
+      "machine_text_hint": "B",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "7e94d4b51be7cb805aa3356ea468e7364338c9281a435c0ab4c885e0dd62abcc",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.48310157,
+        0.7845062,
+        0.53964933,
+        0.78952971
+      ],
+      "base_region": [
+        0.48310157,
+        0.7845062,
+        0.53964933,
+        0.78952971
+      ],
+      "crop_region": [
+        0.48310157,
+        0.7845062,
+        0.53964933,
+        0.78952971
+      ],
+      "machine_text_hint": "DEBURR AND",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "34f56fdcdd7f2d6f4c275004bf45264a7a0a93c5f2b8962ef947ded769dc91c6",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.09886941,
+        0.78466011,
+        0.2291052,
+        0.78980333
+      ],
+      "base_region": [
+        0.09886941,
+        0.78466011,
+        0.2291052,
+        0.78980333
+      ],
+      "crop_region": [
+        0.09886941,
+        0.78466011,
+        0.2291052,
+        0.78980333
+      ],
+      "machine_text_hint": "UNLESS OTHERWISE SPECIFIED:",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "2d95b2e1ba621de8d3f434cb11cd19c7b0988d214060cb80ae01326c5f9420be",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.2596312,
+        0.78466439,
+        0.2868682,
+        0.78980761
+      ],
+      "base_region": [
+        0.2596312,
+        0.78466439,
+        0.2868682,
+        0.78980761
+      ],
+      "crop_region": [
+        0.2596312,
+        0.78466439,
+        0.2868682,
+        0.78980761
+      ],
+      "machine_text_hint": "FINISH:",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "07b13d187c35407bf235b810094654ac02fc0593fa58bd75918096cc498ef052",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.63214631,
+        0.78933732,
+        0.74680774,
+        0.79448055
+      ],
+      "base_region": [
+        0.63214631,
+        0.78933732,
+        0.74680774,
+        0.79448055
+      ],
+      "crop_region": [
+        0.63214631,
+        0.78933732,
+        0.74680774,
+        0.79448055
+      ],
+      "machine_text_hint": "DO NOT SCALE DRAWING",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "857c14cbee85bf98e135a42f54bf30ac5bba42daad3c2ab3a7e6bed2d8804a69",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.82599154,
+        0.79000428,
+        0.86506651,
+        0.7951475
+      ],
+      "base_region": [
+        0.82599154,
+        0.79000428,
+        0.86506651,
+        0.7951475
+      ],
+      "crop_region": [
+        0.82599154,
+        0.79000428,
+        0.86506651,
+        0.7951475
+      ],
+      "machine_text_hint": "REVISION",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "ea9a9a90b1b9526872e3fe9348d8935569ded99ff18ec59105b52313e3be48b6",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.48311971,
+        0.79280034,
+        0.54180774,
+        0.79794357
+      ],
+      "base_region": [
+        0.48311971,
+        0.79280034,
+        0.54180774,
+        0.79794357
+      ],
+      "crop_region": [
+        0.48311971,
+        0.79280034,
+        0.54180774,
+        0.79794357
+      ],
+      "machine_text_hint": "BREAK SHARP",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "0343b82e877f98b68d3442a678641f9010c324d3d74558dcf6ed17695dc09458",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.09884522,
+        0.79307396,
+        0.24113059,
+        0.79821719
+      ],
+      "base_region": [
+        0.09884522,
+        0.79307396,
+        0.24113059,
+        0.79821719
+      ],
+      "crop_region": [
+        0.09884522,
+        0.79307396,
+        0.24113059,
+        0.79821719
+      ],
+      "machine_text_hint": "DIMENSIONS ARE IN MILLIMETERS",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "dba102059c7ba7ba475e249e85a34860266abe649df7d69fd132949532b452d2",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.48311366,
+        0.80121419,
+        0.51136034,
+        0.80635742
+      ],
+      "base_region": [
+        0.48311366,
+        0.80121419,
+        0.51136034,
+        0.80635742
+      ],
+      "crop_region": [
+        0.48311366,
+        0.80121419,
+        0.51136034,
+        0.80635742
+      ],
+      "machine_text_hint": "EDGES",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "931287cab0e6713174689c9a965329e048469341154b5c3d9e0c9aef77df4ad8",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.09815599,
+        0.80149209,
+        0.16899033,
+        0.80663531
+      ],
+      "base_region": [
+        0.09815599,
+        0.80149209,
+        0.16899033,
+        0.80663531
+      ],
+      "crop_region": [
+        0.09815599,
+        0.80149209,
+        0.16899033,
+        0.80663531
+      ],
+      "machine_text_hint": "SURFACE FINISH:",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "941d24be1f5991ac4c7ed1443fcb4bb94f98ca82e2c9486f1ff811ae2d7e5148",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.09818622,
+        0.80990594,
+        0.15788996,
+        0.81504917
+      ],
+      "base_region": [
+        0.09818622,
+        0.80990594,
+        0.15788996,
+        0.81504917
+      ],
+      "crop_region": [
+        0.09818622,
+        0.80990594,
+        0.15788996,
+        0.81504917
+      ],
+      "machine_text_hint": "TOLERANCES:",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "66af3c1f351ff4a72e2d4d4a031f0e34db4c68943b81687be79a6acfcebd5144",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.10654776,
+        0.81844378,
+        0.13840387,
+        0.82344164
+      ],
+      "base_region": [
+        0.10654776,
+        0.81844378,
+        0.13840387,
+        0.82344164
+      ],
+      "crop_region": [
+        0.10654776,
+        0.81844378,
+        0.13840387,
+        0.82344164
+      ],
+      "machine_text_hint": "LINEAR:",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "49772558ccda1aaedcfebec7d643565dd2eec009c839601c4065022e3c95c207",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.10600967,
+        0.82673792,
+        0.15266022,
+        0.83188115
+      ],
+      "base_region": [
+        0.10600967,
+        0.82673792,
+        0.15266022,
+        0.83188115
+      ],
+      "crop_region": [
+        0.10600967,
+        0.82673792,
+        0.15266022,
+        0.83188115
+      ],
+      "machine_text_hint": "ANGULAR:",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "72374aff8b314b26534fb91b609a88f3d37f0f7bd2552ce377001a16a500b035",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.23831923,
+        0.84309962,
+        0.28708585,
+        0.84824284
+      ],
+      "base_region": [
+        0.23831923,
+        0.84309962,
+        0.28708585,
+        0.84824284
+      ],
+      "crop_region": [
+        0.23831923,
+        0.84309962,
+        0.28708585,
+        0.84824284
+      ],
+      "machine_text_hint": "SIGNATURE",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "fdc627cea9f1d2add7ea0de35cc87c9fb81a91b5f30a6d3bc80381c3dace72ef",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.32081016,
+        0.84317657,
+        0.3425393,
+        0.84808465
+      ],
+      "base_region": [
+        0.32081016,
+        0.84317657,
+        0.3425393,
+        0.84808465
+      ],
+      "crop_region": [
+        0.32081016,
+        0.84317657,
+        0.3425393,
+        0.84808465
+      ],
+      "machine_text_hint": "DATE",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "689b9fad4e0195652174232542ec182a3f02dd2538630fa8043fb5a69233098e",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.57185611,
+        0.84317657,
+        0.59277509,
+        0.84817443
+      ],
+      "base_region": [
+        0.57185611,
+        0.84317657,
+        0.59277509,
+        0.84817443
+      ],
+      "crop_region": [
+        0.57185611,
+        0.84317657,
+        0.59277509,
+        0.84817443
+      ],
+      "machine_text_hint": "TITLE:",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "e9809065b23c55c21b9f1706bb2b7e220b3a2181e7b7c50be84f67c54202569e",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.16422007,
+        0.84342454,
+        0.19045949,
+        0.84833262
+      ],
+      "base_region": [
+        0.16422007,
+        0.84342454,
+        0.19045949,
+        0.84833262
+      ],
+      "crop_region": [
+        0.16422007,
+        0.84342454,
+        0.19045949,
+        0.84833262
+      ],
+      "machine_text_hint": "NAME",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "9c77a4d08301180c543a266b9dc31f6275312c7557c43b5587445da8d8151e7f",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.60970375,
+        0.84945703,
+        0.9150786,
+        0.87151774
+      ],
+      "base_region": [
+        0.60970375,
+        0.84945703,
+        0.9150786,
+        0.87151774
+      ],
+      "crop_region": [
+        0.60970375,
+        0.84945703,
+        0.9150786,
+        0.87151774
+      ],
+      "machine_text_hint": "Plastic Enclosure",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "223edc793d32d02767aa97b21d2f4f17e42d749097256c9e3d9fa2bd93b54772",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.14773881,
+        0.85323215,
+        0.21553809,
+        0.8648867
+      ],
+      "base_region": [
+        0.14773881,
+        0.85323215,
+        0.21553809,
+        0.8648867
+      ],
+      "crop_region": [
+        0.14773881,
+        0.85323215,
+        0.21553809,
+        0.8648867
+      ],
+      "machine_text_hint": "Kumar",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "f2612215925d8b3a9ee4325b2e0aa2b597ec73e768abc8892f8ce2fe794b353f",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.09898428,
+        0.85727661,
+        0.12842805,
+        0.86218469
+      ],
+      "base_region": [
+        0.09898428,
+        0.85727661,
+        0.12842805,
+        0.86218469
+      ],
+      "crop_region": [
+        0.09898428,
+        0.85727661,
+        0.12842805,
+        0.86218469
+      ],
+      "machine_text_hint": "DRAWN",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "d31466b0b6b07e2358979239dd8b0c81cbcb6f6b824586d058f478d4eddafd0c",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.10018138,
+        0.87137238,
+        0.12724909,
+        0.8765156
+      ],
+      "base_region": [
+        0.10018138,
+        0.87137238,
+        0.12724909,
+        0.8765156
+      ],
+      "crop_region": [
+        0.10018138,
+        0.87137238,
+        0.12724909,
+        0.8765156
+      ],
+      "machine_text_hint": "CHK'D",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "448795d4a9730c8dc959ff30779f7a66faa0ef332973d58913dde152f6aee9a8",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.09734583,
+        0.88516032,
+        0.12980653,
+        0.89018811
+      ],
+      "base_region": [
+        0.09734583,
+        0.88516032,
+        0.12980653,
+        0.89018811
+      ],
+      "crop_region": [
+        0.09734583,
+        0.88516032,
+        0.12980653,
+        0.89018811
+      ],
+      "machine_text_hint": "APPV'D",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "2dd3526f42e217b08f75567b4e265ab45af739d40eff20896c124ae8a3fa38b2",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.07458888,
+        0.89507482,
+        0.09202539,
+        0.908059
+      ],
+      "base_region": [
+        0.07458888,
+        0.89507482,
+        0.09202539,
+        0.908059
+      ],
+      "crop_region": [
+        0.07458888,
+        0.89507482,
+        0.09202539,
+        0.908059
+      ],
+      "machine_text_hint": "A",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "c8c4f0331d075ef71149171bcd6371eeecd77053765a3e2957ca17050224c914",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.95530834,
+        0.89507482,
+        0.97274486,
+        0.908059
+      ],
+      "base_region": [
+        0.95530834,
+        0.89507482,
+        0.97274486,
+        0.908059
+      ],
+      "crop_region": [
+        0.95530834,
+        0.89507482,
+        0.97274486,
+        0.908059
+      ],
+      "machine_text_hint": "A",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "adfc6fa76ef13bfefba6c4879ffb2341d6aaab36817e2cfab48f61c8298239a2",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.10107013,
+        0.89980333,
+        0.12135429,
+        0.90494656
+      ],
+      "base_region": [
+        0.10107013,
+        0.89980333,
+        0.12135429,
+        0.90494656
+      ],
+      "crop_region": [
+        0.10107013,
+        0.89980333,
+        0.12135429,
+        0.90494656
+      ],
+      "machine_text_hint": "MFG",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "290fe5660d827a61eda1bd7b0e9fb8b232ee1784e7dd6cb13e4b048cf9efcb1a",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.57186215,
+        0.91236853,
+        0.61461911,
+        0.91751176
+      ],
+      "base_region": [
+        0.57186215,
+        0.91236853,
+        0.61461911,
+        0.91751176
+      ],
+      "crop_region": [
+        0.57186215,
+        0.91236853,
+        0.61461911,
+        0.91751176
+      ],
+      "machine_text_hint": "DWG NO.",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "bbcec4e82568c6f7fe3617513f681d9b2bc84f693d72a1230204a28e9efdd47d",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.36064692,
+        0.91248824,
+        0.40537485,
+        0.91748611
+      ],
+      "base_region": [
+        0.36064692,
+        0.91248824,
+        0.40537485,
+        0.91748611
+      ],
+      "crop_region": [
+        0.36064692,
+        0.91248824,
+        0.40537485,
+        0.91748611
+      ],
+      "machine_text_hint": "MATERIAL:",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "6db2f1f387959de53310c1352c817664a5103b5d120251e9750d864f3333b141",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.10292624,
+        0.91398461,
+        0.11976421,
+        0.9193929
+      ],
+      "base_region": [
+        0.10292624,
+        0.91398461,
+        0.11976421,
+        0.9193929
+      ],
+      "crop_region": [
+        0.10292624,
+        0.91398461,
+        0.11976421,
+        0.9193929
+      ],
+      "machine_text_hint": "Q.A",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "95adf4099c2fc3af8e56c187fc6082482d3d6517a00ca9eb7617395d246e3c2b",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.90909915,
+        0.9176956,
+        0.93185006,
+        0.9274519
+      ],
+      "base_region": [
+        0.90909915,
+        0.9176956,
+        0.93185006,
+        0.9274519
+      ],
+      "crop_region": [
+        0.90909915,
+        0.9176956,
+        0.93185006,
+        0.9274519
+      ],
+      "machine_text_hint": "A4",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "0c2006d43ddbf2c38e21c6f497f89ff1bc8ef722f70446c046711a621531d58c",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.58549577,
+        0.92002993,
+        0.88770254,
+        0.94722103
+      ],
+      "base_region": [
+        0.58549577,
+        0.92002993,
+        0.88770254,
+        0.94722103
+      ],
+      "crop_region": [
+        0.58549577,
+        0.92002993,
+        0.88770254,
+        0.94722103
+      ],
+      "machine_text_hint": "plastic enclosue",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "f1c6076fdc4618a960bb08c68c980aae778f1fea079a880c507e4527dbfabacf",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.42420193,
+        0.92737067,
+        0.49878476,
+        0.93568619
+      ],
+      "base_region": [
+        0.42420193,
+        0.92737067,
+        0.49878476,
+        0.93568619
+      ],
+      "crop_region": [
+        0.42420193,
+        0.92737067,
+        0.49878476,
+        0.93568619
+      ],
+      "machine_text_hint": "ABS Plastic",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "9da1e0a0052d5618739b1daa4de5e84a943efff2e2300270c56c85033d7e8542",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.36042322,
+        0.95624626,
+        0.39631197,
+        0.96138521
+      ],
+      "base_region": [
+        0.36042322,
+        0.95624626,
+        0.39631197,
+        0.96138521
+      ],
+      "crop_region": [
+        0.36042322,
+        0.95624626,
+        0.39631197,
+        0.96138521
+      ],
+      "machine_text_hint": "WEIGHT:",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "0c741dc5193f45983943ec2a5a980fe6955c67258fe4fc2f4ce7f6743c06c39e",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.57174123,
+        0.95642155,
+        0.61467956,
+        0.96156477
+      ],
+      "base_region": [
+        0.57174123,
+        0.95642155,
+        0.61467956,
+        0.96156477
+      ],
+      "crop_region": [
+        0.57174123,
+        0.95642155,
+        0.61467956,
+        0.96156477
+      ],
+      "machine_text_hint": "SCALE:1:2",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "cab41e195ea762c3bbd08b94d2dafbb20c764246803c8c47d33be4062ceae3d5",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.7831318,
+        0.95642155,
+        0.83598549,
+        0.96156477
+      ],
+      "base_region": [
+        0.7831318,
+        0.95642155,
+        0.83598549,
+        0.96156477
+      ],
+      "crop_region": [
+        0.7831318,
+        0.95642155,
+        0.83598549,
+        0.96156477
+      ],
+      "machine_text_hint": "SHEET 1 OF 1",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "1b092ec06b11ef0f8e94db18e86f4c3915e845d88a245447dddacc7acc9ddb93",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.18414752,
+        0.96796922,
+        0.19679565,
+        0.98127832
+      ],
+      "base_region": [
+        0.18414752,
+        0.96796922,
+        0.19679565,
+        0.98127832
+      ],
+      "crop_region": [
+        0.18414752,
+        0.96796922,
+        0.19679565,
+        0.98127832
+      ],
+      "machine_text_hint": "4",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "bc543a215ea5866bffdaa584d92d7ca1ce47a7e76ecc9ebb13b39cadf0173d51",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.39862757,
+        0.96796922,
+        0.4107497,
+        0.9815776
+      ],
+      "base_region": [
+        0.39862757,
+        0.96796922,
+        0.4107497,
+        0.9815776
+      ],
+      "crop_region": [
+        0.39862757,
+        0.96796922,
+        0.4107497,
+        0.9815776
+      ],
+      "machine_text_hint": "3",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "60f3547a4c6f6166f83253f1f17f3e177a6fed1b21ca5361075968bac346a205",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.63653567,
+        0.96796922,
+        0.64883313,
+        0.98127832
+      ],
+      "base_region": [
+        0.63653567,
+        0.96796922,
+        0.64883313,
+        0.98127832
+      ],
+      "crop_region": [
+        0.63653567,
+        0.96796922,
+        0.64883313,
+        0.98127832
+      ],
+      "machine_text_hint": "2",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "6b2f4b9f617e18898f8f6f1628b9f125870e3b7638c82dd77da3fbfa67a6ec6a",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.85358525,
+        0.96828987,
+        0.85822249,
+        0.98127832
+      ],
+      "base_region": [
+        0.85358525,
+        0.96828987,
+        0.85822249,
+        0.98127832
+      ],
+      "crop_region": [
+        0.85358525,
+        0.96828987,
+        0.85822249,
+        0.98127832
+      ],
+      "machine_text_hint": "1",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    }
+  ],
+  "instructions": "Her callout için: `transcribe` (metni yaz), `ignore`/`restore` (callout değil), `confirm_target` (öneriyi onayla), `select_target` (kendi seçimin). `base_revision` değiştiyse içe aktarma reddedilir."
+}

@@ -1,0 +1,138 @@
+{
+  "case_id": "plastic-enclosure-vector",
+  "run_id": "20261007-044029",
+  "at": "2026-10-07T04:40:29+0300",
+  "git_head": "1fda5dfffcb86de546b9d41f339802e36fe90096",
+  "source_path": "examples/pdf with steps/6/plastic enclosue.pdf",
+  "source_sha256": "7698e830ca02ad46aa89f910c67f2efb6b1c930ff63d30bb0b80a8585519da4d",
+  "source_sha256_checked": true,
+  "scope_class": "full_step",
+  "prior_exposure": "previously_seen",
+  "recipe": "plastic-enclosure-vector.json",
+  "candidate_count": 65,
+  "manual_region_count": 0,
+  "ignored_count": 64,
+  "transcription_count": 1,
+  "parse_success_count": 1,
+  "parse_edit_count": 0,
+  "proposal_count": 0,
+  "proposal_accept_count": 0,
+  "manual_target_correction_count": 1,
+  "review_import_used": false,
+  "build_blockers": [],
+  "build_success": true,
+  "step_reopen": true,
+  "bbox": [
+    25.0,
+    60.927,
+    120.998
+  ],
+  "features": {
+    "plan_lists": {
+      "operations": 5,
+      "assumptions": 3
+    },
+    "solids": 1,
+    "valid": true,
+    "faces": 12,
+    "cylinders": [
+      1.5,
+      8.03,
+      8.06,
+      8.08,
+      8.11
+    ],
+    "face_types": {
+      "PLANE": 6,
+      "CYLINDER": 6
+    }
+  },
+  "final_geometry_verdict": {
+    "checks": {
+      "solids": {
+        "ok": true,
+        "got": "1 katı",
+        "want": "1 katı"
+      },
+      "valid": {
+        "ok": true,
+        "got": "True",
+        "want": "True"
+      },
+      "vector": {
+        "ok": true,
+        "got": "[25, 60.927, 120.998]",
+        "want": "[25, 60.873, 120.873] (fark [0, 0.05, 0.12])"
+      },
+      "volume": {
+        "ok": false,
+        "got": "182.5 cm3",
+        "want": "23.5 cm3 (%676 fark)"
+      },
+      "cylinders": {
+        "ok": false,
+        "got": "[1.5, 8.03, 8.06, 8.08, 8.11]",
+        "want": "[1.5, 5, 6, 8]; eksik [5, 6], fazla []"
+      }
+    },
+    "pass": false,
+    "shape_ok": true,
+    "detail_ok": false
+  },
+  "user_interventions": {
+    "typed_texts": 1,
+    "hint_clicks": 0,
+    "single_ignores": 0,
+    "bulk_rows": 64,
+    "bulk_actions": 1,
+    "proposal_accepts": 1,
+    "profile_selections": 1,
+    "calibration_entries": 0,
+    "thickness_entries": 1,
+    "trace_acknowledgements": 1
+  },
+  "failures": [
+    {
+      "code": "CAD_WRONG",
+      "detail": {
+        "checks": {
+          "solids": {
+            "ok": true,
+            "got": "1 katı",
+            "want": "1 katı"
+          },
+          "valid": {
+            "ok": true,
+            "got": "True",
+            "want": "True"
+          },
+          "vector": {
+            "ok": true,
+            "got": "[25, 60.927, 120.998]",
+            "want": "[25, 60.873, 120.873] (fark [0, 0.05, 0.12])"
+          },
+          "volume": {
+            "ok": false,
+            "got": "182.5 cm3",
+            "want": "23.5 cm3 (%676 fark)"
+          },
+          "cylinders": {
+            "ok": false,
+            "got": "[1.5, 8.03, 8.06, 8.08, 8.11]",
+            "want": "[1.5, 5, 6, 8]; eksik [5, 6], fazla []"
+          }
+        }
+      }
+    }
+  ],
+  "notes": [],
+  "artifacts": {
+    "part.step": "eval/audits/20261007-guided-g11/cases/plastic-enclosure-vector/part.step",
+    "plan.json": "eval/audits/20261007-guided-g11/cases/plastic-enclosure-vector/plan.json",
+    "plan-audit.json": "eval/audits/20261007-guided-g11/cases/plastic-enclosure-vector/plan-audit.json",
+    "session-public.json": "eval/audits/20261007-guided-g11/cases/plastic-enclosure-vector/session-public.json",
+    "review-bundle.json": "eval/audits/20261007-guided-g11/cases/plastic-enclosure-vector/review-bundle.json"
+  },
+  "console_errors": [],
+  "rejected_requests": []
+}

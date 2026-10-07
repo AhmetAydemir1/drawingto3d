@@ -1,0 +1,138 @@
+{
+  "checks": [
+    {
+      "id": "G11R-01",
+      "passed": true,
+      "rate": 0.1111111111111111,
+      "denominator": 9,
+      "correct": [
+        "plate-pocket-vector"
+      ],
+      "conditional": 0.16666666666666666
+    },
+    {
+      "id": "G11R-02",
+      "details": {
+        "flange-raster": {
+          "recipe_manual_value": 35,
+          "record_calibration_value": 35,
+          "span_px": 207.3475343475297,
+          "px_per_mm": 5.9242152670722765,
+          "recipe_sha_matches": true,
+          "input_verification_carried": true,
+          "recipe_notes_carried": true
+        },
+        "exercise-51-raster": {
+          "recipe_manual_value": 70,
+          "record_calibration_value": 70,
+          "span_px": 274.7990174654924,
+          "px_per_mm": 3.925700249507034,
+          "recipe_sha_matches": true,
+          "input_verification_carried": true,
+          "recipe_notes_carried": true
+        },
+        "old_flange_calibration": {
+          "first": [
+            900.75,
+            1476.75
+          ],
+          "second": [
+            1077.75,
+            1584.75
+          ],
+          "value": 90,
+          "unit": "mm",
+          "span_id": "t4"
+        },
+        "old_ex51_calibration": {
+          "first": [
+            773.25,
+            851.25
+          ],
+          "second": [
+            534.75,
+            987.75
+          ],
+          "value": 40,
+          "unit": "mm",
+          "span_id": "t0"
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "G11R-03",
+      "passed": true,
+      "steps_passed": 8,
+      "steps_total": 8,
+      "failures": []
+    },
+    {
+      "id": "G11R-04",
+      "passed": true,
+      "r2_missing": [],
+      "recovered": [
+        {
+          "case_id": "exercise-13-raster",
+          "files": [
+            "RECOVERY.json",
+            "readiness.json",
+            "review-bundle.json",
+            "server-error-recompute.json",
+            "session-public.json"
+          ],
+          "labeled": true,
+          "refusal_gate": "make_plan"
+        },
+        {
+          "case_id": "exercise-17-raster",
+          "files": [
+            "RECOVERY.json",
+            "readiness.json",
+            "review-bundle.json",
+            "server-error-recompute.json",
+            "session-public.json"
+          ],
+          "labeled": true,
+          "refusal_gate": "make_plan"
+        },
+        {
+          "case_id": "my-part-raster",
+          "files": [
+            "RECOVERY.json",
+            "readiness.json",
+            "review-bundle.json",
+            "server-error-recompute.json",
+            "session-public.json"
+          ],
+          "labeled": true,
+          "refusal_gate": "readiness"
+        },
+        {
+          "case_id": "flange-elbow-90-raster-noref",
+          "files": [
+            "RECOVERY.json",
+            "readiness.json",
+            "review-bundle.json",
+            "server-error-recompute.json",
+            "session-public.json"
+          ],
+          "labeled": true,
+          "refusal_gate": "readiness"
+        }
+      ]
+    },
+    {
+      "id": "G11R-05",
+      "passed": true,
+      "problems": []
+    },
+    {
+      "id": "old-evidence-untouched",
+      "passed": true,
+      "diff": "",
+      "untracked_or_modified": ""
+    }
+  ],
+  "passed": true
+}

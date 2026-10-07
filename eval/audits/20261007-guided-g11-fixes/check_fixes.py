@@ -167,8 +167,10 @@ def check_r05(checks: list[dict]) -> None:
 
 
 def check_old_evidence_untouched(checks: list[dict]) -> None:
+    # 0ff46a8'de var olan kanıt dosyaları değişmemiş/silinmemiş olmalı; inceleme dizini o commit'te
+    # henüz izlenmiyordu, ilk kez bu turda commit edildi — yalnız EKLENEN (A) dosyalar kabuldür.
     diff = subprocess.run(
-        ["git", "diff", "--stat", f"{REVIEW_HEAD}..HEAD", "--",
+        ["git", "diff", "--diff-filter=MDR", "--name-status", f"{REVIEW_HEAD}..HEAD", "--",
          "eval/audits/20261007-guided-g11/cases", "eval/audits/20261007-guided-g11/recipes-official",
          "eval/audits/20261007-guided-g11/recipes-resume", "eval/audits/20261007-guided-g11/shots",
          "eval/audits/20261007-guided-g11/logs/official", "eval/guided_10_manifest.json",

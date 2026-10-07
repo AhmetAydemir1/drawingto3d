@@ -1,0 +1,219 @@
+{
+  "case_id": "exercise-51-raster",
+  "run_id": "20261007-152312",
+  "at": "2026-10-07T15:23:12+0300",
+  "round": "rerun-round2",
+  "git_head": "0ff46a81878d7ff23634cdcaac0bf278c97f342c",
+  "source_path": "examples/pdf with steps/1/Exercise_51.PNG",
+  "source_sha256": "b19423550cd579ec24a2ef0630babd8af7bbe50a0ce7b2b9532f9bcec476abe8",
+  "source_sha256_checked": true,
+  "scope_class": "full_step",
+  "prior_exposure": "previously_seen",
+  "recipe": "exercise-51-raster.json",
+  "recipe_file": "eval/audits/20261007-guided-g11/rerun-round2/recipes/exercise-51-raster.json",
+  "recipe_sha256": "38b0b10aecea14c4d14c15c9a5d8ebc0f52688c3739b0b3303c66d5dc4b05c9b",
+  "recipe_notes": [
+    "G11R-02 yeniden koşusu (düzeltilmiş girdi): kalibrasyon doğrulanmış basılı ölçüyle — 70.00, uçlar g340 (hub merkezi) ↔ g341 (alt-sol göbek merkezi); px/mm 3.926, 80.00 ve 150.00 ölçüleriyle çapraz kontrol ±%0,4 içinde (input_verification kayıtta).",
+    "Eski resmî koşu (kalibrasyon 40·t0) silinmedi; bu tur ölçeği 274.8÷40 = 6,87 px/mm yerine 274.8÷70 = 3,926 px/mm ile yeniden kurar — aynı iki uç, doğrulanmış basılı değer.",
+    "Kalibrasyon elle giriş yolundan verildi ('Ölçüyü ben gireceğim' + #cal-value); OCR satırı seçilmedi — belirsiz okuma artık kesin karar yazmıyor.",
+    "Kontur: circle_g340 (ana göbek) — resmî koşuyla aynı; kontur artık 98.1 px ÷ 3.926 = Ø49,96 mm'dir (eski 6,87 px/mm ile Ø28,6 çıkıyordu).",
+    "26 adayın tamamı tek atomik toplu kararla kapsam dışı: uydurma metin yok."
+  ],
+  "input_verification": {
+    "calibration": {
+      "span": "g340 merkezi ↔ g341 merkezi",
+      "span_px": 274.8,
+      "value_mm": 70,
+      "px_per_mm": 3.926,
+      "printed_text_used": "70.00",
+      "evidence": [
+        "70.00 ölçüsünün ölçü çizgisi hub merkezinden ~30°'deki alt-sol göbek merkezine uzanır (çizgi eğimi iki merkezi birleştiren doğrultuyla aynı).",
+        "Piksel çapraz kontrolü: 80.00 ölçüsü x 457.5↔772.5 = 315 px → 3.938 px/mm; 150.00 ölçüsü x 772.5↔1363 = 590.5 px → 3.937 px/mm; 70.00 bağı 274.8 px ÷ 70 = 3.926 px/mm — üç ölçü ±%0,4 içinde uyuşur.",
+        "Eski resmî koşuda kullanılan OCR '40' (t0) okuması çizimde '70.00'dır (güven 74.6); 40 mm bu paftanın ölçeğiyle hiçbir çapraz kontrolde tutmaz (40 → 6.87 px/mm)."
+      ],
+      "replaces": {
+        "value": 40,
+        "unit": "mm",
+        "span_id": "t0",
+        "note": "eski resmî koşu — 'denenen' belirsiz bağ; kayıt olduğu gibi bırakıldı, bu tur onu değiştirmez"
+      }
+    },
+    "thickness": {
+      "value_mm": 15,
+      "printed_text": "15.00",
+      "evidence": "yan görünüşteki kalınlık ölçüsü; resmî koşudaki değer korunur (bu tur kapsamı kalibrasyon)"
+    },
+    "contour": {
+      "chosen": "circle_g340",
+      "what_it_is": "ana göbek dairesi (r=98.1 px ÷ 3.926 px/mm = 24.98 mm → Ø50 bölgesi)",
+      "candidate_note": "parçanın dış konturu tespitte parçalı; tek disk yaklaşımı ürünün flat-part okumasının sınırıdır — G12 kaydı"
+    }
+  },
+  "session_token": "c0a20442a83a464d8e5d91840bcbd424",
+  "session_origin": "fresh-upload",
+  "calibration": {
+    "first": [
+      773.25,
+      851.25
+    ],
+    "second": [
+      534.75,
+      987.75
+    ],
+    "value": 70,
+    "unit": "mm",
+    "span_id": null
+  },
+  "readiness": {
+    "ready": true,
+    "questions": [],
+    "captured": "run-time"
+  },
+  "build_error_response": null,
+  "browser_signals": {
+    "assets": [
+      {
+        "status": null,
+        "url": "http://127.0.0.1:8765/favicon.ico",
+        "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      }
+    ],
+    "api_failures": [],
+    "page_errors": [],
+    "cancelled": []
+  },
+  "candidate_count": 26,
+  "manual_region_count": 0,
+  "ignored_count": 26,
+  "transcription_count": 0,
+  "parse_success_count": 0,
+  "parse_edit_count": 0,
+  "proposal_count": 0,
+  "proposal_accept_count": 0,
+  "manual_target_correction_count": 0,
+  "review_import_used": false,
+  "build_blockers": [],
+  "build_success": true,
+  "step_reopen": true,
+  "bbox": [
+    15.0,
+    49.978,
+    49.978
+  ],
+  "features": {
+    "plan_lists": {
+      "operations": 1,
+      "assumptions": 3
+    },
+    "solids": 1,
+    "valid": true,
+    "faces": 3,
+    "cylinders": [
+      24.99
+    ],
+    "face_types": {
+      "PLANE": 2,
+      "CYLINDER": 1
+    }
+  },
+  "final_geometry_verdict": {
+    "checks": {
+      "solids": {
+        "ok": true,
+        "got": "1 katı",
+        "want": "1 katı"
+      },
+      "valid": {
+        "ok": true,
+        "got": "True",
+        "want": "True"
+      },
+      "vector": {
+        "ok": false,
+        "got": "[15, 49.978, 49.978]",
+        "want": "[60, 100, 245] (fark [45, 50.02, 195.02])"
+      },
+      "volume": {
+        "ok": false,
+        "got": "29.4 cm3",
+        "want": "471.9 cm3 (%94 fark)"
+      },
+      "cylinders": {
+        "ok": false,
+        "got": "[24.99]",
+        "want": "[6, 7.5, 9, 10, 15, 16, 25, 50, 60]; eksik [6, 7.5, 9, 10, 15, 16, 50, 60], fazla []"
+      }
+    },
+    "pass": false,
+    "shape_ok": false,
+    "detail_ok": false
+  },
+  "user_interventions": {
+    "typed_texts": 0,
+    "hint_clicks": 0,
+    "single_ignores": 0,
+    "bulk_rows": 26,
+    "bulk_actions": 1,
+    "edge_drops": 0,
+    "proposal_accepts": 0,
+    "profile_selections": 1,
+    "calibration_entries": 1,
+    "thickness_entries": 1,
+    "trace_acknowledgements": 1
+  },
+  "failures": [
+    {
+      "code": "CAD_WRONG",
+      "detail": {
+        "checks": {
+          "solids": {
+            "ok": true,
+            "got": "1 katı",
+            "want": "1 katı"
+          },
+          "valid": {
+            "ok": true,
+            "got": "True",
+            "want": "True"
+          },
+          "vector": {
+            "ok": false,
+            "got": "[15, 49.978, 49.978]",
+            "want": "[60, 100, 245] (fark [45, 50.02, 195.02])"
+          },
+          "volume": {
+            "ok": false,
+            "got": "29.4 cm3",
+            "want": "471.9 cm3 (%94 fark)"
+          },
+          "cylinders": {
+            "ok": false,
+            "got": "[24.99]",
+            "want": "[6, 7.5, 9, 10, 15, 16, 25, 50, 60]; eksik [6, 7.5, 9, 10, 15, 16, 50, 60], fazla []"
+          }
+        }
+      }
+    }
+  ],
+  "notes": [
+    "oturum token (koşu sonrası tamamlandı): c0a20442a83a464d8e5d91840bcbd424 — kaynak: session-public.json artefaktı (koşu, kapı-sonrası token yakalamasından önceydi)",
+    "kayıt yolu düzeltmesi: koşu sırasında resmî cases/ dizinine yazılmıştı; tur sonrası rerun-round2/cases altına taşındı, resmî kayıt git'ten aynen geri yüklendi"
+  ],
+  "artifacts": {
+    "part.step": "eval/audits/20261007-guided-g11/rerun-round2/cases/exercise-51-raster/part.step",
+    "plan.json": "eval/audits/20261007-guided-g11/rerun-round2/cases/exercise-51-raster/plan.json",
+    "plan-audit.json": "eval/audits/20261007-guided-g11/rerun-round2/cases/exercise-51-raster/plan-audit.json",
+    "session-public.json": "eval/audits/20261007-guided-g11/rerun-round2/cases/exercise-51-raster/session-public.json",
+    "review-bundle.json": "eval/audits/20261007-guided-g11/rerun-round2/cases/exercise-51-raster/review-bundle.json",
+    "readiness.json": "eval/audits/20261007-guided-g11/rerun-round2/cases/exercise-51-raster/readiness.json"
+  },
+  "console_errors": [
+    {
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "url": "http://127.0.0.1:8765/favicon.ico",
+      "source": "network"
+    }
+  ],
+  "rejected_requests": []
+}

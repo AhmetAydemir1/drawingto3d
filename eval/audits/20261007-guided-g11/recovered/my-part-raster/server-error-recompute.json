@@ -1,0 +1,10 @@
+{
+  "recomputed_at": "2026-10-07T15:24:28+03:00",
+  "how": "build() kapı zinciri okuma modunda oynatıldı (revizyon → geometry_stale → hazırlık → çakışma → make_plan); koşu anında HTTP gövdesi kaydedilmemişti.",
+  "message": "üretim için eksik/uyumsuz girdiler var: Bilinen ölçünün iki noktasını ve uzunluğunu belirtin.",
+  "gate": "readiness",
+  "readiness_ready": false,
+  "readiness_questions": [
+    "Bilinen ölçünün iki noktasını ve uzunluğunu belirtin."
+  ]
+}

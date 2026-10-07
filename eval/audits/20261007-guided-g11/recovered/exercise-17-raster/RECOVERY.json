@@ -1,0 +1,146 @@
+{
+  "case_id": "exercise-17-raster",
+  "label": "recovered-after-run",
+  "not_run_time_evidence": true,
+  "recovered_at": "2026-10-07T15:24:27+03:00",
+  "recovered_by": "G11R-04 düzeltme turu (eval/audits/20261007-guided-g11-fixes)",
+  "recovered_from": "out/guided/70cdd4e73e844723929ebe9888bc7be0/session.json",
+  "session_token": "70cdd4e73e844723929ebe9888bc7be0",
+  "source_sha256_match": true,
+  "session_file_sha256_before": "17ad51bb2c5d69a26ac15c87e96e8adfc632da0c4d79a52569dfe5fb50ff5b61",
+  "session_file_sha256_after": "17ad51bb2c5d69a26ac15c87e96e8adfc632da0c4d79a52569dfe5fb50ff5b61",
+  "session_untouched": true,
+  "session_candidates": [
+    {
+      "token": "70cdd4e73e844723929ebe9888bc7be0",
+      "mtime": 1791367240.7621295,
+      "revision": 6
+    },
+    {
+      "token": "c7f2c8c463fb467ebbf889ab9ec42177",
+      "mtime": 1791341913.837435,
+      "revision": 6
+    },
+    {
+      "token": "c19875b2f27e455fbf8cd0794d6ac5ca",
+      "mtime": 1790649156.2263615,
+      "revision": 0
+    },
+    {
+      "token": "8e3e7da767774dfe83c68e2d8e6ad366",
+      "mtime": 1790628247.2053103,
+      "revision": 1
+    },
+    {
+      "token": "6c1df136414e45c3a311e1b407e52071",
+      "mtime": 1790627008.0762784,
+      "revision": 1
+    },
+    {
+      "token": "7b8d01cd771a46c6bbc52bccb767caa1",
+      "mtime": 1790617496.0499713,
+      "revision": 1
+    },
+    {
+      "token": "f63e165c7a71497b8871c9f60c8d9a13",
+      "mtime": 1790616269.1637135,
+      "revision": 0
+    },
+    {
+      "token": "5ff0f0d1d9ae41879c3c53313d99db5a",
+      "mtime": 1790615023.063515,
+      "revision": 0
+    },
+    {
+      "token": "9e27649b727c4b91b78dc67c24cc4e50",
+      "mtime": 1790587869.8474662,
+      "revision": 0
+    },
+    {
+      "token": "c70bb61061e14d609774394a9446f6b0",
+      "mtime": 1790587347.9029663,
+      "revision": 0
+    }
+  ],
+  "original_run": {
+    "run_id": "20261007-130023",
+    "at": "2026-10-07T13:00:23+0300",
+    "git_head": "7559fbb7b0ab4d080979f6c4f96701ca3ff80ead"
+  },
+  "original_record": {
+    "artifacts": {},
+    "failures": [
+      {
+        "code": "CAD_UNSUPPORTED",
+        "detail": {
+          "what": "build did not produce a STEP"
+        }
+      },
+      {
+        "code": "EVALUATOR",
+        "detail": {
+          "console_errors": [
+            {
+              "level": "error",
+              "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+              "url": "http://127.0.0.1:8765/favicon.ico",
+              "source": "network"
+            },
+            {
+              "level": "error",
+              "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+              "url": "http://127.0.0.1:8765/api/guided/build",
+              "source": "network"
+            }
+          ],
+          "rejected_requests": [
+            {
+              "status": 404,
+              "url": "http://127.0.0.1:8765/favicon.ico",
+              "request": "request not seen"
+            },
+            {
+              "status": 400,
+              "url": "http://127.0.0.1:8765/api/guided/build",
+              "request": "POST http://127.0.0.1:8765/api/guided/build"
+            }
+          ]
+        }
+      }
+    ],
+    "console_errors": [
+      {
+        "level": "error",
+        "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+        "url": "http://127.0.0.1:8765/favicon.ico",
+        "source": "network"
+      },
+      {
+        "level": "error",
+        "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+        "url": "http://127.0.0.1:8765/api/guided/build",
+        "source": "network"
+      }
+    ],
+    "rejected_requests": [
+      {
+        "status": 404,
+        "url": "http://127.0.0.1:8765/favicon.ico",
+        "request": "request not seen"
+      },
+      {
+        "status": 400,
+        "url": "http://127.0.0.1:8765/api/guided/build",
+        "request": "POST http://127.0.0.1:8765/api/guided/build"
+      }
+    ],
+    "note": "eski kayıt olduğu gibi bırakıldı: eval/audits/20261007-guided-g11/cases/exercise-17-raster.json"
+  },
+  "files": {
+    "session-public.json": "koşu anında kaydedilmemişti; değişmemiş oturumun son durumundan yeniden üretildi",
+    "review-bundle.json": "koşu anında kaydedilmemişti; inceleme paketinden yeniden üretildi",
+    "readiness.json": "koşu anında kaydedilmemişti; hazırlık uç noktasından yeniden alındı",
+    "server-error-recompute.json": "sunucunun koşu-anı yanıt gövdesi kayıtlı değil; aynı kapı zinciri okuma modunda yeniden oynatıldı"
+  },
+  "note": "Bu kanıt sonradan kurtarıldı: gerçekliği değişmemiş oturum kaydıyla sınırlıdır ve koşu anında kaydedilmiş gibi sunulmaz (G11R-04)."
+}

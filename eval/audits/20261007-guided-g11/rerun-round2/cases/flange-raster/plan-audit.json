@@ -1,0 +1,10 @@
+{
+  "status": "draft",
+  "passed": true,
+  "checks": {
+    "valid_solid": true,
+    "export_round_trip": true
+  },
+  "tool_checks": [],
+  "scope": "CAD geometry matches the proposed plan; the drawing reading is not part of this check."
+}

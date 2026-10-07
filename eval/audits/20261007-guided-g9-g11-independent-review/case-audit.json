@@ -1,0 +1,453 @@
+{
+  "cases": [
+    {
+      "case_id": "plate-pocket-vector",
+      "scope": "full_step",
+      "source_sha256_ok": true,
+      "head": "7f432aebd03e51b3f817decef4aeb31228ce2476",
+      "src_tree": "f443a35bd67eed8818187b6e2c04e64f977af7a0",
+      "build_success": true,
+      "verdict_pass": true,
+      "artifacts": {
+        "part.step": "eval/audits/20261007-guided-g11/cases/plate-pocket-vector/part.step",
+        "plan.json": "eval/audits/20261007-guided-g11/cases/plate-pocket-vector/plan.json",
+        "plan-audit.json": "eval/audits/20261007-guided-g11/cases/plate-pocket-vector/plan-audit.json",
+        "session-public.json": "eval/audits/20261007-guided-g11/cases/plate-pocket-vector/session-public.json",
+        "review-bundle.json": "eval/audits/20261007-guided-g11/cases/plate-pocket-vector/review-bundle.json"
+      },
+      "failures": []
+    },
+    {
+      "case_id": "drawing-2-vector",
+      "scope": "full_step",
+      "source_sha256_ok": true,
+      "head": "7f432aebd03e51b3f817decef4aeb31228ce2476",
+      "src_tree": "f443a35bd67eed8818187b6e2c04e64f977af7a0",
+      "build_success": true,
+      "verdict_pass": false,
+      "artifacts": {
+        "part.step": "eval/audits/20261007-guided-g11/cases/drawing-2-vector/part.step",
+        "plan.json": "eval/audits/20261007-guided-g11/cases/drawing-2-vector/plan.json",
+        "plan-audit.json": "eval/audits/20261007-guided-g11/cases/drawing-2-vector/plan-audit.json",
+        "session-public.json": "eval/audits/20261007-guided-g11/cases/drawing-2-vector/session-public.json",
+        "review-bundle.json": "eval/audits/20261007-guided-g11/cases/drawing-2-vector/review-bundle.json"
+      },
+      "failures": [
+        {
+          "code": "CAD_WRONG",
+          "detail": {
+            "checks": {
+              "solids": {
+                "ok": true,
+                "got": "1 katı",
+                "want": "1 katı"
+              },
+              "valid": {
+                "ok": true,
+                "got": "True",
+                "want": "True"
+              },
+              "vector": {
+                "ok": false,
+                "got": "[28, 73.759, 81.903]",
+                "want": "[50, 80, 134] (fark [22, 6.24, 52.1])"
+              },
+              "volume": {
+                "ok": false,
+                "got": "117.5 cm3",
+                "want": "160.6 cm3 (%27 fark)"
+              },
+              "cylinders": {
+                "ok": false,
+                "got": "[10, 20.41]",
+                "want": "[10, 12.5, 15, 20, 25]; eksik [12.5, 15, 25], fazla []"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "plastic-enclosure-vector",
+      "scope": "full_step",
+      "source_sha256_ok": true,
+      "head": "7f432aebd03e51b3f817decef4aeb31228ce2476",
+      "src_tree": "f443a35bd67eed8818187b6e2c04e64f977af7a0",
+      "build_success": true,
+      "verdict_pass": false,
+      "artifacts": {
+        "part.step": "eval/audits/20261007-guided-g11/cases/plastic-enclosure-vector/part.step",
+        "plan.json": "eval/audits/20261007-guided-g11/cases/plastic-enclosure-vector/plan.json",
+        "plan-audit.json": "eval/audits/20261007-guided-g11/cases/plastic-enclosure-vector/plan-audit.json",
+        "session-public.json": "eval/audits/20261007-guided-g11/cases/plastic-enclosure-vector/session-public.json",
+        "review-bundle.json": "eval/audits/20261007-guided-g11/cases/plastic-enclosure-vector/review-bundle.json"
+      },
+      "failures": [
+        {
+          "code": "CAD_WRONG",
+          "detail": {
+            "checks": {
+              "solids": {
+                "ok": true,
+                "got": "1 katı",
+                "want": "1 katı"
+              },
+              "valid": {
+                "ok": true,
+                "got": "True",
+                "want": "True"
+              },
+              "vector": {
+                "ok": true,
+                "got": "[25, 60.927, 120.998]",
+                "want": "[25, 60.873, 120.873] (fark [0, 0.05, 0.12])"
+              },
+              "volume": {
+                "ok": false,
+                "got": "182.5 cm3",
+                "want": "23.5 cm3 (%676 fark)"
+              },
+              "cylinders": {
+                "ok": false,
+                "got": "[1.5, 8.03, 8.06, 8.08, 8.11]",
+                "want": "[1.5, 5, 6, 8]; eksik [5, 6], fazla []"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "exercise-12-vector",
+      "scope": "full_step",
+      "source_sha256_ok": true,
+      "head": "7f432aebd03e51b3f817decef4aeb31228ce2476",
+      "src_tree": "f443a35bd67eed8818187b6e2c04e64f977af7a0",
+      "build_success": true,
+      "verdict_pass": false,
+      "artifacts": {
+        "part.step": "eval/audits/20261007-guided-g11/cases/exercise-12-vector/part.step",
+        "plan.json": "eval/audits/20261007-guided-g11/cases/exercise-12-vector/plan.json",
+        "plan-audit.json": "eval/audits/20261007-guided-g11/cases/exercise-12-vector/plan-audit.json",
+        "session-public.json": "eval/audits/20261007-guided-g11/cases/exercise-12-vector/session-public.json",
+        "review-bundle.json": "eval/audits/20261007-guided-g11/cases/exercise-12-vector/review-bundle.json"
+      },
+      "failures": [
+        {
+          "code": "CAD_WRONG",
+          "detail": {
+            "checks": {
+              "solids": {
+                "ok": true,
+                "got": "1 katı",
+                "want": "1 katı"
+              },
+              "valid": {
+                "ok": true,
+                "got": "True",
+                "want": "True"
+              },
+              "vector": {
+                "ok": false,
+                "got": "[20, 270, 270]",
+                "want": "[270, 274, 335] (fark [250, 4, 65])"
+              },
+              "volume": {
+                "ok": false,
+                "got": "1023.8 cm3",
+                "want": "4791.7 cm3 (%79 fark)"
+              },
+              "cylinders": {
+                "ok": false,
+                "got": "[9, 38, 135]",
+                "want": "[9, 38, 46, 58, 60, 70, 79, 90, 110, 135]; eksik [46, 58, 60, 70, 79, 90, 110], fazla []"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "exercise-51-raster",
+      "scope": "full_step",
+      "source_sha256_ok": true,
+      "head": "7f432aebd03e51b3f817decef4aeb31228ce2476",
+      "src_tree": "f443a35bd67eed8818187b6e2c04e64f977af7a0",
+      "build_success": true,
+      "verdict_pass": false,
+      "artifacts": {
+        "part.step": "eval/audits/20261007-guided-g11/cases/exercise-51-raster/part.step",
+        "plan.json": "eval/audits/20261007-guided-g11/cases/exercise-51-raster/plan.json",
+        "plan-audit.json": "eval/audits/20261007-guided-g11/cases/exercise-51-raster/plan-audit.json",
+        "session-public.json": "eval/audits/20261007-guided-g11/cases/exercise-51-raster/session-public.json",
+        "review-bundle.json": "eval/audits/20261007-guided-g11/cases/exercise-51-raster/review-bundle.json"
+      },
+      "failures": [
+        {
+          "code": "CAD_WRONG",
+          "detail": {
+            "checks": {
+              "solids": {
+                "ok": true,
+                "got": "1 katı",
+                "want": "1 katı"
+              },
+              "valid": {
+                "ok": true,
+                "got": "True",
+                "want": "True"
+              },
+              "vector": {
+                "ok": false,
+                "got": "[15, 28.559, 28.559]",
+                "want": "[60, 100, 245] (fark [45, 71.44, 216.44])"
+              },
+              "volume": {
+                "ok": false,
+                "got": "9.6 cm3",
+                "want": "471.9 cm3 (%98 fark)"
+              },
+              "cylinders": {
+                "ok": false,
+                "got": "[14.28]",
+                "want": "[6, 7.5, 9, 10, 15, 16, 25, 50, 60]; eksik [6, 7.5, 9, 10, 15, 16, 25, 50, 60], fazla [14.28]"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "exercise-17-raster",
+      "scope": "full_step",
+      "source_sha256_ok": true,
+      "head": "7559fbb7b0ab4d080979f6c4f96701ca3ff80ead",
+      "src_tree": "f443a35bd67eed8818187b6e2c04e64f977af7a0",
+      "build_success": false,
+      "verdict_pass": null,
+      "artifacts": {},
+      "failures": [
+        {
+          "code": "CAD_UNSUPPORTED",
+          "detail": {
+            "what": "build did not produce a STEP"
+          }
+        },
+        {
+          "code": "EVALUATOR",
+          "detail": {
+            "console_errors": [
+              {
+                "level": "error",
+                "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+                "url": "http://127.0.0.1:8765/favicon.ico",
+                "source": "network"
+              },
+              {
+                "level": "error",
+                "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+                "url": "http://127.0.0.1:8765/api/guided/build",
+                "source": "network"
+              }
+            ],
+            "rejected_requests": [
+              {
+                "status": 404,
+                "url": "http://127.0.0.1:8765/favicon.ico",
+                "request": "request not seen"
+              },
+              {
+                "status": 400,
+                "url": "http://127.0.0.1:8765/api/guided/build",
+                "request": "POST http://127.0.0.1:8765/api/guided/build"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "exercise-13-raster",
+      "scope": "full_step",
+      "source_sha256_ok": true,
+      "head": "7559fbb7b0ab4d080979f6c4f96701ca3ff80ead",
+      "src_tree": "f443a35bd67eed8818187b6e2c04e64f977af7a0",
+      "build_success": false,
+      "verdict_pass": null,
+      "artifacts": {},
+      "failures": [
+        {
+          "code": "CAD_UNSUPPORTED",
+          "detail": {
+            "what": "build did not produce a STEP"
+          }
+        },
+        {
+          "code": "EVALUATOR",
+          "detail": {
+            "console_errors": [
+              {
+                "level": "error",
+                "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+                "url": "http://127.0.0.1:8765/favicon.ico",
+                "source": "network"
+              },
+              {
+                "level": "error",
+                "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+                "url": "http://127.0.0.1:8765/api/guided/build",
+                "source": "network"
+              }
+            ],
+            "rejected_requests": [
+              {
+                "status": 400,
+                "url": "http://127.0.0.1:8765/api/guided/build",
+                "request": "POST http://127.0.0.1:8765/api/guided/build"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "my-part-raster",
+      "scope": "full_step",
+      "source_sha256_ok": true,
+      "head": "7559fbb7b0ab4d080979f6c4f96701ca3ff80ead",
+      "src_tree": "f443a35bd67eed8818187b6e2c04e64f977af7a0",
+      "build_success": false,
+      "verdict_pass": null,
+      "artifacts": {},
+      "failures": [
+        {
+          "code": "EVALUATOR",
+          "detail": {
+            "console_errors": [
+              {
+                "level": "error",
+                "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+                "url": "http://127.0.0.1:8765/favicon.ico",
+                "source": "network"
+              }
+            ],
+            "rejected_requests": [
+              {
+                "status": 404,
+                "url": "http://127.0.0.1:8765/favicon.ico",
+                "request": "request not seen"
+              }
+            ]
+          }
+        },
+        {
+          "code": "CONSTRAINT_UNSUPPORTED",
+          "detail": {
+            "what": "build never ran",
+            "blockers": 1
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "flange-raster",
+      "scope": "full_step",
+      "source_sha256_ok": true,
+      "head": "7559fbb7b0ab4d080979f6c4f96701ca3ff80ead",
+      "src_tree": "f443a35bd67eed8818187b6e2c04e64f977af7a0",
+      "build_success": true,
+      "verdict_pass": false,
+      "artifacts": {
+        "part.step": "eval/audits/20261007-guided-g11/cases/flange-raster/part.step",
+        "plan.json": "eval/audits/20261007-guided-g11/cases/flange-raster/plan.json",
+        "plan-audit.json": "eval/audits/20261007-guided-g11/cases/flange-raster/plan-audit.json",
+        "session-public.json": "eval/audits/20261007-guided-g11/cases/flange-raster/session-public.json",
+        "review-bundle.json": "eval/audits/20261007-guided-g11/cases/flange-raster/review-bundle.json"
+      },
+      "failures": [
+        {
+          "code": "EVALUATOR",
+          "detail": {
+            "console_errors": [
+              {
+                "level": "error",
+                "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+                "url": "http://127.0.0.1:8765/favicon.ico",
+                "source": "network"
+              }
+            ],
+            "rejected_requests": [
+              {
+                "status": 404,
+                "url": "http://127.0.0.1:8765/favicon.ico",
+                "request": "request not seen"
+              }
+            ]
+          }
+        },
+        {
+          "code": "CAD_WRONG",
+          "detail": {
+            "checks": {
+              "solids": {
+                "ok": true,
+                "got": "1 katı",
+                "want": "1 katı"
+              },
+              "valid": {
+                "ok": true,
+                "got": "True",
+                "want": "True"
+              },
+              "vector": {
+                "ok": false,
+                "got": "[20, 79.475, 79.475]",
+                "want": "[50, 100, 100] (fark [30, 20.53, 20.53])"
+              },
+              "volume": {
+                "ok": false,
+                "got": "99.2 cm3",
+                "want": "202.1 cm3 (%51 fark)"
+              },
+              "cylinders": {
+                "ok": false,
+                "got": "[39.74]",
+                "want": "[3.2, 5.5, 15, 30, 50]; eksik [3.2, 5.5, 15, 30, 50], fazla [39.74]"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "flange-elbow-90-raster-noref",
+      "scope": "callout_scope_only",
+      "source_sha256_ok": true,
+      "head": "7f432aebd03e51b3f817decef4aeb31228ce2476",
+      "src_tree": "f443a35bd67eed8818187b6e2c04e64f977af7a0",
+      "build_success": false,
+      "verdict_pass": null,
+      "artifacts": {},
+      "failures": [
+        {
+          "code": "TRANSCRIPTION",
+          "detail": {
+            "what": "calibration",
+            "measurement": "360"
+          }
+        },
+        {
+          "code": "CONSTRAINT_UNSUPPORTED",
+          "detail": {
+            "what": "build never ran",
+            "blockers": 1
+          }
+        }
+      ]
+    }
+  ],
+  "full_step_count": 9,
+  "correct": 1,
+  "all_sources_match": true,
+  "same_src_tree_all_cases": true
+}

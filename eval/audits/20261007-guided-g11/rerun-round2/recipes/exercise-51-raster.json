@@ -1,0 +1,53 @@
+{
+  "case_id": "exercise-51-raster",
+  "source_path": "examples/pdf with steps/1/Exercise_51.PNG",
+  "contour": {"profile_id": "circle_g340"},
+  "calibration": {
+    "manual_value": 70,
+    "unit": "mm",
+    "circles": ["g340", "g341"],
+    "printed_text": "70.00",
+    "verified_span": "hub merkezi ↔ ~30°'deki alt-sol göbek merkezi"
+  },
+  "thickness_mm": 15,
+  "acknowledge_trace": true,
+  "confirm_view": true,
+  "decisions": [],
+  "input_verification": {
+    "calibration": {
+      "span": "g340 merkezi ↔ g341 merkezi",
+      "span_px": 274.8,
+      "value_mm": 70,
+      "px_per_mm": 3.926,
+      "printed_text_used": "70.00",
+      "evidence": [
+        "70.00 ölçüsünün ölçü çizgisi hub merkezinden ~30°'deki alt-sol göbek merkezine uzanır (çizgi eğimi iki merkezi birleştiren doğrultuyla aynı).",
+        "Piksel çapraz kontrolü: 80.00 ölçüsü x 457.5↔772.5 = 315 px → 3.938 px/mm; 150.00 ölçüsü x 772.5↔1363 = 590.5 px → 3.937 px/mm; 70.00 bağı 274.8 px ÷ 70 = 3.926 px/mm — üç ölçü ±%0,4 içinde uyuşur.",
+        "Eski resmî koşuda kullanılan OCR '40' (t0) okuması çizimde '70.00'dır (güven 74.6); 40 mm bu paftanın ölçeğiyle hiçbir çapraz kontrolde tutmaz (40 → 6.87 px/mm)."
+      ],
+      "replaces": {
+        "value": 40,
+        "unit": "mm",
+        "span_id": "t0",
+        "note": "eski resmî koşu — 'denenen' belirsiz bağ; kayıt olduğu gibi bırakıldı, bu tur onu değiştirmez"
+      }
+    },
+    "thickness": {
+      "value_mm": 15,
+      "printed_text": "15.00",
+      "evidence": "yan görünüşteki kalınlık ölçüsü; resmî koşudaki değer korunur (bu tur kapsamı kalibrasyon)"
+    },
+    "contour": {
+      "chosen": "circle_g340",
+      "what_it_is": "ana göbek dairesi (r=98.1 px ÷ 3.926 px/mm = 24.98 mm → Ø50 bölgesi)",
+      "candidate_note": "parçanın dış konturu tespitte parçalı; tek disk yaklaşımı ürünün flat-part okumasının sınırıdır — G12 kaydı"
+    }
+  },
+  "notes": [
+    "G11R-02 yeniden koşusu (düzeltilmiş girdi): kalibrasyon doğrulanmış basılı ölçüyle — 70.00, uçlar g340 (hub merkezi) ↔ g341 (alt-sol göbek merkezi); px/mm 3.926, 80.00 ve 150.00 ölçüleriyle çapraz kontrol ±%0,4 içinde (input_verification kayıtta).",
+    "Eski resmî koşu (kalibrasyon 40·t0) silinmedi; bu tur ölçeği 274.8÷40 = 6,87 px/mm yerine 274.8÷70 = 3,926 px/mm ile yeniden kurar — aynı iki uç, doğrulanmış basılı değer.",
+    "Kalibrasyon elle giriş yolundan verildi ('Ölçüyü ben gireceğim' + #cal-value); OCR satırı seçilmedi — belirsiz okuma artık kesin karar yazmıyor.",
+    "Kontur: circle_g340 (ana göbek) — resmî koşuyla aynı; kontur artık 98.1 px ÷ 3.926 = Ø49,96 mm'dir (eski 6,87 px/mm ile Ø28,6 çıkıyordu).",
+    "26 adayın tamamı tek atomik toplu kararla kapsam dışı: uydurma metin yok."
+  ]
+}

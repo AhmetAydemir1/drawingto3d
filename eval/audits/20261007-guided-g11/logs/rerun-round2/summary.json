@@ -1,0 +1,58 @@
+[
+  {
+    "case_id": "plate-pocket-vector",
+    "status": "recipe-missing",
+    "log": "/Users/aydemir/Desktop/drawingto3d/eval/audits/20261007-guided-g11/logs/rerun-round2/plate-pocket-vector.log"
+  },
+  {
+    "case_id": "drawing-2-vector",
+    "status": "recipe-missing",
+    "log": "/Users/aydemir/Desktop/drawingto3d/eval/audits/20261007-guided-g11/logs/rerun-round2/drawing-2-vector.log"
+  },
+  {
+    "case_id": "plastic-enclosure-vector",
+    "status": "recipe-missing",
+    "log": "/Users/aydemir/Desktop/drawingto3d/eval/audits/20261007-guided-g11/logs/rerun-round2/plastic-enclosure-vector.log"
+  },
+  {
+    "case_id": "exercise-12-vector",
+    "status": "recipe-missing",
+    "log": "/Users/aydemir/Desktop/drawingto3d/eval/audits/20261007-guided-g11/logs/rerun-round2/exercise-12-vector.log"
+  },
+  {
+    "case_id": "exercise-51-raster",
+    "status": "driver-error",
+    "exit": 1,
+    "verdict": null,
+    "failures": null,
+    "log": "/Users/aydemir/Desktop/drawingto3d/eval/audits/20261007-guided-g11/logs/rerun-round2/exercise-51-raster.log"
+  },
+  {
+    "case_id": "exercise-17-raster",
+    "status": "recipe-missing",
+    "log": "/Users/aydemir/Desktop/drawingto3d/eval/audits/20261007-guided-g11/logs/rerun-round2/exercise-17-raster.log"
+  },
+  {
+    "case_id": "exercise-13-raster",
+    "status": "recipe-missing",
+    "log": "/Users/aydemir/Desktop/drawingto3d/eval/audits/20261007-guided-g11/logs/rerun-round2/exercise-13-raster.log"
+  },
+  {
+    "case_id": "my-part-raster",
+    "status": "recipe-missing",
+    "log": "/Users/aydemir/Desktop/drawingto3d/eval/audits/20261007-guided-g11/logs/rerun-round2/my-part-raster.log"
+  },
+  {
+    "case_id": "flange-raster",
+    "status": "driver-error",
+    "exit": 1,
+    "verdict": null,
+    "failures": null,
+    "log": "/Users/aydemir/Desktop/drawingto3d/eval/audits/20261007-guided-g11/logs/rerun-round2/flange-raster.log"
+  },
+  {
+    "case_id": "flange-elbow-90-raster-noref",
+    "status": "recipe-missing",
+    "log": "/Users/aydemir/Desktop/drawingto3d/eval/audits/20261007-guided-g11/logs/rerun-round2/flange-elbow-90-raster-noref.log"
+  }
+]

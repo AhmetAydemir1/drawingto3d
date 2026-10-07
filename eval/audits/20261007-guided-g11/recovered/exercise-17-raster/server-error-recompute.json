@@ -1,0 +1,9 @@
+{
+  "recomputed_at": "2026-10-07T15:24:27+03:00",
+  "how": "build() kapı zinciri okuma modunda oynatıldı (revizyon → geometry_stale → hazırlık → çakışma → make_plan); koşu anında HTTP gövdesi kaydedilmemişti.",
+  "message": "ValueError: kontur geçersiz: g206 ile g618 birbirini kesiyor (line-arc) — işaretlenen kenarı çıkarıp yeniden deneyin.",
+  "gate": "make_plan",
+  "readiness_ready": true,
+  "readiness_questions": [],
+  "conflicts": []
+}

@@ -1,0 +1,96 @@
+{
+  "recovered_at_case_list": [
+    {
+      "case_id": "drawing-2-vector",
+      "status": "already-recorded"
+    },
+    {
+      "case_id": "exercise-12-vector",
+      "status": "already-recorded"
+    },
+    {
+      "case_id": "exercise-13-raster",
+      "status": "recovered",
+      "token": "b7b3e25f8ae3455ab5b49c15716b5404",
+      "source_sha256_match": true,
+      "session_untouched": true,
+      "refusal_gate": "make_plan",
+      "refusal_message": "ValueError: kontur geçersiz: g356 yayının saklanan başlangıcı kanonik tanımıyla tutmuyor (a=165.64°, b=16.69°) — işaretlenen kenarı çıkarıp yeniden deneyin.",
+      "candidates": 4,
+      "files": [
+        "RECOVERY.json",
+        "readiness.json",
+        "review-bundle.json",
+        "server-error-recompute.json",
+        "session-public.json"
+      ]
+    },
+    {
+      "case_id": "exercise-17-raster",
+      "status": "recovered",
+      "token": "70cdd4e73e844723929ebe9888bc7be0",
+      "source_sha256_match": true,
+      "session_untouched": true,
+      "refusal_gate": "make_plan",
+      "refusal_message": "ValueError: kontur geçersiz: g206 ile g618 birbirini kesiyor (line-arc) — işaretlenen kenarı çıkarıp yeniden deneyin.",
+      "candidates": 10,
+      "files": [
+        "RECOVERY.json",
+        "readiness.json",
+        "review-bundle.json",
+        "server-error-recompute.json",
+        "session-public.json"
+      ]
+    },
+    {
+      "case_id": "exercise-51-raster",
+      "status": "already-recorded"
+    },
+    {
+      "case_id": "flange-elbow-90-raster-noref",
+      "status": "recovered",
+      "token": "9b9115c07cd7496ea5d2cdc50841af5d",
+      "source_sha256_match": true,
+      "session_untouched": true,
+      "refusal_gate": "readiness",
+      "refusal_message": "üretim için eksik/uyumsuz girdiler var: Bilinen ölçünün iki noktasını ve uzunluğunu belirtin.",
+      "candidates": 2,
+      "files": [
+        "RECOVERY.json",
+        "readiness.json",
+        "review-bundle.json",
+        "server-error-recompute.json",
+        "session-public.json"
+      ]
+    },
+    {
+      "case_id": "flange-raster",
+      "status": "already-recorded"
+    },
+    {
+      "case_id": "my-part-raster",
+      "status": "recovered",
+      "token": "767b5078101947efac287a3c35e83d5c",
+      "source_sha256_match": true,
+      "session_untouched": true,
+      "refusal_gate": "readiness",
+      "refusal_message": "üretim için eksik/uyumsuz girdiler var: Bilinen ölçünün iki noktasını ve uzunluğunu belirtin.",
+      "candidates": 4,
+      "files": [
+        "RECOVERY.json",
+        "readiness.json",
+        "review-bundle.json",
+        "server-error-recompute.json",
+        "session-public.json"
+      ]
+    },
+    {
+      "case_id": "plastic-enclosure-vector",
+      "status": "already-recorded"
+    },
+    {
+      "case_id": "plate-pocket-vector",
+      "status": "already-recorded"
+    }
+  ]
+}

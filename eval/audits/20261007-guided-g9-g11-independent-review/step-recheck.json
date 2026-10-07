@@ -1,0 +1,492 @@
+[
+  {
+    "case_id": "plate-pocket-vector",
+    "actual": {
+      "path": "/Users/aydemir/Desktop/drawingto3d/eval/audits/20261007-guided-g11/cases/plate-pocket-vector/part.step",
+      "solids": 1,
+      "valid": true,
+      "vector": [
+        15.0,
+        80.002,
+        120.011
+      ],
+      "volume": 124.812,
+      "faces": 16,
+      "cylinders": [
+        3.4,
+        9.97,
+        9.98,
+        9.99,
+        25.0
+      ],
+      "face_types": {
+        "CYLINDER": 9,
+        "PLANE": 7
+      }
+    },
+    "reference": {
+      "path": "/Users/aydemir/Desktop/drawingto3d/examples/pdf with steps/5/plate with a pocket.STEP",
+      "solids": 1,
+      "valid": true,
+      "vector": [
+        15.0,
+        80.0,
+        120.0
+      ],
+      "volume": 124.825,
+      "faces": 21,
+      "cylinders": [
+        3.4,
+        10.0,
+        25.0
+      ],
+      "face_types": {
+        "CYLINDER": 14,
+        "PLANE": 7
+      }
+    },
+    "reopened_consistent": true,
+    "verdict": {
+      "checks": {
+        "solids": {
+          "ok": true,
+          "got": "1 katı",
+          "want": "1 katı"
+        },
+        "valid": {
+          "ok": true,
+          "got": "True",
+          "want": "True"
+        },
+        "vector": {
+          "ok": true,
+          "got": "[15, 80.002, 120.011]",
+          "want": "[15, 80, 120] (fark [0, 0, 0.01])"
+        },
+        "volume": {
+          "ok": true,
+          "got": "124.8 cm3",
+          "want": "124.8 cm3 (%0 fark)"
+        },
+        "cylinders": {
+          "ok": true,
+          "got": "[3.4, 9.97, 9.98, 9.99, 25]",
+          "want": "[3.4, 10, 25]; eksik [], fazla []"
+        }
+      },
+      "pass": true,
+      "shape_ok": true,
+      "detail_ok": true
+    }
+  },
+  {
+    "case_id": "drawing-2-vector",
+    "actual": {
+      "path": "/Users/aydemir/Desktop/drawingto3d/eval/audits/20261007-guided-g11/cases/drawing-2-vector/part.step",
+      "solids": 1,
+      "valid": true,
+      "vector": [
+        28.0,
+        73.759,
+        81.903
+      ],
+      "volume": 117.479,
+      "faces": 9,
+      "cylinders": [
+        10.0,
+        20.41
+      ],
+      "face_types": {
+        "PLANE": 7,
+        "CYLINDER": 2
+      }
+    },
+    "reference": {
+      "path": "/Users/aydemir/Desktop/drawingto3d/examples/pdf with steps/2/Part-2.STEP",
+      "solids": 1,
+      "valid": true,
+      "vector": [
+        50.0,
+        80.0,
+        134.0
+      ],
+      "volume": 160.575,
+      "faces": 34,
+      "cylinders": [
+        10.0,
+        12.5,
+        15.0,
+        20.0,
+        25.0
+      ],
+      "face_types": {
+        "CYLINDER": 18,
+        "PLANE": 16
+      }
+    },
+    "reopened_consistent": true,
+    "verdict": {
+      "checks": {
+        "solids": {
+          "ok": true,
+          "got": "1 katı",
+          "want": "1 katı"
+        },
+        "valid": {
+          "ok": true,
+          "got": "True",
+          "want": "True"
+        },
+        "vector": {
+          "ok": false,
+          "got": "[28, 73.759, 81.903]",
+          "want": "[50, 80, 134] (fark [22, 6.24, 52.1])"
+        },
+        "volume": {
+          "ok": false,
+          "got": "117.5 cm3",
+          "want": "160.6 cm3 (%27 fark)"
+        },
+        "cylinders": {
+          "ok": false,
+          "got": "[10, 20.41]",
+          "want": "[10, 12.5, 15, 20, 25]; eksik [12.5, 15, 25], fazla []"
+        }
+      },
+      "pass": false,
+      "shape_ok": false,
+      "detail_ok": false
+    }
+  },
+  {
+    "case_id": "plastic-enclosure-vector",
+    "actual": {
+      "path": "/Users/aydemir/Desktop/drawingto3d/eval/audits/20261007-guided-g11/cases/plastic-enclosure-vector/part.step",
+      "solids": 1,
+      "valid": true,
+      "vector": [
+        25.0,
+        60.927,
+        120.998
+      ],
+      "volume": 182.487,
+      "faces": 12,
+      "cylinders": [
+        1.5,
+        8.03,
+        8.06,
+        8.08,
+        8.11
+      ],
+      "face_types": {
+        "PLANE": 6,
+        "CYLINDER": 6
+      }
+    },
+    "reference": {
+      "path": "/Users/aydemir/Desktop/drawingto3d/examples/pdf with steps/6/plastic enclosue.STEP",
+      "solids": 1,
+      "valid": true,
+      "vector": [
+        25.0,
+        60.873,
+        120.873
+      ],
+      "volume": 23.52,
+      "faces": 113,
+      "cylinders": [
+        1.5,
+        5.0,
+        6.0,
+        8.0
+      ],
+      "face_types": {
+        "PLANE": 63,
+        "CYLINDER": 30,
+        "CONE": 12,
+        "SPHERE": 8
+      }
+    },
+    "reopened_consistent": true,
+    "verdict": {
+      "checks": {
+        "solids": {
+          "ok": true,
+          "got": "1 katı",
+          "want": "1 katı"
+        },
+        "valid": {
+          "ok": true,
+          "got": "True",
+          "want": "True"
+        },
+        "vector": {
+          "ok": true,
+          "got": "[25, 60.927, 120.998]",
+          "want": "[25, 60.873, 120.873] (fark [0, 0.05, 0.12])"
+        },
+        "volume": {
+          "ok": false,
+          "got": "182.5 cm3",
+          "want": "23.5 cm3 (%676 fark)"
+        },
+        "cylinders": {
+          "ok": false,
+          "got": "[1.5, 8.03, 8.06, 8.08, 8.11]",
+          "want": "[1.5, 5, 6, 8]; eksik [5, 6], fazla []"
+        }
+      },
+      "pass": false,
+      "shape_ok": true,
+      "detail_ok": false
+    }
+  },
+  {
+    "case_id": "exercise-12-vector",
+    "actual": {
+      "path": "/Users/aydemir/Desktop/drawingto3d/eval/audits/20261007-guided-g11/cases/exercise-12-vector/part.step",
+      "solids": 1,
+      "valid": true,
+      "vector": [
+        20.0,
+        270.0,
+        270.0
+      ],
+      "volume": 1023.845,
+      "faces": 10,
+      "cylinders": [
+        9.0,
+        38.0,
+        135.0
+      ],
+      "face_types": {
+        "CYLINDER": 8,
+        "PLANE": 2
+      }
+    },
+    "reference": {
+      "path": "/Users/aydemir/Desktop/drawingto3d/examples/pdf with steps/10/Exercise 12.STEP",
+      "solids": 1,
+      "valid": true,
+      "vector": [
+        270.0,
+        274.0,
+        335.0
+      ],
+      "volume": 4791.741,
+      "faces": 79,
+      "cylinders": [
+        9.0,
+        38.0,
+        46.0,
+        58.0,
+        60.0,
+        70.0,
+        79.0,
+        90.0,
+        110.0,
+        135.0
+      ],
+      "face_types": {
+        "CYLINDER": 60,
+        "PLANE": 10,
+        "TORUS": 9
+      }
+    },
+    "reopened_consistent": true,
+    "verdict": {
+      "checks": {
+        "solids": {
+          "ok": true,
+          "got": "1 katı",
+          "want": "1 katı"
+        },
+        "valid": {
+          "ok": true,
+          "got": "True",
+          "want": "True"
+        },
+        "vector": {
+          "ok": false,
+          "got": "[20, 270, 270]",
+          "want": "[270, 274, 335] (fark [250, 4, 65])"
+        },
+        "volume": {
+          "ok": false,
+          "got": "1023.8 cm3",
+          "want": "4791.7 cm3 (%79 fark)"
+        },
+        "cylinders": {
+          "ok": false,
+          "got": "[9, 38, 135]",
+          "want": "[9, 38, 46, 58, 60, 70, 79, 90, 110, 135]; eksik [46, 58, 60, 70, 79, 90, 110], fazla []"
+        }
+      },
+      "pass": false,
+      "shape_ok": false,
+      "detail_ok": false
+    }
+  },
+  {
+    "case_id": "exercise-51-raster",
+    "actual": {
+      "path": "/Users/aydemir/Desktop/drawingto3d/eval/audits/20261007-guided-g11/cases/exercise-51-raster/part.step",
+      "solids": 1,
+      "valid": true,
+      "vector": [
+        15.0,
+        28.559,
+        28.559
+      ],
+      "volume": 9.609,
+      "faces": 3,
+      "cylinders": [
+        14.28
+      ],
+      "face_types": {
+        "PLANE": 2,
+        "CYLINDER": 1
+      }
+    },
+    "reference": {
+      "path": "/Users/aydemir/Desktop/drawingto3d/examples/pdf with steps/1/Exercise 51.STEP",
+      "solids": 1,
+      "valid": true,
+      "vector": [
+        60.0,
+        100.0,
+        245.0
+      ],
+      "volume": 471.938,
+      "faces": 43,
+      "cylinders": [
+        6.0,
+        7.5,
+        9.0,
+        10.0,
+        15.0,
+        16.0,
+        25.0,
+        50.0,
+        60.0
+      ],
+      "face_types": {
+        "CYLINDER": 24,
+        "PLANE": 19
+      }
+    },
+    "reopened_consistent": true,
+    "verdict": {
+      "checks": {
+        "solids": {
+          "ok": true,
+          "got": "1 katı",
+          "want": "1 katı"
+        },
+        "valid": {
+          "ok": true,
+          "got": "True",
+          "want": "True"
+        },
+        "vector": {
+          "ok": false,
+          "got": "[15, 28.559, 28.559]",
+          "want": "[60, 100, 245] (fark [45, 71.44, 216.44])"
+        },
+        "volume": {
+          "ok": false,
+          "got": "9.6 cm3",
+          "want": "471.9 cm3 (%98 fark)"
+        },
+        "cylinders": {
+          "ok": false,
+          "got": "[14.28]",
+          "want": "[6, 7.5, 9, 10, 15, 16, 25, 50, 60]; eksik [6, 7.5, 9, 10, 15, 16, 25, 50, 60], fazla [14.28]"
+        }
+      },
+      "pass": false,
+      "shape_ok": false,
+      "detail_ok": false
+    }
+  },
+  {
+    "case_id": "flange-raster",
+    "actual": {
+      "path": "/Users/aydemir/Desktop/drawingto3d/eval/audits/20261007-guided-g11/cases/flange-raster/part.step",
+      "solids": 1,
+      "valid": true,
+      "vector": [
+        20.0,
+        79.475,
+        79.475
+      ],
+      "volume": 99.216,
+      "faces": 3,
+      "cylinders": [
+        39.74
+      ],
+      "face_types": {
+        "PLANE": 2,
+        "CYLINDER": 1
+      }
+    },
+    "reference": {
+      "path": "/Users/aydemir/Desktop/drawingto3d/examples/pdf with steps/8/Flange.STEP",
+      "solids": 1,
+      "valid": true,
+      "vector": [
+        50.0,
+        100.0,
+        100.0
+      ],
+      "volume": 202.093,
+      "faces": 57,
+      "cylinders": [
+        3.2,
+        5.5,
+        15.0,
+        30.0,
+        50.0
+      ],
+      "face_types": {
+        "CYLINDER": 30,
+        "CONE": 16,
+        "PLANE": 9,
+        "TORUS": 2
+      }
+    },
+    "reopened_consistent": true,
+    "verdict": {
+      "checks": {
+        "solids": {
+          "ok": true,
+          "got": "1 katı",
+          "want": "1 katı"
+        },
+        "valid": {
+          "ok": true,
+          "got": "True",
+          "want": "True"
+        },
+        "vector": {
+          "ok": false,
+          "got": "[20, 79.475, 79.475]",
+          "want": "[50, 100, 100] (fark [30, 20.53, 20.53])"
+        },
+        "volume": {
+          "ok": false,
+          "got": "99.2 cm3",
+          "want": "202.1 cm3 (%51 fark)"
+        },
+        "cylinders": {
+          "ok": false,
+          "got": "[39.74]",
+          "want": "[3.2, 5.5, 15, 30, 50]; eksik [3.2, 5.5, 15, 30, 50], fazla [39.74]"
+        }
+      },
+      "pass": false,
+      "shape_ok": false,
+      "detail_ok": false
+    }
+  }
+]

@@ -1,0 +1,598 @@
+{
+  "ready": true,
+  "questions": [],
+  "issues": [],
+  "categories": {},
+  "excluded": [
+    {
+      "callout_id": "c30cf5ec6afb3bf5ad7f1a27bd4a4b3e186bfed6f7d041a46f3ea035fb08c73c",
+      "reason": "ignored"
+    },
+    {
+      "callout_id": "c19344bfb4ae07cd7c406e70e9e3757ccb6defc569a6d8afb9e416950f069b14",
+      "reason": "ignored"
+    },
+    {
+      "callout_id": "ef58a4a3312d324c7bb93f0ff0a543648fbebcdd4550cbd1614e08e428cb1af0",
+      "reason": "ignored"
+    },
+    {
+      "callout_id": "b374f4bc6fae70435bbbd4d07a0ec058203e9f274200f54a50a0818933aefc84",
+      "reason": "ignored"
+    },
+    {
+      "callout_id": "de72b9194dd28d85c9de2c523aa9ba991d6527d43b2db3dc1740d413d0416685",
+      "reason": "ignored"
+    },
+    {
+      "callout_id": "68243c2fb1c624c00640a3eee693d5f51b69ddd2d87fb427d9ae2ece34c9e475",
+      "reason": "ignored"
+    },
+    {
+      "callout_id": "e3bb091761ceb4d89d89e26c6bc997e17c308a8f42eda176abb11b2c39e94837",
+      "reason": "ignored"
+    },
+    {
+      "callout_id": "6449c29e33a361636597f558418a3e2707956ab2cc23c5275ac1964d3dc64476",
+      "reason": "ignored"
+    },
+    {
+      "callout_id": "5416b2266f903155cf70be7fb9236236d5df10714bd31b6de161b9bed0528908",
+      "reason": "ignored"
+    },
+    {
+      "callout_id": "1b04b70e7d38d0cb569fd14945fe1727943b50f75a717dc2e51f5a91f59fe3b5",
+      "reason": "ignored"
+    },
+    {
+      "callout_id": "cadacb1beeba1e86d32ee15a8bb8743497a3d230e5aba5d4157fd5c892d21774",
+      "reason": "ignored"
+    },
+    {
+      "callout_id": "c84d4c5d3f3e7db1b1bdc322aad5c34c9211336cd519938db4f175f662df8c24",
+      "reason": "ignored"
+    },
+    {
+      "callout_id": "4f75cbf67690937d4e63783791454a61535581952832d6870f48197ffb180c73",
+      "reason": "ignored"
+    },
+    {
+      "callout_id": "e336565e67714e1e6d8fdc016a027e4685fdf2ffb6c8f4a9d94432c99d079987",
+      "reason": "ignored"
+    },
+    {
+      "callout_id": "ecb9f0a5bca5da61f64c51711e3730d9c63b67caa17eb6601cc07c49d5ea69c1",
+      "reason": "ignored"
+    },
+    {
+      "callout_id": "fe453aeac7e2648e80e55fa9ca5ac60658c4ce3b2c1e35663c0077559e905cb6",
+      "reason": "ignored"
+    },
+    {
+      "callout_id": "cbdde65efa41cfff62bbb638e37bac325350ffa76fe058952ec930386dece0ef",
+      "reason": "ignored"
+    },
+    {
+      "callout_id": "5ca34842b6c4f64fba8da96c444ddcd8a97112691d38cdb03c1e3c43d4507630",
+      "reason": "ignored"
+    },
+    {
+      "callout_id": "431f6ac977bb8face12e1ab4e5e873fe53a11c1ce8313e10c50f5a5415d4de56",
+      "reason": "ignored"
+    },
+    {
+      "callout_id": "35c3ff4ddf50cf1deb89b9c09efd476124cd5c887478af578c50b7d3c0d637cd",
+      "reason": "ignored"
+    },
+    {
+      "callout_id": "19b586750b74ba8b6091891ead2c6fff1b3b5693ad87616df00fa3a8e30593b1",
+      "reason": "ignored"
+    },
+    {
+      "callout_id": "5e50fbd4c20fabddc8500dc488ffd960c4d5138afd1ecc4e10137711cdc0f4a5",
+      "reason": "ignored"
+    },
+    {
+      "callout_id": "05de3cbb51f2e45785cbcd27f5dc89d76fe141e7eced0e51296e1eecd040ce5e",
+      "reason": "ignored"
+    },
+    {
+      "callout_id": "3040b0676caa18bd8c581002f6c3759a2dfb4a0e8e6f1ab3883e9807513fd2ee",
+      "reason": "ignored"
+    },
+    {
+      "callout_id": "422f95f3b3637c188ae23a3309b591e7de8ce45b8c417111a027a2b39eaa89bc",
+      "reason": "ignored"
+    },
+    {
+      "callout_id": "68c24cd7336b49aa5e0c9aa5be7359206d80543fe7f74513affeedbb959c9914",
+      "reason": "ignored"
+    },
+    {
+      "callout_id": "caaa058d3060ca8e3ad6ba0899f01085751e683335f8a732474c7ae21c92bcc0",
+      "reason": "ignored"
+    },
+    {
+      "callout_id": "41a87c6d0b29c4fa9d5581e0172bc0d310710278d8249cf1892319290c972849",
+      "reason": "ignored"
+    },
+    {
+      "callout_id": "f1c84c1bff18694cdd6280c45b6be2fd681998954673c8a6a41cd3dc1ac9052e",
+      "reason": "ignored"
+    },
+    {
+      "callout_id": "9d3aaf3b146a7a84709f28afe843b4e7d58123a15d6b2cc330148ca8d3092b86",
+      "reason": "ignored"
+    },
+    {
+      "callout_id": "e208a38dff6dd26e2f1b4ee932f89cd6ac74091d4122f7b31287b6b9fae243ac",
+      "reason": "ignored"
+    },
+    {
+      "callout_id": "b06d1f2da6ee8a9301d4af7ad739a00b0b8c6f33e6047985affa76045a6af557",
+      "reason": "ignored"
+    }
+  ],
+  "compiled": {
+    "compiled_holes": 0,
+    "compiled_bindings": 0,
+    "unsupported": 0,
+    "conflicts": 0,
+    "excluded": 32,
+    "callouts": 32
+  },
+  "rows": [
+    {
+      "callout_id": "c30cf5ec6afb3bf5ad7f1a27bd4a4b3e186bfed6f7d041a46f3ea035fb08c73c",
+      "raw_text": null,
+      "parser_version": null,
+      "semantic": null,
+      "target_kind": null,
+      "target_ids": [],
+      "geometry_key": "435947a0d93f3a42c140f4c555140e2941d3425e48071cafbb58e6d00d2226ce",
+      "geometry_version": 3,
+      "status": "excluded",
+      "reason": "ignored",
+      "compiled_decision": null,
+      "generated_features": []
+    },
+    {
+      "callout_id": "c19344bfb4ae07cd7c406e70e9e3757ccb6defc569a6d8afb9e416950f069b14",
+      "raw_text": null,
+      "parser_version": null,
+      "semantic": null,
+      "target_kind": null,
+      "target_ids": [],
+      "geometry_key": "435947a0d93f3a42c140f4c555140e2941d3425e48071cafbb58e6d00d2226ce",
+      "geometry_version": 3,
+      "status": "excluded",
+      "reason": "ignored",
+      "compiled_decision": null,
+      "generated_features": []
+    },
+    {
+      "callout_id": "ef58a4a3312d324c7bb93f0ff0a543648fbebcdd4550cbd1614e08e428cb1af0",
+      "raw_text": null,
+      "parser_version": null,
+      "semantic": null,
+      "target_kind": null,
+      "target_ids": [],
+      "geometry_key": "435947a0d93f3a42c140f4c555140e2941d3425e48071cafbb58e6d00d2226ce",
+      "geometry_version": 3,
+      "status": "excluded",
+      "reason": "ignored",
+      "compiled_decision": null,
+      "generated_features": []
+    },
+    {
+      "callout_id": "b374f4bc6fae70435bbbd4d07a0ec058203e9f274200f54a50a0818933aefc84",
+      "raw_text": null,
+      "parser_version": null,
+      "semantic": null,
+      "target_kind": null,
+      "target_ids": [],
+      "geometry_key": "435947a0d93f3a42c140f4c555140e2941d3425e48071cafbb58e6d00d2226ce",
+      "geometry_version": 3,
+      "status": "excluded",
+      "reason": "ignored",
+      "compiled_decision": null,
+      "generated_features": []
+    },
+    {
+      "callout_id": "de72b9194dd28d85c9de2c523aa9ba991d6527d43b2db3dc1740d413d0416685",
+      "raw_text": null,
+      "parser_version": null,
+      "semantic": null,
+      "target_kind": null,
+      "target_ids": [],
+      "geometry_key": "435947a0d93f3a42c140f4c555140e2941d3425e48071cafbb58e6d00d2226ce",
+      "geometry_version": 3,
+      "status": "excluded",
+      "reason": "ignored",
+      "compiled_decision": null,
+      "generated_features": []
+    },
+    {
+      "callout_id": "68243c2fb1c624c00640a3eee693d5f51b69ddd2d87fb427d9ae2ece34c9e475",
+      "raw_text": null,
+      "parser_version": null,
+      "semantic": null,
+      "target_kind": null,
+      "target_ids": [],
+      "geometry_key": "435947a0d93f3a42c140f4c555140e2941d3425e48071cafbb58e6d00d2226ce",
+      "geometry_version": 3,
+      "status": "excluded",
+      "reason": "ignored",
+      "compiled_decision": null,
+      "generated_features": []
+    },
+    {
+      "callout_id": "e3bb091761ceb4d89d89e26c6bc997e17c308a8f42eda176abb11b2c39e94837",
+      "raw_text": null,
+      "parser_version": null,
+      "semantic": null,
+      "target_kind": null,
+      "target_ids": [],
+      "geometry_key": "435947a0d93f3a42c140f4c555140e2941d3425e48071cafbb58e6d00d2226ce",
+      "geometry_version": 3,
+      "status": "excluded",
+      "reason": "ignored",
+      "compiled_decision": null,
+      "generated_features": []
+    },
+    {
+      "callout_id": "6449c29e33a361636597f558418a3e2707956ab2cc23c5275ac1964d3dc64476",
+      "raw_text": null,
+      "parser_version": null,
+      "semantic": null,
+      "target_kind": null,
+      "target_ids": [],
+      "geometry_key": "435947a0d93f3a42c140f4c555140e2941d3425e48071cafbb58e6d00d2226ce",
+      "geometry_version": 3,
+      "status": "excluded",
+      "reason": "ignored",
+      "compiled_decision": null,
+      "generated_features": []
+    },
+    {
+      "callout_id": "5416b2266f903155cf70be7fb9236236d5df10714bd31b6de161b9bed0528908",
+      "raw_text": null,
+      "parser_version": null,
+      "semantic": null,
+      "target_kind": null,
+      "target_ids": [],
+      "geometry_key": "435947a0d93f3a42c140f4c555140e2941d3425e48071cafbb58e6d00d2226ce",
+      "geometry_version": 3,
+      "status": "excluded",
+      "reason": "ignored",
+      "compiled_decision": null,
+      "generated_features": []
+    },
+    {
+      "callout_id": "1b04b70e7d38d0cb569fd14945fe1727943b50f75a717dc2e51f5a91f59fe3b5",
+      "raw_text": null,
+      "parser_version": null,
+      "semantic": null,
+      "target_kind": null,
+      "target_ids": [],
+      "geometry_key": "435947a0d93f3a42c140f4c555140e2941d3425e48071cafbb58e6d00d2226ce",
+      "geometry_version": 3,
+      "status": "excluded",
+      "reason": "ignored",
+      "compiled_decision": null,
+      "generated_features": []
+    },
+    {
+      "callout_id": "cadacb1beeba1e86d32ee15a8bb8743497a3d230e5aba5d4157fd5c892d21774",
+      "raw_text": null,
+      "parser_version": null,
+      "semantic": null,
+      "target_kind": null,
+      "target_ids": [],
+      "geometry_key": "435947a0d93f3a42c140f4c555140e2941d3425e48071cafbb58e6d00d2226ce",
+      "geometry_version": 3,
+      "status": "excluded",
+      "reason": "ignored",
+      "compiled_decision": null,
+      "generated_features": []
+    },
+    {
+      "callout_id": "c84d4c5d3f3e7db1b1bdc322aad5c34c9211336cd519938db4f175f662df8c24",
+      "raw_text": null,
+      "parser_version": null,
+      "semantic": null,
+      "target_kind": null,
+      "target_ids": [],
+      "geometry_key": "435947a0d93f3a42c140f4c555140e2941d3425e48071cafbb58e6d00d2226ce",
+      "geometry_version": 3,
+      "status": "excluded",
+      "reason": "ignored",
+      "compiled_decision": null,
+      "generated_features": []
+    },
+    {
+      "callout_id": "4f75cbf67690937d4e63783791454a61535581952832d6870f48197ffb180c73",
+      "raw_text": null,
+      "parser_version": null,
+      "semantic": null,
+      "target_kind": null,
+      "target_ids": [],
+      "geometry_key": "435947a0d93f3a42c140f4c555140e2941d3425e48071cafbb58e6d00d2226ce",
+      "geometry_version": 3,
+      "status": "excluded",
+      "reason": "ignored",
+      "compiled_decision": null,
+      "generated_features": []
+    },
+    {
+      "callout_id": "e336565e67714e1e6d8fdc016a027e4685fdf2ffb6c8f4a9d94432c99d079987",
+      "raw_text": null,
+      "parser_version": null,
+      "semantic": null,
+      "target_kind": null,
+      "target_ids": [],
+      "geometry_key": "435947a0d93f3a42c140f4c555140e2941d3425e48071cafbb58e6d00d2226ce",
+      "geometry_version": 3,
+      "status": "excluded",
+      "reason": "ignored",
+      "compiled_decision": null,
+      "generated_features": []
+    },
+    {
+      "callout_id": "ecb9f0a5bca5da61f64c51711e3730d9c63b67caa17eb6601cc07c49d5ea69c1",
+      "raw_text": null,
+      "parser_version": null,
+      "semantic": null,
+      "target_kind": null,
+      "target_ids": [],
+      "geometry_key": "435947a0d93f3a42c140f4c555140e2941d3425e48071cafbb58e6d00d2226ce",
+      "geometry_version": 3,
+      "status": "excluded",
+      "reason": "ignored",
+      "compiled_decision": null,
+      "generated_features": []
+    },
+    {
+      "callout_id": "fe453aeac7e2648e80e55fa9ca5ac60658c4ce3b2c1e35663c0077559e905cb6",
+      "raw_text": null,
+      "parser_version": null,
+      "semantic": null,
+      "target_kind": null,
+      "target_ids": [],
+      "geometry_key": "435947a0d93f3a42c140f4c555140e2941d3425e48071cafbb58e6d00d2226ce",
+      "geometry_version": 3,
+      "status": "excluded",
+      "reason": "ignored",
+      "compiled_decision": null,
+      "generated_features": []
+    },
+    {
+      "callout_id": "cbdde65efa41cfff62bbb638e37bac325350ffa76fe058952ec930386dece0ef",
+      "raw_text": null,
+      "parser_version": null,
+      "semantic": null,
+      "target_kind": null,
+      "target_ids": [],
+      "geometry_key": "435947a0d93f3a42c140f4c555140e2941d3425e48071cafbb58e6d00d2226ce",
+      "geometry_version": 3,
+      "status": "excluded",
+      "reason": "ignored",
+      "compiled_decision": null,
+      "generated_features": []
+    },
+    {
+      "callout_id": "5ca34842b6c4f64fba8da96c444ddcd8a97112691d38cdb03c1e3c43d4507630",
+      "raw_text": null,
+      "parser_version": null,
+      "semantic": null,
+      "target_kind": null,
+      "target_ids": [],
+      "geometry_key": "435947a0d93f3a42c140f4c555140e2941d3425e48071cafbb58e6d00d2226ce",
+      "geometry_version": 3,
+      "status": "excluded",
+      "reason": "ignored",
+      "compiled_decision": null,
+      "generated_features": []
+    },
+    {
+      "callout_id": "431f6ac977bb8face12e1ab4e5e873fe53a11c1ce8313e10c50f5a5415d4de56",
+      "raw_text": null,
+      "parser_version": null,
+      "semantic": null,
+      "target_kind": null,
+      "target_ids": [],
+      "geometry_key": "435947a0d93f3a42c140f4c555140e2941d3425e48071cafbb58e6d00d2226ce",
+      "geometry_version": 3,
+      "status": "excluded",
+      "reason": "ignored",
+      "compiled_decision": null,
+      "generated_features": []
+    },
+    {
+      "callout_id": "35c3ff4ddf50cf1deb89b9c09efd476124cd5c887478af578c50b7d3c0d637cd",
+      "raw_text": null,
+      "parser_version": null,
+      "semantic": null,
+      "target_kind": null,
+      "target_ids": [],
+      "geometry_key": "435947a0d93f3a42c140f4c555140e2941d3425e48071cafbb58e6d00d2226ce",
+      "geometry_version": 3,
+      "status": "excluded",
+      "reason": "ignored",
+      "compiled_decision": null,
+      "generated_features": []
+    },
+    {
+      "callout_id": "19b586750b74ba8b6091891ead2c6fff1b3b5693ad87616df00fa3a8e30593b1",
+      "raw_text": null,
+      "parser_version": null,
+      "semantic": null,
+      "target_kind": null,
+      "target_ids": [],
+      "geometry_key": "435947a0d93f3a42c140f4c555140e2941d3425e48071cafbb58e6d00d2226ce",
+      "geometry_version": 3,
+      "status": "excluded",
+      "reason": "ignored",
+      "compiled_decision": null,
+      "generated_features": []
+    },
+    {
+      "callout_id": "5e50fbd4c20fabddc8500dc488ffd960c4d5138afd1ecc4e10137711cdc0f4a5",
+      "raw_text": null,
+      "parser_version": null,
+      "semantic": null,
+      "target_kind": null,
+      "target_ids": [],
+      "geometry_key": "435947a0d93f3a42c140f4c555140e2941d3425e48071cafbb58e6d00d2226ce",
+      "geometry_version": 3,
+      "status": "excluded",
+      "reason": "ignored",
+      "compiled_decision": null,
+      "generated_features": []
+    },
+    {
+      "callout_id": "05de3cbb51f2e45785cbcd27f5dc89d76fe141e7eced0e51296e1eecd040ce5e",
+      "raw_text": null,
+      "parser_version": null,
+      "semantic": null,
+      "target_kind": null,
+      "target_ids": [],
+      "geometry_key": "435947a0d93f3a42c140f4c555140e2941d3425e48071cafbb58e6d00d2226ce",
+      "geometry_version": 3,
+      "status": "excluded",
+      "reason": "ignored",
+      "compiled_decision": null,
+      "generated_features": []
+    },
+    {
+      "callout_id": "3040b0676caa18bd8c581002f6c3759a2dfb4a0e8e6f1ab3883e9807513fd2ee",
+      "raw_text": null,
+      "parser_version": null,
+      "semantic": null,
+      "target_kind": null,
+      "target_ids": [],
+      "geometry_key": "435947a0d93f3a42c140f4c555140e2941d3425e48071cafbb58e6d00d2226ce",
+      "geometry_version": 3,
+      "status": "excluded",
+      "reason": "ignored",
+      "compiled_decision": null,
+      "generated_features": []
+    },
+    {
+      "callout_id": "422f95f3b3637c188ae23a3309b591e7de8ce45b8c417111a027a2b39eaa89bc",
+      "raw_text": null,
+      "parser_version": null,
+      "semantic": null,
+      "target_kind": null,
+      "target_ids": [],
+      "geometry_key": "435947a0d93f3a42c140f4c555140e2941d3425e48071cafbb58e6d00d2226ce",
+      "geometry_version": 3,
+      "status": "excluded",
+      "reason": "ignored",
+      "compiled_decision": null,
+      "generated_features": []
+    },
+    {
+      "callout_id": "68c24cd7336b49aa5e0c9aa5be7359206d80543fe7f74513affeedbb959c9914",
+      "raw_text": null,
+      "parser_version": null,
+      "semantic": null,
+      "target_kind": null,
+      "target_ids": [],
+      "geometry_key": "435947a0d93f3a42c140f4c555140e2941d3425e48071cafbb58e6d00d2226ce",
+      "geometry_version": 3,
+      "status": "excluded",
+      "reason": "ignored",
+      "compiled_decision": null,
+      "generated_features": []
+    },
+    {
+      "callout_id": "caaa058d3060ca8e3ad6ba0899f01085751e683335f8a732474c7ae21c92bcc0",
+      "raw_text": null,
+      "parser_version": null,
+      "semantic": null,
+      "target_kind": null,
+      "target_ids": [],
+      "geometry_key": "435947a0d93f3a42c140f4c555140e2941d3425e48071cafbb58e6d00d2226ce",
+      "geometry_version": 3,
+      "status": "excluded",
+      "reason": "ignored",
+      "compiled_decision": null,
+      "generated_features": []
+    },
+    {
+      "callout_id": "41a87c6d0b29c4fa9d5581e0172bc0d310710278d8249cf1892319290c972849",
+      "raw_text": null,
+      "parser_version": null,
+      "semantic": null,
+      "target_kind": null,
+      "target_ids": [],
+      "geometry_key": "435947a0d93f3a42c140f4c555140e2941d3425e48071cafbb58e6d00d2226ce",
+      "geometry_version": 3,
+      "status": "excluded",
+      "reason": "ignored",
+      "compiled_decision": null,
+      "generated_features": []
+    },
+    {
+      "callout_id": "f1c84c1bff18694cdd6280c45b6be2fd681998954673c8a6a41cd3dc1ac9052e",
+      "raw_text": null,
+      "parser_version": null,
+      "semantic": null,
+      "target_kind": null,
+      "target_ids": [],
+      "geometry_key": "435947a0d93f3a42c140f4c555140e2941d3425e48071cafbb58e6d00d2226ce",
+      "geometry_version": 3,
+      "status": "excluded",
+      "reason": "ignored",
+      "compiled_decision": null,
+      "generated_features": []
+    },
+    {
+      "callout_id": "9d3aaf3b146a7a84709f28afe843b4e7d58123a15d6b2cc330148ca8d3092b86",
+      "raw_text": null,
+      "parser_version": null,
+      "semantic": null,
+      "target_kind": null,
+      "target_ids": [],
+      "geometry_key": "435947a0d93f3a42c140f4c555140e2941d3425e48071cafbb58e6d00d2226ce",
+      "geometry_version": 3,
+      "status": "excluded",
+      "reason": "ignored",
+      "compiled_decision": null,
+      "generated_features": []
+    },
+    {
+      "callout_id": "e208a38dff6dd26e2f1b4ee932f89cd6ac74091d4122f7b31287b6b9fae243ac",
+      "raw_text": null,
+      "parser_version": null,
+      "semantic": null,
+      "target_kind": null,
+      "target_ids": [],
+      "geometry_key": "435947a0d93f3a42c140f4c555140e2941d3425e48071cafbb58e6d00d2226ce",
+      "geometry_version": 3,
+      "status": "excluded",
+      "reason": "ignored",
+      "compiled_decision": null,
+      "generated_features": []
+    },
+    {
+      "callout_id": "b06d1f2da6ee8a9301d4af7ad739a00b0b8c6f33e6047985affa76045a6af557",
+      "raw_text": null,
+      "parser_version": null,
+      "semantic": null,
+      "target_kind": null,
+      "target_ids": [],
+      "geometry_key": "435947a0d93f3a42c140f4c555140e2941d3425e48071cafbb58e6d00d2226ce",
+      "geometry_version": 3,
+      "status": "excluded",
+      "reason": "ignored",
+      "compiled_decision": null,
+      "generated_features": []
+    }
+  ],
+  "geometry_key": "435947a0d93f3a42c140f4c555140e2941d3425e48071cafbb58e6d00d2226ce",
+  "geometry_version": 3,
+  "questions_text": [],
+  "sheet_questions": []
+}

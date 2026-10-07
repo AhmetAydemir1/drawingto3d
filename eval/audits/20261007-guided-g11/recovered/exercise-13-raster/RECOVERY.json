@@ -1,0 +1,106 @@
+{
+  "case_id": "exercise-13-raster",
+  "label": "recovered-after-run",
+  "not_run_time_evidence": true,
+  "recovered_at": "2026-10-07T15:24:27+03:00",
+  "recovered_by": "G11R-04 düzeltme turu (eval/audits/20261007-guided-g11-fixes)",
+  "recovered_from": "out/guided/b7b3e25f8ae3455ab5b49c15716b5404/session.json",
+  "session_token": "b7b3e25f8ae3455ab5b49c15716b5404",
+  "source_sha256_match": true,
+  "session_file_sha256_before": "61a2b9aa75c2a8d872828cf926edc78de7c78eaea0d293ad7a2fba149490aa61",
+  "session_file_sha256_after": "61a2b9aa75c2a8d872828cf926edc78de7c78eaea0d293ad7a2fba149490aa61",
+  "session_untouched": true,
+  "session_candidates": [
+    {
+      "token": "b7b3e25f8ae3455ab5b49c15716b5404",
+      "mtime": 1791367685.6876526,
+      "revision": 6
+    },
+    {
+      "token": "1fc6329fa5ce48269da19f9d536ea494",
+      "mtime": 1791345273.6459186,
+      "revision": 5
+    },
+    {
+      "token": "c4e26e9a36f14dd8bccd3ac3f65e9b00",
+      "mtime": 1790588029.298451,
+      "revision": 0
+    },
+    {
+      "token": "b1b9e76884394e83958d5816c35977e0",
+      "mtime": 1790587477.6069407,
+      "revision": 0
+    }
+  ],
+  "original_run": {
+    "run_id": "20261007-130741",
+    "at": "2026-10-07T13:07:41+0300",
+    "git_head": "7559fbb7b0ab4d080979f6c4f96701ca3ff80ead"
+  },
+  "original_record": {
+    "artifacts": {},
+    "failures": [
+      {
+        "code": "CAD_UNSUPPORTED",
+        "detail": {
+          "what": "build did not produce a STEP"
+        }
+      },
+      {
+        "code": "EVALUATOR",
+        "detail": {
+          "console_errors": [
+            {
+              "level": "error",
+              "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+              "url": "http://127.0.0.1:8765/favicon.ico",
+              "source": "network"
+            },
+            {
+              "level": "error",
+              "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+              "url": "http://127.0.0.1:8765/api/guided/build",
+              "source": "network"
+            }
+          ],
+          "rejected_requests": [
+            {
+              "status": 400,
+              "url": "http://127.0.0.1:8765/api/guided/build",
+              "request": "POST http://127.0.0.1:8765/api/guided/build"
+            }
+          ]
+        }
+      }
+    ],
+    "console_errors": [
+      {
+        "level": "error",
+        "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+        "url": "http://127.0.0.1:8765/favicon.ico",
+        "source": "network"
+      },
+      {
+        "level": "error",
+        "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+        "url": "http://127.0.0.1:8765/api/guided/build",
+        "source": "network"
+      }
+    ],
+    "rejected_requests": [
+      {
+        "status": 400,
+        "url": "http://127.0.0.1:8765/api/guided/build",
+        "request": "POST http://127.0.0.1:8765/api/guided/build"
+      }
+    ],
+    "note": "eski kayıt olduğu gibi bırakıldı: eval/audits/20261007-guided-g11/cases/exercise-13-raster.json"
+  },
+  "files": {
+    "session-public.json": "koşu anında kaydedilmemişti; değişmemiş oturumun son durumundan yeniden üretildi",
+    "review-bundle.json": "koşu anında kaydedilmemişti; inceleme paketinden yeniden üretildi",
+    "readiness.json": "koşu anında kaydedilmemişti; hazırlık uç noktasından yeniden alındı",
+    "server-error-recompute.json": "sunucunun koşu-anı yanıt gövdesi kayıtlı değil; aynı kapı zinciri okuma modunda yeniden oynatıldı"
+  },
+  "note": "Bu kanıt sonradan kurtarıldı: gerçekliği değişmemiş oturum kaydıyla sınırlıdır ve koşu anında kaydedilmiş gibi sunulmaz (G11R-04)."
+}

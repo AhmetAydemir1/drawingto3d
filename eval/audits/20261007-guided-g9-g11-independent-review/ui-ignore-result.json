@@ -1,0 +1,23 @@
+{
+  "detailHidden": true,
+  "remaining": "1 kontrol kaldı",
+  "rows": "C1 · makine adayı · İncelenmedi",
+  "selectedRows": 0,
+  "revision": 1,
+  "callout_reviews": [
+    {
+      "callout_id": "k1",
+      "region_override": null,
+      "ignored": true,
+      "unbindable": false,
+      "revision": 1
+    }
+  ],
+  "steps": [
+    "Open two-callout fixture, ignored hidden (default)",
+    "Click first callout TITLE",
+    "Click hint Bu bir ölçü/not değil",
+    "Expected: next unresolved k2 selected; actual: selectedRows=0, detail hidden"
+  ],
+  "passed": false
+}

@@ -1,0 +1,436 @@
+{
+  "produced": {
+    "solids": 1,
+    "valid": true,
+    "volume": 124812.494,
+    "thickness_axis": "z",
+    "lengths": [
+      120.011,
+      80.002,
+      15.0
+    ],
+    "u_len": 120.011,
+    "v_len": 80.002,
+    "thickness": 15.0,
+    "cylinders": [
+      {
+        "radius": 3.4,
+        "u": 10.009,
+        "v": 10.003,
+        "parallel": 1.0,
+        "z": [
+          0.0,
+          15.0
+        ]
+      },
+      {
+        "radius": 3.4,
+        "u": 10.009,
+        "v": 70.001,
+        "parallel": 1.0,
+        "z": [
+          0.0,
+          15.0
+        ]
+      },
+      {
+        "radius": 3.4,
+        "u": 110.009,
+        "v": 10.003,
+        "parallel": 1.0,
+        "z": [
+          0.0,
+          15.0
+        ]
+      },
+      {
+        "radius": 3.4,
+        "u": 110.009,
+        "v": 70.001,
+        "parallel": 1.0,
+        "z": [
+          0.0,
+          15.0
+        ]
+      },
+      {
+        "radius": 9.974,
+        "u": 9.99,
+        "v": 70.018,
+        "parallel": 1.0,
+        "z": [
+          0.0,
+          15.0
+        ]
+      },
+      {
+        "radius": 9.974,
+        "u": 110.031,
+        "v": 9.986,
+        "parallel": 1.0,
+        "z": [
+          0.0,
+          15.0
+        ]
+      },
+      {
+        "radius": 9.979,
+        "u": 9.979,
+        "v": 9.979,
+        "parallel": 1.0,
+        "z": [
+          0.0,
+          15.0
+        ]
+      },
+      {
+        "radius": 9.991,
+        "u": 110.019,
+        "v": 70.01,
+        "parallel": 1.0,
+        "z": [
+          0.0,
+          15.0
+        ]
+      },
+      {
+        "radius": 25.0,
+        "u": 60.009,
+        "v": 40.002,
+        "parallel": 1.0,
+        "z": [
+          7.0,
+          15.0
+        ]
+      }
+    ]
+  },
+  "reference": {
+    "solids": 1,
+    "valid": true,
+    "volume": 124825.417,
+    "thickness_axis": "z",
+    "lengths": [
+      120.0,
+      80.0,
+      15.0
+    ],
+    "u_len": 120.0,
+    "v_len": 80.0,
+    "thickness": 15.0,
+    "cylinders": [
+      {
+        "radius": 3.4,
+        "u": 10.0,
+        "v": 10.0,
+        "parallel": 1.0,
+        "z": [
+          0.0,
+          15.0
+        ]
+      },
+      {
+        "radius": 3.4,
+        "u": 10.0,
+        "v": 70.0,
+        "parallel": 1.0,
+        "z": [
+          0.0,
+          15.0
+        ]
+      },
+      {
+        "radius": 3.4,
+        "u": 110.0,
+        "v": 10.0,
+        "parallel": 1.0,
+        "z": [
+          0.0,
+          15.0
+        ]
+      },
+      {
+        "radius": 3.4,
+        "u": 110.0,
+        "v": 70.0,
+        "parallel": 1.0,
+        "z": [
+          0.0,
+          15.0
+        ]
+      },
+      {
+        "radius": 10.0,
+        "u": 10.0,
+        "v": 10.0,
+        "parallel": 1.0,
+        "z": [
+          0.0,
+          15.0
+        ]
+      },
+      {
+        "radius": 10.0,
+        "u": 10.0,
+        "v": 70.0,
+        "parallel": 1.0,
+        "z": [
+          0.0,
+          15.0
+        ]
+      },
+      {
+        "radius": 10.0,
+        "u": 110.0,
+        "v": 10.0,
+        "parallel": 1.0,
+        "z": [
+          0.0,
+          15.0
+        ]
+      },
+      {
+        "radius": 10.0,
+        "u": 110.0,
+        "v": 70.0,
+        "parallel": 1.0,
+        "z": [
+          0.0,
+          15.0
+        ]
+      },
+      {
+        "radius": 25.0,
+        "u": 60.0,
+        "v": 40.0,
+        "parallel": 1.0,
+        "z": [
+          7.0,
+          15.0
+        ]
+      }
+    ]
+  },
+  "checks": {
+    "one_valid_solid": {
+      "ok": true,
+      "got": {
+        "solids": 1,
+        "valid": true
+      },
+      "want": {
+        "solids": 1,
+        "valid": true
+      }
+    },
+    "bbox_120x80x15": {
+      "ok": true,
+      "got": [
+        120.011,
+        80.002,
+        15.0
+      ],
+      "want": [
+        120.0,
+        80.0,
+        15.0
+      ],
+      "tol_mm": 0.2
+    },
+    "volume_vs_reference": {
+      "ok": true,
+      "got_mm3": 124812.494,
+      "reference_mm3": 124825.417,
+      "delta_frac": 0.000104,
+      "tol_frac": 0.005
+    },
+    "volume_vs_nominal": {
+      "ok": true,
+      "nominal_mm3": 124825.417,
+      "delta_frac": 0.000104,
+      "tol_frac": 0.005
+    },
+    "features_4_holes_1_pocket_4_rounds": {
+      "ok": true,
+      "matched": [
+        {
+          "kind": "hole",
+          "matched": {
+            "radius": 3.4,
+            "u": 10.009,
+            "v": 10.003,
+            "parallel": 1.0,
+            "z": [
+              0.0,
+              15.0
+            ]
+          }
+        },
+        {
+          "kind": "hole",
+          "matched": {
+            "radius": 3.4,
+            "u": 110.009,
+            "v": 10.003,
+            "parallel": 1.0,
+            "z": [
+              0.0,
+              15.0
+            ]
+          }
+        },
+        {
+          "kind": "hole",
+          "matched": {
+            "radius": 3.4,
+            "u": 10.009,
+            "v": 70.001,
+            "parallel": 1.0,
+            "z": [
+              0.0,
+              15.0
+            ]
+          }
+        },
+        {
+          "kind": "hole",
+          "matched": {
+            "radius": 3.4,
+            "u": 110.009,
+            "v": 70.001,
+            "parallel": 1.0,
+            "z": [
+              0.0,
+              15.0
+            ]
+          }
+        },
+        {
+          "kind": "pocket",
+          "matched": {
+            "radius": 25.0,
+            "u": 60.009,
+            "v": 40.002,
+            "parallel": 1.0,
+            "z": [
+              7.0,
+              15.0
+            ]
+          }
+        },
+        {
+          "kind": "round",
+          "matched": {
+            "radius": 9.979,
+            "u": 9.979,
+            "v": 9.979,
+            "parallel": 1.0,
+            "z": [
+              0.0,
+              15.0
+            ]
+          }
+        },
+        {
+          "kind": "round",
+          "matched": {
+            "radius": 9.974,
+            "u": 110.031,
+            "v": 9.986,
+            "parallel": 1.0,
+            "z": [
+              0.0,
+              15.0
+            ]
+          }
+        },
+        {
+          "kind": "round",
+          "matched": {
+            "radius": 9.974,
+            "u": 9.99,
+            "v": 70.018,
+            "parallel": 1.0,
+            "z": [
+              0.0,
+              15.0
+            ]
+          }
+        },
+        {
+          "kind": "round",
+          "matched": {
+            "radius": 9.991,
+            "u": 110.019,
+            "v": 70.01,
+            "parallel": 1.0,
+            "z": [
+              0.0,
+              15.0
+            ]
+          }
+        }
+      ],
+      "missing": [],
+      "extra": []
+    },
+    "cylinder_inventory": {
+      "ok": true,
+      "produced": 9,
+      "reference": 9
+    },
+    "symmetric_difference": {
+      "ok": true,
+      "raw_mm3": 194966.0441,
+      "aligned_mm3": 30.3188,
+      "centroid_shift_mm": [
+        -60.0071,
+        -40.0004,
+        0.0
+      ],
+      "tol_frac": 0.005
+    },
+    "existing_evaluator": {
+      "ok": true,
+      "verdict": {
+        "checks": {
+          "solids": {
+            "ok": true,
+            "got": "1 katı",
+            "want": "1 katı"
+          },
+          "valid": {
+            "ok": true,
+            "got": "True",
+            "want": "True"
+          },
+          "vector": {
+            "ok": true,
+            "got": "[15, 80.002, 120.011]",
+            "want": "[15, 80, 120] (fark [0, 0, 0.01])"
+          },
+          "volume": {
+            "ok": true,
+            "got": "124.8 cm3",
+            "want": "124.8 cm3 (%0 fark)"
+          },
+          "cylinders": {
+            "ok": true,
+            "got": "[3.4, 9.97, 9.98, 9.99, 25]",
+            "want": "[3.4, 10, 25]; eksik [], fazla []"
+          }
+        },
+        "pass": true,
+        "shape_ok": true,
+        "detail_ok": true
+      }
+    },
+    "step_reopened": {
+      "ok": true,
+      "detail": "cadquery importStep reopen (twice: features + difference)"
+    }
+  },
+  "pass": true,
+  "produced_path": "eval/audits/20261007-guided-g9-g11-independent-review/plate-rebuild/part.step",
+  "reference_path": "examples/pdf with steps/5/plate with a pocket.STEP"
+}

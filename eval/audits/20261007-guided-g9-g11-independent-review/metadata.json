@@ -1,0 +1,66 @@
+{
+  "date": "2026-10-07",
+  "head": "0ff46a81878d7ff23634cdcaac0bf278c97f342c",
+  "comparison_base": "c229672",
+  "product_modified": false,
+  "existing_reports_modified": false,
+  "new_findings": {
+    "P1": [
+      "G11R-01",
+      "G11R-02"
+    ],
+    "P2": [
+      "G11R-03",
+      "G11R-04",
+      "G11R-05"
+    ]
+  },
+  "tests": {
+    "initial_command": ".venv/bin/python -m pytest -q tests/test_callout*.py tests/test_guided*.py",
+    "passed": 483,
+    "failed": 1,
+    "errors": 12,
+    "exit_code": 1,
+    "seconds": 123.63,
+    "environment_blocker": "All 13 non-passing checks: sandbox denied localhost bind",
+    "recheck_command": ".venv/bin/python -m pytest -q tests/test_guided.py::test_http_revision_and_artifact_contract tests/test_guided_callout_chain.py::test_the_proposal_readiness_and_export_endpoints_answer_over_http tests/test_guided_callout_chain.py::test_an_import_over_http_is_refused_whole_when_it_is_wrong tests/test_guided_callout_http.py",
+    "recheck_passed": 13,
+    "recheck_exit": 0,
+    "recheck_seconds": 7.2,
+    "distinct_passed": 496
+  },
+  "cad": {
+    "saved_g9_regression": "PASS",
+    "g9_rebuilt_from_saved_decisions_with_current_code": true,
+    "new_g9_step_regression": "PASS",
+    "g11_steps_reopened_and_rechecked": 6,
+    "g11_geometry_pass": 1,
+    "g11_geometry_fail": 5,
+    "fresh_upload_ui_full_g9_rerun": false
+  },
+  "g11_correct_rate": {
+    "numerator": 1,
+    "denominator": 9,
+    "fraction": 0.1111111111111111,
+    "recorded_report_fraction": 0.16666666666666666
+  },
+  "browser": {
+    "real_browser": true,
+    "fixture": "two synthetic callouts; temporary store",
+    "ignore_auto_advance": "FAIL",
+    "manual_next_control": "PASS",
+    "temporary_tab_server_closed": true
+  },
+  "model_calls": 0,
+  "full_suite_rerun": false,
+  "ten_case_ingest_rerun": false,
+  "artifact_checksums": {
+    "step-recheck.json": "d3911c2cd1ea3da5d8f5b0edaefb9a65dfd01161b4662b6dfba03b95b524505b",
+    "plate-verdict.json": "af8bbe93a781d5ccdf2bb5d0c6536823b66f49be3dceb55515457051aee7bc8f",
+    "plate-rebuild-verdict.json": "82d08c41265a7340e72dfb3450f00546dced769ad9b79d56b10e4cbb1fa70c12",
+    "ui-ignore-result.json": "46b05fab469f87088b7fe0fb9a0389e873a5282861a645e9e2782f620bb95a3c",
+    "report-audit.json": "959dcb90beaf8408444ddb1eca77e60d01ec959eb68f9afe5df512cbe37bf0bc",
+    "plate-rebuild/part.step": "5eb15906eee595a7fbc7d7cb941d334b40cd3cd34697776a26e9285e4fa6f7c9",
+    "plate-rebuild/plan.json": "645196661ca0fa4055deb7a8238acf0a6178b2efa18f55a13f246319f4745734"
+  }
+}

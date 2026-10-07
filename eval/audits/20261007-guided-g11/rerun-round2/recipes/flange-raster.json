@@ -1,0 +1,56 @@
+{
+  "case_id": "flange-raster",
+  "source_path": "examples/pdf with steps/8/Flange.PNG",
+  "contour": {"profile_id": "circle_g385"},
+  "calibration": {
+    "manual_value": 35,
+    "unit": "mm",
+    "circles": ["g385", "g386"],
+    "printed_text": "R35.00",
+    "verified_span": "R35.00 cıvata dairesi: g385 (merkez) ↔ cıvata deliği g386 merkezi"
+  },
+  "thickness_mm": 20,
+  "acknowledge_trace": true,
+  "confirm_view": true,
+  "decisions": [],
+  "input_verification": {
+    "calibration": {
+      "span": "g385 merkezi ↔ g386 merkezi",
+      "span_px": 207.35,
+      "value_mm": 35,
+      "px_per_mm": 5.924,
+      "printed_text_used": "R35.00",
+      "evidence": [
+        "Çizimde R35.00 (ön görünüş, sağ üst) cıvata dairesini (kesikli daire) ölçer; okun ucu kesikli daire üzerindedir — çapta yarıçap, ölçünün gerçek uçları iki merkezdir.",
+        "Piksel doğrulaması: seçilen iki ucun (g385/g386 ölçülen merkezleri) açıklığı ~207 px; kesikli dairenin yarıçapı görüntüde ~207–208 px — aynı çizgi.",
+        "Ölçek çapraz kontrolü: dış daire Ø100.00 → 295.87 px → 5.917 px/mm; R35.00 → 207.35/35 = 5.924 px/mm; fark %0,1.",
+        "Eski resmî koşuda kullanılan OCR '90.00' (t4) okuması çizimde '50.00'dır (SECTION A-A boy ölçüsü, bbox x:1848 y:731) ve bu kalibrasyonda artık kullanılmıyor."
+      ],
+      "replaces": {
+        "value": 90,
+        "unit": "mm",
+        "span_id": "t4",
+        "first": [900.75, 1476.75],
+        "second": [1077.75, 1584.75],
+        "note": "eski resmî koşu — doğrulanmamış 'deneme' bağı; kayıt olduğu gibi bırakıldı, bu tur onu değiştirmez"
+      }
+    },
+    "thickness": {
+      "value_mm": 20,
+      "printed_text": "20.00",
+      "evidence": "SECTION A-A'daki flanş plakası kalınlığı; ölçü adayı olarak da sunuldu (yüksek OCR güveni); resmî koşudaki değer korunur"
+    },
+    "contour": {
+      "chosen": "circle_g385",
+      "what_it_is": "ön görünüşün merkez dairesi (Ø30 nominal bölge; r=91.55 px ÷ 5.924 px/mm = 15.45 mm)",
+      "candidate_note": "resmî koşuda bu paftada sunulan disk konturu circle_g385'di; karar aynı konturu korur, yalnız ölçek doğrulanmıştır. Dış Ø100 sınırı aday olarak üretilmedi — ürün sınırı kaydı (G12)."
+    }
+  },
+  "notes": [
+    "G11R-02 yeniden koşusu (düzeltilmiş girdi): kalibrasyon artık doğrulanmış basılı ölçüyle — R35.00 cıvata dairesi, uçlar g385 (merkez) ↔ g386 (cıvata deliği merkezi); px/mm 5.924, dış çap Ø100.00 ile çapraz kontrol %0,1 içinde (input_verification kayıtta).",
+    "Eski resmî koşu (run 20261007, kalibrasyon 90·t4) silinmedi; ölçek bu turda 2,30 px/mm yerine 5,924 px/mm olarak yeniden kurulur (eski kayıtta 79,475 mm çıkan disk, doğru ölçekle ~30,9 mm merkez bölgesidir).",
+    "Kalibrasyon elle giriş yolundan verildi ('Ölçüyü ben gireceğim' + #cal-value); OCR satırı seçilmedi — belirsiz okuma artık kesin karar yazmıyor.",
+    "Kontur: circle_g385 uygulamanın sunduğu tek disk adayı; kontur kararı resmî koşuyla aynı.",
+    "Kapsam: karara bağlanmayan tüm adaylar tek atomik toplu kararla kapsam dışı (UX-01 akışı); uydurma metin yok."
+  ]
+}

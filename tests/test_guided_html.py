@@ -195,14 +195,21 @@ def test_the_bulk_scope_decision_is_one_atomic_request_from_the_users_own_select
 
 
 def test_ux01_next_missing_flow_selects_from_unresolved_and_navigation_writes_nothing():
-    """UX-01 §6: "Sonraki eksik" çözülmemiş listesinden seçer; oto-ilerleme yalnız başarılı karardan sonra."""
+    """UX-01 §6: "Sonraki eksik" çözülmemiş listesinden seçer; oto-ilerleme yalnız başarılı karardan sonra.
+
+    G11R-03 (bağımsız inceleme): oto-ilerleme karar ÖNCESİ görünür sırayı taşır — satır filtreyle
+    düştüğünde seçim temizlense bile sıradaki açık alan kararın kendi konumundan sürdürülür.
+    """
     script = (ROOT / "guided.js").read_text(encoding="utf-8")
     assert "function rowResolved(" in script and "function unresolvedRows(" in script
     assert "function advanceAfterDecision(" in script
-    assert "advance=previous" in script, "oto-ilerleme yalnız komut başarısında kurulur"
+    assert "advance={id:previous,order:previousOrder}" in script, \
+        "oto-ilerleme yalnız komut başarısında ve sırasıyla kurulur"
     assert "['transcribe','set_ignored','set_unbindable'].includes(action)" in script
     assert "state.callout_parses" in script, "parse durumu otoriter okuma satırından okunur"
     assert "if(!rowResolved(previousId))return;" in script, "oto-ilerleme yalnız çözülen satırdan sonra"
+    assert "if(selectedCallout&&selectedCallout!==previousId)return;" in script, \
+        "G11R-03: seçim filtreyle temizlendiyse ilerleme sürer, kullanıcı taşındıysa durur"
     assert "Tüm ölçü/not kontrolleri tamamlandı." in script
     next_handler = script[script.index("$('callout-next').onclick="):]
     next_handler = next_handler[:next_handler.index("};")]

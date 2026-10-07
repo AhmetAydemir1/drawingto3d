@@ -1,11 +1,15 @@
 """G11 official 10-sheet run — frozen manifest order, fresh session per case, real input only.
 
     ~/.hermes/cache/scratch/cdp-venv/bin/python run_official.py [case_id ...]
+    ~/.hermes/cache/scratch/cdp-venv/bin/python run_official.py --round rerun-round2 [case_id ...]
 
-Each case: tab cleanup -> g11_runner.py recipes-official/<case>.json -> case record under
-cases/<case>.json (+ artifacts in cases/<case>/). One case's failure never aborts the run; the summary
-is written to logs/official/summary.json and printed at the end. Recipes without a file are reported as
-`recipe-missing` — that is a real blocker for that case, never a silent skip.
+Each case: tab cleanup -> g11_runner.py <recipes>/<case>.json -> case record under
+<cases>/<case>.json (+ artifacts in <cases>/<case>/). Default round is the official one
+(`recipes-official/` -> `cases/`, `shots/`). `--round <dir>` reads `<dir>/recipes/` and writes
+`<dir>/cases/`, `<dir>/shots/`, `logs/<dir>/` — old rounds are never touched. One case's failure
+never aborts the run; the summary is written to the round's log dir and printed at the end. Recipes
+without a file are reported as `recipe-missing` — that is a real blocker for that case, never a
+silent skip.
 """
 from __future__ import annotations
 
@@ -37,13 +41,18 @@ def run(cmd: list[str], log_path: pathlib.Path, append: bool = False) -> int:
 
 def main() -> int:
     argv = sys.argv[1:]
-    recipes = HERE / "recipes-official"
+    round_name = None
+    if argv and argv[0] == "--round":
+        round_name = argv[1]
+        argv = argv[2:]
+    base = HERE / round_name if round_name else HERE
+    recipes = base / "recipes" if round_name else HERE / "recipes-official"
     if argv and argv[0] == "--recipes":
         recipes = HERE / argv[1]
         argv = argv[2:]
     wanted = argv or case_ids()
     order = [cid for cid in case_ids() if cid in wanted]
-    logs = HERE / "logs/official"
+    logs = HERE / "logs" / (round_name or "official")
     logs.mkdir(parents=True, exist_ok=True)
     summary = []
     for index, case_id in enumerate(order, 1):
@@ -56,8 +65,11 @@ def main() -> int:
             print(f"    recipe-missing: {recipe}", flush=True)
             continue
         run([CDP_PYTHON, str(HERE / "g11_clean.py")], log_path)          # tab hygiene first
-        code = run([CDP_PYTHON, str(HERE / "g11_runner.py"), str(recipe)], log_path, append=True)
-        record_path = HERE / "cases" / f"{case_id}.json"
+        cmd = [CDP_PYTHON, str(HERE / "g11_runner.py"), str(recipe)]
+        if round_name:
+            cmd += ["--round", round_name]
+        code = run(cmd, log_path, append=True)
+        record_path = base / "cases" / f"{case_id}.json"
         status, verdict, failures = "driver-error", None, None
         if record_path.exists():
             record = json.loads(record_path.read_text(encoding="utf-8"))

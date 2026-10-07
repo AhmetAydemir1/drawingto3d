@@ -1,0 +1,105 @@
+{
+  "fixture": "http://127.0.0.1:55711/guided?session=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "fixture_callouts": [
+    "k1 TITLE",
+    "k2 Ø8 THRU",
+    "k3 M10 - 6H"
+  ],
+  "source": "guided.js G11R-03 fix in src/drawingto3d/static (served from disk)",
+  "steps": [
+    {
+      "step": "S0 baseline: three open fields listed, none selected, detail hidden",
+      "passed": true,
+      "rows": [
+        "C1 · makine adayı · İncelenmedi",
+        "C2 · makine adayı · İncelenmedi",
+        "C3 · makine adayı · İncelenmedi"
+      ],
+      "selected": -1,
+      "detailHidden": true,
+      "remaining": "3 kontrol kaldı",
+      "showIgnored": false,
+      "revision": 0,
+      "selectedId": null
+    },
+    {
+      "step": "S1 ignore #callout-ignore (middle row, hidden): selection moved to the NEXT open field",
+      "passed": true,
+      "selectedId": "k3",
+      "selected": 1,
+      "detailHidden": false,
+      "rows": [
+        "C1 · makine adayı · İncelenmedi",
+        "C2 · makine adayı · İncelenmedi"
+      ],
+      "remaining": "2 kontrol kaldı",
+      "revision": 1
+    },
+    {
+      "step": "S2 manual Sonraki eksik wraps k3 -> k1",
+      "passed": true,
+      "rows": [
+        "C1 · makine adayı · İncelenmedi",
+        "C2 · makine adayı · İncelenmedi"
+      ],
+      "selected": 0,
+      "detailHidden": false,
+      "remaining": "2 kontrol kaldı",
+      "showIgnored": false,
+      "revision": 1,
+      "selectedId": "k1"
+    },
+    {
+      "step": "S3 hint-ignore advances to the only open field left (k3)",
+      "passed": true,
+      "selectedId": "k3",
+      "detailHidden": false,
+      "rows": [
+        "C1 · makine adayı · İncelenmedi"
+      ],
+      "remaining": "1 kontrol kaldı",
+      "revision": 2
+    },
+    {
+      "step": "S4 last open row with ignored-visible: list intact, row stays selected, all done",
+      "passed": true,
+      "selectedId": "k3",
+      "rows": [
+        "C1 · makine adayı · Modele ait değil",
+        "C2 · makine adayı · Modele ait değil",
+        "C3 · makine adayı · Modele ait değil"
+      ],
+      "remaining": "Tüm ölçü/not kontrolleri tamamlandı.",
+      "revision": 3
+    },
+    {
+      "step": "S5 restore: stays on k3, no auto-advance, one open field again",
+      "passed": true,
+      "selectedId": "k3",
+      "remaining": "1 kontrol kaldı",
+      "review_row_removed": true,
+      "revision": 4
+    },
+    {
+      "step": "S6 last open row hidden: list empties, detail closes, all done",
+      "passed": true,
+      "rows": [],
+      "selectedId": null,
+      "detailHidden": true,
+      "remaining": "Tüm ölçü/not kontrolleri tamamlandı.",
+      "revision": 5
+    },
+    {
+      "step": "S7 server record: all three ignored, five revisions",
+      "passed": true,
+      "revision": 5,
+      "reviews": {
+        "k2": true,
+        "k1": true,
+        "k3": true
+      }
+    }
+  ],
+  "failures": [],
+  "passed": true
+}

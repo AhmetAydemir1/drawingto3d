@@ -1,0 +1,76 @@
+{
+  "version": 1,
+  "unit": "mm",
+  "source": {
+    "kind": "drawing",
+    "ref": "/Users/aydemir/Desktop/drawingto3d/out/guided/d08bdf43e150447fa7033559acbe6cff/source.png",
+    "sha256": "9c0a91e21bf7265d13074adad10ba36171e802cc0e70895cfd4c24656933282a",
+    "page": 1
+  },
+  "parameters": {
+    "thickness": {
+      "unit": "mm",
+      "source": "user",
+      "value": 20.0,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcının kalınlık kararı."
+    },
+    "outer_x": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 15.431621179827095,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcının seçtiği kontur ve kalibrasyonla çizimden ölçüldü; basılı ölçü değildir."
+    },
+    "outer_y": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 15.44804696868816,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcının seçtiği kontur ve kalibrasyonla çizimden ölçüldü; basılı ölçü değildir."
+    },
+    "outer_radius": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 15.453523525529086,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcının seçtiği kontur ve kalibrasyonla çizimden ölçüldü; basılı ölçü değildir."
+    }
+  },
+  "sketches": {
+    "outer": {
+      "plane": "XY",
+      "offset": "0",
+      "entities": [
+        {
+          "type": "circle",
+          "center": [
+            "outer_x",
+            "outer_y"
+          ],
+          "radius": "outer_radius"
+        }
+      ]
+    }
+  },
+  "operations": [
+    {
+      "op": "extrude",
+      "id": "base_extrusion",
+      "output": "base",
+      "sketch": "outer",
+      "distance": "thickness"
+    }
+  ],
+  "result": "base",
+  "assumptions": [
+    "Ölçek 5.9242 px/mm — kullanıcının iki noktalı kalibrasyonundan. Kullanıcı ana konturu, ölçeği ve özellikleri seçti; kontur ve delik merkezleri çizimden izlenen taslaktır.",
+    "Birleştirme öncesi en büyük boşluk 0.000000 piksel. Basılı ölçülerle ortak ölçek uydurması yapılmadı.",
+    "Dış kontur çizimdeki bir dairedir (döner yüz); gövde ve ikinci flanş bu planın kapsamı dışındadır."
+  ],
+  "expect": null
+}

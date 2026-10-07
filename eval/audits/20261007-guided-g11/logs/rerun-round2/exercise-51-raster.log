@@ -1,0 +1,9 @@
+$ /Users/aydemir/.hermes/cache/scratch/cdp-venv/bin/python /Users/aydemir/Desktop/drawingto3d/eval/audits/20261007-guided-g11/g11_clean.py
+pages before: 4
+kept=1 closed=3
+pages after: 1
+$ /Users/aydemir/.hermes/cache/scratch/cdp-venv/bin/python /Users/aydemir/Desktop/drawingto3d/eval/audits/20261007-guided-g11/g11_runner.py /Users/aydemir/Desktop/drawingto3d/eval/audits/20261007-guided-g11/rerun-round2/recipes/exercise-51-raster.json --round rerun-round2
+[case exercise-51-raster] candidates=26
+[FAIL:CAD_WRONG] {"checks": {"solids": {"ok": true, "got": "1 katı", "want": "1 katı"}, "valid": {"ok": true, "got": "True", "want": "True"}, "vector": {"ok": false, "got": "[15, 49.978, 49.978]", "want": "[60, 100, 245] (fark [45, 50.02, 195.02])"}, "volume": {"ok": false, "got": "29.4 cm3", "want": "471.9 cm3 (%94
+
+[exercise-51-raster] failures=1 build=True verdict=fail -> eval/audits/20261007-guided-g11/cases/exercise-51-raster.json

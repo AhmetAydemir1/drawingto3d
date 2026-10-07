@@ -1,9 +1,18 @@
 {
   "metric": {
-    "guided_correct_step_rate": 0.16666666666666666,
+    "guided_correct_step_rate": 0.1111111111111111,
     "correct": [
       "plate-pocket-vector"
     ],
+    "denominator": 9,
+    "denominator_source": "donmuş manifest — expected_scope_class == 'full_step' (9 vaka); üretilemeyen/bekleyen vakalar paydadan düşülmez (G11R-01)",
+    "unproduced_full_step": [
+      "exercise-17-raster",
+      "exercise-13-raster",
+      "my-part-raster"
+    ],
+    "conditional_correct_rate_among_verdicts": 0.16666666666666666,
+    "conditional_definition": "yalnız geometri kararı üretilebilen full_step vakalar arasında; ana metrik DEĞİLDİR (G11R-01)",
     "with_verdict": 6
   },
   "taxonomy_distribution": {

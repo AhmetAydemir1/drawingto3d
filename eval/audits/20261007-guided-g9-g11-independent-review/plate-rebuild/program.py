@@ -1,0 +1,12 @@
+base = geo.profile_extrude([{"type": "line", "start": [10.035255346526963, 0.0], "end": [110.03085855282187, 0.012542116251243723]}, {"type": "arc", "center": [110.03085855282187, 9.986258738265787], "radius": 9.973716622014543, "start_degrees": -90.0, "end_degrees": 0.28000000000000114}, {"type": "line", "start": [120.00445607889478, 10.034999318501667], "end": [120.0109239745231, 70.00905210073665]}, {"type": "arc", "center": [110.01943099717603, 70.01012963228156], "radius": 9.991493035450198, "start_degrees": -0.0061790574957797375, "end_degrees": 90.16382094250422}, {"type": "line", "start": [109.99086321103523, 80.00158182698503], "end": [9.989217907542704, 79.9914616956687]}, {"type": "arc", "center": [9.990227243858893, 70.01774800271211], "radius": 9.97371374402882, "start_degrees": 90.00579831270578, "end_degrees": 180.22579831270576}, {"type": "line", "start": [0.01659095001541336, 69.9784424565694], "end": [0.0, 9.981399799959053]}, {"type": "arc", "center": [9.978799688213043, 9.97864036783523], "radius": 9.978800069745176, "start_degrees": 179.9841560292362, "end_degrees": 270.32415602923624}], 15.0, plane='XY', offset=0.0)
+hole_0_tool = geo.profile_extrude([{"type": "circle", "center": [60.008638305732745, 40.00136850628641], "radius": 25.0}], 8.0, plane='XY', offset=7.0)
+hole_0_result = geo.cut(base, hole_0_tool)
+hole_1_tool = geo.profile_extrude([{"type": "circle", "center": [10.009273169935303, 70.00124153344589], "radius": 3.4}], 15.0, plane='XY', offset=0.0)
+hole_1_result = geo.cut(hole_0_result, hole_1_tool)
+hole_2_tool = geo.profile_extrude([{"type": "circle", "center": [110.0092731699353, 70.00124153344589], "radius": 3.4}], 15.0, plane='XY', offset=0.0)
+hole_2_result = geo.cut(hole_1_result, hole_2_tool)
+hole_3_tool = geo.profile_extrude([{"type": "circle", "center": [110.0092731699353, 10.002765207532024], "radius": 3.4}], 15.0, plane='XY', offset=0.0)
+hole_3_result = geo.cut(hole_2_result, hole_3_tool)
+hole_4_tool = geo.profile_extrude([{"type": "circle", "center": [10.009273169935303, 10.002765207532024], "radius": 3.4}], 15.0, plane='XY', offset=0.0)
+hole_4_result = geo.cut(hole_3_result, hole_4_tool)
+solid = hole_4_result

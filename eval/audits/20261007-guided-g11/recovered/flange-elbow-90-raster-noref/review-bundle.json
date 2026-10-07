@@ -1,0 +1,1286 @@
+{
+  "bundle_version": 1,
+  "schema_version": 3,
+  "parser_version": "callout-parser/2",
+  "session": "9b9115c07cd7496ea5d2cdc50841af5d",
+  "base_revision": 5,
+  "source_digest": "20a2e6b4968960caab806ff91808fd7e625fc60fd5b98de5a1bb07f133babbff",
+  "source": "/Users/aydemir/Desktop/drawingto3d/out/guided/9b9115c07cd7496ea5d2cdc50841af5d/source.png",
+  "page": 0,
+  "created_at": "2026-10-07T12:24:28+00:00",
+  "detector_version": "callout-detector/1",
+  "geometry_version": 3,
+  "geometry_key": "5fdbb0f587275374d05c9ed3c538cc2a94f72b6c25ef3493d70943c7588c0d86",
+  "callouts": [
+    {
+      "callout_id": "4c4c5a2b6a8f15063a12a7af3e41a5809a9d2a74cadcfab752616f0ed90fbfce",
+      "page_index": 0,
+      "source_kind": "raster_region",
+      "region": [
+        0.36624569,
+        0.21777344,
+        0.41561424,
+        0.25585938
+      ],
+      "base_region": [
+        0.36624569,
+        0.21777344,
+        0.41561424,
+        0.25585938
+      ],
+      "crop_region": [
+        0.36624569,
+        0.21777344,
+        0.41561424,
+        0.25585938
+      ],
+      "machine_text_hint": "oe",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "fdd0fd7417a783b191155f454924bf0ba254b9972e3a94d7bfe70ca6d9c62f75",
+      "page_index": 0,
+      "source_kind": "raster_region",
+      "region": [
+        0.02525832,
+        0.28320312,
+        0.46383467,
+        0.44433594
+      ],
+      "base_region": [
+        0.02525832,
+        0.28320312,
+        0.46383467,
+        0.44433594
+      ],
+      "crop_region": [
+        0.02525832,
+        0.28320312,
+        0.46383467,
+        0.44433594
+      ],
+      "machine_text_hint": "a8 a 7 rH",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "46bea551bb5361829629f16039fd94d1ffe7e131343ef99cb4b66a496625c2a3",
+      "page_index": 0,
+      "source_kind": "raster_region",
+      "region": [
+        0.15040184,
+        0.47363281,
+        0.17106774,
+        0.48730469
+      ],
+      "base_region": [
+        0.15040184,
+        0.47363281,
+        0.17106774,
+        0.48730469
+      ],
+      "crop_region": [
+        0.15040184,
+        0.47363281,
+        0.17106774,
+        0.48730469
+      ],
+      "machine_text_hint": "50:",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "bb03573710c24fed6bd9390c8233ccaa9d9ff1fe96347b1d21d1a652f39fd9a9",
+      "page_index": 0,
+      "source_kind": "raster_region",
+      "region": [
+        0.23880597,
+        0.47363281,
+        0.26980482,
+        0.48730469
+      ],
+      "base_region": [
+        0.23880597,
+        0.47363281,
+        0.26980482,
+        0.48730469
+      ],
+      "crop_region": [
+        0.23880597,
+        0.47363281,
+        0.26980482,
+        0.48730469
+      ],
+      "machine_text_hint": "260",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "b0575073b7fbf4fa424623ff58b321ce51f12ce19151c3e20683a91151f0a7fb",
+      "page_index": 0,
+      "source_kind": "raster_region",
+      "region": [
+        0.76234214,
+        0.49121094,
+        0.83926521,
+        0.50488281
+      ],
+      "base_region": [
+        0.76234214,
+        0.49121094,
+        0.83926521,
+        0.50488281
+      ],
+      "crop_region": [
+        0.76234214,
+        0.49121094,
+        0.83926521,
+        0.50488281
+      ],
+      "machine_text_hint": "4x2-960",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "244d734225658c0aa2a7ba998c8b135bce38b8794411b146e8071151af9f461a",
+      "page_index": 0,
+      "source_kind": "raster_region",
+      "region": [
+        0.23880597,
+        0.50683594,
+        0.26980482,
+        0.51953125
+      ],
+      "base_region": [
+        0.23880597,
+        0.50683594,
+        0.26980482,
+        0.51953125
+      ],
+      "crop_region": [
+        0.23880597,
+        0.50683594,
+        0.26980482,
+        0.51953125
+      ],
+      "machine_text_hint": "360",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "09d59c0c54eb98572fe1e66bba401c9328c99af73e4b21f7ad1cf491d5e5bbb8",
+      "page_index": 0,
+      "source_kind": "raster_region",
+      "region": [
+        0.76234214,
+        0.53808594,
+        0.83926521,
+        0.55175781
+      ],
+      "base_region": [
+        0.76234214,
+        0.53808594,
+        0.83926521,
+        0.55175781
+      ],
+      "crop_region": [
+        0.76234214,
+        0.53808594,
+        0.83926521,
+        0.55175781
+      ],
+      "machine_text_hint": "4x2-030",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "607f56ef7528f6cfb44e6d22504e96860019152dc72ff1032202a5fe02ddad60",
+      "page_index": 0,
+      "source_kind": "raster_region",
+      "region": [
+        0.22617681,
+        0.54980469,
+        0.26061998,
+        0.56347656
+      ],
+      "base_region": [
+        0.22617681,
+        0.54980469,
+        0.26061998,
+        0.56347656
+      ],
+      "crop_region": [
+        0.22617681,
+        0.54980469,
+        0.26061998,
+        0.56347656
+      ],
+      "machine_text_hint": "C10",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "66699aca7883da5e41afdcae42f15e40aea49b9972d78a5bb493d7f211d6d4bb",
+      "page_index": 0,
+      "source_kind": "raster_region",
+      "region": [
+        0.59816303,
+        0.59570312,
+        0.61997704,
+        0.60742188
+      ],
+      "base_region": [
+        0.59816303,
+        0.59570312,
+        0.61997704,
+        0.60742188
+      ],
+      "crop_region": [
+        0.59816303,
+        0.59570312,
+        0.61997704,
+        0.60742188
+      ],
+      "machine_text_hint": "ot",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "f668370cb684a3183435f2d05278e63055e07fffb976f8af44e0fcd66a518845",
+      "page_index": 0,
+      "source_kind": "raster_region",
+      "region": [
+        0.86681975,
+        0.60351562,
+        0.90470723,
+        0.64160156
+      ],
+      "base_region": [
+        0.86681975,
+        0.60351562,
+        0.90470723,
+        0.64160156
+      ],
+      "crop_region": [
+        0.86681975,
+        0.60351562,
+        0.90470723,
+        0.64160156
+      ],
+      "machine_text_hint": "NS",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "442ba67d0bf95dd1f77adff2534579a4424701c9ab5330d64f0ac850f53c85b5",
+      "page_index": 0,
+      "source_kind": "raster_region",
+      "region": [
+        0.04477612,
+        0.60546875,
+        0.18828932,
+        0.63769531
+      ],
+      "base_region": [
+        0.04477612,
+        0.60546875,
+        0.18828932,
+        0.63769531
+      ],
+      "crop_region": [
+        0.04477612,
+        0.60546875,
+        0.18828932,
+        0.63769531
+      ],
+      "machine_text_hint": "tot a",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "e31b9ed9a27e154b2b35d95f0c51d07e38c625b2f727d6cb15546460fbe486b1",
+      "page_index": 0,
+      "source_kind": "raster_region",
+      "region": [
+        0.31917336,
+        0.60742188,
+        0.36050517,
+        0.66210938
+      ],
+      "base_region": [
+        0.31917336,
+        0.60742188,
+        0.36050517,
+        0.66210938
+      ],
+      "crop_region": [
+        0.31917336,
+        0.60742188,
+        0.36050517,
+        0.66210938
+      ],
+      "machine_text_hint": "if",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "d9919ccf576f8937e78c7331d75b321a7fe029cef1f9dbc03a7b92de58d21297",
+      "page_index": 0,
+      "source_kind": "raster_region",
+      "region": [
+        0.68886338,
+        0.60742188,
+        0.90241102,
+        0.62988281
+      ],
+      "base_region": [
+        0.68886338,
+        0.60742188,
+        0.90241102,
+        0.62988281
+      ],
+      "crop_region": [
+        0.68886338,
+        0.60742188,
+        0.90241102,
+        0.62988281
+      ],
+      "machine_text_hint": "CuSLATHA",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "a057ae3815822a4c0b6ffb4d6ebb786798b379775091312b39489f3d2f65be07",
+      "page_index": 0,
+      "source_kind": "raster_region",
+      "region": [
+        0.59816303,
+        0.609375,
+        0.61997704,
+        0.62011719
+      ],
+      "base_region": [
+        0.59816303,
+        0.609375,
+        0.61997704,
+        0.62011719
+      ],
+      "crop_region": [
+        0.59816303,
+        0.609375,
+        0.61997704,
+        0.62011719
+      ],
+      "machine_text_hint": "Sj",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "da5b622ee65729b824e1b1118a4665dd51a9c697940a03a392dabf73dbfec457",
+      "page_index": 0,
+      "source_kind": "raster_region",
+      "region": [
+        0.92078071,
+        0.6640625,
+        0.94603904,
+        0.6796875
+      ],
+      "base_region": [
+        0.92078071,
+        0.6640625,
+        0.94603904,
+        0.6796875
+      ],
+      "crop_region": [
+        0.92078071,
+        0.6640625,
+        0.94603904,
+        0.6796875
+      ],
+      "machine_text_hint": "Xo",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "5de9f0becaaeff693ed237c74c1189036afca72818350bd86164683b36d679c3",
+      "page_index": 0,
+      "source_kind": "raster_region",
+      "region": [
+        0.61768083,
+        0.67285156,
+        0.6727899,
+        0.71582031
+      ],
+      "base_region": [
+        0.61768083,
+        0.67285156,
+        0.6727899,
+        0.71582031
+      ],
+      "crop_region": [
+        0.61768083,
+        0.67285156,
+        0.6727899,
+        0.71582031
+      ],
+      "machine_text_hint": "ey",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "9843927cdb0e61879dc5ac0f513c00ea764adacc47794b9247eff8980656ca42",
+      "page_index": 0,
+      "source_kind": "raster_region",
+      "region": [
+        0.56601607,
+        0.69238281,
+        0.60045924,
+        0.70605469
+      ],
+      "base_region": [
+        0.56601607,
+        0.69238281,
+        0.60045924,
+        0.70605469
+      ],
+      "crop_region": [
+        0.56601607,
+        0.69238281,
+        0.60045924,
+        0.70605469
+      ],
+      "machine_text_hint": "c10",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "72d3d9faaef4125bb204c6cfb4ac31960614de603010ac9c242a07eab9250f0f",
+      "page_index": 0,
+      "source_kind": "raster_region",
+      "region": [
+        0.37428243,
+        0.72460938,
+        0.49942595,
+        0.76074219
+      ],
+      "base_region": [
+        0.37428243,
+        0.72460938,
+        0.49942595,
+        0.76074219
+      ],
+      "crop_region": [
+        0.37428243,
+        0.72460938,
+        0.49942595,
+        0.76074219
+      ],
+      "machine_text_hint": "<LVZ ZZ]",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "e43837c76b317b93f8ac4901d9bbcd3ccb3a54b6fd749dca2c16fdacd62731f1",
+      "page_index": 0,
+      "source_kind": "raster_region",
+      "region": [
+        0.20091848,
+        0.77246094,
+        0.24225029,
+        0.81738281
+      ],
+      "base_region": [
+        0.20091848,
+        0.77246094,
+        0.24225029,
+        0.81738281
+      ],
+      "crop_region": [
+        0.20091848,
+        0.77246094,
+        0.24225029,
+        0.81738281
+      ],
+      "machine_text_hint": "Y",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "32d5995b41ab899189d00ca1fe591aa9f0dbb36bc00b022248a9dce1e4d98eff",
+      "page_index": 0,
+      "source_kind": "raster_region",
+      "region": [
+        0.9380023,
+        0.80175781,
+        0.98163031,
+        0.8203125
+      ],
+      "base_region": [
+        0.9380023,
+        0.80175781,
+        0.98163031,
+        0.8203125
+      ],
+      "crop_region": [
+        0.9380023,
+        0.80175781,
+        0.98163031,
+        0.8203125
+      ],
+      "machine_text_hint": "gic o/o",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "090241b85c3a80b49ae61a056fab3cc013332b25a0e9ed62b36da498356d2575",
+      "page_index": 0,
+      "source_kind": "raster_region",
+      "region": [
+        0.23076923,
+        0.80859375,
+        0.28932262,
+        0.85351562
+      ],
+      "base_region": [
+        0.23076923,
+        0.80859375,
+        0.28932262,
+        0.85351562
+      ],
+      "crop_region": [
+        0.23076923,
+        0.80859375,
+        0.28932262,
+        0.85351562
+      ],
+      "machine_text_hint": "x",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "7faa4dd0fc0ccec2ef47df7f2cafe9f5a434e4c707f19b2d8e08baa5700f4060",
+      "page_index": 0,
+      "source_kind": "raster_region",
+      "region": [
+        0.72904707,
+        0.81738281,
+        0.98163031,
+        0.87304688
+      ],
+      "base_region": [
+        0.72904707,
+        0.81738281,
+        0.98163031,
+        0.87304688
+      ],
+      "crop_region": [
+        0.72904707,
+        0.81738281,
+        0.98163031,
+        0.87304688
+      ],
+      "machine_text_hint": "WY Nm",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "baee82e11e98e5784cd63d5cdca092b18aaf03da7889403105f16296f14991c4",
+      "page_index": 0,
+      "source_kind": "raster_region",
+      "region": [
+        0.30769231,
+        0.84570312,
+        0.49942595,
+        0.90625
+      ],
+      "base_region": [
+        0.30769231,
+        0.84570312,
+        0.49942595,
+        0.90625
+      ],
+      "crop_region": [
+        0.30769231,
+        0.84570312,
+        0.49942595,
+        0.90625
+      ],
+      "machine_text_hint": "Qrra77 “J",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "105c04e64ba09bb46233d01d214a9cd88a5b61212dc3a072e102fdd72f741c03",
+      "page_index": 0,
+      "source_kind": "raster_region",
+      "region": [
+        0.47646383,
+        0.92382812,
+        0.49598163,
+        0.9375
+      ],
+      "base_region": [
+        0.47646383,
+        0.92382812,
+        0.49598163,
+        0.9375
+      ],
+      "crop_region": [
+        0.47646383,
+        0.92382812,
+        0.49598163,
+        0.9375
+      ],
+      "machine_text_hint": "50",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "541d9498d286047f8f3864b7468fdefbb6d3401eaa3563b17dda60bd61d40c40",
+      "page_index": 0,
+      "source_kind": "raster_region",
+      "region": [
+        0.78071183,
+        0.93457031,
+        0.81171068,
+        0.94726562
+      ],
+      "base_region": [
+        0.78071183,
+        0.93457031,
+        0.81171068,
+        0.94726562
+      ],
+      "crop_region": [
+        0.78071183,
+        0.93457031,
+        0.81171068,
+        0.94726562
+      ],
+      "machine_text_hint": "260",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "2ca25ad2c72b51bd5a76fc554c9cfcd04cd56ddd342e31076b31f8f04fea2cae",
+      "page_index": 0,
+      "source_kind": "raster_region",
+      "region": [
+        0.78071183,
+        0.96484375,
+        0.81171068,
+        0.97753906
+      ],
+      "base_region": [
+        0.78071183,
+        0.96484375,
+        0.81171068,
+        0.97753906
+      ],
+      "crop_region": [
+        0.78071183,
+        0.96484375,
+        0.81171068,
+        0.97753906
+      ],
+      "machine_text_hint": "360",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "5e90bd2179f11cd1eefd4a95ca20e59cc0a91122afb7587aee77527c72758598",
+      "page_index": 0,
+      "source_kind": "raster_region",
+      "region": [
+        0.44202067,
+        0.96679688,
+        0.47187141,
+        0.97949219
+      ],
+      "base_region": [
+        0.44202067,
+        0.96679688,
+        0.47187141,
+        0.97949219
+      ],
+      "crop_region": [
+        0.44202067,
+        0.96679688,
+        0.47187141,
+        0.97949219
+      ],
+      "machine_text_hint": "150",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    }
+  ],
+  "instructions": "Her callout için: `transcribe` (metni yaz), `ignore`/`restore` (callout değil), `confirm_target` (öneriyi onayla), `select_target` (kendi seçimin). `base_revision` değiştiyse içe aktarma reddedilir."
+}

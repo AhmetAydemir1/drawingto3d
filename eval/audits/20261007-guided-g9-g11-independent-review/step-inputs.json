@@ -1,0 +1,32 @@
+[
+  {
+    "id": "plate-pocket-vector",
+    "produced": "/Users/aydemir/Desktop/drawingto3d/eval/audits/20261007-guided-g11/cases/plate-pocket-vector/part.step",
+    "reference": "/Users/aydemir/Desktop/drawingto3d/examples/pdf with steps/5/plate with a pocket.STEP"
+  },
+  {
+    "id": "drawing-2-vector",
+    "produced": "/Users/aydemir/Desktop/drawingto3d/eval/audits/20261007-guided-g11/cases/drawing-2-vector/part.step",
+    "reference": "/Users/aydemir/Desktop/drawingto3d/examples/pdf with steps/2/Part-2.STEP"
+  },
+  {
+    "id": "plastic-enclosure-vector",
+    "produced": "/Users/aydemir/Desktop/drawingto3d/eval/audits/20261007-guided-g11/cases/plastic-enclosure-vector/part.step",
+    "reference": "/Users/aydemir/Desktop/drawingto3d/examples/pdf with steps/6/plastic enclosue.STEP"
+  },
+  {
+    "id": "exercise-12-vector",
+    "produced": "/Users/aydemir/Desktop/drawingto3d/eval/audits/20261007-guided-g11/cases/exercise-12-vector/part.step",
+    "reference": "/Users/aydemir/Desktop/drawingto3d/examples/pdf with steps/10/Exercise 12.STEP"
+  },
+  {
+    "id": "exercise-51-raster",
+    "produced": "/Users/aydemir/Desktop/drawingto3d/eval/audits/20261007-guided-g11/cases/exercise-51-raster/part.step",
+    "reference": "/Users/aydemir/Desktop/drawingto3d/examples/pdf with steps/1/Exercise 51.STEP"
+  },
+  {
+    "id": "flange-raster",
+    "produced": "/Users/aydemir/Desktop/drawingto3d/eval/audits/20261007-guided-g11/cases/flange-raster/part.step",
+    "reference": "/Users/aydemir/Desktop/drawingto3d/examples/pdf with steps/8/Flange.STEP"
+  }
+]

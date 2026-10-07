@@ -1,0 +1,490 @@
+{
+  "ready": true,
+  "questions": [],
+  "issues": [],
+  "categories": {},
+  "excluded": [
+    {
+      "callout_id": "9efda6a6c10a0c78e56babe2ac0ca697e6eb25409d0ea0b18b3e18a6b28e66bf",
+      "reason": "ignored"
+    },
+    {
+      "callout_id": "f21a1936dc912f2a18444837f310290e0d4d82efc53983bd6a915705bafb30d3",
+      "reason": "ignored"
+    },
+    {
+      "callout_id": "5bc00d4a5e8e329d0f952a2a056c2bcafd84b373b6b174f2d3fd1a1e20dda3e5",
+      "reason": "ignored"
+    },
+    {
+      "callout_id": "45ef7b333d952ea13c9019e23ca9391c8fe2da514b65e15c52574e6a0ceaae07",
+      "reason": "ignored"
+    },
+    {
+      "callout_id": "bbc85c7bf92cb5db58acc669e90e443adc0d43a1425b317b928de323d716424e",
+      "reason": "ignored"
+    },
+    {
+      "callout_id": "b633beb2ddfdc1e23e62d7bd267987ff61ed1a6a7b53591442021fee4f8516c6",
+      "reason": "ignored"
+    },
+    {
+      "callout_id": "45f6f918416661c11ef56df62c123c52dbe8ac8bffc6fa8a86fb6ef86dd88335",
+      "reason": "ignored"
+    },
+    {
+      "callout_id": "30e5ad9e4eb97f642aed993b0b5c5f20cbc5cb4705700922306126877240800a",
+      "reason": "ignored"
+    },
+    {
+      "callout_id": "142d062f2a81e5545b20aecd20a53958ba3e9403d6e1b8d7e4d1f73aa7918824",
+      "reason": "ignored"
+    },
+    {
+      "callout_id": "645afb6dbbae53f672b5e00f6460df2cadf181844a61e7a7176b7b117e9bb763",
+      "reason": "ignored"
+    },
+    {
+      "callout_id": "63423c4efbd97bcd3f4e7b8503d74d137e298eb198ef8bb7b932179db13054ae",
+      "reason": "ignored"
+    },
+    {
+      "callout_id": "3974ef388912f1d5eb3aa2a555231e9787d519b19bcdd798c4831f9b0d98b6c6",
+      "reason": "ignored"
+    },
+    {
+      "callout_id": "766fcd3952f1fb871f10ad315c88605a037610adcf869b7618076e0ea2343662",
+      "reason": "ignored"
+    },
+    {
+      "callout_id": "48d89a9a0dc7263a338a365cd562853f9a950cecad90fffbf2aedf67d32d8f77",
+      "reason": "ignored"
+    },
+    {
+      "callout_id": "53fd93b6f6fde0c9cdfbf19d2cfc8d7601f1d49beed087f3fbc425894e4eb6b8",
+      "reason": "ignored"
+    },
+    {
+      "callout_id": "ee606daffad513d765cf764b350a6bb7f3899a19505365bc680a8bea6552c06a",
+      "reason": "ignored"
+    },
+    {
+      "callout_id": "cef98884034bb539222c31db2537774bf69aa48eda0804c744f81485a9cedd2e",
+      "reason": "ignored"
+    },
+    {
+      "callout_id": "2c4c332fc0a589bfe6d707a4381da583e233b5c36194b620677305a65b5676c2",
+      "reason": "ignored"
+    },
+    {
+      "callout_id": "825ece63fefcd60432dac9b6dfaa7fc51691bc422891f50eb45d59289d9b3eb8",
+      "reason": "ignored"
+    },
+    {
+      "callout_id": "587c8011e2fac487cabde6d60334ae796de778a41493980434c3670b9677c9d7",
+      "reason": "ignored"
+    },
+    {
+      "callout_id": "378e79e90d6afc1e9ba1392dc25ed10fbb03e375756a4bf48e22116027609496",
+      "reason": "ignored"
+    },
+    {
+      "callout_id": "5c6afe02297e1862d81bfe2737baab28dd2bc1b59ace969bac6104ecbac4a611",
+      "reason": "ignored"
+    },
+    {
+      "callout_id": "a5b585509e307858496dfbdc4298343b8db2c451239cd7a4d89bb8d00211cbe6",
+      "reason": "ignored"
+    },
+    {
+      "callout_id": "e68c3c9a7b1196b2984623d39f8563a195f0689e5152572ecccf49ce488276d3",
+      "reason": "ignored"
+    },
+    {
+      "callout_id": "c1c95917dae660628e7a352da8fa14618f3fb417a60957a9b326ddfef40e3b0c",
+      "reason": "ignored"
+    },
+    {
+      "callout_id": "3e8b3896096cd971a4a810d75850815f8957bc5d7a4a2ca338cf382242669c75",
+      "reason": "ignored"
+    }
+  ],
+  "compiled": {
+    "compiled_holes": 0,
+    "compiled_bindings": 0,
+    "unsupported": 0,
+    "conflicts": 0,
+    "excluded": 26,
+    "callouts": 26
+  },
+  "rows": [
+    {
+      "callout_id": "9efda6a6c10a0c78e56babe2ac0ca697e6eb25409d0ea0b18b3e18a6b28e66bf",
+      "raw_text": null,
+      "parser_version": null,
+      "semantic": null,
+      "target_kind": null,
+      "target_ids": [],
+      "geometry_key": "56753becc0660661bb7de7da3f03e2d00b26901704679f58ae706e97fc971453",
+      "geometry_version": 3,
+      "status": "excluded",
+      "reason": "ignored",
+      "compiled_decision": null,
+      "generated_features": []
+    },
+    {
+      "callout_id": "f21a1936dc912f2a18444837f310290e0d4d82efc53983bd6a915705bafb30d3",
+      "raw_text": null,
+      "parser_version": null,
+      "semantic": null,
+      "target_kind": null,
+      "target_ids": [],
+      "geometry_key": "56753becc0660661bb7de7da3f03e2d00b26901704679f58ae706e97fc971453",
+      "geometry_version": 3,
+      "status": "excluded",
+      "reason": "ignored",
+      "compiled_decision": null,
+      "generated_features": []
+    },
+    {
+      "callout_id": "5bc00d4a5e8e329d0f952a2a056c2bcafd84b373b6b174f2d3fd1a1e20dda3e5",
+      "raw_text": null,
+      "parser_version": null,
+      "semantic": null,
+      "target_kind": null,
+      "target_ids": [],
+      "geometry_key": "56753becc0660661bb7de7da3f03e2d00b26901704679f58ae706e97fc971453",
+      "geometry_version": 3,
+      "status": "excluded",
+      "reason": "ignored",
+      "compiled_decision": null,
+      "generated_features": []
+    },
+    {
+      "callout_id": "45ef7b333d952ea13c9019e23ca9391c8fe2da514b65e15c52574e6a0ceaae07",
+      "raw_text": null,
+      "parser_version": null,
+      "semantic": null,
+      "target_kind": null,
+      "target_ids": [],
+      "geometry_key": "56753becc0660661bb7de7da3f03e2d00b26901704679f58ae706e97fc971453",
+      "geometry_version": 3,
+      "status": "excluded",
+      "reason": "ignored",
+      "compiled_decision": null,
+      "generated_features": []
+    },
+    {
+      "callout_id": "bbc85c7bf92cb5db58acc669e90e443adc0d43a1425b317b928de323d716424e",
+      "raw_text": null,
+      "parser_version": null,
+      "semantic": null,
+      "target_kind": null,
+      "target_ids": [],
+      "geometry_key": "56753becc0660661bb7de7da3f03e2d00b26901704679f58ae706e97fc971453",
+      "geometry_version": 3,
+      "status": "excluded",
+      "reason": "ignored",
+      "compiled_decision": null,
+      "generated_features": []
+    },
+    {
+      "callout_id": "b633beb2ddfdc1e23e62d7bd267987ff61ed1a6a7b53591442021fee4f8516c6",
+      "raw_text": null,
+      "parser_version": null,
+      "semantic": null,
+      "target_kind": null,
+      "target_ids": [],
+      "geometry_key": "56753becc0660661bb7de7da3f03e2d00b26901704679f58ae706e97fc971453",
+      "geometry_version": 3,
+      "status": "excluded",
+      "reason": "ignored",
+      "compiled_decision": null,
+      "generated_features": []
+    },
+    {
+      "callout_id": "45f6f918416661c11ef56df62c123c52dbe8ac8bffc6fa8a86fb6ef86dd88335",
+      "raw_text": null,
+      "parser_version": null,
+      "semantic": null,
+      "target_kind": null,
+      "target_ids": [],
+      "geometry_key": "56753becc0660661bb7de7da3f03e2d00b26901704679f58ae706e97fc971453",
+      "geometry_version": 3,
+      "status": "excluded",
+      "reason": "ignored",
+      "compiled_decision": null,
+      "generated_features": []
+    },
+    {
+      "callout_id": "30e5ad9e4eb97f642aed993b0b5c5f20cbc5cb4705700922306126877240800a",
+      "raw_text": null,
+      "parser_version": null,
+      "semantic": null,
+      "target_kind": null,
+      "target_ids": [],
+      "geometry_key": "56753becc0660661bb7de7da3f03e2d00b26901704679f58ae706e97fc971453",
+      "geometry_version": 3,
+      "status": "excluded",
+      "reason": "ignored",
+      "compiled_decision": null,
+      "generated_features": []
+    },
+    {
+      "callout_id": "142d062f2a81e5545b20aecd20a53958ba3e9403d6e1b8d7e4d1f73aa7918824",
+      "raw_text": null,
+      "parser_version": null,
+      "semantic": null,
+      "target_kind": null,
+      "target_ids": [],
+      "geometry_key": "56753becc0660661bb7de7da3f03e2d00b26901704679f58ae706e97fc971453",
+      "geometry_version": 3,
+      "status": "excluded",
+      "reason": "ignored",
+      "compiled_decision": null,
+      "generated_features": []
+    },
+    {
+      "callout_id": "645afb6dbbae53f672b5e00f6460df2cadf181844a61e7a7176b7b117e9bb763",
+      "raw_text": null,
+      "parser_version": null,
+      "semantic": null,
+      "target_kind": null,
+      "target_ids": [],
+      "geometry_key": "56753becc0660661bb7de7da3f03e2d00b26901704679f58ae706e97fc971453",
+      "geometry_version": 3,
+      "status": "excluded",
+      "reason": "ignored",
+      "compiled_decision": null,
+      "generated_features": []
+    },
+    {
+      "callout_id": "63423c4efbd97bcd3f4e7b8503d74d137e298eb198ef8bb7b932179db13054ae",
+      "raw_text": null,
+      "parser_version": null,
+      "semantic": null,
+      "target_kind": null,
+      "target_ids": [],
+      "geometry_key": "56753becc0660661bb7de7da3f03e2d00b26901704679f58ae706e97fc971453",
+      "geometry_version": 3,
+      "status": "excluded",
+      "reason": "ignored",
+      "compiled_decision": null,
+      "generated_features": []
+    },
+    {
+      "callout_id": "3974ef388912f1d5eb3aa2a555231e9787d519b19bcdd798c4831f9b0d98b6c6",
+      "raw_text": null,
+      "parser_version": null,
+      "semantic": null,
+      "target_kind": null,
+      "target_ids": [],
+      "geometry_key": "56753becc0660661bb7de7da3f03e2d00b26901704679f58ae706e97fc971453",
+      "geometry_version": 3,
+      "status": "excluded",
+      "reason": "ignored",
+      "compiled_decision": null,
+      "generated_features": []
+    },
+    {
+      "callout_id": "766fcd3952f1fb871f10ad315c88605a037610adcf869b7618076e0ea2343662",
+      "raw_text": null,
+      "parser_version": null,
+      "semantic": null,
+      "target_kind": null,
+      "target_ids": [],
+      "geometry_key": "56753becc0660661bb7de7da3f03e2d00b26901704679f58ae706e97fc971453",
+      "geometry_version": 3,
+      "status": "excluded",
+      "reason": "ignored",
+      "compiled_decision": null,
+      "generated_features": []
+    },
+    {
+      "callout_id": "48d89a9a0dc7263a338a365cd562853f9a950cecad90fffbf2aedf67d32d8f77",
+      "raw_text": null,
+      "parser_version": null,
+      "semantic": null,
+      "target_kind": null,
+      "target_ids": [],
+      "geometry_key": "56753becc0660661bb7de7da3f03e2d00b26901704679f58ae706e97fc971453",
+      "geometry_version": 3,
+      "status": "excluded",
+      "reason": "ignored",
+      "compiled_decision": null,
+      "generated_features": []
+    },
+    {
+      "callout_id": "53fd93b6f6fde0c9cdfbf19d2cfc8d7601f1d49beed087f3fbc425894e4eb6b8",
+      "raw_text": null,
+      "parser_version": null,
+      "semantic": null,
+      "target_kind": null,
+      "target_ids": [],
+      "geometry_key": "56753becc0660661bb7de7da3f03e2d00b26901704679f58ae706e97fc971453",
+      "geometry_version": 3,
+      "status": "excluded",
+      "reason": "ignored",
+      "compiled_decision": null,
+      "generated_features": []
+    },
+    {
+      "callout_id": "ee606daffad513d765cf764b350a6bb7f3899a19505365bc680a8bea6552c06a",
+      "raw_text": null,
+      "parser_version": null,
+      "semantic": null,
+      "target_kind": null,
+      "target_ids": [],
+      "geometry_key": "56753becc0660661bb7de7da3f03e2d00b26901704679f58ae706e97fc971453",
+      "geometry_version": 3,
+      "status": "excluded",
+      "reason": "ignored",
+      "compiled_decision": null,
+      "generated_features": []
+    },
+    {
+      "callout_id": "cef98884034bb539222c31db2537774bf69aa48eda0804c744f81485a9cedd2e",
+      "raw_text": null,
+      "parser_version": null,
+      "semantic": null,
+      "target_kind": null,
+      "target_ids": [],
+      "geometry_key": "56753becc0660661bb7de7da3f03e2d00b26901704679f58ae706e97fc971453",
+      "geometry_version": 3,
+      "status": "excluded",
+      "reason": "ignored",
+      "compiled_decision": null,
+      "generated_features": []
+    },
+    {
+      "callout_id": "2c4c332fc0a589bfe6d707a4381da583e233b5c36194b620677305a65b5676c2",
+      "raw_text": null,
+      "parser_version": null,
+      "semantic": null,
+      "target_kind": null,
+      "target_ids": [],
+      "geometry_key": "56753becc0660661bb7de7da3f03e2d00b26901704679f58ae706e97fc971453",
+      "geometry_version": 3,
+      "status": "excluded",
+      "reason": "ignored",
+      "compiled_decision": null,
+      "generated_features": []
+    },
+    {
+      "callout_id": "825ece63fefcd60432dac9b6dfaa7fc51691bc422891f50eb45d59289d9b3eb8",
+      "raw_text": null,
+      "parser_version": null,
+      "semantic": null,
+      "target_kind": null,
+      "target_ids": [],
+      "geometry_key": "56753becc0660661bb7de7da3f03e2d00b26901704679f58ae706e97fc971453",
+      "geometry_version": 3,
+      "status": "excluded",
+      "reason": "ignored",
+      "compiled_decision": null,
+      "generated_features": []
+    },
+    {
+      "callout_id": "587c8011e2fac487cabde6d60334ae796de778a41493980434c3670b9677c9d7",
+      "raw_text": null,
+      "parser_version": null,
+      "semantic": null,
+      "target_kind": null,
+      "target_ids": [],
+      "geometry_key": "56753becc0660661bb7de7da3f03e2d00b26901704679f58ae706e97fc971453",
+      "geometry_version": 3,
+      "status": "excluded",
+      "reason": "ignored",
+      "compiled_decision": null,
+      "generated_features": []
+    },
+    {
+      "callout_id": "378e79e90d6afc1e9ba1392dc25ed10fbb03e375756a4bf48e22116027609496",
+      "raw_text": null,
+      "parser_version": null,
+      "semantic": null,
+      "target_kind": null,
+      "target_ids": [],
+      "geometry_key": "56753becc0660661bb7de7da3f03e2d00b26901704679f58ae706e97fc971453",
+      "geometry_version": 3,
+      "status": "excluded",
+      "reason": "ignored",
+      "compiled_decision": null,
+      "generated_features": []
+    },
+    {
+      "callout_id": "5c6afe02297e1862d81bfe2737baab28dd2bc1b59ace969bac6104ecbac4a611",
+      "raw_text": null,
+      "parser_version": null,
+      "semantic": null,
+      "target_kind": null,
+      "target_ids": [],
+      "geometry_key": "56753becc0660661bb7de7da3f03e2d00b26901704679f58ae706e97fc971453",
+      "geometry_version": 3,
+      "status": "excluded",
+      "reason": "ignored",
+      "compiled_decision": null,
+      "generated_features": []
+    },
+    {
+      "callout_id": "a5b585509e307858496dfbdc4298343b8db2c451239cd7a4d89bb8d00211cbe6",
+      "raw_text": null,
+      "parser_version": null,
+      "semantic": null,
+      "target_kind": null,
+      "target_ids": [],
+      "geometry_key": "56753becc0660661bb7de7da3f03e2d00b26901704679f58ae706e97fc971453",
+      "geometry_version": 3,
+      "status": "excluded",
+      "reason": "ignored",
+      "compiled_decision": null,
+      "generated_features": []
+    },
+    {
+      "callout_id": "e68c3c9a7b1196b2984623d39f8563a195f0689e5152572ecccf49ce488276d3",
+      "raw_text": null,
+      "parser_version": null,
+      "semantic": null,
+      "target_kind": null,
+      "target_ids": [],
+      "geometry_key": "56753becc0660661bb7de7da3f03e2d00b26901704679f58ae706e97fc971453",
+      "geometry_version": 3,
+      "status": "excluded",
+      "reason": "ignored",
+      "compiled_decision": null,
+      "generated_features": []
+    },
+    {
+      "callout_id": "c1c95917dae660628e7a352da8fa14618f3fb417a60957a9b326ddfef40e3b0c",
+      "raw_text": null,
+      "parser_version": null,
+      "semantic": null,
+      "target_kind": null,
+      "target_ids": [],
+      "geometry_key": "56753becc0660661bb7de7da3f03e2d00b26901704679f58ae706e97fc971453",
+      "geometry_version": 3,
+      "status": "excluded",
+      "reason": "ignored",
+      "compiled_decision": null,
+      "generated_features": []
+    },
+    {
+      "callout_id": "3e8b3896096cd971a4a810d75850815f8957bc5d7a4a2ca338cf382242669c75",
+      "raw_text": null,
+      "parser_version": null,
+      "semantic": null,
+      "target_kind": null,
+      "target_ids": [],
+      "geometry_key": "56753becc0660661bb7de7da3f03e2d00b26901704679f58ae706e97fc971453",
+      "geometry_version": 3,
+      "status": "excluded",
+      "reason": "ignored",
+      "compiled_decision": null,
+      "generated_features": []
+    }
+  ],
+  "geometry_key": "56753becc0660661bb7de7da3f03e2d00b26901704679f58ae706e97fc971453",
+  "geometry_version": 3,
+  "questions_text": [],
+  "sheet_questions": []
+}

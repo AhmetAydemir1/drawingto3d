@@ -215,19 +215,19 @@ const CALLOUT_NOTE={add_region:'Yeni alan kaydedildi.',edit_region:'Alan düzelt
  transcribe:'Metin kaydedildi; onaylanan hedefle birlikte derlemeye girer.'};
 async function refreshState(){try{const response=await fetch('/api/guided/'+state.token);const data=await response.json();if(response.ok)state=data;}catch(e){/* durum alınamadı: mevcut state olduğu gibi kalır */}}
 async function command(action,payload,after){busy(true);const known=new Set((state.effective_callouts||[]).map(row=>row.id));
- const previous=selectedCallout;let advance=null;
+ const previous=selectedCallout,previousOrder=calloutList().map(row=>row.id);let advance=null;
  try{state=await api('/api/guided/callout',{token:state.token,revision:state.revision,action,payload});
   if(action==='add_region'){const fresh=(state.effective_callouts||[]).find(row=>!known.has(row.id));if(fresh)selectedCallout=fresh.id;}
   if(action==='transcribe')drafts.delete(payload.callout_id);   // karar sunucuya yazıldı: taslak artık gereksiz
   status(CALLOUT_NOTE[action]||'Karar kaydedildi.');
   if(after)after();
   // UX-01 §6.4: oto-ilerleme yalnız başarılı karardan sonra kurulur; hata/çakışma/iptal kurmaz.
-  if(['transcribe','set_ignored','set_unbindable'].includes(action))advance=previous;}
+  if(['transcribe','set_ignored','set_unbindable'].includes(action))advance={id:previous,order:previousOrder};}
  catch(e){status(e.message,true);
   // §7.3: çakışmada sessiz last-write-wins yok — hata görünür, yazılan taslak durur, güncel durum alınır.
   if(/oturum değişti/.test(e.message)){await refreshState();status(`${e.message} — yazdığınız metin duruyor; güncel durum alındı, kararı tekrar kaydedebilirsiniz.`,true);}}
  finally{busy(false);}
- if(advance)advanceAfterDecision(advance);}
+ if(advance)advanceAfterDecision(advance.id,advance.order);}
 function distSegment(p,a,b){const x=b[0]-a[0],y=b[1]-a[1],t=Math.max(0,Math.min(1,((p[0]-a[0])*x+(p[1]-a[1])*y)/(x*x+y*y||1)));return Math.hypot(p[0]-a[0]-t*x,p[1]-a[1]-t*y);}
 function holeAt(p,displayed){const far=c=>Math.hypot(p[0]-c.center[0],p[1]-c.center[1]);
  const rim=state.options.circles.map(c=>[Math.abs(far(c)-c.radius),c]).sort((a,b)=>a[0]-b[0])[0];
@@ -360,13 +360,21 @@ function unresolvedRows(){return calloutList().filter(row=>!rowResolved(row.id))
 function goToCallout(id){selectedCallout=id;render();
  const li=[...document.querySelectorAll('#callout-list li')].find(item=>item.classList.contains('selected'));
  if(li)li.scrollIntoView({block:'center'});}
-function advanceAfterDecision(previousId){if(!previousId||selectedCallout!==previousId)return;
+function advanceAfterDecision(previousId,order){
+ // G11R-03 (bağımsız inceleme): karar satırı görünür listeden düşünce (ör. “Bu bir ölçü/not değil”
+ // ve “İhmal edilenleri göster” kapalı) yeniden çizim seçimi temizler; bu kullanıcının taşınması
+ // değildir — sıradaki açık alan, kararın KENDİ konumundan (karar öncesi görünür sıra) sürdürülür.
+ // Kullanıcı bu arada başka satıra geçtiyse ilerlemeyiz.
+ if(!previousId)return;
+ if(selectedCallout&&selectedCallout!==previousId)return;
  // §6.4: ilerleme yalnız satır gerçekten çözülmüş hale geldiyse — çözülmemiş satırdan zıplanmaz.
  if(!rowResolved(previousId))return;
  const rows=unresolvedRows().filter(row=>row.id!==previousId);if(!rows.length)return;
- const list=calloutList(),start=list.findIndex(row=>row.id===previousId);
- const pick=[...list.slice(start+1),...list.slice(0,start+1)].find(row=>rows.some(item=>item.id===row.id));
- if(pick)goToCallout(pick.id);}
+ const base=order&&order.length?order:calloutList().map(row=>row.id);
+ const start=base.indexOf(previousId);
+ const seq=start<0?base:[...base.slice(start+1),...base.slice(0,start+1)];
+ const pick=seq.find(id=>rows.some(row=>row.id===id));
+ if(pick)goToCallout(pick);}
 $('callout-next').onclick=()=>{const rows=unresolvedRows();
  if(!rows.length)return status('Tüm ölçü/not kontrolleri tamamlandı.');
  const index=rows.findIndex(row=>row.id===selectedCallout);goToCallout(rows[(index+1)%rows.length].id);};

@@ -1,0 +1,482 @@
+........................................................................ [ 14%]
+........................................................................ [ 29%]
+........................................................................ [ 43%]
+......................................F................................. [ 58%]
+.......EE..........EEEEEEEEEE........................................... [ 72%]
+........................................................................ [ 87%]
+................................................................         [100%]
+==================================== ERRORS ====================================
+_ ERROR at setup of test_the_proposal_readiness_and_export_endpoints_answer_over_http _
+
+store = <drawingto3d.guided.GuidedStore object at 0x10f2aab40>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10fb11550>
+
+    @pytest.fixture
+    def live(store, monkeypatch):
+        monkeypatch.setattr(app, "GUIDED", store)
+>       server = ThreadingHTTPServer(("127.0.0.1", 0), app.Handler)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_guided_callout_chain.py:304: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socketserver.py:457: in __init__
+    self.server_bind()
+/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/http/server.py:136: in server_bind
+    socketserver.TCPServer.server_bind(self)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <http.server.ThreadingHTTPServer object at 0x10f925f10>
+
+    def server_bind(self):
+        """Called by constructor to bind the socket.
+    
+        May be overridden.
+    
+        """
+        if self.allow_reuse_address and hasattr(socket, "SO_REUSEADDR"):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        if self.allow_reuse_port and hasattr(socket, "SO_REUSEPORT"):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+>       self.socket.bind(self.server_address)
+E       PermissionError: [Errno 1] Operation not permitted
+
+/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socketserver.py:473: PermissionError
+_ ERROR at setup of test_an_import_over_http_is_refused_whole_when_it_is_wrong _
+
+store = <drawingto3d.guided.GuidedStore object at 0x10fb10a40>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10f9274d0>
+
+    @pytest.fixture
+    def live(store, monkeypatch):
+        monkeypatch.setattr(app, "GUIDED", store)
+>       server = ThreadingHTTPServer(("127.0.0.1", 0), app.Handler)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_guided_callout_chain.py:304: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socketserver.py:457: in __init__
+    self.server_bind()
+/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/http/server.py:136: in server_bind
+    socketserver.TCPServer.server_bind(self)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <http.server.ThreadingHTTPServer object at 0x10f927a10>
+
+    def server_bind(self):
+        """Called by constructor to bind the socket.
+    
+        May be overridden.
+    
+        """
+        if self.allow_reuse_address and hasattr(socket, "SO_REUSEADDR"):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        if self.allow_reuse_port and hasattr(socket, "SO_REUSEPORT"):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+>       self.socket.bind(self.server_address)
+E       PermissionError: [Errno 1] Operation not permitted
+
+/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socketserver.py:473: PermissionError
+_______ ERROR at setup of test_http_save_cannot_bypass_the_callout_rules _______
+
+store = <drawingto3d.guided.GuidedStore object at 0x10f9249e0>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10fb10710>
+
+    @pytest.fixture
+    def live(store, monkeypatch):
+        monkeypatch.setattr(app, "GUIDED", store)
+>       server = ThreadingHTTPServer(("127.0.0.1", 0), app.Handler)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_guided_callout_http.py:29: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socketserver.py:457: in __init__
+    self.server_bind()
+/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/http/server.py:136: in server_bind
+    socketserver.TCPServer.server_bind(self)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <http.server.ThreadingHTTPServer object at 0x10f45b9b0>
+
+    def server_bind(self):
+        """Called by constructor to bind the socket.
+    
+        May be overridden.
+    
+        """
+        if self.allow_reuse_address and hasattr(socket, "SO_REUSEADDR"):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        if self.allow_reuse_port and hasattr(socket, "SO_REUSEPORT"):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+>       self.socket.bind(self.server_address)
+E       PermissionError: [Errno 1] Operation not permitted
+
+/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socketserver.py:473: PermissionError
+__ ERROR at setup of test_http_save_cannot_confirm_a_target_on_a_stale_region __
+
+store = <drawingto3d.guided.GuidedStore object at 0x10f924e00>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10f3eed80>
+
+    @pytest.fixture
+    def live(store, monkeypatch):
+        monkeypatch.setattr(app, "GUIDED", store)
+>       server = ThreadingHTTPServer(("127.0.0.1", 0), app.Handler)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_guided_callout_http.py:29: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socketserver.py:457: in __init__
+    self.server_bind()
+/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/http/server.py:136: in server_bind
+    socketserver.TCPServer.server_bind(self)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <http.server.ThreadingHTTPServer object at 0x10f3ef500>
+
+    def server_bind(self):
+        """Called by constructor to bind the socket.
+    
+        May be overridden.
+    
+        """
+        if self.allow_reuse_address and hasattr(socket, "SO_REUSEADDR"):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        if self.allow_reuse_port and hasattr(socket, "SO_REUSEPORT"):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+>       self.socket.bind(self.server_address)
+E       PermissionError: [Errno 1] Operation not permitted
+
+/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socketserver.py:473: PermissionError
+_ ERROR at setup of test_ux01_bulk_ignore_is_one_revision_one_history_one_undo _
+
+store = <drawingto3d.guided.GuidedStore object at 0x10fd10170>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10f926360>
+
+    @pytest.fixture
+    def live(store, monkeypatch):
+        monkeypatch.setattr(app, "GUIDED", store)
+>       server = ThreadingHTTPServer(("127.0.0.1", 0), app.Handler)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_guided_callout_http.py:29: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socketserver.py:457: in __init__
+    self.server_bind()
+/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/http/server.py:136: in server_bind
+    socketserver.TCPServer.server_bind(self)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <http.server.ThreadingHTTPServer object at 0x10f927a40>
+
+    def server_bind(self):
+        """Called by constructor to bind the socket.
+    
+        May be overridden.
+    
+        """
+        if self.allow_reuse_address and hasattr(socket, "SO_REUSEADDR"):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        if self.allow_reuse_port and hasattr(socket, "SO_REUSEPORT"):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+>       self.socket.bind(self.server_address)
+E       PermissionError: [Errno 1] Operation not permitted
+
+/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socketserver.py:473: PermissionError
+_______ ERROR at setup of test_ux01_bulk_ignore_rejects_unknown_id_whole _______
+
+store = <drawingto3d.guided.GuidedStore object at 0x10fb11ca0>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10fb13110>
+
+    @pytest.fixture
+    def live(store, monkeypatch):
+        monkeypatch.setattr(app, "GUIDED", store)
+>       server = ThreadingHTTPServer(("127.0.0.1", 0), app.Handler)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_guided_callout_http.py:29: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socketserver.py:457: in __init__
+    self.server_bind()
+/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/http/server.py:136: in server_bind
+    socketserver.TCPServer.server_bind(self)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <http.server.ThreadingHTTPServer object at 0x10fb11010>
+
+    def server_bind(self):
+        """Called by constructor to bind the socket.
+    
+        May be overridden.
+    
+        """
+        if self.allow_reuse_address and hasattr(socket, "SO_REUSEADDR"):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        if self.allow_reuse_port and hasattr(socket, "SO_REUSEPORT"):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+>       self.socket.bind(self.server_address)
+E       PermissionError: [Errno 1] Operation not permitted
+
+/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socketserver.py:473: PermissionError
+_____ ERROR at setup of test_ux01_bulk_ignore_rejects_stale_revision_whole _____
+
+store = <drawingto3d.guided.GuidedStore object at 0x10fb119d0>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10f3ef5f0>
+
+    @pytest.fixture
+    def live(store, monkeypatch):
+        monkeypatch.setattr(app, "GUIDED", store)
+>       server = ThreadingHTTPServer(("127.0.0.1", 0), app.Handler)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_guided_callout_http.py:29: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socketserver.py:457: in __init__
+    self.server_bind()
+/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/http/server.py:136: in server_bind
+    socketserver.TCPServer.server_bind(self)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <http.server.ThreadingHTTPServer object at 0x10f3ef650>
+
+    def server_bind(self):
+        """Called by constructor to bind the socket.
+    
+        May be overridden.
+    
+        """
+        if self.allow_reuse_address and hasattr(socket, "SO_REUSEADDR"):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        if self.allow_reuse_port and hasattr(socket, "SO_REUSEPORT"):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+>       self.socket.bind(self.server_address)
+E       PermissionError: [Errno 1] Operation not permitted
+
+/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socketserver.py:473: PermissionError
+__________ ERROR at setup of test_ux01_bulk_ignore_rejects_empty_list __________
+
+store = <drawingto3d.guided.GuidedStore object at 0x10f16fcb0>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10f3ee4b0>
+
+    @pytest.fixture
+    def live(store, monkeypatch):
+        monkeypatch.setattr(app, "GUIDED", store)
+>       server = ThreadingHTTPServer(("127.0.0.1", 0), app.Handler)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_guided_callout_http.py:29: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socketserver.py:457: in __init__
+    self.server_bind()
+/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/http/server.py:136: in server_bind
+    socketserver.TCPServer.server_bind(self)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <http.server.ThreadingHTTPServer object at 0x10f3edfd0>
+
+    def server_bind(self):
+        """Called by constructor to bind the socket.
+    
+        May be overridden.
+    
+        """
+        if self.allow_reuse_address and hasattr(socket, "SO_REUSEADDR"):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        if self.allow_reuse_port and hasattr(socket, "SO_REUSEPORT"):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+>       self.socket.bind(self.server_address)
+E       PermissionError: [Errno 1] Operation not permitted
+
+/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socketserver.py:473: PermissionError
+_ ERROR at setup of test_ux01_bulk_ignore_accepts_already_ignored_rows_as_noop _
+
+store = <drawingto3d.guided.GuidedStore object at 0x10fd12b40>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10fd11790>
+
+    @pytest.fixture
+    def live(store, monkeypatch):
+        monkeypatch.setattr(app, "GUIDED", store)
+>       server = ThreadingHTTPServer(("127.0.0.1", 0), app.Handler)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_guided_callout_http.py:29: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socketserver.py:457: in __init__
+    self.server_bind()
+/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/http/server.py:136: in server_bind
+    socketserver.TCPServer.server_bind(self)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <http.server.ThreadingHTTPServer object at 0x10fd10140>
+
+    def server_bind(self):
+        """Called by constructor to bind the socket.
+    
+        May be overridden.
+    
+        """
+        if self.allow_reuse_address and hasattr(socket, "SO_REUSEADDR"):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        if self.allow_reuse_port and hasattr(socket, "SO_REUSEPORT"):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+>       self.socket.bind(self.server_address)
+E       PermissionError: [Errno 1] Operation not permitted
+
+/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socketserver.py:473: PermissionError
+_ ERROR at setup of test_ux01_bulk_ignore_preserves_candidates_and_transcriptions _
+
+store = <drawingto3d.guided.GuidedStore object at 0x10f16db20>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10f3edca0>
+
+    @pytest.fixture
+    def live(store, monkeypatch):
+        monkeypatch.setattr(app, "GUIDED", store)
+>       server = ThreadingHTTPServer(("127.0.0.1", 0), app.Handler)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_guided_callout_http.py:29: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socketserver.py:457: in __init__
+    self.server_bind()
+/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/http/server.py:136: in server_bind
+    socketserver.TCPServer.server_bind(self)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <http.server.ThreadingHTTPServer object at 0x10f3ed100>
+
+    def server_bind(self):
+        """Called by constructor to bind the socket.
+    
+        May be overridden.
+    
+        """
+        if self.allow_reuse_address and hasattr(socket, "SO_REUSEADDR"):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        if self.allow_reuse_port and hasattr(socket, "SO_REUSEPORT"):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+>       self.socket.bind(self.server_address)
+E       PermissionError: [Errno 1] Operation not permitted
+
+/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socketserver.py:473: PermissionError
+__ ERROR at setup of test_ux01_bulk_ignore_rejects_a_foreign_source_id_whole ___
+
+store = <drawingto3d.guided.GuidedStore object at 0x10f459d30>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10f3ecb00>
+
+    @pytest.fixture
+    def live(store, monkeypatch):
+        monkeypatch.setattr(app, "GUIDED", store)
+>       server = ThreadingHTTPServer(("127.0.0.1", 0), app.Handler)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_guided_callout_http.py:29: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socketserver.py:457: in __init__
+    self.server_bind()
+/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/http/server.py:136: in server_bind
+    socketserver.TCPServer.server_bind(self)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <http.server.ThreadingHTTPServer object at 0x10f3efc20>
+
+    def server_bind(self):
+        """Called by constructor to bind the socket.
+    
+        May be overridden.
+    
+        """
+        if self.allow_reuse_address and hasattr(socket, "SO_REUSEADDR"):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        if self.allow_reuse_port and hasattr(socket, "SO_REUSEPORT"):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+>       self.socket.bind(self.server_address)
+E       PermissionError: [Errno 1] Operation not permitted
+
+/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socketserver.py:473: PermissionError
+______ ERROR at setup of test_ux01_bulk_ignore_survives_a_session_reload _______
+
+store = <drawingto3d.guided.GuidedStore object at 0x10fb10ec0>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10f2a8fe0>
+
+    @pytest.fixture
+    def live(store, monkeypatch):
+        monkeypatch.setattr(app, "GUIDED", store)
+>       server = ThreadingHTTPServer(("127.0.0.1", 0), app.Handler)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_guided_callout_http.py:29: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socketserver.py:457: in __init__
+    self.server_bind()
+/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/http/server.py:136: in server_bind
+    socketserver.TCPServer.server_bind(self)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <http.server.ThreadingHTTPServer object at 0x10f2aa6c0>
+
+    def server_bind(self):
+        """Called by constructor to bind the socket.
+    
+        May be overridden.
+    
+        """
+        if self.allow_reuse_address and hasattr(socket, "SO_REUSEADDR"):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        if self.allow_reuse_port and hasattr(socket, "SO_REUSEPORT"):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+>       self.socket.bind(self.server_address)
+E       PermissionError: [Errno 1] Operation not permitted
+
+/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socketserver.py:473: PermissionError
+=================================== FAILURES ===================================
+___________________ test_http_revision_and_artifact_contract ___________________
+
+store = <drawingto3d.guided.GuidedStore object at 0x101deb650>
+record = {'version': 1, 'geometry_version': 3, 'token': 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'revision': 0, ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10f257e30>
+
+    def test_http_revision_and_artifact_contract(store,record,monkeypatch):
+        import threading,urllib.request,urllib.error
+        from http.server import ThreadingHTTPServer
+        from drawingto3d import app
+        monkeypatch.setattr(app,'GUIDED',store)
+>       server=ThreadingHTTPServer(('127.0.0.1',0),app.Handler)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_guided.py:256: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socketserver.py:457: in __init__
+    self.server_bind()
+/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/http/server.py:136: in server_bind
+    socketserver.TCPServer.server_bind(self)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <http.server.ThreadingHTTPServer object at 0x10f256600>
+
+    def server_bind(self):
+        """Called by constructor to bind the socket.
+    
+        May be overridden.
+    
+        """
+        if self.allow_reuse_address and hasattr(socket, "SO_REUSEADDR"):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        if self.allow_reuse_port and hasattr(socket, "SO_REUSEPORT"):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+>       self.socket.bind(self.server_address)
+E       PermissionError: [Errno 1] Operation not permitted
+
+/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/socketserver.py:473: PermissionError
+=========================== short test summary info ============================
+FAILED tests/test_guided.py::test_http_revision_and_artifact_contract - Permi...
+ERROR tests/test_guided_callout_chain.py::test_the_proposal_readiness_and_export_endpoints_answer_over_http
+ERROR tests/test_guided_callout_chain.py::test_an_import_over_http_is_refused_whole_when_it_is_wrong
+ERROR tests/test_guided_callout_http.py::test_http_save_cannot_bypass_the_callout_rules
+ERROR tests/test_guided_callout_http.py::test_http_save_cannot_confirm_a_target_on_a_stale_region
+ERROR tests/test_guided_callout_http.py::test_ux01_bulk_ignore_is_one_revision_one_history_one_undo
+ERROR tests/test_guided_callout_http.py::test_ux01_bulk_ignore_rejects_unknown_id_whole
+ERROR tests/test_guided_callout_http.py::test_ux01_bulk_ignore_rejects_stale_revision_whole
+ERROR tests/test_guided_callout_http.py::test_ux01_bulk_ignore_rejects_empty_list
+ERROR tests/test_guided_callout_http.py::test_ux01_bulk_ignore_accepts_already_ignored_rows_as_noop
+ERROR tests/test_guided_callout_http.py::test_ux01_bulk_ignore_preserves_candidates_and_transcriptions
+ERROR tests/test_guided_callout_http.py::test_ux01_bulk_ignore_rejects_a_foreign_source_id_whole
+ERROR tests/test_guided_callout_http.py::test_ux01_bulk_ignore_survives_a_session_reload
+1 failed, 483 passed, 12 errors in 123.63s (0:02:03)

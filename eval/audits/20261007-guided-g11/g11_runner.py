@@ -1,12 +1,20 @@
 """G11 runner — one manifest case, one fresh session, real Chrome, real input events.
 
     ~/.hermes/cache/scratch/cdp-venv/bin/python g11_runner.py recipes/<case_id>.json
+    ~/.hermes/cache/scratch/cdp-venv/bin/python g11_runner.py rerun-round2/recipes/<case_id>.json \
+        --round rerun-round2
 
 Reads the case's recipe (see DELIVERY-PLAN.md: decisions are authored from the visible session data
 and the drawing only — the reference STEP is never read here), drives the guided flow end to end,
-writes `cases/<case_id>.json` + `shots/<case_id>-*.png` and downloads the case's artifacts into
-`cases/<case_id>/`. Geometry verdicts are produced afterwards by `evaluate_case.py` under `.venv-cad`
-(cadquery is not in this interpreter).
+writes `<round>/cases/<case_id>.json` + `<round>/shots/<case_id>-*.png` and downloads the case's
+artifacts into `<round>/cases/<case_id>/`. Geometry verdicts are produced afterwards by
+`evaluate_case.py` under `.venv-cad` (cadquery is not in this interpreter).
+
+G11R-04/G11R-05 (independent review): session, export bundle, readiness, session token, recipe
+identity and the server's own error response are recorded for every case — recorded no matter how
+the build ended; only STEP/plan downloads stay gated on a real build. Browser/network noise is
+telemetry (`browser_signals`), never the EVALUATOR code — that label belongs to the evaluator
+subprocess alone, and build failures are classified by the server's response.
 
 Exits non-zero when the case recorded any failure; a recorded failure does not stop the run — G12 is
 where generic fixes happen.
@@ -27,10 +35,26 @@ sys.path.insert(0, str(G11_DIR.parent / "20261007-guided-ux-round"))
 sys.path.insert(0, str(G11_DIR.parent / "20261006-guided-g3-review"))
 import browser_acceptance as G3  # noqa: E402
 import cdp_client as C  # noqa: E402
+import g11_evidence as EVIDENCE  # noqa: E402  (same directory)
 import ux_acceptance as UX  # noqa: E402
 
 APP = G3.APP
 CAD_PYTHON = ROOT / ".venv-cad/bin/python"
+
+
+def parse_args(argv: list[str]) -> tuple[str, str | None]:
+    """Recipe path plus the optional round directory (`--round rerun-round2`)."""
+    args = list(argv)
+    round_name = None
+    if "--round" in args:
+        index = args.index("--round")
+        if index + 1 >= len(args):
+            raise SystemExit("--round needs a directory name, e.g. --round rerun-round2")
+        round_name = args[index + 1]
+        del args[index:index + 2]
+    if len(args) != 1:
+        raise SystemExit("usage: g11_runner.py <recipe.json> [--round <dir>]")
+    return args[0], round_name
 
 
 def sha256(path: pathlib.Path) -> str:
@@ -103,26 +127,65 @@ def accept_hint_ux01(page: C.Chrome, callout_id: str) -> dict:
     return {"before": before, "data": data}
 
 
+def build_response_probe(page: C.Chrome) -> dict:
+    """The server's own answer to the failed build POST: raw body via CDP plus the UI's error text.
+
+    G11R-04/G11R-05: a refused build must carry the actual server response, and the failure code is
+    classified from that text — not from the browser's generic resource errors.
+    """
+    probe: dict = {"captured": False}
+    try:
+        probe["ui_error_text"] = page.ev("return $('status').textContent;")
+    except Exception:  # noqa: BLE001 — the probe itself must never abort the record
+        pass
+    try:
+        request_id = next((rid for rid, label in reversed(list(page.requests.items()))
+                           if "/api/guided/build" in label), None)
+        if request_id:
+            body = page.send("Network.getResponseBody", requestId=request_id)
+            raw = body.get("body", "")
+            probe.update({"captured": True, "request": page.requests[request_id],
+                          "body_text": raw[:4000]})
+            try:
+                probe["body"] = json.loads(raw)
+            except (ValueError, TypeError):
+                probe["body"] = None
+    except Exception as error:  # noqa: BLE001 — a failed capture is recorded, never smoothed over
+        probe["capture_error"] = f"{type(error).__name__}: {error}"
+    return probe
+
+
 def main() -> int:
-    recipe = json.loads(pathlib.Path(sys.argv[1]).read_text(encoding="utf-8"))
+    recipe_path, round_name = parse_args(sys.argv[1:])
+    recipe_path = pathlib.Path(recipe_path)
+    recipe = json.loads(recipe_path.read_text(encoding="utf-8"))
     case_id, run_id = recipe["case_id"], time.strftime("%Y%m%d-%H%M%S")
     manifest = json.loads((ROOT / "eval/guided_10_manifest.json").read_text(encoding="utf-8"))
     entry = next((row for row in manifest["cases"] if row["case_id"] == case_id), None)
     if entry is None:
         raise SystemExit(f"case {case_id!r} is not in the frozen manifest")
     source = ROOT / recipe["source_path"]
-    out_dir = G11_DIR / "cases" / case_id
+    base = G11_DIR / round_name if round_name else G11_DIR
+    out_dir = base / "cases" / case_id
     out_dir.mkdir(parents=True, exist_ok=True)
-    shots = G11_DIR / "shots"
-    shots.mkdir(exist_ok=True)
+    shots = base / "shots"
+    shots.mkdir(parents=True, exist_ok=True)
 
     record = {
         "case_id": case_id, "run_id": run_id, "at": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
+        "round": round_name or "official",
         "git_head": git_head(), "source_path": recipe["source_path"],
         "source_sha256": sha256(source),
         "source_sha256_checked": sha256(source) == entry["source_sha256"],
         "scope_class": entry["expected_scope_class"], "prior_exposure": entry["prior_exposure"],
-        "recipe": pathlib.Path(sys.argv[1]).name,
+        "recipe": recipe_path.name, "recipe_file": str(recipe_path.relative_to(ROOT))
+        if recipe_path.is_relative_to(ROOT) else str(recipe_path),
+        "recipe_sha256": sha256(recipe_path),
+        "recipe_notes": recipe.get("notes") or [],
+        "input_verification": recipe.get("input_verification"),
+        "session_token": None, "session_origin": "token-recovered" if recipe.get("session_token")
+        else "fresh-upload",
+        "calibration": None, "readiness": None, "build_error_response": None, "browser_signals": None,
         "candidate_count": None, "manual_region_count": None, "ignored_count": None,
         "transcription_count": None, "parse_success_count": None, "parse_edit_count": None,
         "proposal_count": 0, "proposal_accept_count": 0, "manual_target_correction_count": 0,
@@ -142,6 +205,7 @@ def main() -> int:
     token = recipe.get("session_token")
     if token:
         # recover an orphaned session: the server computed it but the client fetch died
+        note(f"oturum token ile bağlandı: {token} (taze yükleme değil)")
         page = C.Chrome(url=APP + "/guided?session=" + token)
         page.wait_ready()
     else:
@@ -155,6 +219,7 @@ def main() -> int:
                 note(f"session token: {token}")
                 break
             time.sleep(0.5)
+    record["session_token"] = token
     try:
         page.wait_ev("!$('controls').hidden", timeout=900, label="session opened")
     except Exception:                                    # noqa: BLE001 — gate timeout or a dead CDP link
@@ -168,6 +233,13 @@ def main() -> int:
         page = C.Chrome(url=APP + "/guided?session=" + token)
         page.wait_ready()
         page.wait_ev("!$('controls').hidden", timeout=2700, label="session opened (reattached)")
+    # G11R-04: yavaş raster ingest'lerinde open-fetch 120 sn'lik ilk yoklamadan sonra çözülür; kapı
+    # açıldığında token URL'de garantidir — burada yakalanır ki kayıt oturum token'ı olmadan kalmasın.
+    if not token:
+        token = page.ev("return new URLSearchParams(location.search).get('session');")
+        if token:
+            note(f"oturum token (kapı sonrası yakalandı): {token}")
+    record["session_token"] = token
     data = wait_ingest(page, timeout=2700)
     record["candidate_count"] = len(data["effective_callouts"])
     page.screenshot(str(shots / f"{case_id}-01-candidates.png"))
@@ -247,27 +319,55 @@ def main() -> int:
                 fail("CONSTRAINT_UNSUPPORTED", {"what": "contour join approval"})
 
     # --- calibration (skipped when the reading's own calibration proposal was accepted) ----------
+    # G11R-02: a recipe may carry `manual_value` — the user read the printed number, the value is
+    # typed into `#cal-value` and the two clicked snap points are the span the printed dimension
+    # actually measures ("Ölçüyü ben gireceğim"). An OCR measurement row is only selected when the
+    # recipe names one; an uncertain OCR guess is never presented as a certain decision.
     calibration = recipe.get("calibration")
-    measurement = None
     if calibration:
-        measurement = next((row for row in data["options"]["measurements"]
-                            if row.get("text") == calibration["measurement_text"]), None)
-        if measurement is None:
-            fail("DETECT_MISS", {"what": "calibration measurement", "text": calibration["measurement_text"],
-                                 "visible": [row.get("text") for row in data["options"]["measurements"]]})
-        else:
+        manual = calibration.get("manual_value")
+        if manual is not None:
             page.click_selector("#pick-calibration")
             for circle_id in calibration["circles"]:
                 point = UX.circle_point(page, circle_id)
                 page.click(point["x"], point["y"])
                 time.sleep(0.2)
-            page.ev(f"""const select = $('measurement'); select.value = '{measurement['id']}';
-              select.dispatchEvent(new Event('change')); return true;""")
+            page.focus_selector("#cal-value")
+            page.ev("$('cal-value').value = '';")
+            page.type_text(str(manual))
+            page.ev("const select = $('cal-unit'); select.value = '%s'; return select.value;"
+                    % calibration.get("unit", "mm"))
             page.click_selector("#apply-calibration")
             try:
-                UX.wait_server(page, lambda d: bool(d["decisions"].get("calibration")), 40, "calibration")
+                saved = UX.wait_server(
+                    page, lambda d: (d["decisions"].get("calibration") or {}).get("value") == float(manual),
+                    40, "calibration (manual)")
+                record["calibration"] = saved["decisions"]["calibration"]
             except TimeoutError:
-                fail("TRANSCRIPTION", {"what": "calibration", "measurement": measurement.get("text")})
+                fail("TRANSCRIPTION", {"what": "calibration", "manual_value": manual,
+                                       "circles": calibration["circles"]})
+        else:
+            measurement = next((row for row in data["options"]["measurements"]
+                                if row.get("text") == calibration["measurement_text"]), None)
+            if measurement is None:
+                fail("DETECT_MISS", {"what": "calibration measurement",
+                                     "text": calibration["measurement_text"],
+                                     "visible": [row.get("text") for row in data["options"]["measurements"]]})
+            else:
+                page.click_selector("#pick-calibration")
+                for circle_id in calibration["circles"]:
+                    point = UX.circle_point(page, circle_id)
+                    page.click(point["x"], point["y"])
+                    time.sleep(0.2)
+                page.ev(f"""const select = $('measurement'); select.value = '{measurement['id']}';
+                  select.dispatchEvent(new Event('change')); return true;""")
+                page.click_selector("#apply-calibration")
+                try:
+                    saved = UX.wait_server(page, lambda d: bool(d["decisions"].get("calibration")),
+                                           40, "calibration")
+                    record["calibration"] = saved["decisions"]["calibration"]
+                except TimeoutError:
+                    fail("TRANSCRIPTION", {"what": "calibration", "measurement": measurement.get("text")})
 
     # --- thickness -------------------------------------------------------------------------------
     if recipe.get("thickness_mm") is not None:
@@ -426,7 +526,13 @@ def main() -> int:
 
     # --- readiness (its blockers are recorded verbatim, never smoothed) --------------------------
     readiness = UX.readiness_of(page)
+    record["readiness"] = {
+        "ready": readiness.get("ready"),
+        "questions": [row["text"] for row in readiness.get("questions") or []],
+        "captured": "run-time",
+    }
     record["build_blockers"] = [row["text"] for row in readiness["questions"]]
+    final = None
     if record["build_blockers"]:
         for row in readiness["questions"]:
             print(f"[blocker] {row['category']}: {row['text'][:160]}", flush=True)
@@ -447,41 +553,55 @@ def main() -> int:
                 final = UX.wait_server(page, lambda d: bool(d.get("step")), timeout=420, label="built STEP")
                 record["build_success"] = final.get("build_status") == "complete"
                 if not record["build_success"]:
-                    fail("CAD_WRONG", {"build_status": final.get("build_status"), "error": final.get("error")})
+                    # the build ran and stopped inside CAD: the server's own error text is the cause
+                    code, why = EVIDENCE.classify_build_error(final.get("error"))
+                    fail(code, {"what": "build ran and failed", "cause": why,
+                                "build_status": final.get("build_status"),
+                                "error": final.get("error")})
             except TimeoutError:
-                fail("CAD_UNSUPPORTED", {"what": "build did not produce a STEP"})
+                # the endpoint refused (or produced nothing): keep the server's actual response
+                record["build_error_response"] = build_response_probe(page)
+                body = record["build_error_response"].get("body")
+                body_error = body.get("error") if isinstance(body, dict) else None
+                code, why = EVIDENCE.classify_build_error(
+                    body_error or record["build_error_response"].get("ui_error_text"))
+                fail(code, {"what": "build did not produce a STEP", "cause": why,
+                            "server_response": record["build_error_response"]})
                 final = UX.server(page)
             page.screenshot(str(shots / f"{case_id}-04-built.png"))
 
-        if final.get("step"):  # artifacts only exist once the build really produced them
-            for name, key in (("part.step", "step"), ("plan.json", "plan"), ("plan-audit.json", "audit")):
-                url = APP + (final.get(key) or "")
-                try:
-                    with urllib.request.urlopen(url, timeout=60) as response:
-                        (out_dir / name).write_bytes(response.read())
-                    record["artifacts"][name] = str((out_dir / name).relative_to(ROOT))
-                except Exception as error:  # noqa: BLE001 - a missing artifact is a recorded failure
-                    fail("STEP_EXPORT", {"artifact": name, "error": str(error)})
-            (out_dir / "session-public.json").write_text(json.dumps(final, ensure_ascii=False, indent=2),
-                                                         encoding="utf-8")
-            record["artifacts"]["session-public.json"] = str((out_dir / "session-public.json").relative_to(ROOT))
-            bundle = page.ev_async("""const token = new URLSearchParams(location.search).get('session');
-              return await (await fetch('/api/guided/export', {method: 'POST',
-                headers: {'Content-Type': 'application/json'}, body: JSON.stringify({token})})).json();""")
-            (out_dir / "review-bundle.json").write_text(json.dumps(bundle, ensure_ascii=False, indent=2),
-                                                        encoding="utf-8")
-            record["artifacts"]["review-bundle.json"] = str((out_dir / "review-bundle.json").relative_to(ROOT))
-            plan_file = out_dir / "plan.json"
-            if plan_file.exists() and plan_file.read_text(encoding="utf-8", errors="replace").lstrip().startswith("{"):
-                plan = json.loads(plan_file.read_text(encoding="utf-8"))
-                record["features"] = {"plan_lists": {key: len(value) for key, value in plan.items()
-                                                     if isinstance(value, list)}}
+    # --- per-case evidence: written no matter how the build ended (G11R-04) ----------------------
+    if final is None:
+        final = UX.server(page)
+    if final.get("step"):  # STEP/plan downloads stay gated on a real build
+        for name, key in (("part.step", "step"), ("plan.json", "plan"), ("plan-audit.json", "audit")):
+            url = APP + (final.get(key) or "")
+            try:
+                with urllib.request.urlopen(url, timeout=60) as response:
+                    (out_dir / name).write_bytes(response.read())
+                record["artifacts"][name] = str((out_dir / name).relative_to(ROOT))
+            except Exception as error:  # noqa: BLE001 - a missing artifact is a recorded failure
+                fail("STEP_EXPORT", {"artifact": name, "error": str(error)})
+        plan_file = out_dir / "plan.json"
+        if plan_file.exists() and plan_file.read_text(encoding="utf-8", errors="replace").lstrip().startswith("{"):
+            plan = json.loads(plan_file.read_text(encoding="utf-8"))
+            record["features"] = {"plan_lists": {key: len(value) for key, value in plan.items()
+                                                 if isinstance(value, list)}}
+    bundle = page.ev_async("""const token = new URLSearchParams(location.search).get('session');
+      return await (await fetch('/api/guided/export', {method: 'POST',
+        headers: {'Content-Type': 'application/json'}, body: JSON.stringify({token})})).json();""")
+    for name in EVIDENCE.write_case_evidence(out_dir, final, bundle, readiness):
+        record["artifacts"][name] = str((out_dir / name).relative_to(ROOT))
+    if not final.get("step"):
+        note("build çıktısı yok: session/review/readiness kanıtı yine de kaydedildi; yalnız "
+             "STEP/plan indirmeleri gerçek üretime bağlı kaldı (G11R-04).")
 
     errors = [row for row in page.console if row["level"] == "error"]
     record["console_errors"] = errors
     record["rejected_requests"] = page.failures
-    if errors or page.failures:
-        fail("EVALUATOR", {"console_errors": errors, "rejected_requests": page.failures})
+    record["browser_signals"] = EVIDENCE.classify_signals(errors, page.failures)
+    # G11R-05: console/network noise is UI telemetry — never the EVALUATOR code, whose only source
+    # is the evaluator subprocess below; a refused build carries its own server-side cause above.
     page.close()
 
     # --- geometry verdict: the repo's own evaluator, in the CAD interpreter ----------------------
@@ -507,7 +627,10 @@ def main() -> int:
     elif record["build_blockers"]:
         fail("CONSTRAINT_UNSUPPORTED", {"what": "build never ran", "blockers": len(record["build_blockers"])})
 
-    path = G11_DIR / "cases" / f"{case_id}.json"
+    # G11R-04: round koşularında kayıt da turun kendi dizinine yazılır (koşu sırasında yol resmî
+    # vaka dizinine sabitti; rerun-round2 kayıtları yanlışlıkla oraya yazıldı — tur sonrası taşındı).
+    path = base / "cases" / f"{case_id}.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(record, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"\n[{case_id}] failures={len(record['failures'])} build={record['build_success']} "
           f"verdict={'pass' if (record['final_geometry_verdict'] or {}).get('pass') else record['final_geometry_verdict'] and 'fail'}"

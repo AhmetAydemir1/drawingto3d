@@ -1,0 +1,59 @@
+{
+  "case_id": "flange-elbow-90-raster-noref",
+  "label": "recovered-after-run",
+  "not_run_time_evidence": true,
+  "recovered_at": "2026-10-07T15:24:28+03:00",
+  "recovered_by": "G11R-04 düzeltme turu (eval/audits/20261007-guided-g11-fixes)",
+  "recovered_from": "out/guided/9b9115c07cd7496ea5d2cdc50841af5d/session.json",
+  "session_token": "9b9115c07cd7496ea5d2cdc50841af5d",
+  "source_sha256_match": true,
+  "session_file_sha256_before": "edbb985c61bdaea1f1362b95cb8ec670408fbe3d1252b9636dc3e48929878fff",
+  "session_file_sha256_after": "edbb985c61bdaea1f1362b95cb8ec670408fbe3d1252b9636dc3e48929878fff",
+  "session_untouched": true,
+  "session_candidates": [
+    {
+      "token": "9b9115c07cd7496ea5d2cdc50841af5d",
+      "mtime": 1791356281.2242925,
+      "revision": 5
+    },
+    {
+      "token": "4fc64ede35f34c07add438ac9fb99f3d",
+      "mtime": 1791350335.7150793,
+      "revision": 0
+    }
+  ],
+  "original_run": {
+    "run_id": "20261007-095053",
+    "at": "2026-10-07T09:50:53+0300",
+    "git_head": "7f432aebd03e51b3f817decef4aeb31228ce2476"
+  },
+  "original_record": {
+    "artifacts": {},
+    "failures": [
+      {
+        "code": "TRANSCRIPTION",
+        "detail": {
+          "what": "calibration",
+          "measurement": "360"
+        }
+      },
+      {
+        "code": "CONSTRAINT_UNSUPPORTED",
+        "detail": {
+          "what": "build never ran",
+          "blockers": 1
+        }
+      }
+    ],
+    "console_errors": [],
+    "rejected_requests": [],
+    "note": "eski kayıt olduğu gibi bırakıldı: eval/audits/20261007-guided-g11/cases/flange-elbow-90-raster-noref.json"
+  },
+  "files": {
+    "session-public.json": "koşu anında kaydedilmemişti; değişmemiş oturumun son durumundan yeniden üretildi",
+    "review-bundle.json": "koşu anında kaydedilmemişti; inceleme paketinden yeniden üretildi",
+    "readiness.json": "koşu anında kaydedilmemişti; hazırlık uç noktasından yeniden alındı",
+    "server-error-recompute.json": "sunucunun koşu-anı yanıt gövdesi kayıtlı değil; aynı kapı zinciri okuma modunda yeniden oynatıldı"
+  },
+  "note": "Bu kanıt sonradan kurtarıldı: gerçekliği değişmemiş oturum kaydıyla sınırlıdır ve koşu anında kaydedilmiş gibi sunulmaz (G11R-04)."
+}

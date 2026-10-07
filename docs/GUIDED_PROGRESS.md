@@ -12,7 +12,7 @@
 - G11 baseline: **1/9** (`plate-pocket-vector`; payda sabit — PLAN-24 §75) — bu bir ölçümdür, kabul değil
 - Current task: **G12.2 tamamlandı (açık üretim biçimi; taze Plate kabulü 10/10 + gerçek Chrome 7/7, commit `190a065`); sıradaki G12.3** — view-scoped geometry foundation (PLAN-25 §45–§54): ilk iş görünüş adaylarının BİR KEZ kalıcı yazılması (§46) + "görünüş" ve "geometri" kavramlarının ayrılması (§47) + geometriyi görünüşe atama (§48) + `GEOMETRY_VERSION 3→4` ve `geometry_key` güncellemesi (§49/§50); RED testleri §53, gerçek Chrome §54
 - Initial worktree changes: `?? PLAN-17-HERMES.md` (kullanıcının verdiği plan kaynağı; **korunur, stage edilmez**)
-- Current task: **G12.1b tamamlandı — sıradaki G12.2** (explicit build strategy sözleşmesi + implicit extrude'un kaldırılması; aşağıdaki "G12" bölümü)
+- (tarihsel) G12.1b kapanışındaki durum: sıradaki iş G12.2 idi — `c59f814`; G12.2 artık `190a065` ile kapandı.
 
 | İş | Durum | Kanıt | Kalan |
 |---|---|---|---|

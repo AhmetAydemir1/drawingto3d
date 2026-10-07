@@ -177,9 +177,26 @@ def main() -> int:
                 fail("DETECT_MISS", {"what": "contour click", "profile_id": profile_id,
                                      "reason": "sunucu seçimi kaydetmedi"})
 
-    # --- contour validation issues (PLAN §7.3 UI): the user approves closing an open end ----------
+    # --- contour validation issues (PLAN §7.3 UI): the user drops the marked edge / approves the join
+    edge_drops = 0
+    for _round in range(3):
+        drops = page.ev(
+            """[...$('contour-fix').querySelectorAll('button')]"""
+            """.filter(b => b.textContent.includes('kenarını çıkar')).map(b => b.textContent)""")
+        if not drops:
+            break
+        before = len(((UX.server(page) or {}).get("decisions", {}).get("contour", {}).get("drop") or []))
+        click_element(page, "#contour-fix button")  # the panel marks which edge to remove
+        try:
+            UX.wait_server(page, lambda d: len(d["decisions"].get("contour", {}).get("drop") or []) > before,
+                           30, "edge drop")
+            edge_drops += 1
+            note(f"kontur düzeltmesi: kenar çıkarıldı ({drops[0]})")
+        except TimeoutError:
+            fail("CONSTRAINT_UNSUPPORTED", {"what": "contour edge drop", "panel": drops[:2]})
+            break
     if page.ev("!![...$('contour-fix').querySelectorAll('input[type=checkbox]')].length"):
-        if not page.ev("[...$('contour-fix').querySelectorAll('input[type=checkbox]')][0].checked"):
+        if not page.ev("(() => { const b = $('contour-fix').querySelector('input[type=checkbox]'); return b && b.checked; })()"):
             click_element(page, "#contour-fix input[type=checkbox]")
             try:
                 UX.wait_server(page, lambda d: bool((d["decisions"].get("contour") or {}).get("approve_join")),
@@ -340,7 +357,7 @@ def main() -> int:
     record["parse_edit_count"] = sum(1 for row in log if row.get("action") == "edit_transcription")
     record["user_interventions"] = {
         "typed_texts": typed_texts, "hint_clicks": hint_clicks, "single_ignores": single_ignores,
-        "bulk_rows": bulk_rows, "bulk_actions": 1 if bulk_rows else 0,
+        "bulk_rows": bulk_rows, "bulk_actions": 1 if bulk_rows else 0, "edge_drops": edge_drops,
         "proposal_accepts": len(recipe.get("accept_proposals") or []),
         "profile_selections": 1, "calibration_entries": 1 if measurement else 0,
         "thickness_entries": 1 if recipe.get("thickness_mm") is not None else 0,

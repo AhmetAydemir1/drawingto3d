@@ -1,0 +1,9 @@
+[PASS] sentetik oturum gerçek tarayıcıda açıldı: {"url": "http://127.0.0.1:54524/guided?session=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "callouts": ["k1"]}
+[PASS] panel en az iki farklı hedef öneriyor: {"proposals": [["T1", ["c0"]], ["T5", ["c1"]]]}
+[PASS] ikinci önerinin etiketi çizimde vurguyu taşıdı (gerçek tıklama): {"before": "AgQmCgiwJuI6mgCBHgH3EiBAgAABAgQIECBAgACBfYE/AAAA//+DUX1EAAAABklEQVQDAC6JCKQBCX6VAAAAAElFTkSuQmCC", "after": "axG4uIAB1sXJfUMCBAgQIECAAAECBAgQIECAAIFTBH4CAAD//9YzNfIAAAAGSURBVAMAI124pJ0mlRwAAAAASUVORK5CYII="}
+[PASS] genel [Onayla] hangi öneriyi yazacağını söylüyor: {"label": "Onayla · 2. öneri"}
+[PASS] kalıcı target vurgulanan öneridir: {"stored": {"callout_id": "k1", "target_kind": "circle", "target_ids": ["c1"], "geometry_version": 3, "geometry_key": "dea25226a3ffa5187151e112dde655140a4bb29bd0a316061d9ba662ad056d70", "profile_id": "outline_1", "transcription_revision": 1, "parser_version": "callout-parser/1", "evidence": [{"kind": "proposal", "ref": "T5 · c1"}], "status": "confirmed", "reconfirm": false}, "highlighted": ["c1"]}
+[PASS] reload sonrası panel aynı (vurgulanan) hedefi gösteriyor: {"summary": "Onaylı: tek daire · c1 ·  · T5 · c1", "expected_ids": ["c1"]}
+[PASS] beklenmeyen konsol hatası yok: {"errors": [], "failures": [], "favicon_error_exempted": [{"level": "error", "text": "Failed to load resource: the server responded with a status of 404 (Not Found)", "url": "http://127.0.0.1:54524/favicon.ico", "source": "network"}]}
+
+7/7 R03 tarayıcı adımı geçti

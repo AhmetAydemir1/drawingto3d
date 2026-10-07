@@ -13,16 +13,20 @@ nothing is written, no confirmation is created, and a compiled row reaches a bui
 
 Unsupported semantics stay explicit (`READ success` + `BIND success` + `CAD unsupported`): a
 diameter whose text does not say THRU/BLIND does not become a hole, a radius with a confirmed arc
-does not become a fillet, and a two-end tie that is not axis-aligned has no axis to bind.
+does not become a fillet, and a two-end tie that is not axis-aligned has no axis to bind. A tie's
+axis and direction are read in the *sheet's own* frame — the same `view_transform` the build
+refuses without (PLAN §8.6) — never off the raw page delta, whose y grows downwards.
 """
 from __future__ import annotations
 
 import copy
 
-from drawingto3d.callout_models import callout_state, effective_callouts, geometry_key, sheet_unit
+from drawingto3d.callout_models import (CALLOUT_PARSER_VERSION, callout_state, effective_callouts,
+                                        geometry_key, sheet_unit)
 
 INCH_MM = 25.4
 AXIS_TOLERANCE_PX = 0.5      # both ends have to move on one axis for an axis tie to exist
+MM_LIMIT = 1e6               # `guided.Hole`'s own mm bound (gt=0, le=1e6): a converted value must fit it
 
 
 def _decisions(record: dict) -> dict:
@@ -38,20 +42,47 @@ def _parse_row(record: dict, callout_id: str, revision, parser_version) -> dict 
     return None
 
 
-def _size_mm(parse: dict, declared: str | None) -> tuple[float | None, str | None]:
-    """The reported size in millimetres and where its unit came from — never assumed.
+def _unit_factor(parse: dict, declared: str | None) -> tuple[float, str] | None:
+    """Millimetres per reported unit and where the unit came from — never assumed (PLAN §9).
 
     A printed unit wins; otherwise the unit the user declared for the sheet resolves it and the
-    provenance says so (`sheet`). With neither, the size stays unresolved (`missing_unit`).
+    provenance says so (`sheet`). With neither, nothing resolves (`missing_unit`).
     """
-    size, unit = parse.get("size"), parse.get("unit")
-    if size is None:
-        return None, None
+    unit = parse.get("unit")
     if unit in ("mm", "in"):
-        return float(size) * (INCH_MM if unit == "in" else 1.0), "printed"
+        return (INCH_MM if unit == "in" else 1.0), "printed"
     if declared in ("mm", "in"):
-        return float(size) * (INCH_MM if declared == "in" else 1.0), "sheet"
-    return None, None
+        return (INCH_MM if declared == "in" else 1.0), "sheet"
+    return None
+
+
+def _size_mm(parse: dict, declared: str | None) -> tuple[float | None, str | None]:
+    """The reported size in millimetres and where its unit came from — never assumed."""
+    size = parse.get("size")
+    resolved = _unit_factor(parse, declared)
+    if size is None or resolved is None:
+        return None, None
+    return float(size) * resolved[0], resolved[1]
+
+
+def _view_axes(record: dict) -> tuple[dict | None, str]:
+    """The sheet's own axes as the build reads them, or the reason there are none (PLAN §8.6).
+
+    `make_plan` is the authority the build refuses without; sharing its resolver keeps a compiled
+    tie on exactly the axes the solver will read. A record whose view is malformed, or one with no
+    vouchable view at all, comes back as a reason — the caller turns that into an open decision
+    instead of guessing. Pure by construction: nothing is written, nothing is confirmed.
+    """
+    from drawingto3d import guided
+    try:
+        decisions = guided.Decisions.model_validate(_decisions(record))
+        axes = guided.view_transform(decisions, record.get("options") or {})
+    except ValueError as failure:
+        return None, " ".join(str(failure).split())
+    if axes is not None:
+        return axes, ""
+    product = (record.get("options") or {}).get("sheet_frame") or {}
+    return None, str(product.get("provenance") or "pafta çerçevesi okunamadı ve onaylı görüş yok")
 
 
 def _end(profile: dict, profile_id: str, edge: dict, which: str) -> dict | None:
@@ -62,13 +93,22 @@ def _end(profile: dict, profile_id: str, edge: dict, which: str) -> dict | None:
             "profile": profile_id, "geometry_version": None, "end": which}
 
 
-def _axis_tie(first: dict, second: dict) -> tuple[str, int] | None:
+def _axis_tie(first: dict, second: dict, axes: dict) -> tuple[str, int] | None:
+    """The tie's axis and direction in the *sheet's* own frame — never the raw page delta (R01).
+
+    `axes` is the view transform the build resolved (page-frame unit vectors for the sheet's +x/+y),
+    the same one `make_plan` maps with. Page y grows downwards while the part's y grows upwards, so
+    a downward pair is direction -1 — exactly the convention `Binding` carries; reading the page
+    sign directly flips it. A pair that is diagonal in the sheet's frame has no axis to bind.
+    """
     dx, dy = float(second["x"]) - float(first["x"]), float(second["y"]) - float(first["y"])
-    if min(abs(dx), abs(dy)) > AXIS_TOLERANCE_PX:
+    along_x = dx * float(axes["x"][0]) + dy * float(axes["x"][1])
+    along_y = dx * float(axes["y"][0]) + dy * float(axes["y"][1])
+    if min(abs(along_x), abs(along_y)) > AXIS_TOLERANCE_PX:
         return None                      # çapraz iki uç: ölçünün ekseni yok, uydurulmaz
-    if abs(dx) >= abs(dy):
-        return ("x", 1 if dx >= 0 else -1)
-    return ("y", 1 if dy >= 0 else -1)
+    if abs(along_x) >= abs(along_y):
+        return ("x", 1 if along_x >= 0 else -1)
+    return ("y", 1 if along_y >= 0 else -1)
 
 
 def _same_hole(existing: dict, compiled: dict) -> bool:
@@ -96,6 +136,7 @@ def compile_callouts(record: dict) -> dict:
     excluded: list[dict] = []
     rows: list[dict] = []
     seen_holes: dict[str, dict] = {}
+    view_axes, view_reason = _view_axes(record)
 
     for callout in effective_callouts(record):
         callout_id = callout["id"]
@@ -134,24 +175,15 @@ def compile_callouts(record: dict) -> dict:
                         if text.get("callout_id") == callout_id), None)
         target = next((item for item in decisions.get("callout_targets") or []
                        if item.get("callout_id") == callout_id), None)
-        parser_version = target.get("parser_version") if target else None
-        parse = _parse_row(record, callout_id, revision, parser_version) if parser_version else None
-        if parse is None and target is not None:
-            parse = _parse_row(record, callout_id, revision,
-                               state.get("parse", {}).get("parser_version") or "")
+        # R04 (review): the reading is chosen from the transcription revision and the *server's own*
+        # parser version — never the target's, which may not exist yet. A text the parser cannot
+        # support must read as an edit-the-text question, not as a missing-target one (the store
+        # refuses that confirmation anyway, so the old order sent the user to a dead-end step).
+        parse = _parse_row(record, callout_id, revision, CALLOUT_PARSER_VERSION)
         row.update(raw_text=(written or {}).get("raw_text"),
                    parser_version=(parse or {}).get("parser_version"),
                    semantic={name: (parse or {}).get(name)
                              for name in ("status", "form", "size", "count", "termination", "depth", "unit")})
-
-        target_state = state.get("target") or {}
-        if target is None:
-            row.update(status="missing_target", reason="needs_target")
-            continue
-        if target_state.get("state") != "current":
-            row.update(status="stale_target", reason=target_state.get("reason") or "stale")
-            continue
-        row.update(target_kind=target.get("target_kind"), target_ids=list(target.get("target_ids") or []))
 
         if parse is None or parse.get("status") != "parsed":
             status = "parse_ambiguous" if (parse or {}).get("status") == "ambiguous" else "parse_unsupported"
@@ -164,7 +196,27 @@ def compile_callouts(record: dict) -> dict:
             continue
         row["unit_source"] = unit_source
 
+        target_state = state.get("target") or {}
+        if target is None:
+            row.update(status="missing_target", reason="needs_target")
+            continue
+        if target_state.get("state") != "current":
+            row.update(status="stale_target", reason=target_state.get("reason") or "stale")
+            continue
+        row.update(target_kind=target.get("target_kind"), target_ids=list(target.get("target_ids") or []))
+
         if form == "diameter":
+            resolved = _unit_factor(parse, declared_unit)
+            assert resolved is not None           # `size_mm` çözüldü: birim de çözüldü
+            factor = resolved[0]
+            if size_mm > MM_LIMIT:
+                # R02 (review): the converted value has to fit the model it will become — refusing
+                # here says so, where `Hole`'s own validation would fail one layer later, unnamed.
+                unsupported.append({"callout_id": callout_id, "reason": "unsupported_semantic",
+                                    "detail": f"çap mm'ye çevrildiğinde {size_mm:g} mm: model sınırı "
+                                              f"{MM_LIMIT:g} mm", "raw_text": row["raw_text"]})
+                row.update(status="unsupported_semantic", reason="diameter_out_of_range")
+                continue
             termination = parse.get("termination")
             if termination is None:
                 unsupported.append({"callout_id": callout_id, "reason": "unsupported_cad_feature",
@@ -179,9 +231,19 @@ def compile_callouts(record: dict) -> dict:
                                     "raw_text": row["raw_text"]})
                 row.update(status="unsupported_semantic", reason="depth_missing")
                 continue
+            depth_mm = None
+            if termination == "blind":
+                # R02 (review): the depth is a measurement like the diameter — converted through the
+                # same resolved unit, with the model's own mm bound applied after the conversion.
+                depth_mm = float(depth) * factor
+                if depth_mm > MM_LIMIT:
+                    unsupported.append({"callout_id": callout_id, "reason": "unsupported_semantic",
+                                        "detail": f"derinlik mm'ye çevrildiğinde {depth_mm:g} mm: model "
+                                                  f"sınırı {MM_LIMIT:g} mm", "raw_text": row["raw_text"]})
+                    row.update(status="unsupported_semantic", reason="depth_out_of_range")
+                    continue
             wanted = {"circle_id": None, "kind": "through" if termination == "thru" else "pocket",
-                      "diameter": size_mm,
-                      "depth": None if termination == "thru" else float(depth or 0.0)}
+                      "diameter": size_mm, "depth": depth_mm}
             missing = [item for item in row["target_ids"] if item not in circles]
             if missing:
                 conflicts.append({"callout_id": callout_id, "reason": "unknown_geometry",
@@ -262,7 +324,16 @@ def compile_callouts(record: dict) -> dict:
                                   "detail": "onaylanan uçlar konturda bulunamadı: " + ", ".join(row["target_ids"])})
                 row.update(status="conflict", reason="unknown_geometry")
                 continue
-            axis = _axis_tie(ends[0], ends[1])
+            if view_axes is None:
+                # R01 (review): the axis/direction decision needs the sheet's own frame; without a
+                # vouchable view it is an *open decision* (PLAN §8.6) — never a page-frame guess.
+                unsupported.append({"callout_id": callout_id, "reason": "view_not_confirmed",
+                                    "detail": "ölçünün ekseni/yönü görüş ekseni onaylanmadan belirlenemez "
+                                              "(PLAN §8.6): " + view_reason,
+                                    "raw_text": row["raw_text"]})
+                row.update(status="view_not_confirmed", reason="view_not_confirmed")
+                continue
+            axis = _axis_tie(ends[0], ends[1], view_axes)
             if axis is None:
                 unsupported.append({"callout_id": callout_id, "reason": "unsupported_semantic",
                                     "detail": "iki uç eksenel değil (çapraz): ölçünün ekseni belirlenemez",

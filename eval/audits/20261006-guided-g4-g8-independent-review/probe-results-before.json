@@ -1,0 +1,180 @@
+{
+  "reviewed_baseline": "e51f555",
+  "cases": [
+    {
+      "finding": "control",
+      "case": "horizontal_50mm_control",
+      "readiness_ready": true,
+      "binding_axis": "x",
+      "binding_direction": 1,
+      "expected_direction_in_part_frame": 1,
+      "expected_bbox_mm": [
+        50,
+        30
+      ],
+      "plan_bbox_mm": [
+        50.0,
+        30.0
+      ],
+      "plan_edges": {
+        "edge_0_start_x": 0.0,
+        "edge_0_start_y": 30.0,
+        "edge_0_end_x": 50.0,
+        "edge_0_end_y": 30.0,
+        "edge_1_start_x": 50.0,
+        "edge_1_start_y": 30.0,
+        "edge_1_end_x": 50.0,
+        "edge_1_end_y": 0.0,
+        "edge_2_start_x": 50.0,
+        "edge_2_start_y": 0.0,
+        "edge_2_end_x": 0.0,
+        "edge_2_end_y": 0.0,
+        "edge_3_start_x": 0.0,
+        "edge_3_start_y": 0.0,
+        "edge_3_end_x": 0.0,
+        "edge_3_end_y": 30.0
+      },
+      "passed": true
+    },
+    {
+      "finding": "R01",
+      "case": "vertical_30mm",
+      "readiness_ready": true,
+      "binding_axis": "y",
+      "binding_direction": 1,
+      "expected_direction_in_part_frame": -1,
+      "expected_bbox_mm": [
+        50,
+        30
+      ],
+      "plan_bbox_mm": [
+        50.0,
+        60.0
+      ],
+      "plan_edges": {
+        "edge_0_start_x": 0.0,
+        "edge_0_start_y": 30.0,
+        "edge_0_end_x": 50.0,
+        "edge_0_end_y": 30.0,
+        "edge_1_start_x": 50.0,
+        "edge_1_start_y": 30.0,
+        "edge_1_end_x": 50.0,
+        "edge_1_end_y": 60.0,
+        "edge_2_start_x": 50.0,
+        "edge_2_start_y": 60.0,
+        "edge_2_end_x": 0.0,
+        "edge_2_end_y": 0.0,
+        "edge_3_start_x": 0.0,
+        "edge_3_start_y": 0.0,
+        "edge_3_end_x": 0.0,
+        "edge_3_end_y": 30.0
+      },
+      "passed": false
+    },
+    {
+      "finding": "R02",
+      "case": "printed_inch_depth",
+      "text": "Ø.5 .25 DEEP in",
+      "parse": {
+        "callout_id": "k1",
+        "parser_version": "callout-parser/1",
+        "transcription_revision": 1,
+        "status": "parsed",
+        "form": "diameter",
+        "size": 0.5,
+        "count": null,
+        "termination": "blind",
+        "depth": 0.25,
+        "unit": "in",
+        "warnings": [
+          "unit_differs_from_sheet"
+        ]
+      },
+      "compiled_hole": {
+        "circle_id": "c0",
+        "kind": "pocket",
+        "diameter": 12.7,
+        "depth": 0.25
+      },
+      "readiness_ready": true,
+      "expected_depth_mm": 6.35,
+      "plan_depth_mm": 0.25,
+      "passed": false
+    },
+    {
+      "finding": "R02",
+      "case": "sheet_inch_depth",
+      "text": "Ø.5 .25 DEEP",
+      "parse": {
+        "callout_id": "k1",
+        "parser_version": "callout-parser/1",
+        "transcription_revision": 2,
+        "status": "parsed",
+        "form": "diameter",
+        "size": 0.5,
+        "count": null,
+        "termination": "blind",
+        "depth": 0.25,
+        "unit": null,
+        "warnings": [
+          "unit_unresolved"
+        ]
+      },
+      "compiled_hole": {
+        "circle_id": "c0",
+        "kind": "pocket",
+        "diameter": 12.7,
+        "depth": 0.25
+      },
+      "readiness_ready": true,
+      "expected_depth_mm": 6.35,
+      "plan_depth_mm": 0.25,
+      "passed": false
+    },
+    {
+      "finding": "R04",
+      "case": "unsupported",
+      "text": "M8",
+      "parse_status": "unsupported",
+      "expected_category": "parse_error",
+      "actual_categories": {
+        "missing_target": 1
+      },
+      "questions": [
+        {
+          "category": "missing_target",
+          "callout_id": "k1",
+          "action": "confirm_target",
+          "reason": "needs_target",
+          "text": "«k1» için hedef geometri onaylanmadı."
+        }
+      ],
+      "confirmation_error": "parse durumu 'unsupported' iken hedef onayı kaydedilemez: k1",
+      "confirmation_rejected_without_write": true,
+      "passed": false
+    },
+    {
+      "finding": "R04",
+      "case": "ambiguous",
+      "text": "Ø8 9",
+      "parse_status": "ambiguous",
+      "expected_category": "parse_ambiguous",
+      "actual_categories": {
+        "missing_target": 1
+      },
+      "questions": [
+        {
+          "category": "missing_target",
+          "callout_id": "k1",
+          "action": "confirm_target",
+          "reason": "needs_target",
+          "text": "«k1» için hedef geometri onaylanmadı."
+        }
+      ],
+      "confirmation_error": "parse durumu 'ambiguous' iken hedef onayı kaydedilemez: k1",
+      "confirmation_rejected_without_write": true,
+      "passed": false
+    }
+  ],
+  "passed": false
+}

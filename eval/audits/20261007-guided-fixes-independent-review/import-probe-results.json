@@ -1,0 +1,79 @@
+{
+  "reviewed_baseline": "e51f555",
+  "cases": [
+    {
+      "error": null,
+      "import_wrote": true,
+      "stored_targets": [
+        {
+          "callout_id": "k1",
+          "target_kind": "circle",
+          "target_ids": [
+            "c0"
+          ],
+          "geometry_version": 3,
+          "geometry_key": "dea25226a3ffa5187151e112dde655140a4bb29bd0a316061d9ba662ad056d70",
+          "profile_id": "outline_1",
+          "transcription_revision": 1,
+          "parser_version": "callout-parser/1",
+          "evidence": [
+            {
+              "kind": "external_review",
+              "ref": "confirm_target · c0"
+            }
+          ],
+          "status": "confirmed",
+          "reconfirm": false
+        }
+      ],
+      "target_state": {
+        "state": "current",
+        "reason": null
+      },
+      "passed": true,
+      "case": "current_bundle_and_undo_control",
+      "finding": "control",
+      "undo_restored_exact_decisions": true,
+      "revision_increased": true
+    },
+    {
+      "error": "içe aktarma reddedildi: parser_version_mismatch (inceleme 'callout-parser/obsolete' okumasıyla yapılmış; sunucu 'callout-parser/1' — oturumu yeniden dışa aktarın)",
+      "import_wrote": false,
+      "stored_targets": [],
+      "target_state": {
+        "state": "missing",
+        "reason": "needs_target"
+      },
+      "passed": true,
+      "case": "obsolete_parser_header",
+      "finding": "R05",
+      "reviewed_parser_version": "callout-parser/obsolete"
+    },
+    {
+      "error": "içe aktarma reddedildi: geometry_version_mismatch (3 ≠ 4; geometri bu paket dışa aktarıldıktan sonra yenilendi — yeniden dışa aktarıp inceleyin)",
+      "import_wrote": false,
+      "stored_targets": [],
+      "target_state": {
+        "state": "missing",
+        "reason": "needs_target"
+      },
+      "passed": true,
+      "case": "bundle_exported_before_geometry_migration",
+      "finding": "R05",
+      "reviewed_geometry_version": 3,
+      "current_geometry_version": 4,
+      "base_revision_equal": true,
+      "old_center": [
+        45.0,
+        45.0
+      ],
+      "new_center": [
+        70,
+        45
+      ],
+      "old_geometry_key": "dea25226a3ffa5187151e112dde655140a4bb29bd0a316061d9ba662ad056d70",
+      "new_geometry_key": "466cb26a5f227a61fcfaf2473fcb308aea052e8108b9bf172ac20e0e71d37d1d"
+    }
+  ],
+  "passed": true
+}

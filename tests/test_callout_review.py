@@ -11,7 +11,7 @@ import json
 from callout_fixtures import ARC, circle, record
 
 from drawingto3d import callout_review
-from drawingto3d.callout_models import CALLOUT_PARSER_VERSION, CALLOUT_SCHEMA_VERSION
+from drawingto3d.callout_models import CALLOUT_PARSER_VERSION, CALLOUT_SCHEMA_VERSION, geometry_key
 
 THRU = {"target_kind": "circle", "target_ids": ["c0"], "transcription_revision": 1,
         "parser_version": CALLOUT_PARSER_VERSION}
@@ -212,3 +212,32 @@ def test_an_all_or_nothing_validation_never_touches_the_record():
     assert plan["ok"] is False
     assert plan["actions"] == [], "tek hata bütün partiyi reddeder (all-or-nothing)"
     assert copy.deepcopy(row) == before, "doğrulama kaydı hiç değiştirmez"
+
+
+# --- R05 — paket, incelendiği bağlamı taşır (2026-10-07) ------------------------------------
+
+def test_the_bundle_carries_the_parser_and_geometry_context_it_was_reviewed_in():
+    row = record("Ø8 THRU", [0.10, 0.20, 0.20, 0.32], stored_target=THRU)
+    bundle = callout_review.export_bundle(row)
+    assert bundle["parser_version"] == CALLOUT_PARSER_VERSION
+    assert bundle["geometry_version"] == row["geometry_version"]
+    assert bundle["geometry_key"] == geometry_key(row)
+
+
+def test_a_bundle_from_another_parser_or_geometry_context_is_refused():
+    row = record("Ø8 THRU", [0.10, 0.20, 0.20, 0.32], stored_target=THRU)
+    assert callout_review.validate_import(row, bundle_for(row, [action("ignore")]))["ok"] is True, \
+        "bağlam eşitken paket geçer (kontrol)"
+    stale_parser = bundle_for(row, [action("ignore")], parser_version="callout-parser/obsolete")
+    assert [item["reason"] for item in callout_review.validate_import(row, stale_parser)["errors"]] == \
+        ["parser_version_mismatch"]
+    moved_version = bundle_for(row, [action("ignore")], geometry_version=row["geometry_version"] + 1)
+    assert [item["reason"] for item in callout_review.validate_import(row, moved_version)["errors"]] == \
+        ["geometry_version_mismatch"]
+    moved_key = bundle_for(row, [action("ignore")], geometry_key="0" * 32)
+    assert [item["reason"] for item in callout_review.validate_import(row, moved_key)["errors"]] == \
+        ["geometry_mismatch"]
+    missing_key = bundle_for(row, [action("ignore")])
+    missing_key.pop("geometry_key")
+    assert [item["reason"] for item in callout_review.validate_import(row, missing_key)["errors"]] == \
+        ["geometry_mismatch"], "bağlamı taşımayan paket kabul edilmez"

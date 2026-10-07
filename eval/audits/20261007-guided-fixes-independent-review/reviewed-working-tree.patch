@@ -1,0 +1,781 @@
+diff --git a/src/drawingto3d/callout_compile.py b/src/drawingto3d/callout_compile.py
+index 80509fe..3d05221 100644
+--- a/src/drawingto3d/callout_compile.py
++++ b/src/drawingto3d/callout_compile.py
+@@ -13,16 +13,20 @@ nothing is written, no confirmation is created, and a compiled row reaches a bui
+ 
+ Unsupported semantics stay explicit (`READ success` + `BIND success` + `CAD unsupported`): a
+ diameter whose text does not say THRU/BLIND does not become a hole, a radius with a confirmed arc
+-does not become a fillet, and a two-end tie that is not axis-aligned has no axis to bind.
++does not become a fillet, and a two-end tie that is not axis-aligned has no axis to bind. A tie's
++axis and direction are read in the *sheet's own* frame — the same `view_transform` the build
++refuses without (PLAN §8.6) — never off the raw page delta, whose y grows downwards.
+ """
+ from __future__ import annotations
+ 
+ import copy
+ 
+-from drawingto3d.callout_models import callout_state, effective_callouts, geometry_key, sheet_unit
++from drawingto3d.callout_models import (CALLOUT_PARSER_VERSION, callout_state, effective_callouts,
++                                        geometry_key, sheet_unit)
+ 
+ INCH_MM = 25.4
+ AXIS_TOLERANCE_PX = 0.5      # both ends have to move on one axis for an axis tie to exist
++MM_LIMIT = 1e6               # `guided.Hole`'s own mm bound (gt=0, le=1e6): a converted value must fit it
+ 
+ 
+ def _decisions(record: dict) -> dict:
+@@ -38,20 +42,47 @@ def _parse_row(record: dict, callout_id: str, revision, parser_version) -> dict
+     return None
+ 
+ 
+-def _size_mm(parse: dict, declared: str | None) -> tuple[float | None, str | None]:
+-    """The reported size in millimetres and where its unit came from — never assumed.
++def _unit_factor(parse: dict, declared: str | None) -> tuple[float, str] | None:
++    """Millimetres per reported unit and where the unit came from — never assumed (PLAN §9).
+ 
+     A printed unit wins; otherwise the unit the user declared for the sheet resolves it and the
+-    provenance says so (`sheet`). With neither, the size stays unresolved (`missing_unit`).
++    provenance says so (`sheet`). With neither, nothing resolves (`missing_unit`).
+     """
+-    size, unit = parse.get("size"), parse.get("unit")
+-    if size is None:
+-        return None, None
++    unit = parse.get("unit")
+     if unit in ("mm", "in"):
+-        return float(size) * (INCH_MM if unit == "in" else 1.0), "printed"
++        return (INCH_MM if unit == "in" else 1.0), "printed"
+     if declared in ("mm", "in"):
+-        return float(size) * (INCH_MM if declared == "in" else 1.0), "sheet"
+-    return None, None
++        return (INCH_MM if declared == "in" else 1.0), "sheet"
++    return None
++
++
++def _size_mm(parse: dict, declared: str | None) -> tuple[float | None, str | None]:
++    """The reported size in millimetres and where its unit came from — never assumed."""
++    size = parse.get("size")
++    resolved = _unit_factor(parse, declared)
++    if size is None or resolved is None:
++        return None, None
++    return float(size) * resolved[0], resolved[1]
++
++
++def _view_axes(record: dict) -> tuple[dict | None, str]:
++    """The sheet's own axes as the build reads them, or the reason there are none (PLAN §8.6).
++
++    `make_plan` is the authority the build refuses without; sharing its resolver keeps a compiled
++    tie on exactly the axes the solver will read. A record whose view is malformed, or one with no
++    vouchable view at all, comes back as a reason — the caller turns that into an open decision
++    instead of guessing. Pure by construction: nothing is written, nothing is confirmed.
++    """
++    from drawingto3d import guided
++    try:
++        decisions = guided.Decisions.model_validate(_decisions(record))
++        axes = guided.view_transform(decisions, record.get("options") or {})
++    except ValueError as failure:
++        return None, " ".join(str(failure).split())
++    if axes is not None:
++        return axes, ""
++    product = (record.get("options") or {}).get("sheet_frame") or {}
++    return None, str(product.get("provenance") or "pafta çerçevesi okunamadı ve onaylı görüş yok")
+ 
+ 
+ def _end(profile: dict, profile_id: str, edge: dict, which: str) -> dict | None:
+@@ -62,13 +93,22 @@ def _end(profile: dict, profile_id: str, edge: dict, which: str) -> dict | None:
+             "profile": profile_id, "geometry_version": None, "end": which}
+ 
+ 
+-def _axis_tie(first: dict, second: dict) -> tuple[str, int] | None:
++def _axis_tie(first: dict, second: dict, axes: dict) -> tuple[str, int] | None:
++    """The tie's axis and direction in the *sheet's* own frame — never the raw page delta (R01).
++
++    `axes` is the view transform the build resolved (page-frame unit vectors for the sheet's +x/+y),
++    the same one `make_plan` maps with. Page y grows downwards while the part's y grows upwards, so
++    a downward pair is direction -1 — exactly the convention `Binding` carries; reading the page
++    sign directly flips it. A pair that is diagonal in the sheet's frame has no axis to bind.
++    """
+     dx, dy = float(second["x"]) - float(first["x"]), float(second["y"]) - float(first["y"])
+-    if min(abs(dx), abs(dy)) > AXIS_TOLERANCE_PX:
++    along_x = dx * float(axes["x"][0]) + dy * float(axes["x"][1])
++    along_y = dx * float(axes["y"][0]) + dy * float(axes["y"][1])
++    if min(abs(along_x), abs(along_y)) > AXIS_TOLERANCE_PX:
+         return None                      # çapraz iki uç: ölçünün ekseni yok, uydurulmaz
+-    if abs(dx) >= abs(dy):
+-        return ("x", 1 if dx >= 0 else -1)
+-    return ("y", 1 if dy >= 0 else -1)
++    if abs(along_x) >= abs(along_y):
++        return ("x", 1 if along_x >= 0 else -1)
++    return ("y", 1 if along_y >= 0 else -1)
+ 
+ 
+ def _same_hole(existing: dict, compiled: dict) -> bool:
+@@ -96,6 +136,7 @@ def compile_callouts(record: dict) -> dict:
+     excluded: list[dict] = []
+     rows: list[dict] = []
+     seen_holes: dict[str, dict] = {}
++    view_axes, view_reason = _view_axes(record)
+ 
+     for callout in effective_callouts(record):
+         callout_id = callout["id"]
+@@ -134,25 +175,16 @@ def compile_callouts(record: dict) -> dict:
+                         if text.get("callout_id") == callout_id), None)
+         target = next((item for item in decisions.get("callout_targets") or []
+                        if item.get("callout_id") == callout_id), None)
+-        parser_version = target.get("parser_version") if target else None
+-        parse = _parse_row(record, callout_id, revision, parser_version) if parser_version else None
+-        if parse is None and target is not None:
+-            parse = _parse_row(record, callout_id, revision,
+-                               state.get("parse", {}).get("parser_version") or "")
++        # R04 (review): the reading is chosen from the transcription revision and the *server's own*
++        # parser version — never the target's, which may not exist yet. A text the parser cannot
++        # support must read as an edit-the-text question, not as a missing-target one (the store
++        # refuses that confirmation anyway, so the old order sent the user to a dead-end step).
++        parse = _parse_row(record, callout_id, revision, CALLOUT_PARSER_VERSION)
+         row.update(raw_text=(written or {}).get("raw_text"),
+                    parser_version=(parse or {}).get("parser_version"),
+                    semantic={name: (parse or {}).get(name)
+                              for name in ("status", "form", "size", "count", "termination", "depth", "unit")})
+ 
+-        target_state = state.get("target") or {}
+-        if target is None:
+-            row.update(status="missing_target", reason="needs_target")
+-            continue
+-        if target_state.get("state") != "current":
+-            row.update(status="stale_target", reason=target_state.get("reason") or "stale")
+-            continue
+-        row.update(target_kind=target.get("target_kind"), target_ids=list(target.get("target_ids") or []))
+-
+         if parse is None or parse.get("status") != "parsed":
+             status = "parse_ambiguous" if (parse or {}).get("status") == "ambiguous" else "parse_unsupported"
+             row.update(status=status, reason="unsupported_syntax")
+@@ -164,7 +196,27 @@ def compile_callouts(record: dict) -> dict:
+             continue
+         row["unit_source"] = unit_source
+ 
++        target_state = state.get("target") or {}
++        if target is None:
++            row.update(status="missing_target", reason="needs_target")
++            continue
++        if target_state.get("state") != "current":
++            row.update(status="stale_target", reason=target_state.get("reason") or "stale")
++            continue
++        row.update(target_kind=target.get("target_kind"), target_ids=list(target.get("target_ids") or []))
++
+         if form == "diameter":
++            resolved = _unit_factor(parse, declared_unit)
++            assert resolved is not None           # `size_mm` çözüldü: birim de çözüldü
++            factor = resolved[0]
++            if size_mm > MM_LIMIT:
++                # R02 (review): the converted value has to fit the model it will become — refusing
++                # here says so, where `Hole`'s own validation would fail one layer later, unnamed.
++                unsupported.append({"callout_id": callout_id, "reason": "unsupported_semantic",
++                                    "detail": f"çap mm'ye çevrildiğinde {size_mm:g} mm: model sınırı "
++                                              f"{MM_LIMIT:g} mm", "raw_text": row["raw_text"]})
++                row.update(status="unsupported_semantic", reason="diameter_out_of_range")
++                continue
+             termination = parse.get("termination")
+             if termination is None:
+                 unsupported.append({"callout_id": callout_id, "reason": "unsupported_cad_feature",
+@@ -179,9 +231,19 @@ def compile_callouts(record: dict) -> dict:
+                                     "raw_text": row["raw_text"]})
+                 row.update(status="unsupported_semantic", reason="depth_missing")
+                 continue
++            depth_mm = None
++            if termination == "blind":
++                # R02 (review): the depth is a measurement like the diameter — converted through the
++                # same resolved unit, with the model's own mm bound applied after the conversion.
++                depth_mm = float(depth) * factor
++                if depth_mm > MM_LIMIT:
++                    unsupported.append({"callout_id": callout_id, "reason": "unsupported_semantic",
++                                        "detail": f"derinlik mm'ye çevrildiğinde {depth_mm:g} mm: model "
++                                                  f"sınırı {MM_LIMIT:g} mm", "raw_text": row["raw_text"]})
++                    row.update(status="unsupported_semantic", reason="depth_out_of_range")
++                    continue
+             wanted = {"circle_id": None, "kind": "through" if termination == "thru" else "pocket",
+-                      "diameter": size_mm,
+-                      "depth": None if termination == "thru" else float(depth or 0.0)}
++                      "diameter": size_mm, "depth": depth_mm}
+             missing = [item for item in row["target_ids"] if item not in circles]
+             if missing:
+                 conflicts.append({"callout_id": callout_id, "reason": "unknown_geometry",
+@@ -262,7 +324,16 @@ def compile_callouts(record: dict) -> dict:
+                                   "detail": "onaylanan uçlar konturda bulunamadı: " + ", ".join(row["target_ids"])})
+                 row.update(status="conflict", reason="unknown_geometry")
+                 continue
+-            axis = _axis_tie(ends[0], ends[1])
++            if view_axes is None:
++                # R01 (review): the axis/direction decision needs the sheet's own frame; without a
++                # vouchable view it is an *open decision* (PLAN §8.6) — never a page-frame guess.
++                unsupported.append({"callout_id": callout_id, "reason": "view_not_confirmed",
++                                    "detail": "ölçünün ekseni/yönü görüş ekseni onaylanmadan belirlenemez "
++                                              "(PLAN §8.6): " + view_reason,
++                                    "raw_text": row["raw_text"]})
++                row.update(status="view_not_confirmed", reason="view_not_confirmed")
++                continue
++            axis = _axis_tie(ends[0], ends[1], view_axes)
+             if axis is None:
+                 unsupported.append({"callout_id": callout_id, "reason": "unsupported_semantic",
+                                     "detail": "iki uç eksenel değil (çapraz): ölçünün ekseni belirlenemez",
+diff --git a/src/drawingto3d/callout_readiness.py b/src/drawingto3d/callout_readiness.py
+index 68d91e8..34d702b 100644
+--- a/src/drawingto3d/callout_readiness.py
++++ b/src/drawingto3d/callout_readiness.py
+@@ -31,6 +31,9 @@ _STATUS = {
+     "unsupported_semantic": ("unsupported_semantic", "review_callout"),
+     "unsupported_cad_feature": ("unsupported_cad_feature", "review_callout"),
+     "conflict": ("callout_conflict", "review_conflict"),
++    # R01 (review): a linear tie with no vouchable view is an open *view* decision, not a broken
++    # callout — the category is the sheet's, and the action names the step that answers it.
++    "view_not_confirmed": ("missing_view", "confirm_view"),
+ }
+ 
+ _QUESTION = {
+diff --git a/src/drawingto3d/callout_review.py b/src/drawingto3d/callout_review.py
+index 6831987..f6f37c8 100644
+--- a/src/drawingto3d/callout_review.py
++++ b/src/drawingto3d/callout_review.py
+@@ -19,7 +19,7 @@ from datetime import datetime, timezone
+ 
+ from drawingto3d import callout_bind
+ from drawingto3d.callout_models import (CALLOUT_PARSER_VERSION, CALLOUT_SCHEMA_VERSION, callout_state,
+-                                        effective_callouts)
++                                        effective_callouts, geometry_key)
+ 
+ BUNDLE_VERSION = 1
+ IMPORT_ACTIONS = ("transcribe", "ignore", "restore", "confirm_target", "select_target")
+@@ -100,6 +100,10 @@ def export_bundle(record: dict, *, artifacts: dict | None = None, proposals_limi
+         "created_at": _now(),
+         "detector_version": (record.get("callout_detection") or {}).get("detector_version"),
+         "geometry_version": record.get("geometry_version"),
++        # R05 (review): the fingerprint the reviewer's approval is bound to. The version alone
++        # cannot see a same-version content change, and a migration refreshes geometry without
++        # bumping the revision — the key is what makes both visible at import time.
++        "geometry_key": geometry_key(record),
+         "callouts": rows,
+         "instructions": ("Her callout için: `transcribe` (metni yaz), `ignore`/`restore` (callout değil), "
+                          "`confirm_target` (öneriyi onayla), `select_target` (kendi seçimin). "
+@@ -184,6 +188,23 @@ def validate_import(record: dict, bundle: dict, *, session_token: str | None = N
+     elif base != (record.get("revision") or 0):
+         errors.append({"reason": "stale_base_revision",
+                        "detail": f"{base} ≠ {record.get('revision') or 0}"})
++    # R05 (review): the bundle must carry the context the reviewer *saw* — the parser that read the
++    # text and the geometry fingerprint the proposals came from. `_migrated` refreshes geometry
++    # without touching the revision, so the base-revision gate alone would let a pre-migration
++    # approval land on moved geometry; comparing the context is what makes that refusal whole.
++    if str(bundle.get("parser_version") or "") != CALLOUT_PARSER_VERSION:
++        errors.append({"reason": "parser_version_mismatch",
++                       "detail": f"inceleme '{bundle.get('parser_version')}' okumasıyla yapılmış; sunucu "
++                                 f"'{CALLOUT_PARSER_VERSION}' — oturumu yeniden dışa aktarın"})
++    if bundle.get("geometry_version") != record.get("geometry_version"):
++        errors.append({"reason": "geometry_version_mismatch",
++                       "detail": f"{bundle.get('geometry_version')} ≠ {record.get('geometry_version')}; "
++                                 "geometri bu paket dışa aktarıldıktan sonra yenilendi — yeniden dışa "
++                                 "aktarıp inceleyin"})
++    elif str(bundle.get("geometry_key") or "") != geometry_key(record):
++        errors.append({"reason": "geometry_mismatch",
++                       "detail": "paketin onayladığı geometri bağlamı bu oturumun güncel bağlamıyla "
++                                 "eşleşmiyor — oturumu yeniden dışa aktarıp inceleyin"})
+     raw = bundle.get("actions")
+     if not isinstance(raw, list) or not raw:
+         errors.append({"reason": "no_actions"})
+diff --git a/src/drawingto3d/static/guided.js b/src/drawingto3d/static/guided.js
+index 3e291e8..ed643a8 100644
+--- a/src/drawingto3d/static/guided.js
++++ b/src/drawingto3d/static/guided.js
+@@ -382,6 +382,7 @@ function renderTarget(){const panel=$('target-panel');if(!panel)return;const row
+    :(stored?`Onaylı: ${targetDescription(stored)} · ${evidenceText(stored)}`:'Henüz hedef onaylanmadı.')));
+  const box=$('target-proposals');box.replaceChildren();
+  const proposals=(targetInfo&&targetInfo.proposals)||[];
++ if(targetInfo&&proposalHighlight&&!highlightedProposal())proposalHighlight=null;   // bayat vurgu sessizce kalmaz
+  if(targetInfo&&targetInfo.error){const p=document.createElement('p');p.className='muted';p.textContent=`Öneri alınamadı: ${targetInfo.error}`;box.append(p);}
+  for(const [index,item] of proposals.entries()){const div=document.createElement('div');div.className='feature';
+   const choose=document.createElement('button');choose.className='secondary';choose.textContent='Seç';
+@@ -392,8 +393,9 @@ function renderTarget(){const panel=$('target-panel');if(!panel)return;const row
+   div.append(choose,label);box.append(div);}
+  if(!proposals.length&&!(targetInfo&&targetInfo.error)){const p=document.createElement('p');p.className='muted';
+   p.textContent=pickedTranscription()?'Bu bölgede öneri yok: “Başka hedef seç” ile çizimden seçin.':'Önce metni kaydedin: hedef onayı güncel bir okumaya bağlanır.';box.append(p);}
+- const top=proposals[0]||null;
+- $('target-confirm').disabled=pending||row.ignored||!top;
++ const active=activeProposal();
++ $('target-confirm').disabled=pending||row.ignored||!active;
++ $('target-confirm').textContent=active?`Onayla · ${proposals.indexOf(active)+1}. öneri`:'Onayla';
+  $('target-other').disabled=pending||row.ignored;$('target-group').disabled=pending||row.ignored;
+  $('target-unbindable').disabled=pending;$('target-unbindable').textContent=row.unbindable?'Kapsam kararını geri al':'Bağlama yok / desteklenmiyor';
+  $('target-kind').disabled=pending||row.ignored;
+@@ -405,6 +407,12 @@ function renderTarget(){const panel=$('target-panel');if(!panel)return;const row
+   :'Onayladığınız hedef, metnin okumasıyla birlikte delik/ölçü kararına derlenir.');}
+ function targetDescription(row){return `${TARGET_KIND_LABEL[row.target_kind]||row.target_kind} · ${(row.target_ids||[]).join(', ')}`;}
+ function evidenceText(row){const e=(row.evidence||[])[0]||{};return `${row.evidence_tier||''}${e.detail?` · ${e.detail}`:e.ref?` · ${e.ref}`:e.kind?` · ${e.kind}`:''}`;}
++// R03 (inceleme): tek aktif öneri — etikete tıklayıp vurgulamak *neyi* onaylayacağını belirler;
++// genel [Onayla] vurgulanan öneriyi (yoksa ilkini — düğme bunu açıkça söyler) yazar, asla
++// sessizce başka bir hedefi değil. Vurgu listeyle eşleşmezse bayat sayılır ve temizlenir.
++function highlightedProposal(){if(!proposalHighlight||!targetInfo||!targetInfo.proposals)return null;
++ return targetInfo.proposals.find(item=>item.target_kind===proposalHighlight.kind&&String(item.target_ids)===String(proposalHighlight.ids))||null;}
++function activeProposal(){return highlightedProposal()||((targetInfo&&targetInfo.proposals||[])[0]||null);}
+ async function loadTarget(key){try{const data=await api('/api/guided/propose',{token:state.token,callout_id:selectedCallout});
+   if(targetLoading===key)targetInfo={key,...data};}
+  catch(e){if(targetLoading===key)targetInfo={key,error:e.message,proposals:[],target:null};}
+@@ -452,8 +460,8 @@ $('review-import').onchange=async event=>{const file=event.target.files[0];event
+   status('İnceleme içe aktarıldı: eylemler bu kaydın doğrulamasından geçti ve “dış inceleme” olarak işaretlendi.');}
+  catch(e){status(e.message,true);}finally{busy(false);}};
+ // --- bağlanma: var olan düğmeler ve çizim döngüsü -----------------------------------------------
+-$('target-confirm').onclick=()=>{const top=(targetInfo&&targetInfo.proposals||[])[0];
+- if(!top)return status('Onaylanacak öneri yok; “Başka hedef seç” ile çizimden seçin.',true);confirmProposal(top);};
++$('target-confirm').onclick=()=>{const item=activeProposal();
++ if(!item)return status('Onaylanacak öneri yok; “Başka hedef seç” ile çizimden seçin.',true);confirmProposal(item);};
+ $('target-other').onclick=()=>beginTargetPick($('target-kind').value||'circle');
+ $('target-group').onclick=()=>beginTargetPick('circle_group');
+ $('target-kind').onchange=()=>{targetKind=$('target-kind').value;renderTarget();};
+diff --git a/tests/callout_fixtures.py b/tests/callout_fixtures.py
+index 5b22ccd..4433221 100644
+--- a/tests/callout_fixtures.py
++++ b/tests/callout_fixtures.py
+@@ -42,7 +42,8 @@ def record(text, region, *, circles=None, count=None, leader=None, arcs=(), clai
+            px_per_mm=2.0, stored_target=None, ignored=False, profile_id="outline_0",
+            unbindable=False, manual_holes=(), manual_bindings=(), region_override=None,
+            token=TOKEN, revision=1, sheet_unit: "str | None" = None, geometry_version=3, parses=None,
+-           source_sha256=SOURCE, candidates=True, callout_id="k1", second_text=None, calibration=True):
++           source_sha256=SOURCE, candidates=True, callout_id="k1", second_text=None, calibration=True,
++           sheet_frame=True, view=None):
+     """One synthetic session record: geometry, one detected callout, its text and its real parse."""
+     circles = circles if circles is not None else [{"id": "c0", "center": [45.0, 45.0], "radius": 6.0}]
+     review = {"callout_id": callout_id, "ignored": bool(ignored), "revision": 1}
+@@ -55,6 +56,11 @@ def record(text, region, *, circles=None, count=None, leader=None, arcs=(), clai
+         "source_sha256": source_sha256, "source": "/tmp/synthetic/source.pdf",
+         "options": {
+             "frame": {"width": 300, "height": 200},
++            # The product's own frame, as `drawing_options` publishes it for a bordered sheet. The
++            # compiler reads its tie axis through `view_transform` (R01), so the record has to carry
++            # the same shape the store hands it — `sheet_frame=False` models a sheet without one.
++            "sheet_frame": ({"found": True, "aligned": True, "rotation": 0,
++                             "rect": [10.0, 10.0, 290.0, 190.0]} if sheet_frame else None),
+             "circles": [{"id": c["id"], "center": list(c["center"]), "radius": c["radius"]}
+                         for c in circles],
+             "primitives": _primitives(circles, leader=leader, arcs=arcs),
+@@ -81,7 +87,8 @@ def record(text, region, *, circles=None, count=None, leader=None, arcs=(), clai
+                       "bindings": [copy.deepcopy(dict(item)) for item in manual_bindings],
+                       "profile_id": profile_id,
+                       "calibration": ({"first": [20, 20], "second": [120, 20], "value": 50, "unit": "mm"}
+-                                      if calibration else None)},
++                                      if calibration else None),
++                      **({"view": view} if view is not None else {})},
+         "history": [], "build": None, "log": [],
+     }
+     parse = callout_parse.semantic_parse(row["decisions"]["transcriptions"][0], sheet_unit=sheet_unit)
+diff --git a/tests/test_callout_compile.py b/tests/test_callout_compile.py
+index aa0b02e..f6e15cc 100644
+--- a/tests/test_callout_compile.py
++++ b/tests/test_callout_compile.py
+@@ -220,3 +220,97 @@ def test_provenance_rows_keep_the_chain_order():
+                           "target_ids", "geometry_key", "geometry_version", "status", "reason",
+                           "compiled_decision", "generated_features"}
+     assert copy.deepcopy(compiled) == callout_compile.compile_callouts(row), "derleme deterministik"
++
++
++# --- R01/R02/R04 — bağımsız inceleme düzeltme turu (2026-10-07) -----------------------------
++
++VERTICAL_END = {"target_kind": "vertex_pair", "target_ids": ["g1:start", "g1:end"]}
++
++
++def test_a_vertical_tie_reads_the_sheets_own_y_axis():
++    """R01: sayfa y'si aşağı, parça y'si yukarı — yön sayfa farkından değil, pafta ekseninden okunur."""
++    row = record("30 mm", [0.10, 0.20, 0.20, 0.32], stored_target=VERTICAL_END)
++    binding = callout_compile.compile_callouts(row)["bindings"][0]
++    assert binding["axis"] == "y" and binding["direction"] == -1
++    assert binding["first"]["id"] == "g1:start" and binding["second"]["id"] == "g1:end"
++
++
++def test_a_reversed_pair_flips_the_direction_not_the_axis():
++    row = record("30 mm", [0.10, 0.20, 0.20, 0.32],
++                 stored_target={"target_kind": "vertex_pair", "target_ids": ["g1:end", "g1:start"]})
++    binding = callout_compile.compile_callouts(row)["bindings"][0]
++    assert binding["axis"] == "y" and binding["direction"] == 1
++
++
++def test_a_rotated_view_turns_the_tie_axis_with_the_sheet():
++    """R01: x_page=[0,1] ile sayfa-dikey bağ paftanın X eksenindedir — sadece dy işareti çevirmek yetmez."""
++    row = record("30 mm", [0.10, 0.20, 0.20, 0.32], stored_target=VERTICAL_END,
++                 view={"x_page": [0.0, 1.0], "y_page": [1.0, 0.0], "source": "page_axes"})
++    binding = callout_compile.compile_callouts(row)["bindings"][0]
++    assert binding["axis"] == "x" and binding["direction"] == 1
++
++
++def test_a_record_without_a_vouchable_view_makes_the_axis_an_open_decision():
++    """R01 + PLAN §8.6: görüş yoksa eksen uydurulmaz — derleme durur ve açık karar döner."""
++    row = record("30 mm", [0.10, 0.20, 0.20, 0.32],
++                 stored_target={"target_kind": "vertex_pair", "target_ids": ["g0:start", "g0:end"]},
++                 sheet_frame=False)
++    compiled = callout_compile.compile_callouts(row)
++    assert compiled["bindings"] == []
++    assert compiled["rows"][0]["status"] == "view_not_confirmed"
++    readiness = callout_readiness.build_readiness(row)
++    assert readiness["categories"] == {"missing_view": 1}
++    assert readiness["questions"][0]["action"] == "confirm_view"
++
++
++def test_a_printed_inch_depth_is_converted_with_its_diameter():
++    """R02: basılı `in` derinliği de belirler — 0.25 in 6.35 mm'dir, çap 12.7 mm."""
++    row = record("Ø.5 .25 DEEP in", [0.10, 0.20, 0.20, 0.32], stored_target=THRU)
++    compiled = callout_compile.compile_callouts(row)
++    assert compiled["holes"] == [{"circle_id": "c0", "kind": "pocket", "diameter": 12.7, "depth": 6.35}]
++
++
++def test_a_sheet_inch_depth_is_converted_too():
++    row = record("Ø.5 .25 DEEP", [0.10, 0.20, 0.20, 0.32], stored_target=THRU)
++    row["decisions"]["calibration"]["unit"] = "in"
++    compiled = callout_compile.compile_callouts(row)
++    assert compiled["holes"][0]["diameter"] == 12.7 and compiled["holes"][0]["depth"] == 6.35
++    assert compiled["rows"][0]["unit_source"] == "sheet"
++
++
++def test_a_printed_mm_depth_is_left_alone():
++    row = record("Ø.5 .25 DEEP mm", [0.10, 0.20, 0.20, 0.32], stored_target=THRU)
++    compiled = callout_compile.compile_callouts(row)
++    assert compiled["holes"][0]["depth"] == 0.25
++    assert compiled["rows"][0]["unit_source"] == "printed"
++
++
++def test_a_converted_hole_is_refused_when_it_breaks_the_models_own_bound():
++    from drawingto3d.guided import Hole
++
++    bound = next(meta.le for meta in Hole.model_fields["depth"].metadata if hasattr(meta, "le"))
++    assert callout_compile.MM_LIMIT == bound, "sınır modelin kendi değerini kopyalar"
++    row = record("Ø.5 40000 DEEP in", [0.10, 0.20, 0.20, 0.32], stored_target=THRU)
++    compiled = callout_compile.compile_callouts(row)
++    assert compiled["holes"] == []
++    assert compiled["rows"][0]["status"] == "unsupported_semantic"
++    assert compiled["rows"][0]["reason"] == "depth_out_of_range"
++
++
++def test_a_supported_reading_is_judged_before_a_missing_target():
++    """R04: `M8`'in sorusu metni düzeltmektir; hedefsiz diye eksik hedef gibi sunulmaz."""
++    row = record("M8", [0.10, 0.20, 0.20, 0.32])
++    compiled = callout_compile.compile_callouts(row)
++    assert compiled["rows"][0]["status"] == "parse_unsupported"
++    assert compiled["rows"][0]["semantic"]["status"] == "unsupported", "semantik alanlar dolmalı"
++    readiness = callout_readiness.build_readiness(row)
++    assert readiness["categories"] == {"parse_error": 1}
++    assert readiness["questions"][0]["action"] == "edit_transcription"
++    assert "missing_target" not in readiness["categories"]
++
++
++def test_an_ambiguous_reading_is_judged_before_a_missing_target():
++    row = record("Ø8 9", [0.10, 0.20, 0.20, 0.32])
++    readiness = callout_readiness.build_readiness(row)
++    assert readiness["categories"] == {"parse_ambiguous": 1}
++    assert readiness["questions"][0]["action"] == "edit_transcription"
+diff --git a/tests/test_callout_review.py b/tests/test_callout_review.py
+index 35e4231..38e1152 100644
+--- a/tests/test_callout_review.py
++++ b/tests/test_callout_review.py
+@@ -11,7 +11,7 @@ import json
+ from callout_fixtures import ARC, circle, record
+ 
+ from drawingto3d import callout_review
+-from drawingto3d.callout_models import CALLOUT_PARSER_VERSION, CALLOUT_SCHEMA_VERSION
++from drawingto3d.callout_models import CALLOUT_PARSER_VERSION, CALLOUT_SCHEMA_VERSION, geometry_key
+ 
+ THRU = {"target_kind": "circle", "target_ids": ["c0"], "transcription_revision": 1,
+         "parser_version": CALLOUT_PARSER_VERSION}
+@@ -212,3 +212,32 @@ def test_an_all_or_nothing_validation_never_touches_the_record():
+     assert plan["ok"] is False
+     assert plan["actions"] == [], "tek hata bütün partiyi reddeder (all-or-nothing)"
+     assert copy.deepcopy(row) == before, "doğrulama kaydı hiç değiştirmez"
++
++
++# --- R05 — paket, incelendiği bağlamı taşır (2026-10-07) ------------------------------------
++
++def test_the_bundle_carries_the_parser_and_geometry_context_it_was_reviewed_in():
++    row = record("Ø8 THRU", [0.10, 0.20, 0.20, 0.32], stored_target=THRU)
++    bundle = callout_review.export_bundle(row)
++    assert bundle["parser_version"] == CALLOUT_PARSER_VERSION
++    assert bundle["geometry_version"] == row["geometry_version"]
++    assert bundle["geometry_key"] == geometry_key(row)
++
++
++def test_a_bundle_from_another_parser_or_geometry_context_is_refused():
++    row = record("Ø8 THRU", [0.10, 0.20, 0.20, 0.32], stored_target=THRU)
++    assert callout_review.validate_import(row, bundle_for(row, [action("ignore")]))["ok"] is True, \
++        "bağlam eşitken paket geçer (kontrol)"
++    stale_parser = bundle_for(row, [action("ignore")], parser_version="callout-parser/obsolete")
++    assert [item["reason"] for item in callout_review.validate_import(row, stale_parser)["errors"]] == \
++        ["parser_version_mismatch"]
++    moved_version = bundle_for(row, [action("ignore")], geometry_version=row["geometry_version"] + 1)
++    assert [item["reason"] for item in callout_review.validate_import(row, moved_version)["errors"]] == \
++        ["geometry_version_mismatch"]
++    moved_key = bundle_for(row, [action("ignore")], geometry_key="0" * 32)
++    assert [item["reason"] for item in callout_review.validate_import(row, moved_key)["errors"]] == \
++        ["geometry_mismatch"]
++    missing_key = bundle_for(row, [action("ignore")])
++    missing_key.pop("geometry_key")
++    assert [item["reason"] for item in callout_review.validate_import(row, missing_key)["errors"]] == \
++        ["geometry_mismatch"], "bağlamı taşımayan paket kabul edilmez"
+diff --git a/tests/test_guided_callout_chain.py b/tests/test_guided_callout_chain.py
+index a74e1fa..c4ecb66 100644
+--- a/tests/test_guided_callout_chain.py
++++ b/tests/test_guided_callout_chain.py
+@@ -5,16 +5,20 @@ a read, does a declared "cannot bind" decision really unblock the callout, does
+ reach the plan the build hands to CAD, and does an imported review travel the same validated path a
+ click does — with `external_review` as its provenance and nothing written on refusal.
+ """
++import copy
+ import json
+ import threading
+ import urllib.error
+ import urllib.request
+ from http.server import ThreadingHTTPServer
++from unittest.mock import patch
+ 
+ import pytest
+ 
+ import test_guided_callouts as helpers
++import test_view_core as view_helpers
+ from drawingto3d import app, callout_bind, callout_compile, callout_models, callout_review, guided
++from drawingto3d.callout_parse import semantic_parse
+ 
+ TOKEN = helpers.TOKEN
+ 
+@@ -335,3 +339,218 @@ def test_an_import_over_http_is_refused_whole_when_it_is_wrong(live, store):
+                                              "bundle": {"bundle_version": "x"}})
+     assert code == 400 and "reddedildi" in body["error"]
+     assert not _record(store)["decisions"].get("transcriptions")
++
++
++# --- R01/R02/R04/R05 — bağımsız inceleme düzeltme turu (2026-10-07) --------------------------
++
++def _store_in(tmp_path, name, text, *, inches=False):
++    """İncelemenin kendi fixture'ı: sentetik oturum, (inç kalibrasyon) ve metnin gerçek store
++    komutuyla yazılışı — parse okuması gerçek parser yolundan türetilir."""
++    folder = tmp_path / name
++    folder.mkdir()
++    fixture = helpers.store.__wrapped__(folder)
++    helpers.seed_callouts(fixture)
++    if inches:
++        payload = helpers.current_payload(fixture)
++        payload["calibration"] = {**payload["calibration"], "value": 50 / 25.4, "unit": "in"}
++        fixture.save(TOKEN, 0, payload)
++    fixture.edit_callout(TOKEN, fixture.load(TOKEN)["revision"], "transcribe",
++                         {"callout_id": "k1", "raw_text": text})
++    return fixture
++
++
++def _confirm(fixture, kind, ids):
++    """Hedefi kaydet ve derlenmiş zinciri gerçek GeneralPlan'a kadar çalıştır."""
++    state = fixture.load(TOKEN)
++    payload = helpers.current_payload(fixture, holes=[])
++    payload["callout_targets"] = [helpers._target_payload(
++        target_kind=kind, target_ids=ids,
++        transcription_revision=state["decisions"]["transcriptions"][0]["revision"])]
++    fixture.save(TOKEN, state["revision"], payload)
++    state = fixture.load(TOKEN)
++    compilation = callout_compile.compile_callouts(state)
++    merged = callout_compile.apply_compiled(state["decisions"], compilation)
++    return state, compilation, guided.make_plan({**state, "decisions": merged})
++
++
++def _bbox(plan):
++    edges = {name: float(value.value) for name, value in plan.parameters.items()
++             if name.startswith("edge_")}
++    xs = [value for name, value in edges.items() if name.endswith("_x")]
++    ys = [value for name, value in edges.items() if name.endswith("_y")]
++    return [max(xs) - min(xs), max(ys) - min(ys)]
++
++
++def _with_callout_on(record, *, text, ids, region=(0.10, 0.20, 0.20, 0.32)):
++    """İnceleme kaydına callout katmanı ekle: aday + gerçek parse + onaylı hedef (G5-G7 şekli)."""
++    record["callout_candidates"] = [{"id": "k1", "source_digest": record["source_sha256"], "page_index": 0,
++                                     "region": list(region), "crop_region": list(region),
++                                     "source_kind": "vector_text", "observation_ids": [],
++                                     "detector_version": "callout-detector/1",
++                                     "geometry_version": record["geometry_version"],
++                                     "machine_text_hint": text}]
++    record["decisions"]["transcriptions"] = [{"callout_id": "k1", "raw_text": text, "normalized_text": text,
++                                              "entered_by": "user", "source_region": list(region),
++                                              "revision": 1}]
++    record["callout_parses"] = [semantic_parse({"callout_id": "k1", "raw_text": text, "revision": 1},
++                                               sheet_unit="mm").model_dump(mode="json")]
++    target = {"callout_id": "k1", "transcription_revision": 1, "target_kind": "vertex_pair",
++              "target_ids": list(ids), "profile_id": record["decisions"]["profile_id"],
++              "parser_version": callout_models.CALLOUT_PARSER_VERSION,
++              "geometry_version": record["geometry_version"],
++              "evidence": [{"kind": "user_click", "ref": ids[0]}], "status": "confirmed",
++              "reconfirm": False}
++    target["geometry_key"] = callout_models.geometry_key(record)
++    record["decisions"]["callout_targets"] = [target]
++    return record
++
++
++def test_a_vertical_callout_tie_leaves_the_plan_upright(tmp_path):
++    """R01: (120,20) → (120,80) dik kenara `30 mm` — yön parça çerçevesinde -1, plan 50×30 mm kalır."""
++    fixture = _store_in(tmp_path, "vertical", "30 mm")
++    _state, compilation, plan = _confirm(fixture, "vertex_pair", ["g1:start", "g1:end"])
++    binding = compilation["bindings"][0]
++    assert fixture.readiness(TOKEN)["ready"] is True
++    assert (binding["axis"], binding["direction"]) == ("y", -1)
++    assert _bbox(plan) == [50.0, 30.0]
++
++
++def test_a_horizontal_callout_tie_is_the_untouched_control(tmp_path):
++    """R01 kontrolü: yatay `50 mm` doğruydu ve düzeltmeden sonra da aynı kalır."""
++    fixture = _store_in(tmp_path, "horizontal", "50 mm")
++    _state, compilation, plan = _confirm(fixture, "vertex_pair", ["g0:start", "g0:end"])
++    binding = compilation["bindings"][0]
++    assert (binding["axis"], binding["direction"]) == ("x", 1)
++    assert _bbox(plan) == [50.0, 30.0]
++
++
++def test_a_rotated_sheet_reads_the_tie_in_the_sheets_own_frame(tmp_path):
++    """R01: çeyrek tur dönmüş pafta — bağ paftanın kendi ekseninden okunur; sadece dy işareti yetmez."""
++    record = view_helpers._record(tmp_path, transpose=True, rotation=90, name="turned",
++                                  view={"x_page": [0.0, 1.0], "y_page": [1.0, 0.0], "source": "sheet_frame"})
++    _with_callout_on(record, text="30 mm", ids=["g1:start", "g1:end"])
++    compiled = callout_compile.compile_callouts(record)
++    binding = compiled["bindings"][0]
++    assert (binding["axis"], binding["direction"]) == ("y", 1)
++    plan = guided.make_plan({**record, "decisions": callout_compile.apply_compiled(record["decisions"],
++                                                                                   compiled)})
++    assert _bbox(plan) == [50.0, 30.0]
++
++
++def test_a_printed_inch_blind_depth_reaches_the_plan_in_mm(tmp_path):
++    """R02: `Ø.5 .25 DEEP in` — GeneralPlan'da çap 12.7 mm, derinlik 6.35 mm."""
++    fixture = _store_in(tmp_path, "printed_inch", "Ø.5 .25 DEEP in")
++    _state, compilation, plan = _confirm(fixture, "circle", ["c0"])
++    assert fixture.readiness(TOKEN)["ready"] is True
++    assert compilation["holes"][0]["diameter"] == 12.7
++    assert float(plan.parameters["hole_0_depth"].value) == 6.35
++
++
++def test_a_sheet_inch_blind_depth_reaches_the_plan_in_mm(tmp_path):
++    """R02: birimsiz metin, kalibrasyondan çözülen `in` — derinlik yine 6.35 mm."""
++    fixture = _store_in(tmp_path, "sheet_inch", "Ø.5 .25 DEEP", inches=True)
++    state, compilation, plan = _confirm(fixture, "circle", ["c0"])
++    assert state["decisions"]["calibration"]["unit"] == "in"
++    assert compilation["rows"][0]["unit_source"] == "sheet"
++    assert float(plan.parameters["hole_0_depth"].value) == 6.35
++
++
++def _attempt_confirm(fixture, *, kind="circle", ids=("c0",)):
++    """Kullanıcının onay denemesi: kayıt öncesi/sonrası bayt karşılaştırmasıyla."""
++    state = fixture.load(TOKEN)
++    before = helpers._session_path(fixture).read_bytes()
++    payload = helpers.current_payload(fixture)
++    payload["callout_targets"] = [helpers._target_payload(
++        target_kind=kind, target_ids=list(ids),
++        transcription_revision=state["decisions"]["transcriptions"][0]["revision"])]
++    error = None
++    try:
++        fixture.save(TOKEN, state["revision"], payload)
++    except ValueError as exc:
++        error = str(exc)
++    return error, helpers._session_path(fixture).read_bytes() == before
++
++
++def test_an_unsupported_reading_asks_for_a_text_edit_not_a_target(tmp_path):
++    """R04: gerçek akış — `M8` okuması unsupported; hazırlık parse_error der, onay yine reddedilir."""
++    fixture = _store_in(tmp_path, "unsupported", "M8")
++    assert fixture.load(TOKEN)["callout_parses"][0]["status"] == "unsupported"
++    readiness = fixture.readiness(TOKEN)
++    assert readiness["categories"] == {"parse_error": 1}
++    assert "missing_target" not in readiness["categories"]
++    assert readiness["questions"][0]["action"] == "edit_transcription"
++    error, untouched = _attempt_confirm(fixture)
++    assert error and untouched, "store onayı haklı reddeder ve dosyaya yazmaz"
++
++
++def test_an_ambiguous_reading_asks_for_a_text_edit_not_a_target(tmp_path):
++    fixture = _store_in(tmp_path, "ambiguous", "Ø8 9")
++    assert fixture.load(TOKEN)["callout_parses"][0]["status"] == "ambiguous"
++    readiness = fixture.readiness(TOKEN)
++    assert readiness["categories"] == {"parse_ambiguous": 1}
++    assert "missing_target" not in readiness["categories"]
++    error, untouched = _attempt_confirm(fixture)
++    assert error and untouched
++
++
++def _bundle_for(fixture):
++    bundle = fixture.review_export(TOKEN)
++    bundle["actions"] = [{"action": "confirm_target", "callout_id": "k1",
++                          "target_kind": "circle", "target_ids": ["c0"]}]
++    return bundle
++
++
++def _attempt_import(fixture, bundle):
++    state = fixture.load(TOKEN)
++    before = helpers._session_path(fixture).read_bytes()
++    error = None
++    try:
++        fixture.review_import(TOKEN, state["revision"], bundle)
++    except ValueError as exc:
++        error = str(exc)
++    return error, helpers._session_path(fixture).read_bytes() == before
++
++
++def test_an_import_of_the_same_context_still_lands_and_undo_restores(tmp_path):
++    """R05 kontrolü: bağlam aynıyken import eskisi gibi uygulanır; undo kararları aynen geri getirir."""
++    fixture = _store_in(tmp_path, "current_control", "Ø8 THRU")
++    bundle = _bundle_for(fixture)
++    before = fixture.load(TOKEN)
++    error, _wrote = _attempt_import(fixture, bundle)
++    assert error is None, error
++    imported = fixture.load(TOKEN)
++    assert callout_models.callout_states(imported)[0]["target"]["state"] == "current"
++    fixture.save(TOKEN, imported["revision"], undo=True)
++    undone = fixture.load(TOKEN)
++    assert undone["decisions"] == before["decisions"]
++    assert undone["revision"] > imported["revision"] > before["revision"]
++
++
++def test_a_bundle_from_an_obsolete_parser_header_is_refused_whole(tmp_path):
++    """R05: paketin başlığı sunucunun parser sürümü değilse import tamamıyla reddedilir."""
++    fixture = _store_in(tmp_path, "old_parser", "Ø8 THRU")
++    bundle = _bundle_for(fixture)
++    bundle["parser_version"] = "callout-parser/obsolete"
++    error, untouched = _attempt_import(fixture, bundle)
++    assert error and "parser_version_mismatch" in error
++    assert untouched and not fixture.load(TOKEN)["decisions"].get("callout_targets")
++
++
++def test_a_bundle_exported_before_a_geometry_migration_is_refused_whole(tmp_path):
++    """R05: base revision eşit kalsa da geometri bağlamı değiştiyse eski paket onay yazamaz."""
++    fixture = _store_in(tmp_path, "migrated", "Ø8 THRU")
++    bundle = _bundle_for(fixture)
++    original = fixture.load(TOKEN)
++    fresh = copy.deepcopy(original["options"])
++    next(row for row in fresh["circles"] if row["id"] == "c0")["center"] = [70, 45]
++    with patch.object(guided, "GEOMETRY_VERSION", original["geometry_version"] + 1), \
++            patch.object(guided, "observe", return_value=None), \
++            patch.object(guided, "drawing_options", return_value=fresh):
++        migrated = fixture.load(TOKEN)                # gerçek migration yazısı (meşru, revision'ı artırmaz)
++        error, untouched = _attempt_import(fixture, bundle)   # anlık görüntü: migration sonrası, import öncesi
++    assert migrated["geometry_version"] == original["geometry_version"] + 1
++    assert callout_models.geometry_key(original) != callout_models.geometry_key(migrated)
++    assert bundle["base_revision"] == migrated["revision"], "kontrol yalnız revision'a bakmıyor"
++    assert error and "geometry" in error
++    assert untouched, "reddedilen import migration'ın kendi yazısından sonra dosyaya dokunmaz"
++    assert not fixture.load(TOKEN)["decisions"].get("callout_targets")
+diff --git a/tests/test_guided_html.py b/tests/test_guided_html.py
+index 4b1b2c7..b8d5e99 100644
+--- a/tests/test_guided_html.py
++++ b/tests/test_guided_html.py
+@@ -142,3 +142,19 @@ def test_the_empty_callout_list_gives_the_detectors_own_reason():
+     collector = parse()
+     assert collector.by_id.get("callout-detection") == "div"
+     assert collector.counts["callout-detection"] == 1
++
++
++def test_the_target_confirm_button_writes_the_proposal_the_panel_shows():
++    """R03: vurgulanan öneri ile [Onayla]'nın yazdığı hedef aynı state'ten gelmeli.
++
++    Eski hâl: etikete tıklamak `proposalHighlight`'ı kurarken genel [Onayla] her zaman
++    `proposals[0]`'ı yazıyordu — panel başka bir hedefi işaret ederken onay sessizce ilkini
++    kaydediyordu. Gerçek tarayıcı regresyonu denetim turunda (ui_fix_regression.py); burada
++    servis edilen betiğin sözleşmesi çivilenir: tek bir aktif öneri state'i var ve Onayla onu
++    (yoksa ilk öneriyi — düğme bunu açıkça söyler) kullanıyor.
++    """
++    script = (ROOT / "guided.js").read_text(encoding="utf-8")
++    assert "function activeProposal()" in script, "aktif öneri tek state'ten okunmalı"
++    assert "$('target-confirm').onclick=()=>{const item=activeProposal();" in script, \
++        "Onayla, o anda aktif olan öneriyi yazmalı"
++    assert "`Onayla · ${" in script, "düğme hangi öneriyi yazacağını açıkça belirtmeli"

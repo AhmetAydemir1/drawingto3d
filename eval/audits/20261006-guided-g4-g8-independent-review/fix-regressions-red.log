@@ -1,0 +1,325 @@
+..................FFFFFF.FFF..............FF...................F.FFFFF.F [ 51%]
+F........F...........................................................    [100%]
+=================================== FAILURES ===================================
+_______________ test_a_vertical_tie_reads_the_sheets_own_y_axis ________________
+
+    def test_a_vertical_tie_reads_the_sheets_own_y_axis():
+        """R01: sayfa y'si aşağı, parça y'si yukarı — yön sayfa farkından değil, pafta ekseninden okunur."""
+        row = record("30 mm", [0.10, 0.20, 0.20, 0.32], stored_target=VERTICAL_END)
+        binding = callout_compile.compile_callouts(row)["bindings"][0]
+>       assert binding["axis"] == "y" and binding["direction"] == -1
+E       AssertionError: assert ('y' == 'y'
+E         
+E           y and 1 == -1)
+
+tests/test_callout_compile.py:234: AssertionError
+____________ test_a_reversed_pair_flips_the_direction_not_the_axis _____________
+
+    def test_a_reversed_pair_flips_the_direction_not_the_axis():
+        row = record("30 mm", [0.10, 0.20, 0.20, 0.32],
+                     stored_target={"target_kind": "vertex_pair", "target_ids": ["g1:end", "g1:start"]})
+        binding = callout_compile.compile_callouts(row)["bindings"][0]
+>       assert binding["axis"] == "y" and binding["direction"] == 1
+E       AssertionError: assert ('y' == 'y'
+E         
+E           y and -1 == 1)
+
+tests/test_callout_compile.py:242: AssertionError
+____________ test_a_rotated_view_turns_the_tie_axis_with_the_sheet _____________
+
+    def test_a_rotated_view_turns_the_tie_axis_with_the_sheet():
+        """R01: x_page=[0,1] ile sayfa-dikey bağ paftanın X eksenindedir — sadece dy işareti çevirmek yetmez."""
+        row = record("30 mm", [0.10, 0.20, 0.20, 0.32], stored_target=VERTICAL_END,
+                     view={"x_page": [0.0, 1.0], "y_page": [1.0, 0.0], "source": "page_axes"})
+        binding = callout_compile.compile_callouts(row)["bindings"][0]
+>       assert binding["axis"] == "x" and binding["direction"] == 1
+E       AssertionError: assert ('y' == 'x'
+E         
+E         - x
+E         + y)
+
+tests/test_callout_compile.py:250: AssertionError
+____ test_a_record_without_a_vouchable_view_makes_the_axis_an_open_decision ____
+
+    def test_a_record_without_a_vouchable_view_makes_the_axis_an_open_decision():
+        """R01 + PLAN §8.6: görüş yoksa eksen uydurulmaz — derleme durur ve açık karar döner."""
+        row = record("30 mm", [0.10, 0.20, 0.20, 0.32],
+                     stored_target={"target_kind": "vertex_pair", "target_ids": ["g0:start", "g0:end"]},
+                     sheet_frame=False)
+        compiled = callout_compile.compile_callouts(row)
+>       assert compiled["bindings"] == []
+E       AssertionError: assert [{'id': 'call...': None, ...}] == []
+E         
+E         Left contains one more item: {'id': 'callout:k1', 'value': 30.0, 'unit': 'mm', 'span_id': None, ...}
+E         Use -v to get more diff
+
+tests/test_callout_compile.py:259: AssertionError
+___________ test_a_printed_inch_depth_is_converted_with_its_diameter ___________
+
+    def test_a_printed_inch_depth_is_converted_with_its_diameter():
+        """R02: basılı `in` derinliği de belirler — 0.25 in 6.35 mm'dir, çap 12.7 mm."""
+        row = record("Ø.5 .25 DEEP in", [0.10, 0.20, 0.20, 0.32], stored_target=THRU)
+        compiled = callout_compile.compile_callouts(row)
+>       assert compiled["holes"] == [{"circle_id": "c0", "kind": "pocket", "diameter": 12.7, "depth": 6.35}]
+E       AssertionError: assert [{'circle_id'...depth': 0.25}] == [{'circle_id'...depth': 6.35}]
+E         
+E         At index 0 diff: {'circle_id': 'c0', 'kind': 'pocket', 'diameter': 12.7, 'depth': 0.25} != {'circle_id': 'c0', 'kind': 'pocket', 'diameter': 12.7, 'depth': 6.35}
+E         Use -v to get more diff
+
+tests/test_callout_compile.py:270: AssertionError
+___________________ test_a_sheet_inch_depth_is_converted_too ___________________
+
+    def test_a_sheet_inch_depth_is_converted_too():
+        row = record("Ø.5 .25 DEEP", [0.10, 0.20, 0.20, 0.32], stored_target=THRU)
+        row["decisions"]["calibration"]["unit"] = "in"
+        compiled = callout_compile.compile_callouts(row)
+>       assert compiled["holes"][0]["diameter"] == 12.7 and compiled["holes"][0]["depth"] == 6.35
+E       assert (12.7 == 12.7 and 0.25 == 6.35)
+
+tests/test_callout_compile.py:277: AssertionError
+_____ test_a_converted_hole_is_refused_when_it_breaks_the_models_own_bound _____
+
+    def test_a_converted_hole_is_refused_when_it_breaks_the_models_own_bound():
+        from drawingto3d.guided import Hole
+    
+        bound = next(meta.le for meta in Hole.model_fields["depth"].metadata if hasattr(meta, "le"))
+>       assert callout_compile.MM_LIMIT == bound, "sınır modelin kendi değerini kopyalar"
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'drawingto3d.callout_compile' has no attribute 'MM_LIMIT'
+
+tests/test_callout_compile.py:292: AttributeError
+__________ test_a_supported_reading_is_judged_before_a_missing_target __________
+
+    def test_a_supported_reading_is_judged_before_a_missing_target():
+        """R04: `M8`'in sorusu metni düzeltmektir; hedefsiz diye eksik hedef gibi sunulmaz."""
+        row = record("M8", [0.10, 0.20, 0.20, 0.32])
+        compiled = callout_compile.compile_callouts(row)
+>       assert compiled["rows"][0]["status"] == "parse_unsupported"
+E       AssertionError: assert 'missing_target' == 'parse_unsupported'
+E         
+E         - parse_unsupported
+E         + missing_target
+
+tests/test_callout_compile.py:304: AssertionError
+_________ test_an_ambiguous_reading_is_judged_before_a_missing_target __________
+
+    def test_an_ambiguous_reading_is_judged_before_a_missing_target():
+        row = record("Ø8 9", [0.10, 0.20, 0.20, 0.32])
+        readiness = callout_readiness.build_readiness(row)
+>       assert readiness["categories"] == {"parse_ambiguous": 1}
+E       AssertionError: assert {'missing_target': 1} == {'parse_ambiguous': 1}
+E         
+E         Left contains 1 more item:
+E         {'missing_target': 1}
+E         Right contains 1 more item:
+E         {'parse_ambiguous': 1}
+E         Use -v to get more diff
+
+tests/test_callout_compile.py:315: AssertionError
+__ test_the_bundle_carries_the_parser_and_geometry_context_it_was_reviewed_in __
+
+    def test_the_bundle_carries_the_parser_and_geometry_context_it_was_reviewed_in():
+        row = record("Ø8 THRU", [0.10, 0.20, 0.20, 0.32], stored_target=THRU)
+        bundle = callout_review.export_bundle(row)
+        assert bundle["parser_version"] == CALLOUT_PARSER_VERSION
+        assert bundle["geometry_version"] == row["geometry_version"]
+>       assert bundle["geometry_key"] == geometry_key(row)
+               ^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'geometry_key'
+
+tests/test_callout_review.py:224: KeyError
+_______ test_a_bundle_from_another_parser_or_geometry_context_is_refused _______
+
+    def test_a_bundle_from_another_parser_or_geometry_context_is_refused():
+        row = record("Ø8 THRU", [0.10, 0.20, 0.20, 0.32], stored_target=THRU)
+        assert callout_review.validate_import(row, bundle_for(row, [action("ignore")]))["ok"] is True, \
+            "bağlam eşitken paket geçer (kontrol)"
+        stale_parser = bundle_for(row, [action("ignore")], parser_version="callout-parser/obsolete")
+>       assert [item["reason"] for item in callout_review.validate_import(row, stale_parser)["errors"]] == \
+            ["parser_version_mismatch"]
+E       AssertionError: assert [] == ['parser_version_mismatch']
+E         
+E         Right contains one more item: 'parser_version_mismatch'
+E         Use -v to get more diff
+
+tests/test_callout_review.py:232: AssertionError
+_____________ test_a_vertical_callout_tie_leaves_the_plan_upright ______________
+
+tmp_path = PosixPath('/private/var/folders/64/gbxy2yq51p7d3yny24wzwvkc0000gn/T/pytest-of-aydemir/pytest-326/test_a_vertical_callout_tie_le0')
+
+    def test_a_vertical_callout_tie_leaves_the_plan_upright(tmp_path):
+        """R01: (120,20) → (120,80) dik kenara `30 mm` — yön parça çerçevesinde -1, plan 50×30 mm kalır."""
+        fixture = _store_in(tmp_path, "vertical", "30 mm")
+        _state, compilation, plan = _confirm(fixture, "vertex_pair", ["g1:start", "g1:end"])
+        binding = compilation["bindings"][0]
+        assert fixture.readiness(TOKEN)["ready"] is True
+>       assert (binding["axis"], binding["direction"]) == ("y", -1)
+E       AssertionError: assert ('y', 1) == ('y', -1)
+E         
+E         At index 1 diff: 1 != -1
+E         Use -v to get more diff
+
+tests/test_guided_callout_chain.py:414: AssertionError
+__________ test_a_rotated_sheet_reads_the_tie_in_the_sheets_own_frame __________
+
+tmp_path = PosixPath('/private/var/folders/64/gbxy2yq51p7d3yny24wzwvkc0000gn/T/pytest-of-aydemir/pytest-326/test_a_rotated_sheet_reads_the0')
+
+    def test_a_rotated_sheet_reads_the_tie_in_the_sheets_own_frame(tmp_path):
+        """R01: çeyrek tur dönmüş pafta — bağ paftanın kendi ekseninden okunur; sadece dy işareti yetmez."""
+        record = view_helpers._record(tmp_path, transpose=True, rotation=90, name="turned",
+                                      view={"x_page": [0.0, 1.0], "y_page": [1.0, 0.0], "source": "sheet_frame"})
+        _with_callout_on(record, text="30 mm", ids=["g1:start", "g1:end"])
+        compiled = callout_compile.compile_callouts(record)
+        binding = compiled["bindings"][0]
+>       assert (binding["axis"], binding["direction"]) == ("y", 1)
+E       AssertionError: assert ('x', 1) == ('y', 1)
+E         
+E         At index 0 diff: 'x' != 'y'
+E         Use -v to get more diff
+
+tests/test_guided_callout_chain.py:434: AssertionError
+____________ test_a_printed_inch_blind_depth_reaches_the_plan_in_mm ____________
+
+tmp_path = PosixPath('/private/var/folders/64/gbxy2yq51p7d3yny24wzwvkc0000gn/T/pytest-of-aydemir/pytest-326/test_a_printed_inch_blind_dept0')
+
+    def test_a_printed_inch_blind_depth_reaches_the_plan_in_mm(tmp_path):
+        """R02: `Ø.5 .25 DEEP in` — GeneralPlan'da çap 12.7 mm, derinlik 6.35 mm."""
+        fixture = _store_in(tmp_path, "printed_inch", "Ø.5 .25 DEEP in")
+        _state, compilation, plan = _confirm(fixture, "circle", ["c0"])
+        assert fixture.readiness(TOKEN)["ready"] is True
+        assert compilation["holes"][0]["diameter"] == 12.7
+>       assert float(plan.parameters["hole_0_depth"].value) == 6.35
+E       AssertionError: assert 0.25 == 6.35
+E        +  where 0.25 = float(0.25)
+E        +    where 0.25 = Parameter(unit='mm', source='user', value=0.25, expr=None, span_ids=[], explanation='Kullanıcı ölçüsü.').value
+
+tests/test_guided_callout_chain.py:446: AssertionError
+_____________ test_a_sheet_inch_blind_depth_reaches_the_plan_in_mm _____________
+
+tmp_path = PosixPath('/private/var/folders/64/gbxy2yq51p7d3yny24wzwvkc0000gn/T/pytest-of-aydemir/pytest-326/test_a_sheet_inch_blind_depth_0')
+
+    def test_a_sheet_inch_blind_depth_reaches_the_plan_in_mm(tmp_path):
+        """R02: birimsiz metin, kalibrasyondan çözülen `in` — derinlik yine 6.35 mm."""
+        fixture = _store_in(tmp_path, "sheet_inch", "Ø.5 .25 DEEP", inches=True)
+        state, compilation, plan = _confirm(fixture, "circle", ["c0"])
+        assert state["decisions"]["calibration"]["unit"] == "in"
+        assert compilation["rows"][0]["unit_source"] == "sheet"
+>       assert float(plan.parameters["hole_0_depth"].value) == 6.35
+E       AssertionError: assert 0.25 == 6.35
+E        +  where 0.25 = float(0.25)
+E        +    where 0.25 = Parameter(unit='mm', source='user', value=0.25, expr=None, span_ids=[], explanation='Kullanıcı ölçüsü.').value
+
+tests/test_guided_callout_chain.py:455: AssertionError
+________ test_an_unsupported_reading_asks_for_a_text_edit_not_a_target _________
+
+tmp_path = PosixPath('/private/var/folders/64/gbxy2yq51p7d3yny24wzwvkc0000gn/T/pytest-of-aydemir/pytest-326/test_an_unsupported_reading_as0')
+
+    def test_an_unsupported_reading_asks_for_a_text_edit_not_a_target(tmp_path):
+        """R04: gerçek akış — `M8` okuması unsupported; hazırlık parse_error der, onay yine reddedilir."""
+        fixture = _store_in(tmp_path, "unsupported", "M8")
+        assert fixture.load(TOKEN)["callout_parses"][0]["status"] == "unsupported"
+        readiness = fixture.readiness(TOKEN)
+>       assert readiness["categories"] == {"parse_error": 1}
+E       AssertionError: assert {'missing_target': 1} == {'parse_error': 1}
+E         
+E         Left contains 1 more item:
+E         {'missing_target': 1}
+E         Right contains 1 more item:
+E         {'parse_error': 1}
+E         Use -v to get more diff
+
+tests/test_guided_callout_chain.py:479: AssertionError
+_________ test_an_ambiguous_reading_asks_for_a_text_edit_not_a_target __________
+
+tmp_path = PosixPath('/private/var/folders/64/gbxy2yq51p7d3yny24wzwvkc0000gn/T/pytest-of-aydemir/pytest-326/test_an_ambiguous_reading_asks0')
+
+    def test_an_ambiguous_reading_asks_for_a_text_edit_not_a_target(tmp_path):
+        fixture = _store_in(tmp_path, "ambiguous", "Ø8 9")
+        assert fixture.load(TOKEN)["callout_parses"][0]["status"] == "ambiguous"
+        readiness = fixture.readiness(TOKEN)
+>       assert readiness["categories"] == {"parse_ambiguous": 1}
+E       AssertionError: assert {'missing_target': 1} == {'parse_ambiguous': 1}
+E         
+E         Left contains 1 more item:
+E         {'missing_target': 1}
+E         Right contains 1 more item:
+E         {'parse_ambiguous': 1}
+E         Use -v to get more diff
+
+tests/test_guided_callout_chain.py:490: AssertionError
+________ test_a_bundle_from_an_obsolete_parser_header_is_refused_whole _________
+
+tmp_path = PosixPath('/private/var/folders/64/gbxy2yq51p7d3yny24wzwvkc0000gn/T/pytest-of-aydemir/pytest-326/test_a_bundle_from_an_obsolete0')
+
+    def test_a_bundle_from_an_obsolete_parser_header_is_refused_whole(tmp_path):
+        """R05: paketin başlığı sunucunun parser sürümü değilse import tamamıyla reddedilir."""
+        fixture = _store_in(tmp_path, "old_parser", "Ø8 THRU")
+        bundle = _bundle_for(fixture)
+        bundle["parser_version"] = "callout-parser/obsolete"
+        error, untouched = _attempt_import(fixture, bundle)
+>       assert error and "parser_version_mismatch" in error
+E       assert (None)
+
+tests/test_guided_callout_chain.py:535: AssertionError
+_____ test_a_bundle_exported_before_a_geometry_migration_is_refused_whole ______
+
+tmp_path = PosixPath('/private/var/folders/64/gbxy2yq51p7d3yny24wzwvkc0000gn/T/pytest-of-aydemir/pytest-326/test_a_bundle_exported_before_0')
+
+    def test_a_bundle_exported_before_a_geometry_migration_is_refused_whole(tmp_path):
+        """R05: base revision eşit kalsa da geometri bağlamı değiştiyse eski paket onay yazamaz."""
+        fixture = _store_in(tmp_path, "migrated", "Ø8 THRU")
+        bundle = _bundle_for(fixture)
+        original = fixture.load(TOKEN)
+        fresh = copy.deepcopy(original["options"])
+        next(row for row in fresh["circles"] if row["id"] == "c0")["center"] = [70, 45]
+        with patch.object(guided, "GEOMETRY_VERSION", original["geometry_version"] + 1), \
+                patch.object(guided, "observe", return_value=None), \
+                patch.object(guided, "drawing_options", return_value=fresh):
+            migrated = fixture.load(TOKEN)                # gerçek migration yazısı (meşru, revision'ı artırmaz)
+            error, untouched = _attempt_import(fixture, bundle)   # anlık görüntü: migration sonrası, import öncesi
+        assert migrated["geometry_version"] == original["geometry_version"] + 1
+        assert callout_models.geometry_key(original) != callout_models.geometry_key(migrated)
+        assert bundle["base_revision"] == migrated["revision"], "kontrol yalnız revision'a bakmıyor"
+>       assert error and "geometry" in error
+E       assert (None)
+
+tests/test_guided_callout_chain.py:554: AssertionError
+______ test_the_target_confirm_button_writes_the_proposal_the_panel_shows ______
+
+    def test_the_target_confirm_button_writes_the_proposal_the_panel_shows():
+        """R03: vurgulanan öneri ile [Onayla]'nın yazdığı hedef aynı state'ten gelmeli.
+    
+        Eski hâl: etikete tıklamak `proposalHighlight`'ı kurarken genel [Onayla] her zaman
+        `proposals[0]`'ı yazıyordu — panel başka bir hedefi işaret ederken onay sessizce ilkini
+        kaydediyordu. Gerçek tarayıcı regresyonu denetim turunda (ui_fix_regression.py); burada
+        servis edilen betiğin sözleşmesi çivilenir: tek bir aktif öneri state'i var ve Onayla onu
+        (yoksa ilk öneriyi — düğme bunu açıkça söyler) kullanıyor.
+        """
+        script = (ROOT / "guided.js").read_text(encoding="utf-8")
+>       assert "function activeProposal()" in script, "aktif öneri tek state'ten okunmalı"
+E       AssertionError: aktif öneri tek state'ten okunmalı
+E       assert 'function activeProposal()' in "import {showStl} from './preview.js';\nconst $=id=>document.getElementById(id), sheet=$('sheet'), ctx=sheet.getContex...hazırlık tazelenir (okuma, karar değil).\nrender=(base=>function(){base();renderTarget();loadReadiness();})(render);\n"
+
+tests/test_guided_html.py:157: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_callout_compile.py::test_a_vertical_tie_reads_the_sheets_own_y_axis
+FAILED tests/test_callout_compile.py::test_a_reversed_pair_flips_the_direction_not_the_axis
+FAILED tests/test_callout_compile.py::test_a_rotated_view_turns_the_tie_axis_with_the_sheet
+FAILED tests/test_callout_compile.py::test_a_record_without_a_vouchable_view_makes_the_axis_an_open_decision
+FAILED tests/test_callout_compile.py::test_a_printed_inch_depth_is_converted_with_its_diameter
+FAILED tests/test_callout_compile.py::test_a_sheet_inch_depth_is_converted_too
+FAILED tests/test_callout_compile.py::test_a_converted_hole_is_refused_when_it_breaks_the_models_own_bound
+FAILED tests/test_callout_compile.py::test_a_supported_reading_is_judged_before_a_missing_target
+FAILED tests/test_callout_compile.py::test_an_ambiguous_reading_is_judged_before_a_missing_target
+FAILED tests/test_callout_review.py::test_the_bundle_carries_the_parser_and_geometry_context_it_was_reviewed_in
+FAILED tests/test_callout_review.py::test_a_bundle_from_another_parser_or_geometry_context_is_refused
+FAILED tests/test_guided_callout_chain.py::test_a_vertical_callout_tie_leaves_the_plan_upright
+FAILED tests/test_guided_callout_chain.py::test_a_rotated_sheet_reads_the_tie_in_the_sheets_own_frame
+FAILED tests/test_guided_callout_chain.py::test_a_printed_inch_blind_depth_reaches_the_plan_in_mm
+FAILED tests/test_guided_callout_chain.py::test_a_sheet_inch_blind_depth_reaches_the_plan_in_mm
+FAILED tests/test_guided_callout_chain.py::test_an_unsupported_reading_asks_for_a_text_edit_not_a_target
+FAILED tests/test_guided_callout_chain.py::test_an_ambiguous_reading_asks_for_a_text_edit_not_a_target
+FAILED tests/test_guided_callout_chain.py::test_a_bundle_from_an_obsolete_parser_header_is_refused_whole
+FAILED tests/test_guided_callout_chain.py::test_a_bundle_exported_before_a_geometry_migration_is_refused_whole
+FAILED tests/test_guided_html.py::test_the_target_confirm_button_writes_the_proposal_the_panel_shows
+20 failed, 121 passed in 3.41s

@@ -1,0 +1,170 @@
+- banner:
+  - heading "Çizimden parçaya, birlikte" [level=1]
+  - generic: Konturu seç, eksik ölçüleri tamamla, taslak STEP'i incele. Bu akış yerelde ve model olmadan çalışır.
+  - generic: Çizim aç
+- status: Kaydedilmiş oturum açıldı.
+- main:
+  - heading "Çizim" [level=2]
+  - link "Önceki arayüz":
+    - /url: /
+  - generic "Kontur ve kalibrasyon noktası seçimi"
+  - button "Kontur seç"
+  - button "İki ölçü noktası seç"
+  - button "Daire seç"
+  - button "Callout incele"
+  - button "Yeni alan çiz"
+  - paragraph: Dış konturun kenarına tıklayın veya listeden seçin.
+  - generic: 4 kontur · 2 daire · 0 ölçü adayı · kayıt 2
+  - heading "Callout inceleme" [level=2]
+  - paragraph:
+    - text: "Kaydedilen callout metinleri artık üretime girer: onaylanmış hedefler delik/ölçü kararına derlenir ve"
+    - strong: hazırlık geçmeden üretim başlamaz
+    - text: . Makine ipucu bir
+    - emphasis: öneridir
+    - text: ; karar siz “Metni kaydet” dediğinizde doğar.
+  - generic: 1 makine adayı · 1 etkin alan · 1 incelendi · 0 yok sayıldı
+  - list:
+    - strong: C1
+    - text: · makine adayı · Metin kaydedildi
+  - strong: C1 · makine tespiti
+  - generic: Metin kaydedildi
+  - generic "Callout bölgesi kırpması"
+  - text: Kırpma yalnız inceleme kolaylığıdır; doğruluk kararı değildir.
+  - paragraph: "Makine ipucu (öneri): 4x Ø8 THRU"
+  - button "İpucunu metne al"
+  - text: Basılı metin
+  - textbox "Basılı metin":
+    - /placeholder: Çizimde yazanı aynen yazın
+    - text: Ø8 THRU
+  - button "Metni kaydet"
+  - button "Bu callout değil"
+  - button "Alanı düzelt"
+  - paragraph
+  - separator
+  - strong: Hedef
+  - generic: hedef güncel
+  - paragraph: "Onaylı: tek daire · c1 · · T5 · c1"
+  - button "Seç"
+  - text: 1. tek daire · c1 · T0 · kullanıcı bu hedefi onaylamıştı · revizyon 1 · callout-parser/1
+  - button "Seç"
+  - text: 2. tek daire · c0 · T1 · n0→c0 · uç daireye temas ediyor
+  - button "Seç"
+  - text: 3. tek daire · c1 · T5 · çizilen Ø6.000 mm ≠ yazılan Ø8.0 mm
+  - button "Onayla · 1. öneri"
+  - button "Başka hedef seç"
+  - button "Birden fazla hedef seç"
+  - button "Bağlama yok / desteklenmiyor"
+  - text: Seçilecek hedef türü
+  - combobox "Seçilecek hedef türü":
+    - option "target-circle · tek daire" [selected]
+    - option "target-group · daire grubu"
+    - option "target-arc · yay"
+    - option "target-endpoints · iki uç"
+    - option "target-profile · kontur"
+  - paragraph
+  - paragraph: Onayladığınız hedef, metnin okumasıyla birlikte delik/ölçü kararına derlenir.
+  - button "Yeni alan çiz"
+  - checkbox "Yok sayılanları göster"
+  - text: Yok sayılanları göster
+  - heading "Hazırlık" [level=3]
+  - paragraph: "Üretim beklemede: 1 konu çözülmeli (callout_conflict 1)."
+  - list:
+    - listitem: "«k1» kararı çelişiyor: kullanıcının kendi delik kararı bu callout ile çelişiyor."
+  - button "İnceleme paketini indir"
+  - generic: Paket içe aktar
+  - paragraph: Paket bu oturumun okumasını dış incelemeye taşır; içe aktarılan her eylem bu kaydın kendi doğrulamasından geçer ve “dış inceleme” olarak işaretlenir.
+  - paragraph: Metinsiz bir çizim normal bir sonuçtur; o zaman alanı buradan çizersiniz. Bir kutuyu seçmek için “Callout incele” aracıyla çizimde tıklayın.
+  - heading "0 · Okumanın önerileri" [level=2]
+  - paragraph: "Bu çizim için öneri yok: okuma bir ölçü ya da özellik bağlayamadı. Aşağıdaki adımları elle tamamlayın."
+  - paragraph: "Her satır çizimin kendi okumasından gelir ve kanıtıyla gösterilir: basılı metin, okumanın span kimliği, ölçülen piksel uzunluğu ve sapma. Onaylamadığınız satırı tek tıkla reddedebilir, aşağıdaki bölümlerden elle girebilirsiniz. Onaylanan her öneri sizin kararınız olarak kaydedilir."
+  - heading "1 · Dış kontur" [level=2]
+  - text: Çizimdeki kapalı kontur
+  - combobox "Çizimdeki kapalı kontur":
+    - option "Kontur seçin"
+    - option "1 · Kapalı kontur" [selected]
+    - option "2 · Kapalı kontur"
+    - option "3 · Daire"
+    - option "4 · Daire"
+  - text: Çizimdeki yeşil konturdan üretilecek. Ana görünüşü seçin; kesit veya ölçü çizgileri de aday olabilir.
+  - heading "2 · Bilinen ölçüyle ölçek" [level=2]
+  - text: Okunan ölçü (isteğe bağlı)
+  - combobox "Okunan ölçü (isteğe bağlı)":
+    - option "Ölçüyü ben gireceğim" [selected]
+  - text: Gerçek uzunluk
+  - spinbutton "Gerçek uzunluk": "50"
+  - text: Birim
+  - combobox "Birim":
+    - option "mm" [selected]
+    - option "inç"
+  - paragraph: 2/2 nokta seçildi · çizimde 100.0 piksel
+  - button "Ölçeği uygula"
+  - separator
+  - generic: Basılı ölçüyü çizime bağla
+  - text: "Ölçüyü yukarıdan seçin, değeri yazın, sonra çizimde iki uca tıklayın: kontur köşesi ya da daire merkezi. Bağlanan ölçüler ölçeği en küçük karelerle çözer ve delik konumlarını kısıtlar."
+  - text: Eksen
+  - combobox "Eksen":
+    - option "Eksen seçin" [selected]
+    - option "X ekseni boyunca"
+    - option "Y ekseni boyunca"
+  - text: Yön
+  - combobox "Yön":
+    - option "Yön seçin" [selected]
+    - option "İkinci uç + eksende"
+    - option "İkinci uç − eksende"
+  - button "Seçili ölçüyü bağla"
+  - generic: "Henüz bağ yok: ölçek yalnız iki noktalı kalibrasyondan geliyor."
+  - separator
+  - generic: Görüş yönü (PLAN §8.6)
+  - text: Paftanın kendi çerçevesi ve eksen yönü okumadan gelir; döndürülmüş paftada sayfa X'i parça X'i sayılmaz. Onaylanmadan üretim bu yönü varsaymaz.
+  - paragraph: "çerçeve 10 / 10 / 290 / 190 px; öneri: X sağ, Y yukarı · pafta çerçevesi outline_0: kapalı yol sayfanın %93.3×%90.0'ini kaplıyor; kenarları sayfa eksenlerinden en fazla 0.0° sapıyor (sayfa eksenlerine 2° içinde hizalı)"
+  - checkbox "Eksen yönünü ve çerçeveyi onaylıyorum"
+  - text: Eksen yönünü ve çerçeveyi onaylıyorum
+  - button "Görüş yönünü kaydet"
+  - checkbox "Çerçeveyi ve eksenleri çizimde göster" [checked]
+  - text: Çerçeveyi ve eksenleri çizimde göster
+  - heading "3 · Gövde ve özellikler" [level=2]
+  - text: Kalınlık · mm
+  - spinbutton "Kalınlık · mm": "10"
+  - button "Kalınlığı kaydet"
+  - separator
+  - text: Delik / cep dairesi
+  - combobox "Delik / cep dairesi":
+    - option "Daire seçin" [selected]
+    - option "Daire 1"
+    - option "Daire 2"
+  - text: Tür
+  - combobox "Tür":
+    - option "Geçişli delik" [selected]
+    - option "Kör cep (üstten)"
+  - text: Çap · mm
+  - spinbutton "Çap · mm"
+  - button "Özelliği ekle / güncelle"
+  - text: Delik · Ø6 mm
+  - button "Kaldır"
+  - text: Cep · Ø10 mm · 3 mm derinlik
+  - button "Kaldır"
+  - heading "4 · Bağlanan ölçüler ve ortak ölçek" [level=2]
+  - paragraph: Ölçek 2.0000 px/mm · iki noktalı kalibrasyondan (bağ yok).
+  - paragraph: "Bağlanmayan: 2 daire, 4 kenar pikselden izlenen taslaktır (kontur bağlı değil)."
+  - paragraph: Kontur kapanış hatası 0 piksel.
+  - paragraph: "Bu panel yalnız sizin bağladığınız basılı ölçüleri gösterir: ölçek o bağlardan çözülür, her bağın çizimde ölçülen karşılığı ve sapması burada durur. Bağlanmayan kenar ve daireler pikselden izlenen taslaktır ve öyle etiketlenir. Tek bir ölçek çelişen bağları uzlaştıramaz; çelişki soru olarak sorulur."
+  - heading "5 · İncele ve üret" [level=2]
+  - checkbox "Seçilen kontur ve merkezleri çizimden izlenen taslak olarak kullan." [checked]
+  - text: Seçilen kontur ve merkezleri çizimden izlenen taslak olarak kullan.
+  - paragraph:
+    - text: Kalınlık ve girdiğiniz çap/derinlikler ölçülüdür. Kontur ve merkezler henüz tüm basılı ölçülerle kısıtlanmadı; çıktı inceleme amaçlı taslaktır. Onaylanmış callout hedefleri (delik/ölçü) üretime derlenir; çözülmemiş ya da çelişkili bir callout varsa üretim
+    - strong: başlamaz
+    - text: ve nedeni aşağıda listelenir.
+  - list
+  - button "3B taslak ve STEP üret" [disabled]
+  - button "Son kararı geri al"
+  - paragraph: Kararlar bu oturumun bağlantısında saklanır. Sayfayı yeniden açabilirsiniz.
+  - heading "Günlük · her adım" [level=2]
+  - paragraph: Okuma ne buldu, ne önerdi; siz ne onayladınız, ne düzelttiniz; üretim ne zaman başladı ve ne sonuçlandı. Kanıt satırları önerinin dayandığı basılı metni ve ölçümü gösterir.
+  - list:
+    - text: 23:12:12 · user/confirm_target · callout:k1 — Kullanıcı callout hedefini onayladı.
+    - generic "kanıt"
+    - text: 23:11:27 · user/transcribe · callout:k1 — Kullanıcı callout metnini yazdı.
+    - generic "kanıt"
+    - listitem: 23:11:27 · user/edit · hole:c0 — Kullanıcı bu kararı kendi girdi.
+    - listitem: 23:11:27 · user/edit · calibration — Kullanıcı bu kararı kendi girdi.

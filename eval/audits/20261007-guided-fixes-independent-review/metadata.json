@@ -1,0 +1,57 @@
+{
+  "date": "2026-10-07",
+  "head": "e51f55521016e742eaee463d931edf966d8e1eeb",
+  "working_tree_diff_sha256": "37aad55c0a6415cbe999c3593398863afb9e2be44b595ae76292e0e4e0495698",
+  "reviewed_diff": "reviewed-working-tree.patch",
+  "product_code_changed_by_reviewer": false,
+  "findings_closed": [
+    "R01",
+    "R02",
+    "R03",
+    "R04",
+    "R05"
+  ],
+  "new_findings": [],
+  "focused": {
+    "command": "PYTHONPATH=src .venv/bin/python -m pytest -q tests/test_callout_parse.py tests/test_callout_bind.py tests/test_callout_compile.py tests/test_callout_review.py tests/test_guided_callout_chain.py tests/test_guided_callout_parse.py tests/test_guided_callout_review.py tests/test_guided_callouts.py tests/test_callout_models.py tests/test_guided_html.py tests/test_planner.py tests/test_view_core.py",
+    "passed": 412,
+    "errors": 2,
+    "reason": "sandbox localhost bind denied",
+    "seconds": 4.24,
+    "exit": 1
+  },
+  "http_recheck": {
+    "command": ".venv/bin/python -m pytest -q tests/test_guided_callout_chain.py::test_the_proposal_readiness_and_export_endpoints_answer_over_http tests/test_guided_callout_chain.py::test_an_import_over_http_is_refused_whole_when_it_is_wrong",
+    "passed": 2,
+    "seconds": 1.41,
+    "exit": 0
+  },
+  "distinct_existing_tests_passed": 414,
+  "independent_probes": [
+    {
+      "command": "PYTHONPATH=src .venv/bin/python eval/audits/20261006-guided-g4-g8-independent-review/review_probes.py",
+      "passed": 6,
+      "exit": 0
+    },
+    {
+      "command": "PYTHONPATH=src .venv/bin/python eval/audits/20261006-guided-g4-g8-independent-review/import_review_probes.py",
+      "passed": 3,
+      "exit": 0
+    },
+    {
+      "command": "PYTHONPATH=src .venv/bin/python eval/audits/20261007-guided-fixes-independent-review/edge_probes.py",
+      "passed": 33,
+      "exit": 0
+    }
+  ],
+  "browser": {
+    "real_ui": true,
+    "expected_target": "c1",
+    "persisted_target": "c1",
+    "reload_verified": true,
+    "console_errors": []
+  },
+  "full_suite_run": false,
+  "cad_step_run": false,
+  "model_calls": 0
+}

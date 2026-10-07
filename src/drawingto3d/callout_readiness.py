@@ -31,6 +31,9 @@ _STATUS = {
     "unsupported_semantic": ("unsupported_semantic", "review_callout"),
     "unsupported_cad_feature": ("unsupported_cad_feature", "review_callout"),
     "conflict": ("callout_conflict", "review_conflict"),
+    # R01 (review): a linear tie with no vouchable view is an open *view* decision, not a broken
+    # callout — the category is the sheet's, and the action names the step that answers it.
+    "view_not_confirmed": ("missing_view", "confirm_view"),
 }
 
 _QUESTION = {

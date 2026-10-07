@@ -42,7 +42,8 @@ def record(text, region, *, circles=None, count=None, leader=None, arcs=(), clai
            px_per_mm=2.0, stored_target=None, ignored=False, profile_id="outline_0",
            unbindable=False, manual_holes=(), manual_bindings=(), region_override=None,
            token=TOKEN, revision=1, sheet_unit: "str | None" = None, geometry_version=3, parses=None,
-           source_sha256=SOURCE, candidates=True, callout_id="k1", second_text=None, calibration=True):
+           source_sha256=SOURCE, candidates=True, callout_id="k1", second_text=None, calibration=True,
+           sheet_frame=True, view=None):
     """One synthetic session record: geometry, one detected callout, its text and its real parse."""
     circles = circles if circles is not None else [{"id": "c0", "center": [45.0, 45.0], "radius": 6.0}]
     review = {"callout_id": callout_id, "ignored": bool(ignored), "revision": 1}
@@ -55,6 +56,11 @@ def record(text, region, *, circles=None, count=None, leader=None, arcs=(), clai
         "source_sha256": source_sha256, "source": "/tmp/synthetic/source.pdf",
         "options": {
             "frame": {"width": 300, "height": 200},
+            # The product's own frame, as `drawing_options` publishes it for a bordered sheet. The
+            # compiler reads its tie axis through `view_transform` (R01), so the record has to carry
+            # the same shape the store hands it — `sheet_frame=False` models a sheet without one.
+            "sheet_frame": ({"found": True, "aligned": True, "rotation": 0,
+                             "rect": [10.0, 10.0, 290.0, 190.0]} if sheet_frame else None),
             "circles": [{"id": c["id"], "center": list(c["center"]), "radius": c["radius"]}
                         for c in circles],
             "primitives": _primitives(circles, leader=leader, arcs=arcs),
@@ -81,7 +87,8 @@ def record(text, region, *, circles=None, count=None, leader=None, arcs=(), clai
                       "bindings": [copy.deepcopy(dict(item)) for item in manual_bindings],
                       "profile_id": profile_id,
                       "calibration": ({"first": [20, 20], "second": [120, 20], "value": 50, "unit": "mm"}
-                                      if calibration else None)},
+                                      if calibration else None),
+                      **({"view": view} if view is not None else {})},
         "history": [], "build": None, "log": [],
     }
     parse = callout_parse.semantic_parse(row["decisions"]["transcriptions"][0], sheet_unit=sheet_unit)

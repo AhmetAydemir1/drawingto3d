@@ -142,3 +142,19 @@ def test_the_empty_callout_list_gives_the_detectors_own_reason():
     collector = parse()
     assert collector.by_id.get("callout-detection") == "div"
     assert collector.counts["callout-detection"] == 1
+
+
+def test_the_target_confirm_button_writes_the_proposal_the_panel_shows():
+    """R03: vurgulanan öneri ile [Onayla]'nın yazdığı hedef aynı state'ten gelmeli.
+
+    Eski hâl: etikete tıklamak `proposalHighlight`'ı kurarken genel [Onayla] her zaman
+    `proposals[0]`'ı yazıyordu — panel başka bir hedefi işaret ederken onay sessizce ilkini
+    kaydediyordu. Gerçek tarayıcı regresyonu denetim turunda (ui_fix_regression.py); burada
+    servis edilen betiğin sözleşmesi çivilenir: tek bir aktif öneri state'i var ve Onayla onu
+    (yoksa ilk öneriyi — düğme bunu açıkça söyler) kullanıyor.
+    """
+    script = (ROOT / "guided.js").read_text(encoding="utf-8")
+    assert "function activeProposal()" in script, "aktif öneri tek state'ten okunmalı"
+    assert "$('target-confirm').onclick=()=>{const item=activeProposal();" in script, \
+        "Onayla, o anda aktif olan öneriyi yazmalı"
+    assert "`Onayla · ${" in script, "düğme hangi öneriyi yazacağını açıkça belirtmeli"

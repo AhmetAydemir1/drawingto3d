@@ -1,0 +1,180 @@
+{
+  "url": "http://127.0.0.1:54524/guided?session=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "tag": "after",
+  "session_file": "/var/folders/64/gbxy2yq51p7d3yny24wzwvkc0000gn/T/guided-r03-regression-_tmwhepv/store/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/session.json",
+  "proposals": [
+    {
+      "callout_id": "k1",
+      "target_kind": "circle",
+      "target_ids": [
+        "c0"
+      ],
+      "geometry_version": 3,
+      "evidence_tier": "T1",
+      "evidence": [
+        {
+          "kind": "leader_connectivity",
+          "ref": "n0→c0 · uç daireye temas ediyor"
+        },
+        {
+          "kind": "size_mismatch",
+          "ref": "çizilen Ø6.000 mm ≠ yazılan Ø8.0 mm"
+        },
+        {
+          "kind": "spatial_proximity",
+          "ref": "merkez callout bölgesinin içinde · 39.05 px"
+        }
+      ]
+    },
+    {
+      "callout_id": "k1",
+      "target_kind": "circle",
+      "target_ids": [
+        "c1"
+      ],
+      "geometry_version": 3,
+      "evidence_tier": "T5",
+      "evidence": [
+        {
+          "kind": "size_mismatch",
+          "ref": "çizilen Ø6.000 mm ≠ yazılan Ø8.0 mm"
+        },
+        {
+          "kind": "spatial_proximity",
+          "ref": "merkez callout bölgesinin içinde · 25.00 px"
+        }
+      ]
+    }
+  ],
+  "stored_target": {
+    "callout_id": "k1",
+    "target_kind": "circle",
+    "target_ids": [
+      "c1"
+    ],
+    "geometry_version": 3,
+    "geometry_key": "dea25226a3ffa5187151e112dde655140a4bb29bd0a316061d9ba662ad056d70",
+    "profile_id": "outline_1",
+    "transcription_revision": 1,
+    "parser_version": "callout-parser/1",
+    "evidence": [
+      {
+        "kind": "proposal",
+        "ref": "T5 · c1"
+      }
+    ],
+    "status": "confirmed",
+    "reconfirm": false
+  },
+  "steps": [
+    {
+      "step": "sentetik oturum gerçek tarayıcıda açıldı",
+      "passed": true,
+      "detail": {
+        "url": "http://127.0.0.1:54524/guided?session=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "callouts": [
+          "k1"
+        ]
+      }
+    },
+    {
+      "step": "panel en az iki farklı hedef öneriyor",
+      "passed": true,
+      "detail": {
+        "proposals": [
+          [
+            "T1",
+            [
+              "c0"
+            ]
+          ],
+          [
+            "T5",
+            [
+              "c1"
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "step": "ikinci önerinin etiketi çizimde vurguyu taşıdı (gerçek tıklama)",
+      "passed": true,
+      "detail": {
+        "before": "AgQmCgiwJuI6mgCBHgH3EiBAgAABAgQIECBAgACBfYE/AAAA//+DUX1EAAAABklEQVQDAC6JCKQBCX6VAAAAAElFTkSuQmCC",
+        "after": "axG4uIAB1sXJfUMCBAgQIECAAAECBAgQIECAAIFTBH4CAAD//9YzNfIAAAAGSURBVAMAI124pJ0mlRwAAAAASUVORK5CYII="
+      }
+    },
+    {
+      "step": "genel [Onayla] hangi öneriyi yazacağını söylüyor",
+      "passed": true,
+      "detail": {
+        "label": "Onayla · 2. öneri"
+      }
+    },
+    {
+      "step": "kalıcı target vurgulanan öneridir",
+      "passed": true,
+      "detail": {
+        "stored": {
+          "callout_id": "k1",
+          "target_kind": "circle",
+          "target_ids": [
+            "c1"
+          ],
+          "geometry_version": 3,
+          "geometry_key": "dea25226a3ffa5187151e112dde655140a4bb29bd0a316061d9ba662ad056d70",
+          "profile_id": "outline_1",
+          "transcription_revision": 1,
+          "parser_version": "callout-parser/1",
+          "evidence": [
+            {
+              "kind": "proposal",
+              "ref": "T5 · c1"
+            }
+          ],
+          "status": "confirmed",
+          "reconfirm": false
+        },
+        "highlighted": [
+          "c1"
+        ]
+      }
+    },
+    {
+      "step": "reload sonrası panel aynı (vurgulanan) hedefi gösteriyor",
+      "passed": true,
+      "detail": {
+        "summary": "Onaylı: tek daire · c1 ·  · T5 · c1",
+        "expected_ids": [
+          "c1"
+        ]
+      }
+    },
+    {
+      "step": "beklenmeyen konsol hatası yok",
+      "passed": true,
+      "detail": {
+        "errors": [],
+        "failures": [],
+        "favicon_error_exempted": [
+          {
+            "level": "error",
+            "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+            "url": "http://127.0.0.1:54524/favicon.ico",
+            "source": "network"
+          }
+        ]
+      }
+    }
+  ],
+  "console": [
+    {
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "url": "http://127.0.0.1:54524/favicon.ico",
+      "source": "network"
+    }
+  ],
+  "rejected_requests": []
+}

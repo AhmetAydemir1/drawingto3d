@@ -1,0 +1,56 @@
+{
+  "steps": [
+    "C1 open",
+    "Second proposal label c1 clicked",
+    "Button reads Onayla · 2. öneri",
+    "Global confirm clicked",
+    "Reload + C1 open: Onaylı: tek daire · c1"
+  ],
+  "stored_targets": [
+    {
+      "callout_id": "k1",
+      "target_kind": "circle",
+      "target_ids": [
+        "c1"
+      ],
+      "geometry_version": 3,
+      "geometry_key": "dea25226a3ffa5187151e112dde655140a4bb29bd0a316061d9ba662ad056d70",
+      "profile_id": "outline_1",
+      "transcription_revision": 1,
+      "parser_version": "callout-parser/1",
+      "evidence": [
+        {
+          "kind": "proposal",
+          "ref": "T5 · c1"
+        }
+      ],
+      "status": "confirmed",
+      "reconfirm": false
+    }
+  ],
+  "user_confirm_events": [
+    {
+      "at": "2026-10-06T23:12:12+00:00",
+      "revision": 1,
+      "actor": "user",
+      "action": "confirm_target",
+      "field": "callout:k1",
+      "value": {
+        "kind": "circle",
+        "ids": [
+          "c1"
+        ]
+      },
+      "note": "Kullanıcı callout hedefini onayladı.",
+      "evidence": {
+        "callout_id": "k1",
+        "geometry_key": "dea25226a3ffa5187151e112dde655140a4bb29bd0a316061d9ba662ad056d70",
+        "profile_id": "outline_1",
+        "transcription_revision": 1,
+        "parser_version": "callout-parser/1"
+      }
+    }
+  ],
+  "console_errors": [],
+  "passed": true
+}

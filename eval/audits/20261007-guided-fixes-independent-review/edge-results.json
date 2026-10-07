@@ -1,0 +1,946 @@
+{
+  "cases": [
+    {
+      "case": "rotate_30_edge_0_reverse_False",
+      "axis": "x",
+      "direction": 1,
+      "edge_vectors": [
+        [
+          -50.0,
+          0.0,
+          50.0
+        ],
+        [
+          0.0,
+          -30.0,
+          30.0
+        ],
+        [
+          0.0,
+          30.0,
+          30.0
+        ],
+        [
+          50.0,
+          -0.0,
+          50.0
+        ]
+      ],
+      "record_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "rotate_30_edge_0_reverse_True",
+      "axis": "x",
+      "direction": -1,
+      "edge_vectors": [
+        [
+          -50.0,
+          0.0,
+          50.0
+        ],
+        [
+          0.0,
+          -30.0,
+          30.0
+        ],
+        [
+          0.0,
+          30.0,
+          30.0
+        ],
+        [
+          50.0,
+          -0.0,
+          50.0
+        ]
+      ],
+      "record_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "rotate_30_edge_1_reverse_False",
+      "axis": "y",
+      "direction": -1,
+      "edge_vectors": [
+        [
+          -50.0,
+          0.0,
+          50.0
+        ],
+        [
+          0.0,
+          -30.0,
+          30.0
+        ],
+        [
+          0.0,
+          30.0,
+          30.0
+        ],
+        [
+          50.0,
+          -0.0,
+          50.0
+        ]
+      ],
+      "record_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "rotate_30_edge_1_reverse_True",
+      "axis": "y",
+      "direction": 1,
+      "edge_vectors": [
+        [
+          -50.0,
+          0.0,
+          50.0
+        ],
+        [
+          0.0,
+          -30.0,
+          30.0
+        ],
+        [
+          0.0,
+          30.0,
+          30.0
+        ],
+        [
+          50.0,
+          -0.0,
+          50.0
+        ]
+      ],
+      "record_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "rotate_30_edge_2_reverse_False",
+      "axis": "x",
+      "direction": -1,
+      "edge_vectors": [
+        [
+          -50.0,
+          0.0,
+          50.0
+        ],
+        [
+          0.0,
+          -30.0,
+          30.0
+        ],
+        [
+          0.0,
+          30.0,
+          30.0
+        ],
+        [
+          50.0,
+          -0.0,
+          50.0
+        ]
+      ],
+      "record_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "rotate_30_edge_2_reverse_True",
+      "axis": "x",
+      "direction": 1,
+      "edge_vectors": [
+        [
+          -50.0,
+          0.0,
+          50.0
+        ],
+        [
+          0.0,
+          -30.0,
+          30.0
+        ],
+        [
+          0.0,
+          30.0,
+          30.0
+        ],
+        [
+          50.0,
+          -0.0,
+          50.0
+        ]
+      ],
+      "record_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "rotate_30_edge_3_reverse_False",
+      "axis": "y",
+      "direction": 1,
+      "edge_vectors": [
+        [
+          -50.0,
+          0.0,
+          50.0
+        ],
+        [
+          0.0,
+          -30.0,
+          30.0
+        ],
+        [
+          0.0,
+          30.0,
+          30.0
+        ],
+        [
+          50.0,
+          0.0,
+          50.0
+        ]
+      ],
+      "record_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "rotate_30_edge_3_reverse_True",
+      "axis": "y",
+      "direction": -1,
+      "edge_vectors": [
+        [
+          -50.0,
+          0.0,
+          50.0
+        ],
+        [
+          0.0,
+          -30.0,
+          30.0
+        ],
+        [
+          0.0,
+          30.0,
+          30.0
+        ],
+        [
+          50.0,
+          -0.0,
+          50.0
+        ]
+      ],
+      "record_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "rotate_90_edge_0_reverse_False",
+      "axis": "x",
+      "direction": 1,
+      "edge_vectors": [
+        [
+          -50.0,
+          0.0,
+          50.0
+        ],
+        [
+          0.0,
+          -30.0,
+          30.0
+        ],
+        [
+          0.0,
+          30.0,
+          30.0
+        ],
+        [
+          50.0,
+          -0.0,
+          50.0
+        ]
+      ],
+      "record_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "rotate_90_edge_0_reverse_True",
+      "axis": "x",
+      "direction": -1,
+      "edge_vectors": [
+        [
+          -50.0,
+          0.0,
+          50.0
+        ],
+        [
+          0.0,
+          -30.0,
+          30.0
+        ],
+        [
+          0.0,
+          30.0,
+          30.0
+        ],
+        [
+          50.0,
+          -0.0,
+          50.0
+        ]
+      ],
+      "record_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "rotate_90_edge_1_reverse_False",
+      "axis": "y",
+      "direction": -1,
+      "edge_vectors": [
+        [
+          -50.0,
+          0.0,
+          50.0
+        ],
+        [
+          0.0,
+          -30.0,
+          30.0
+        ],
+        [
+          0.0,
+          30.0,
+          30.0
+        ],
+        [
+          50.0,
+          -0.0,
+          50.0
+        ]
+      ],
+      "record_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "rotate_90_edge_1_reverse_True",
+      "axis": "y",
+      "direction": 1,
+      "edge_vectors": [
+        [
+          -50.0,
+          0.0,
+          50.0
+        ],
+        [
+          0.0,
+          -30.0,
+          30.0
+        ],
+        [
+          0.0,
+          30.0,
+          30.0
+        ],
+        [
+          50.0,
+          0.0,
+          50.0
+        ]
+      ],
+      "record_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "rotate_90_edge_2_reverse_False",
+      "axis": "x",
+      "direction": -1,
+      "edge_vectors": [
+        [
+          -50.0,
+          0.0,
+          50.0
+        ],
+        [
+          0.0,
+          -30.0,
+          30.0
+        ],
+        [
+          0.0,
+          30.0,
+          30.0
+        ],
+        [
+          50.0,
+          -0.0,
+          50.0
+        ]
+      ],
+      "record_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "rotate_90_edge_2_reverse_True",
+      "axis": "x",
+      "direction": 1,
+      "edge_vectors": [
+        [
+          -50.0,
+          0.0,
+          50.0
+        ],
+        [
+          0.0,
+          -30.0,
+          30.0
+        ],
+        [
+          0.0,
+          30.0,
+          30.0
+        ],
+        [
+          50.0,
+          -0.0,
+          50.0
+        ]
+      ],
+      "record_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "rotate_90_edge_3_reverse_False",
+      "axis": "y",
+      "direction": 1,
+      "edge_vectors": [
+        [
+          -50.0,
+          0.0,
+          50.0
+        ],
+        [
+          0.0,
+          -30.0,
+          30.0
+        ],
+        [
+          0.0,
+          30.0,
+          30.0
+        ],
+        [
+          50.0,
+          -0.0,
+          50.0
+        ]
+      ],
+      "record_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "rotate_90_edge_3_reverse_True",
+      "axis": "y",
+      "direction": -1,
+      "edge_vectors": [
+        [
+          -50.0,
+          0.0,
+          50.0
+        ],
+        [
+          0.0,
+          -30.0,
+          30.0
+        ],
+        [
+          0.0,
+          30.0,
+          30.0
+        ],
+        [
+          50.0,
+          -0.0,
+          50.0
+        ]
+      ],
+      "record_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "rotate_180_edge_0_reverse_False",
+      "axis": "x",
+      "direction": 1,
+      "edge_vectors": [
+        [
+          -50.0,
+          -0.0,
+          50.0
+        ],
+        [
+          0.0,
+          -30.0,
+          30.0
+        ],
+        [
+          0.0,
+          30.0,
+          30.0
+        ],
+        [
+          50.0,
+          0.0,
+          50.0
+        ]
+      ],
+      "record_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "rotate_180_edge_0_reverse_True",
+      "axis": "x",
+      "direction": -1,
+      "edge_vectors": [
+        [
+          -50.0,
+          -0.0,
+          50.0
+        ],
+        [
+          0.0,
+          -30.0,
+          30.0
+        ],
+        [
+          0.0,
+          30.0,
+          30.0
+        ],
+        [
+          50.0,
+          0.0,
+          50.0
+        ]
+      ],
+      "record_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "rotate_180_edge_1_reverse_False",
+      "axis": "y",
+      "direction": -1,
+      "edge_vectors": [
+        [
+          -50.0,
+          0.0,
+          50.0
+        ],
+        [
+          0.0,
+          -30.0,
+          30.0
+        ],
+        [
+          0.0,
+          30.0,
+          30.0
+        ],
+        [
+          50.0,
+          0.0,
+          50.0
+        ]
+      ],
+      "record_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "rotate_180_edge_1_reverse_True",
+      "axis": "y",
+      "direction": 1,
+      "edge_vectors": [
+        [
+          -50.0,
+          -0.0,
+          50.0
+        ],
+        [
+          0.0,
+          -30.0,
+          30.0
+        ],
+        [
+          0.0,
+          30.0,
+          30.0
+        ],
+        [
+          50.0,
+          0.0,
+          50.0
+        ]
+      ],
+      "record_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "rotate_180_edge_2_reverse_False",
+      "axis": "x",
+      "direction": -1,
+      "edge_vectors": [
+        [
+          -50.0,
+          -0.0,
+          50.0
+        ],
+        [
+          0.0,
+          -30.0,
+          30.0
+        ],
+        [
+          0.0,
+          30.0,
+          30.0
+        ],
+        [
+          50.0,
+          0.0,
+          50.0
+        ]
+      ],
+      "record_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "rotate_180_edge_2_reverse_True",
+      "axis": "x",
+      "direction": 1,
+      "edge_vectors": [
+        [
+          -50.0,
+          -0.0,
+          50.0
+        ],
+        [
+          0.0,
+          -30.0,
+          30.0
+        ],
+        [
+          0.0,
+          30.0,
+          30.0
+        ],
+        [
+          50.0,
+          0.0,
+          50.0
+        ]
+      ],
+      "record_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "rotate_180_edge_3_reverse_False",
+      "axis": "y",
+      "direction": 1,
+      "edge_vectors": [
+        [
+          -50.0,
+          -0.0,
+          50.0
+        ],
+        [
+          0.0,
+          -30.0,
+          30.0
+        ],
+        [
+          0.0,
+          30.0,
+          30.0
+        ],
+        [
+          50.0,
+          0.0,
+          50.0
+        ]
+      ],
+      "record_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "rotate_180_edge_3_reverse_True",
+      "axis": "y",
+      "direction": -1,
+      "edge_vectors": [
+        [
+          -50.0,
+          -0.0,
+          50.0
+        ],
+        [
+          0.0,
+          -30.0,
+          30.0
+        ],
+        [
+          0.0,
+          30.0,
+          30.0
+        ],
+        [
+          50.0,
+          0.0,
+          50.0
+        ]
+      ],
+      "record_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "rotate_270_edge_0_reverse_False",
+      "axis": "x",
+      "direction": 1,
+      "edge_vectors": [
+        [
+          -50.0,
+          0.0,
+          50.0
+        ],
+        [
+          0.0,
+          -30.0,
+          30.0
+        ],
+        [
+          0.0,
+          30.0,
+          30.0
+        ],
+        [
+          50.0,
+          0.0,
+          50.0
+        ]
+      ],
+      "record_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "rotate_270_edge_0_reverse_True",
+      "axis": "x",
+      "direction": -1,
+      "edge_vectors": [
+        [
+          -50.0,
+          0.0,
+          50.0
+        ],
+        [
+          0.0,
+          -30.0,
+          30.0
+        ],
+        [
+          0.0,
+          30.0,
+          30.0
+        ],
+        [
+          50.0,
+          0.0,
+          50.0
+        ]
+      ],
+      "record_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "rotate_270_edge_1_reverse_False",
+      "axis": "y",
+      "direction": -1,
+      "edge_vectors": [
+        [
+          -50.0,
+          0.0,
+          50.0
+        ],
+        [
+          0.0,
+          -30.0,
+          30.0
+        ],
+        [
+          0.0,
+          30.0,
+          30.0
+        ],
+        [
+          50.0,
+          0.0,
+          50.0
+        ]
+      ],
+      "record_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "rotate_270_edge_1_reverse_True",
+      "axis": "y",
+      "direction": 1,
+      "edge_vectors": [
+        [
+          -50.0,
+          0.0,
+          50.0
+        ],
+        [
+          0.0,
+          -30.0,
+          30.0
+        ],
+        [
+          0.0,
+          30.0,
+          30.0
+        ],
+        [
+          50.0,
+          -0.0,
+          50.0
+        ]
+      ],
+      "record_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "rotate_270_edge_2_reverse_False",
+      "axis": "x",
+      "direction": -1,
+      "edge_vectors": [
+        [
+          -50.0,
+          0.0,
+          50.0
+        ],
+        [
+          0.0,
+          -30.0,
+          30.0
+        ],
+        [
+          0.0,
+          30.0,
+          30.0
+        ],
+        [
+          50.0,
+          0.0,
+          50.0
+        ]
+      ],
+      "record_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "rotate_270_edge_2_reverse_True",
+      "axis": "x",
+      "direction": 1,
+      "edge_vectors": [
+        [
+          -50.0,
+          0.0,
+          50.0
+        ],
+        [
+          0.0,
+          -30.0,
+          30.0
+        ],
+        [
+          0.0,
+          30.0,
+          30.0
+        ],
+        [
+          50.0,
+          0.0,
+          50.0
+        ]
+      ],
+      "record_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "rotate_270_edge_3_reverse_False",
+      "axis": "y",
+      "direction": 1,
+      "edge_vectors": [
+        [
+          -50.0,
+          0.0,
+          50.0
+        ],
+        [
+          0.0,
+          -30.0,
+          30.0
+        ],
+        [
+          0.0,
+          30.0,
+          30.0
+        ],
+        [
+          50.0,
+          0.0,
+          50.0
+        ]
+      ],
+      "record_unchanged": true,
+      "passed": true
+    },
+    {
+      "case": "rotate_270_edge_3_reverse_True",
+      "axis": "y",
+      "direction": -1,
+      "edge_vectors": [
+        [
+          -50.0,
+          0.0,
+          50.0
+        ],
+        [
+          0.0,
+          -30.0,
+          30.0
+        ],
+        [
+          0.0,
+          30.0,
+          30.0
+        ],
+        [
+          50.0,
+          0.0,
+          50.0
+        ]
+      ],
+      "record_unchanged": true,
+      "passed": true
+    },
+    {
+      "error": "içe aktarma reddedildi: geometry_mismatch (paketin onayladığı geometri bağlamı bu oturumun güncel bağlamıyla eşleşmiyor — oturumu yeniden dışa aktarıp inceleyin)",
+      "import_wrote": false,
+      "stored_targets": [],
+      "target_state": {
+        "state": "missing",
+        "reason": "needs_target"
+      },
+      "passed": true,
+      "case": "same_version_same_revision_moved_geometry",
+      "geometry_version_unchanged": true,
+      "revision_unchanged": true
+    }
+  ],
+  "passed": true
+}

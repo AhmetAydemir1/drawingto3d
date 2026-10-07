@@ -382,6 +382,7 @@ function renderTarget(){const panel=$('target-panel');if(!panel)return;const row
    :(stored?`Onaylı: ${targetDescription(stored)} · ${evidenceText(stored)}`:'Henüz hedef onaylanmadı.')));
  const box=$('target-proposals');box.replaceChildren();
  const proposals=(targetInfo&&targetInfo.proposals)||[];
+ if(targetInfo&&proposalHighlight&&!highlightedProposal())proposalHighlight=null;   // bayat vurgu sessizce kalmaz
  if(targetInfo&&targetInfo.error){const p=document.createElement('p');p.className='muted';p.textContent=`Öneri alınamadı: ${targetInfo.error}`;box.append(p);}
  for(const [index,item] of proposals.entries()){const div=document.createElement('div');div.className='feature';
   const choose=document.createElement('button');choose.className='secondary';choose.textContent='Seç';
@@ -392,8 +393,9 @@ function renderTarget(){const panel=$('target-panel');if(!panel)return;const row
   div.append(choose,label);box.append(div);}
  if(!proposals.length&&!(targetInfo&&targetInfo.error)){const p=document.createElement('p');p.className='muted';
   p.textContent=pickedTranscription()?'Bu bölgede öneri yok: “Başka hedef seç” ile çizimden seçin.':'Önce metni kaydedin: hedef onayı güncel bir okumaya bağlanır.';box.append(p);}
- const top=proposals[0]||null;
- $('target-confirm').disabled=pending||row.ignored||!top;
+ const active=activeProposal();
+ $('target-confirm').disabled=pending||row.ignored||!active;
+ $('target-confirm').textContent=active?`Onayla · ${proposals.indexOf(active)+1}. öneri`:'Onayla';
  $('target-other').disabled=pending||row.ignored;$('target-group').disabled=pending||row.ignored;
  $('target-unbindable').disabled=pending;$('target-unbindable').textContent=row.unbindable?'Kapsam kararını geri al':'Bağlama yok / desteklenmiyor';
  $('target-kind').disabled=pending||row.ignored;
@@ -405,6 +407,12 @@ function renderTarget(){const panel=$('target-panel');if(!panel)return;const row
   :'Onayladığınız hedef, metnin okumasıyla birlikte delik/ölçü kararına derlenir.');}
 function targetDescription(row){return `${TARGET_KIND_LABEL[row.target_kind]||row.target_kind} · ${(row.target_ids||[]).join(', ')}`;}
 function evidenceText(row){const e=(row.evidence||[])[0]||{};return `${row.evidence_tier||''}${e.detail?` · ${e.detail}`:e.ref?` · ${e.ref}`:e.kind?` · ${e.kind}`:''}`;}
+// R03 (inceleme): tek aktif öneri — etikete tıklayıp vurgulamak *neyi* onaylayacağını belirler;
+// genel [Onayla] vurgulanan öneriyi (yoksa ilkini — düğme bunu açıkça söyler) yazar, asla
+// sessizce başka bir hedefi değil. Vurgu listeyle eşleşmezse bayat sayılır ve temizlenir.
+function highlightedProposal(){if(!proposalHighlight||!targetInfo||!targetInfo.proposals)return null;
+ return targetInfo.proposals.find(item=>item.target_kind===proposalHighlight.kind&&String(item.target_ids)===String(proposalHighlight.ids))||null;}
+function activeProposal(){return highlightedProposal()||((targetInfo&&targetInfo.proposals||[])[0]||null);}
 async function loadTarget(key){try{const data=await api('/api/guided/propose',{token:state.token,callout_id:selectedCallout});
   if(targetLoading===key)targetInfo={key,...data};}
  catch(e){if(targetLoading===key)targetInfo={key,error:e.message,proposals:[],target:null};}
@@ -452,8 +460,8 @@ $('review-import').onchange=async event=>{const file=event.target.files[0];event
   status('İnceleme içe aktarıldı: eylemler bu kaydın doğrulamasından geçti ve “dış inceleme” olarak işaretlendi.');}
  catch(e){status(e.message,true);}finally{busy(false);}};
 // --- bağlanma: var olan düğmeler ve çizim döngüsü -----------------------------------------------
-$('target-confirm').onclick=()=>{const top=(targetInfo&&targetInfo.proposals||[])[0];
- if(!top)return status('Onaylanacak öneri yok; “Başka hedef seç” ile çizimden seçin.',true);confirmProposal(top);};
+$('target-confirm').onclick=()=>{const item=activeProposal();
+ if(!item)return status('Onaylanacak öneri yok; “Başka hedef seç” ile çizimden seçin.',true);confirmProposal(item);};
 $('target-other').onclick=()=>beginTargetPick($('target-kind').value||'circle');
 $('target-group').onclick=()=>beginTargetPick('circle_group');
 $('target-kind').onchange=()=>{targetKind=$('target-kind').value;renderTarget();};

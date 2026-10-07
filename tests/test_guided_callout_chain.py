@@ -5,16 +5,20 @@ a read, does a declared "cannot bind" decision really unblock the callout, does 
 reach the plan the build hands to CAD, and does an imported review travel the same validated path a
 click does — with `external_review` as its provenance and nothing written on refusal.
 """
+import copy
 import json
 import threading
 import urllib.error
 import urllib.request
 from http.server import ThreadingHTTPServer
+from unittest.mock import patch
 
 import pytest
 
 import test_guided_callouts as helpers
+import test_view_core as view_helpers
 from drawingto3d import app, callout_bind, callout_compile, callout_models, callout_review, guided
+from drawingto3d.callout_parse import semantic_parse
 
 TOKEN = helpers.TOKEN
 
@@ -335,3 +339,218 @@ def test_an_import_over_http_is_refused_whole_when_it_is_wrong(live, store):
                                              "bundle": {"bundle_version": "x"}})
     assert code == 400 and "reddedildi" in body["error"]
     assert not _record(store)["decisions"].get("transcriptions")
+
+
+# --- R01/R02/R04/R05 — bağımsız inceleme düzeltme turu (2026-10-07) --------------------------
+
+def _store_in(tmp_path, name, text, *, inches=False):
+    """İncelemenin kendi fixture'ı: sentetik oturum, (inç kalibrasyon) ve metnin gerçek store
+    komutuyla yazılışı — parse okuması gerçek parser yolundan türetilir."""
+    folder = tmp_path / name
+    folder.mkdir()
+    fixture = helpers.store.__wrapped__(folder)
+    helpers.seed_callouts(fixture)
+    if inches:
+        payload = helpers.current_payload(fixture)
+        payload["calibration"] = {**payload["calibration"], "value": 50 / 25.4, "unit": "in"}
+        fixture.save(TOKEN, 0, payload)
+    fixture.edit_callout(TOKEN, fixture.load(TOKEN)["revision"], "transcribe",
+                         {"callout_id": "k1", "raw_text": text})
+    return fixture
+
+
+def _confirm(fixture, kind, ids):
+    """Hedefi kaydet ve derlenmiş zinciri gerçek GeneralPlan'a kadar çalıştır."""
+    state = fixture.load(TOKEN)
+    payload = helpers.current_payload(fixture, holes=[])
+    payload["callout_targets"] = [helpers._target_payload(
+        target_kind=kind, target_ids=ids,
+        transcription_revision=state["decisions"]["transcriptions"][0]["revision"])]
+    fixture.save(TOKEN, state["revision"], payload)
+    state = fixture.load(TOKEN)
+    compilation = callout_compile.compile_callouts(state)
+    merged = callout_compile.apply_compiled(state["decisions"], compilation)
+    return state, compilation, guided.make_plan({**state, "decisions": merged})
+
+
+def _bbox(plan):
+    edges = {name: float(value.value) for name, value in plan.parameters.items()
+             if name.startswith("edge_")}
+    xs = [value for name, value in edges.items() if name.endswith("_x")]
+    ys = [value for name, value in edges.items() if name.endswith("_y")]
+    return [max(xs) - min(xs), max(ys) - min(ys)]
+
+
+def _with_callout_on(record, *, text, ids, region=(0.10, 0.20, 0.20, 0.32)):
+    """İnceleme kaydına callout katmanı ekle: aday + gerçek parse + onaylı hedef (G5-G7 şekli)."""
+    record["callout_candidates"] = [{"id": "k1", "source_digest": record["source_sha256"], "page_index": 0,
+                                     "region": list(region), "crop_region": list(region),
+                                     "source_kind": "vector_text", "observation_ids": [],
+                                     "detector_version": "callout-detector/1",
+                                     "geometry_version": record["geometry_version"],
+                                     "machine_text_hint": text}]
+    record["decisions"]["transcriptions"] = [{"callout_id": "k1", "raw_text": text, "normalized_text": text,
+                                              "entered_by": "user", "source_region": list(region),
+                                              "revision": 1}]
+    record["callout_parses"] = [semantic_parse({"callout_id": "k1", "raw_text": text, "revision": 1},
+                                               sheet_unit="mm").model_dump(mode="json")]
+    target = {"callout_id": "k1", "transcription_revision": 1, "target_kind": "vertex_pair",
+              "target_ids": list(ids), "profile_id": record["decisions"]["profile_id"],
+              "parser_version": callout_models.CALLOUT_PARSER_VERSION,
+              "geometry_version": record["geometry_version"],
+              "evidence": [{"kind": "user_click", "ref": ids[0]}], "status": "confirmed",
+              "reconfirm": False}
+    target["geometry_key"] = callout_models.geometry_key(record)
+    record["decisions"]["callout_targets"] = [target]
+    return record
+
+
+def test_a_vertical_callout_tie_leaves_the_plan_upright(tmp_path):
+    """R01: (120,20) → (120,80) dik kenara `30 mm` — yön parça çerçevesinde -1, plan 50×30 mm kalır."""
+    fixture = _store_in(tmp_path, "vertical", "30 mm")
+    _state, compilation, plan = _confirm(fixture, "vertex_pair", ["g1:start", "g1:end"])
+    binding = compilation["bindings"][0]
+    assert fixture.readiness(TOKEN)["ready"] is True
+    assert (binding["axis"], binding["direction"]) == ("y", -1)
+    assert _bbox(plan) == [50.0, 30.0]
+
+
+def test_a_horizontal_callout_tie_is_the_untouched_control(tmp_path):
+    """R01 kontrolü: yatay `50 mm` doğruydu ve düzeltmeden sonra da aynı kalır."""
+    fixture = _store_in(tmp_path, "horizontal", "50 mm")
+    _state, compilation, plan = _confirm(fixture, "vertex_pair", ["g0:start", "g0:end"])
+    binding = compilation["bindings"][0]
+    assert (binding["axis"], binding["direction"]) == ("x", 1)
+    assert _bbox(plan) == [50.0, 30.0]
+
+
+def test_a_rotated_sheet_reads_the_tie_in_the_sheets_own_frame(tmp_path):
+    """R01: çeyrek tur dönmüş pafta — bağ paftanın kendi ekseninden okunur; sadece dy işareti yetmez."""
+    record = view_helpers._record(tmp_path, transpose=True, rotation=90, name="turned",
+                                  view={"x_page": [0.0, 1.0], "y_page": [1.0, 0.0], "source": "sheet_frame"})
+    _with_callout_on(record, text="30 mm", ids=["g1:start", "g1:end"])
+    compiled = callout_compile.compile_callouts(record)
+    binding = compiled["bindings"][0]
+    assert (binding["axis"], binding["direction"]) == ("y", 1)
+    plan = guided.make_plan({**record, "decisions": callout_compile.apply_compiled(record["decisions"],
+                                                                                   compiled)})
+    assert _bbox(plan) == [50.0, 30.0]
+
+
+def test_a_printed_inch_blind_depth_reaches_the_plan_in_mm(tmp_path):
+    """R02: `Ø.5 .25 DEEP in` — GeneralPlan'da çap 12.7 mm, derinlik 6.35 mm."""
+    fixture = _store_in(tmp_path, "printed_inch", "Ø.5 .25 DEEP in")
+    _state, compilation, plan = _confirm(fixture, "circle", ["c0"])
+    assert fixture.readiness(TOKEN)["ready"] is True
+    assert compilation["holes"][0]["diameter"] == 12.7
+    assert float(plan.parameters["hole_0_depth"].value) == 6.35
+
+
+def test_a_sheet_inch_blind_depth_reaches_the_plan_in_mm(tmp_path):
+    """R02: birimsiz metin, kalibrasyondan çözülen `in` — derinlik yine 6.35 mm."""
+    fixture = _store_in(tmp_path, "sheet_inch", "Ø.5 .25 DEEP", inches=True)
+    state, compilation, plan = _confirm(fixture, "circle", ["c0"])
+    assert state["decisions"]["calibration"]["unit"] == "in"
+    assert compilation["rows"][0]["unit_source"] == "sheet"
+    assert float(plan.parameters["hole_0_depth"].value) == 6.35
+
+
+def _attempt_confirm(fixture, *, kind="circle", ids=("c0",)):
+    """Kullanıcının onay denemesi: kayıt öncesi/sonrası bayt karşılaştırmasıyla."""
+    state = fixture.load(TOKEN)
+    before = helpers._session_path(fixture).read_bytes()
+    payload = helpers.current_payload(fixture)
+    payload["callout_targets"] = [helpers._target_payload(
+        target_kind=kind, target_ids=list(ids),
+        transcription_revision=state["decisions"]["transcriptions"][0]["revision"])]
+    error = None
+    try:
+        fixture.save(TOKEN, state["revision"], payload)
+    except ValueError as exc:
+        error = str(exc)
+    return error, helpers._session_path(fixture).read_bytes() == before
+
+
+def test_an_unsupported_reading_asks_for_a_text_edit_not_a_target(tmp_path):
+    """R04: gerçek akış — `M8` okuması unsupported; hazırlık parse_error der, onay yine reddedilir."""
+    fixture = _store_in(tmp_path, "unsupported", "M8")
+    assert fixture.load(TOKEN)["callout_parses"][0]["status"] == "unsupported"
+    readiness = fixture.readiness(TOKEN)
+    assert readiness["categories"] == {"parse_error": 1}
+    assert "missing_target" not in readiness["categories"]
+    assert readiness["questions"][0]["action"] == "edit_transcription"
+    error, untouched = _attempt_confirm(fixture)
+    assert error and untouched, "store onayı haklı reddeder ve dosyaya yazmaz"
+
+
+def test_an_ambiguous_reading_asks_for_a_text_edit_not_a_target(tmp_path):
+    fixture = _store_in(tmp_path, "ambiguous", "Ø8 9")
+    assert fixture.load(TOKEN)["callout_parses"][0]["status"] == "ambiguous"
+    readiness = fixture.readiness(TOKEN)
+    assert readiness["categories"] == {"parse_ambiguous": 1}
+    assert "missing_target" not in readiness["categories"]
+    error, untouched = _attempt_confirm(fixture)
+    assert error and untouched
+
+
+def _bundle_for(fixture):
+    bundle = fixture.review_export(TOKEN)
+    bundle["actions"] = [{"action": "confirm_target", "callout_id": "k1",
+                          "target_kind": "circle", "target_ids": ["c0"]}]
+    return bundle
+
+
+def _attempt_import(fixture, bundle):
+    state = fixture.load(TOKEN)
+    before = helpers._session_path(fixture).read_bytes()
+    error = None
+    try:
+        fixture.review_import(TOKEN, state["revision"], bundle)
+    except ValueError as exc:
+        error = str(exc)
+    return error, helpers._session_path(fixture).read_bytes() == before
+
+
+def test_an_import_of_the_same_context_still_lands_and_undo_restores(tmp_path):
+    """R05 kontrolü: bağlam aynıyken import eskisi gibi uygulanır; undo kararları aynen geri getirir."""
+    fixture = _store_in(tmp_path, "current_control", "Ø8 THRU")
+    bundle = _bundle_for(fixture)
+    before = fixture.load(TOKEN)
+    error, _wrote = _attempt_import(fixture, bundle)
+    assert error is None, error
+    imported = fixture.load(TOKEN)
+    assert callout_models.callout_states(imported)[0]["target"]["state"] == "current"
+    fixture.save(TOKEN, imported["revision"], undo=True)
+    undone = fixture.load(TOKEN)
+    assert undone["decisions"] == before["decisions"]
+    assert undone["revision"] > imported["revision"] > before["revision"]
+
+
+def test_a_bundle_from_an_obsolete_parser_header_is_refused_whole(tmp_path):
+    """R05: paketin başlığı sunucunun parser sürümü değilse import tamamıyla reddedilir."""
+    fixture = _store_in(tmp_path, "old_parser", "Ø8 THRU")
+    bundle = _bundle_for(fixture)
+    bundle["parser_version"] = "callout-parser/obsolete"
+    error, untouched = _attempt_import(fixture, bundle)
+    assert error and "parser_version_mismatch" in error
+    assert untouched and not fixture.load(TOKEN)["decisions"].get("callout_targets")
+
+
+def test_a_bundle_exported_before_a_geometry_migration_is_refused_whole(tmp_path):
+    """R05: base revision eşit kalsa da geometri bağlamı değiştiyse eski paket onay yazamaz."""
+    fixture = _store_in(tmp_path, "migrated", "Ø8 THRU")
+    bundle = _bundle_for(fixture)
+    original = fixture.load(TOKEN)
+    fresh = copy.deepcopy(original["options"])
+    next(row for row in fresh["circles"] if row["id"] == "c0")["center"] = [70, 45]
+    with patch.object(guided, "GEOMETRY_VERSION", original["geometry_version"] + 1), \
+            patch.object(guided, "observe", return_value=None), \
+            patch.object(guided, "drawing_options", return_value=fresh):
+        migrated = fixture.load(TOKEN)                # gerçek migration yazısı (meşru, revision'ı artırmaz)
+        error, untouched = _attempt_import(fixture, bundle)   # anlık görüntü: migration sonrası, import öncesi
+    assert migrated["geometry_version"] == original["geometry_version"] + 1
+    assert callout_models.geometry_key(original) != callout_models.geometry_key(migrated)
+    assert bundle["base_revision"] == migrated["revision"], "kontrol yalnız revision'a bakmıyor"
+    assert error and "geometry" in error
+    assert untouched, "reddedilen import migration'ın kendi yazısından sonra dosyaya dokunmaz"
+    assert not fixture.load(TOKEN)["decisions"].get("callout_targets")

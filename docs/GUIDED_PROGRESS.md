@@ -469,3 +469,41 @@ Regresyon: `pytest -k "guided or callout or app or html or static or observe"` �
 G8 kapısının getirdiği iki bilinçli test güncellemesi: `geometry_state` paftası ile `test_guided.py`'nin
 flange testi callout'ları kapsam dışı ilan ediyor; `test_guided_html.py` artık panelin *doğru*
 cümlesini pinliyor (metin kullanılmıyor değil — derleniyor ve kapıyı besliyor).
+
+
+## Bağımsız inceleme düzeltmesi — R01–R05
+
+`eval/audits/20261006-guided-g4-g8-independent-review/REVIEW.md` beş bulgu getirdi; düzeltme turu
+test-önce yürütüldü — her bulgu için önce kırmızı doğrulanan regresyon, sonra ürün düzeltmesi.
+
+- **R01 — dikey ölçüde yön ters**: derleme artık ekseni/yönü paftanın kendi çerçevesinden okur
+  (`guided.view_transform` ile aynı çözücü; `callout_compile._view_axes` / `_axis_tie`); görüş
+  vouchable değilse `view_not_confirmed` açık kararı (hazırlıkta `missing_view` / `confirm_view`).
+  Sayfa deltasından işaret okuma dönemi kapandı.
+- **R02 — inç kör derinlik**: derinlik, çapla aynı çözülmüş birimden çevrilir (`0.25 in` → `6.35 mm`);
+  çevrilmiş değer `Hole` sınırına (1e6 mm) karşı derleme zamanında denetlenir (`unsupported_semantic`,
+  `*_out_of_range`) — model doğrulama hatasına bırakılmaz.
+- **R03 — `[Onayla]` vurgulananı yazmıyordu**: `guided.js` tek aktif öneri state'i — etiket tıklaması
+  vurguyu kurar, `[Onayla]` vurgulananı yazar ve düğme etiketi hangisini yazacağını söyler
+  (`Onayla · N. öneri`); listeyle eşleşmeyen bayat vurgu temizlenir.
+- **R04 — parse hatası eksik hedef gibiydi**: okuma, hedef kararından önce ve sunucunun kendi parser
+  sürümünden seçilir (`CALLOUT_PARSER_VERSION`); desteklenmeyen/ambiguous metin `parse_error` sorusu
+  olur — kullanıcı çıkmaz sokağa gönderilmez (onayı store zaten reddediyordu).
+- **R05 — eski paket değişen geometriye onay yazabiliyordu**: dışa aktarmaya `geometry_key` eklendi;
+  içe aktarma parser sürümü + `geometry_version` + `geometry_key` bağlam kapılarından geçer — revision
+  eşit olsa da bağlam eskimişse paket tamamıyla reddedilir (yazma yok).
+
+**Kanıt** (`eval/audits/20261006-guided-g4-g8-independent-review/`): RED önce — 20 yeni regresyon
+kırmızı (`fix-regressions-red.log`), tarayıcıda vurgulanan c1 iken c0 yazılıyordu (`ui-fix-red.log`,
+4/7). GREEN sonra — yeni regresyon seti **141 passed** (`fix-regressions-green.log`), incelemecinin
+odak seti **410 passed** (`fix-focused-after.log`), geniş set **186 passed** (`fix-extended-after.log`),
+inceleme probu **6/6** + import probu **3/3** exit 0 (`probe-results-after.json`,
+`import-probe-results-after.json`), gerçek Chrome **7/7** (`ui-fix-after.log`). Özet: `FIX-REPORT.md`.
+`*-before` kanıtlarına dokunulmadı (md5 + mtime kayıtlı).
+
+**Bağımsız doğrulama** (`eval/audits/20261007-guided-fixes-independent-review/`): beş bulgu kapandı,
+yeni bulgu yok; 12 test dosyası 412 + 2 (sandbox bind), gerçek HTTP tekrarı 2 → toplam **414 farklı
+test**; ek sınır probu **33/33** (dönüş/uç sırası + aynı sürüm geometri); gerçek UI'da kalıcı c1.
+
+Açık: geniş semread regresyon ağı ve gerçek CAD/STEP üretimi bu düzeltme turunda koşulmadı; sıradaki
+adım kapsamında alınmalı.

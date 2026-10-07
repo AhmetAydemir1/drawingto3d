@@ -19,7 +19,7 @@ from datetime import datetime, timezone
 
 from drawingto3d import callout_bind
 from drawingto3d.callout_models import (CALLOUT_PARSER_VERSION, CALLOUT_SCHEMA_VERSION, callout_state,
-                                        effective_callouts)
+                                        effective_callouts, geometry_key)
 
 BUNDLE_VERSION = 1
 IMPORT_ACTIONS = ("transcribe", "ignore", "restore", "confirm_target", "select_target")
@@ -100,6 +100,10 @@ def export_bundle(record: dict, *, artifacts: dict | None = None, proposals_limi
         "created_at": _now(),
         "detector_version": (record.get("callout_detection") or {}).get("detector_version"),
         "geometry_version": record.get("geometry_version"),
+        # R05 (review): the fingerprint the reviewer's approval is bound to. The version alone
+        # cannot see a same-version content change, and a migration refreshes geometry without
+        # bumping the revision — the key is what makes both visible at import time.
+        "geometry_key": geometry_key(record),
         "callouts": rows,
         "instructions": ("Her callout için: `transcribe` (metni yaz), `ignore`/`restore` (callout değil), "
                          "`confirm_target` (öneriyi onayla), `select_target` (kendi seçimin). "
@@ -184,6 +188,23 @@ def validate_import(record: dict, bundle: dict, *, session_token: str | None = N
     elif base != (record.get("revision") or 0):
         errors.append({"reason": "stale_base_revision",
                        "detail": f"{base} ≠ {record.get('revision') or 0}"})
+    # R05 (review): the bundle must carry the context the reviewer *saw* — the parser that read the
+    # text and the geometry fingerprint the proposals came from. `_migrated` refreshes geometry
+    # without touching the revision, so the base-revision gate alone would let a pre-migration
+    # approval land on moved geometry; comparing the context is what makes that refusal whole.
+    if str(bundle.get("parser_version") or "") != CALLOUT_PARSER_VERSION:
+        errors.append({"reason": "parser_version_mismatch",
+                       "detail": f"inceleme '{bundle.get('parser_version')}' okumasıyla yapılmış; sunucu "
+                                 f"'{CALLOUT_PARSER_VERSION}' — oturumu yeniden dışa aktarın"})
+    if bundle.get("geometry_version") != record.get("geometry_version"):
+        errors.append({"reason": "geometry_version_mismatch",
+                       "detail": f"{bundle.get('geometry_version')} ≠ {record.get('geometry_version')}; "
+                                 "geometri bu paket dışa aktarıldıktan sonra yenilendi — yeniden dışa "
+                                 "aktarıp inceleyin"})
+    elif str(bundle.get("geometry_key") or "") != geometry_key(record):
+        errors.append({"reason": "geometry_mismatch",
+                       "detail": "paketin onayladığı geometri bağlamı bu oturumun güncel bağlamıyla "
+                                 "eşleşmiyor — oturumu yeniden dışa aktarıp inceleyin"})
     raw = bundle.get("actions")
     if not isinstance(raw, list) or not raw:
         errors.append({"reason": "no_actions"})

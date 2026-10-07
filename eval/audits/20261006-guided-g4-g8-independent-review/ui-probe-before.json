@@ -1,0 +1,59 @@
+{
+  "reviewed_head": "e51f555",
+  "environment": "real app.Handler + real guided UI, isolated synthetic store, Codex in-app browser",
+  "steps": [
+    "Open fixture URL",
+    "Click C1 callout row",
+    "Click second proposal label: 2. tek daire · c1",
+    "Click global Onayla button",
+    "Observe Onaylı: tek daire · c0 and read persisted session"
+  ],
+  "expected_target_ids": [
+    "c1"
+  ],
+  "stored_target": {
+    "callout_id": "k1",
+    "target_kind": "circle",
+    "target_ids": [
+      "c0"
+    ],
+    "geometry_version": 3,
+    "geometry_key": "dea25226a3ffa5187151e112dde655140a4bb29bd0a316061d9ba662ad056d70",
+    "profile_id": "outline_1",
+    "transcription_revision": 1,
+    "parser_version": "callout-parser/1",
+    "evidence": [
+      {
+        "kind": "proposal",
+        "ref": "T1 · c0"
+      }
+    ],
+    "status": "confirmed",
+    "reconfirm": false
+  },
+  "confirmation_log": [
+    {
+      "at": "2026-10-06T18:23:51+00:00",
+      "revision": 1,
+      "actor": "user",
+      "action": "confirm_target",
+      "field": "callout:k1",
+      "value": {
+        "kind": "circle",
+        "ids": [
+          "c0"
+        ]
+      },
+      "note": "Kullanıcı callout hedefini onayladı.",
+      "evidence": {
+        "callout_id": "k1",
+        "geometry_key": "dea25226a3ffa5187151e112dde655140a4bb29bd0a316061d9ba662ad056d70",
+        "profile_id": "outline_1",
+        "transcription_revision": 1,
+        "parser_version": "callout-parser/1"
+      }
+    }
+  ],
+  "unexpected_browser_errors": [],
+  "passed": false
+}

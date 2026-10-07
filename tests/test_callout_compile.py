@@ -220,3 +220,97 @@ def test_provenance_rows_keep_the_chain_order():
                           "target_ids", "geometry_key", "geometry_version", "status", "reason",
                           "compiled_decision", "generated_features"}
     assert copy.deepcopy(compiled) == callout_compile.compile_callouts(row), "derleme deterministik"
+
+
+# --- R01/R02/R04 — bağımsız inceleme düzeltme turu (2026-10-07) -----------------------------
+
+VERTICAL_END = {"target_kind": "vertex_pair", "target_ids": ["g1:start", "g1:end"]}
+
+
+def test_a_vertical_tie_reads_the_sheets_own_y_axis():
+    """R01: sayfa y'si aşağı, parça y'si yukarı — yön sayfa farkından değil, pafta ekseninden okunur."""
+    row = record("30 mm", [0.10, 0.20, 0.20, 0.32], stored_target=VERTICAL_END)
+    binding = callout_compile.compile_callouts(row)["bindings"][0]
+    assert binding["axis"] == "y" and binding["direction"] == -1
+    assert binding["first"]["id"] == "g1:start" and binding["second"]["id"] == "g1:end"
+
+
+def test_a_reversed_pair_flips_the_direction_not_the_axis():
+    row = record("30 mm", [0.10, 0.20, 0.20, 0.32],
+                 stored_target={"target_kind": "vertex_pair", "target_ids": ["g1:end", "g1:start"]})
+    binding = callout_compile.compile_callouts(row)["bindings"][0]
+    assert binding["axis"] == "y" and binding["direction"] == 1
+
+
+def test_a_rotated_view_turns_the_tie_axis_with_the_sheet():
+    """R01: x_page=[0,1] ile sayfa-dikey bağ paftanın X eksenindedir — sadece dy işareti çevirmek yetmez."""
+    row = record("30 mm", [0.10, 0.20, 0.20, 0.32], stored_target=VERTICAL_END,
+                 view={"x_page": [0.0, 1.0], "y_page": [1.0, 0.0], "source": "page_axes"})
+    binding = callout_compile.compile_callouts(row)["bindings"][0]
+    assert binding["axis"] == "x" and binding["direction"] == 1
+
+
+def test_a_record_without_a_vouchable_view_makes_the_axis_an_open_decision():
+    """R01 + PLAN §8.6: görüş yoksa eksen uydurulmaz — derleme durur ve açık karar döner."""
+    row = record("30 mm", [0.10, 0.20, 0.20, 0.32],
+                 stored_target={"target_kind": "vertex_pair", "target_ids": ["g0:start", "g0:end"]},
+                 sheet_frame=False)
+    compiled = callout_compile.compile_callouts(row)
+    assert compiled["bindings"] == []
+    assert compiled["rows"][0]["status"] == "view_not_confirmed"
+    readiness = callout_readiness.build_readiness(row)
+    assert readiness["categories"] == {"missing_view": 1}
+    assert readiness["questions"][0]["action"] == "confirm_view"
+
+
+def test_a_printed_inch_depth_is_converted_with_its_diameter():
+    """R02: basılı `in` derinliği de belirler — 0.25 in 6.35 mm'dir, çap 12.7 mm."""
+    row = record("Ø.5 .25 DEEP in", [0.10, 0.20, 0.20, 0.32], stored_target=THRU)
+    compiled = callout_compile.compile_callouts(row)
+    assert compiled["holes"] == [{"circle_id": "c0", "kind": "pocket", "diameter": 12.7, "depth": 6.35}]
+
+
+def test_a_sheet_inch_depth_is_converted_too():
+    row = record("Ø.5 .25 DEEP", [0.10, 0.20, 0.20, 0.32], stored_target=THRU)
+    row["decisions"]["calibration"]["unit"] = "in"
+    compiled = callout_compile.compile_callouts(row)
+    assert compiled["holes"][0]["diameter"] == 12.7 and compiled["holes"][0]["depth"] == 6.35
+    assert compiled["rows"][0]["unit_source"] == "sheet"
+
+
+def test_a_printed_mm_depth_is_left_alone():
+    row = record("Ø.5 .25 DEEP mm", [0.10, 0.20, 0.20, 0.32], stored_target=THRU)
+    compiled = callout_compile.compile_callouts(row)
+    assert compiled["holes"][0]["depth"] == 0.25
+    assert compiled["rows"][0]["unit_source"] == "printed"
+
+
+def test_a_converted_hole_is_refused_when_it_breaks_the_models_own_bound():
+    from drawingto3d.guided import Hole
+
+    bound = next(meta.le for meta in Hole.model_fields["depth"].metadata if hasattr(meta, "le"))
+    assert callout_compile.MM_LIMIT == bound, "sınır modelin kendi değerini kopyalar"
+    row = record("Ø.5 40000 DEEP in", [0.10, 0.20, 0.20, 0.32], stored_target=THRU)
+    compiled = callout_compile.compile_callouts(row)
+    assert compiled["holes"] == []
+    assert compiled["rows"][0]["status"] == "unsupported_semantic"
+    assert compiled["rows"][0]["reason"] == "depth_out_of_range"
+
+
+def test_a_supported_reading_is_judged_before_a_missing_target():
+    """R04: `M8`'in sorusu metni düzeltmektir; hedefsiz diye eksik hedef gibi sunulmaz."""
+    row = record("M8", [0.10, 0.20, 0.20, 0.32])
+    compiled = callout_compile.compile_callouts(row)
+    assert compiled["rows"][0]["status"] == "parse_unsupported"
+    assert compiled["rows"][0]["semantic"]["status"] == "unsupported", "semantik alanlar dolmalı"
+    readiness = callout_readiness.build_readiness(row)
+    assert readiness["categories"] == {"parse_error": 1}
+    assert readiness["questions"][0]["action"] == "edit_transcription"
+    assert "missing_target" not in readiness["categories"]
+
+
+def test_an_ambiguous_reading_is_judged_before_a_missing_target():
+    row = record("Ø8 9", [0.10, 0.20, 0.20, 0.32])
+    readiness = callout_readiness.build_readiness(row)
+    assert readiness["categories"] == {"parse_ambiguous": 1}
+    assert readiness["questions"][0]["action"] == "edit_transcription"

@@ -1,0 +1,163 @@
+{
+ "token": "dbbeb3440af94e9f92a23acf779c84b5",
+ "steps": [
+  {
+   "step": "A: kapsam kapalı ama üretim biçimi seçilmemiş — üretim düğmesi kapalı",
+   "passed": true,
+   "detail": {
+    "categories": {
+     "missing_build_strategy": 1
+    },
+    "coverage": {
+     "not_model_input": 37,
+     "redundant": 6,
+     "build_applied": 2,
+     "build_relevant_unsupported": 0,
+     "unclassified": 0,
+     "legacy_unclassified": 0,
+     "stale": 0,
+     "compile_blocked": 0,
+     "invalid_duplicate": 0
+    },
+    "build_disabled": true
+   }
+  },
+  {
+   "step": "B: gerçek tıklamayla onay; istek gövdesi yalnız {token, revision, kind}; anahtarı sunucu yazdı",
+   "passed": true,
+   "detail": {
+    "kind": "extrude_profile",
+    "key": "36440db3870c…",
+    "body_keys": [
+     "kind",
+     "revision",
+     "token"
+    ]
+   }
+  },
+  {
+   "step": "C: onaydan sonra kalınlık 20 yazıldı — normal kayıt GEÇTİ (tarayıcı JSON turu sahte sayılmıyor)",
+   "passed": true,
+   "detail": {
+    "thickness": 20,
+    "strategy_key_kept": true,
+    "status": "Karar kaydedildi."
+   }
+  },
+  {
+   "step": "C2: kalınlık 20 olunca kalınlığa dayanan onay düştü (değer ayağı; ölçüt artık sürüyor)",
+   "passed": true,
+   "detail": {
+    "questions": 1,
+    "coverage": {
+     "not_model_input": 37,
+     "redundant": 5,
+     "build_applied": 2,
+     "build_relevant_unsupported": 0,
+     "unclassified": 0,
+     "legacy_unclassified": 0,
+     "stale": 0,
+     "compile_blocked": 0,
+     "invalid_duplicate": 1
+    },
+    "tasks": [
+     "«34ad8443dfc6b49b1ba10cd992961a03dd41badcb2e0d290cc3abcbcb67d2533» bu bilgi için seçilen dayanak («decision:thickness») artık güncel değil."
+    ]
+   }
+  },
+  {
+   "step": "D: profil değişti — karar güncelliğini yitirdi ve hazırlık stratejiyi YENİDEN soruyor",
+   "passed": true,
+   "detail": {
+    "categories": {
+     "stale_target": 2,
+     "missing_profile": 1,
+     "stale_duplicate_reference": 2,
+     "stale_build_strategy": 1
+    },
+    "stale_rows": 1,
+    "build_disabled": true
+   }
+  },
+  {
+   "step": "D: profil geri alındı, karar yeniden onaylandı — strateji sorusu KAPANDI",
+   "passed": true,
+   "detail": {
+    "categories": {
+     "stale_duplicate_reference": 1
+    },
+    "build_disabled": true
+   }
+  },
+  {
+   "step": "D2: kalınlık 15'e döndü — onay sabitlendiği değere yeniden eşit; kapsam kapandı, üretim açık",
+   "passed": true,
+   "detail": {
+    "coverage": {
+     "not_model_input": 37,
+     "redundant": 6,
+     "build_applied": 2,
+     "build_relevant_unsupported": 0,
+     "unclassified": 0,
+     "legacy_unclassified": 0,
+     "stale": 0,
+     "compile_blocked": 0,
+     "invalid_duplicate": 0
+    },
+    "categories": {}
+   }
+  },
+  {
+   "step": "E: 'zaten temsil ediliyor' satırı listede gerçek tıklamayla seçildi",
+   "passed": true,
+   "detail": {
+    "label": "C8",
+    "title": "C8 · makine tespiti",
+    "reference": "0f5ccd0e2f4973b11d48712503677ae71fb9f1219f9c9c81ff152330d01d47e6"
+   }
+  },
+  {
+   "step": "E: metin değişti — satırın KENDİ okuması değiştiği için onay düştü (üretim kapandı)",
+   "passed": true,
+   "detail": {
+    "coverage": {
+     "not_model_input": 37,
+     "redundant": 5,
+     "build_applied": 2,
+     "build_relevant_unsupported": 0,
+     "unclassified": 0,
+     "legacy_unclassified": 0,
+     "stale": 1,
+     "compile_blocked": 0,
+     "invalid_duplicate": 0
+    },
+    "stale_claim_questions": 1,
+    "status": "Metin kaydedildi; onaylanan hedefle birlikte derlemeye girer."
+   }
+  },
+  {
+   "step": "F: aynı dayanakla yeniden onaylandı — kapsam kapandı ve onay KANITINI sunucu yazdı",
+   "passed": true,
+   "detail": {
+    "reference_option_present": true,
+    "pin_kind": "callout",
+    "pin_revision": 3,
+    "categories": {}
+   }
+  },
+  {
+   "step": "G: düzeltmelerden sonra gerçek tıklamayla üretim tamamlandı, STEP servis ediliyor",
+   "passed": true,
+   "detail": {
+    "status": "complete",
+    "artifact": {
+     "status": 200,
+     "bytes": 52008,
+     "head": "ISO-10303-21;\nHEADER;\nFI",
+     "url": "/guided-session/dbbeb3440af94e9f92a23acf779c84b5/part.step"
+    },
+    "step": "/guided-session/dbbeb3440af94e9f92a23acf779c84b5/part.step"
+   }
+  }
+ ]
+}

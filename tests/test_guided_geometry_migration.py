@@ -38,8 +38,16 @@ def test_legacy_record_gets_its_base_geometry_back_and_keeps_decisions(tmp_path)
     assert loaded.get("geometry_version") == GEOMETRY_VERSION
     assert loaded["decisions"] == decisions                      # the user's decisions are untouched
     fresh = guided.drawing_options(guided.observe(Path(loaded["source"])))
-    assert loaded["options"]["profiles"] == fresh["profiles"]
-    assert loaded["options"]["circles"] == fresh["circles"]
+    # G12.3 (PLAN-25 §46/§48): the migration re-reads the base geometry and records each row's view
+    # owner on top of it; the geometry itself is exactly the fresh read's. A circle-kind profile shares
+    # its nested `circle` object with the circles list, so the ownership key can appear at either level.
+    def _without_owner(row):
+        return {key: (_without_owner(value) if isinstance(value, dict) else value)
+                for key, value in row.items() if key != "view_id"}
+    assert [_without_owner(p) for p in loaded["options"]["profiles"]] == fresh["profiles"]
+    assert [_without_owner(c) for c in loaded["options"]["circles"]] == fresh["circles"]
+    assert all("view_id" in row for row in loaded["options"]["circles"])
+    assert all("view_id" in row for row in loaded["options"]["profiles"])
     assert not any("solved_dimensions" in profile for profile in loaded["options"]["profiles"])
     assert any(line["action"] == "migrate" for line in loaded["log"])
 

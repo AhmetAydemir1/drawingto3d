@@ -31,7 +31,9 @@ CATEGORIES = ("missing_transcription", "parse_error", "parse_ambiguous", "missin
               # G12.2 build-strategy categories (PLAN-25 §41)
               "missing_build_strategy", "stale_build_strategy", "unsupported_build_strategy",
               # G12R scope-claim category (G12R-02): onayın kendi okuması değişti
-              "stale_scope_claim")
+              "stale_scope_claim",
+              # G12.3 view-scope category (PLAN-25 §52): seçilen kontur üretim kaynağı olamaz
+              "view_scope_conflict")
 
 # --- G12.1 disposition coverage --------------------------------------------------------------
 

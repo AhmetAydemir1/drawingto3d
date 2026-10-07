@@ -1,0 +1,261 @@
+{
+ "case": "plate-pocket-vector",
+ "phase": "G12R",
+ "plan": "PLAN-25 §44 (G12R-03 düzeltmesi)",
+ "passed": true,
+ "steps": [
+  {
+   "step": "0: kontur + ölçek (100,00) + kalınlık (15) + izleme onayı kaydedildi",
+   "passed": true,
+   "detail": {
+    "revision": 1,
+    "profile_id": "outline_1",
+    "span_id": "t0"
+   }
+  },
+  {
+   "step": "1: reçetedeki her ipucu bu paftanın callout'larından biriyle eşleşti",
+   "passed": true,
+   "detail": {
+    "hints": 33,
+    "missing": [],
+    "rows": {
+     "6": [
+      "b1aea745ec1f819dfc763387c51e067d1368623fa3041d511f6ecb365b7a1139",
+      "da1baf44138661f81299d1215f6b7bb6602d4ac3aafa7f1600ff92dc4cb12b00"
+     ],
+     "4": [
+      "0670ce69c0ee72e81790d00424114230846968a444d0a650072f03b59e8d7716",
+      "14ae514eb4678f95423b59aa5643d43c503d79f4cbdd36d17043bdeb950dd1e3"
+     ],
+     "3": [
+      "0f05d4f95f0930bfcad90a774841151f09bb56be5dd0c40cd7139ea67b269415",
+      "b179c6f53a8c59e805dc897e5bb82ddff7f4d500395527a7fc8dd50cd5c88970"
+     ],
+     "2": [
+      "14efaeda88b299be50cf5692c997bc277ec7d786f7da362b95592e1a5232555d",
+      "7856d2b280b54734f23aa31ad2ddd8056f3d895fc2d3a7900727ec102f2add69"
+     ],
+     "5": [
+      "7dbbb717df56db137d1bf5e5480e5ae38f9c0fc986d23eaebd13791777f86f2f",
+      "45030e023a2dbaaf159aea44da2433fa1ad42a6951819bca04ff5976ff79c6b4"
+     ],
+     "1": [
+      "1e140aee429d35f2501f78d894790bf5472b5141bc58dccdc3e4d88b4a053cde",
+      "6a821e6ff26bb86ebf01dc53b30799e2e3c575999028676b5cacfde9f2a19b57"
+     ],
+     "8,00": [
+      "11b4bc4edc5e9d92bce358fa5b5cb5c08c4851d922d683f30450ee80815d884c"
+     ],
+     "D": [
+      "6ae0bfad2bc2fcce1faf77a9edb98fc2802ed3b984772d5e40b5a1142027a1ea",
+      "a4916d6912026e20db43c8564ab7a7a11b26e183a25e447bd9d79cc1b0b20ba4"
+     ],
+     "1 5,00": [
+      "34ad8443dfc6b49b1ba10cd992961a03dd41badcb2e0d290cc3abcbcb67d2533"
+     ],
+     "SECTION B-B": [
+      "2edfa84e9d7167e2cc876d6bdcfb5fdb88a0160860a60eba0643ae2d5610248a"
+     ],
+     "1 00,00": [
+      "3135f80a24cbcbbe62457dd7d7691a69ab58a0ad9292fe5363ac1ab64b46cdb6"
+     ],
+     "C": [
+      "18a4debcce60b437f4a04519685eb4c945875432adf1299c0b9070444e49dd22",
+      "6bd58fea9c4f8e3af43a1e2ec4bc2e68c300cf2ca8b4dfb06712f2e8e2afdf17"
+     ],
+     "80,00": [
+      "86db004917d2d153fbc87cb4c3d6cccd578020c1aecb5c0363958a5023cb6424"
+     ],
+     "60,00": [
+      "3a329c85e41583748a44d918a39d2b34892cbfb507871f9185a457aa14012a98"
+     ],
+     "B": [
+      "ce36b5e6a8c8a6a9b89f450c846e7c3ee936666ed8dfa70868414a6aa02b291a",
+      "305c29b3e80d1088aa3c6381330978cab1e1d5729d1c11f667f54bcd5408656d",
+      "3377301d8c792bcc84a204fa5e45779bc857b59973d6f9bccfba260984472017",
+      "bea73f57101ce8efd8c577c70188581a6ff31583432b1c2153e23806bbaf12d4"
+     ],
+     "50,00": [
+      "2513f1a12341b145ae7d58b0f9da8375ad2408a8c9143a95c5f2ab303216cbdf"
+     ],
+     "date:": [
+      "2c5b2c4a77f6fc524ed514dbf97aa751263558753795ebd45594ec605950e1f3"
+     ],
+     "MATERIAL:": [
+      "9c5e66353d253b902f88cea4bdc90529b2e539f116ecd88752abb8f17f2c68fc"
+     ],
+     "NAME:": [
+      "aa3b2013f40ea2bc30c3f392e6e5e35b0adbb81a163b95a41970771753e1fd58"
+     ],
+     "TITLE:": [
+      "c63840bc4f504ed7a70978802f75dc84edcd96b84605a5c0265f7da65f72823d"
+     ],
+     "4 x": [
+      "599ad74670dd5582e216b0e8c56c12bebc3b57a66a1c6f1457dbe32ff233bde4"
+     ],
+     "6,80 THRU ALL": [
+      "0f5ccd0e2f4973b11d48712503677ae71fb9f1219f9c9c81ff152330d01d47e6"
+     ],
+     "M8 - 6H THRU ALL": [
+      "845682b289fedf3398c22eca7b08d8b4b480c5df63443dd735b8e845faf6f723"
+     ],
+     "DRAFTCRAFT": [
+      "e3f6e9c5f69dcef240f6d9cdbe233587c2c06667681b376b438951fcdfbb233d"
+     ],
+     "Plate With A Pocket": [
+      "06b8eee2ab6ef389c8f1c685c93a56d4171e9b1f9f128698ac56c10e5671bdd8"
+     ],
+     "PRO": [
+      "76741cc740c2c2b4e7ca49bcc64880e5c032d2dcc0f45fd20b5e4a63d68674b0"
+     ],
+     "ALLOY STEEL": [
+      "1d073d347c215a298501e74d8db2da62fa90e3a8bc74744d6862b353aa3e0072"
+     ],
+     "2026": [
+      "40312043a77758b7a6d5676423de5f4de192510eb932d97624ac269db2f54cb2"
+     ],
+     "A": [
+      "9aef0955dd46dab5242189fb48398e6af3ecfd0125e3a66b56d698dbac8e4f40",
+      "50a28c28eb8f13498b1f8b6254b4e6ad503c3b7c68554e15f157e3cc0f496a90"
+     ],
+     "A4": [
+      "7a15c5a29c3137bcca34007d5c80d9ea94934c7d58b3cd15cefbcd37e033da5c"
+     ],
+     "WEIGHT:": [
+      "f44b4e9f63d00ecbfa76876a36d943cb391c746af196f72bce6181feb03dfe96"
+     ],
+     "SCALE1:1": [
+      "de54c16aa22ea92c6e946ccd57a23ff0b31be60c3d7cd16f2f3ef6289e66b382"
+     ],
+     "SHEET 1 OF 1": [
+      "1768b221c0e3b6ec7b7ecd23d623021e263439db55e3b430217659a6c085579f"
+     ]
+    }
+   }
+  },
+  {
+   "step": "1b: reçete dışındaki satırlar yazılı listeden karara bağlandı (beklenmeyen satır yok)",
+   "passed": true,
+   "detail": {
+    "unexpected_rows": [],
+    "written_rows": 24
+   }
+  },
+  {
+   "step": "1c: yazılı listedeki her satır karara bağlandı — kalan satır yok",
+   "passed": true,
+   "detail": {
+    "closed_rows": 36,
+    "decided": 43,
+    "groups": [
+     "1",
+     "2",
+     "2026",
+     "3",
+     "4",
+     "5",
+     "6",
+     "A",
+     "A4",
+     "ALLOY STEEL",
+     "B",
+     "C",
+     "D",
+     "DRAFTCRAFT",
+     "MATERIAL:",
+     "NAME:",
+     "PRO",
+     "Plate With A Pocket",
+     "SCALE1:1",
+     "SECTION B-B",
+     "SHEET 1 OF 1",
+     "TITLE:",
+     "WEIGHT:",
+     "date:"
+    ]
+   }
+  },
+  {
+   "step": "2: kapsam kapandı — kalan tek madde ÜRETİM BİÇİMİ, hiçbir callout sorusu yok",
+   "passed": true,
+   "detail": {
+    "categories": {
+     "missing_build_strategy": 1
+    },
+    "questions": 1
+   }
+  },
+  {
+   "step": "3: strateji yokken üretim BAŞLAMAZ (örtük extrude yok)",
+   "passed": true,
+   "detail": {
+    "ready": false
+   }
+  },
+  {
+   "step": "4: build çağrısı strateji yokken reddedildi (adı konmuş soruyla)",
+   "passed": true,
+   "detail": {
+    "refusal": "üretim için eksik/uyumsuz girdiler var: Parçanın ana oluşturma biçimini seçin (profil uzatma / döndürme / çok görünüş) — üretim kendiliğinden bir biçim varsaymaz."
+   }
+  },
+  {
+   "step": "5: kullanıcı üretim biçimini onayladı — sunucu anahtarı ve geometri sürümünü sabitledi",
+   "passed": true,
+   "detail": {
+    "kind": "extrude_profile",
+    "strategy_key": "36440db3870c…",
+    "geometry_version": 4
+   }
+  },
+  {
+   "step": "6: üretim tamamlandı — STEP yazıldı",
+   "passed": true,
+   "detail": {
+    "status": "complete",
+    "solids": 1,
+    "size": [
+     120.01092441415202,
+     80.00178236964202,
+     15.0
+    ]
+   }
+  },
+  {
+   "step": "7: STEP yeniden açıldı ve dondurulmuş evaluator PASS (9/9 kontrol)",
+   "passed": true,
+   "detail": {
+    "exit": 0,
+    "checks": 9,
+    "failed": [],
+    "stdout": "01])\"}, \"volume\": {\"ok\": true, \"got\": \"124.8 cm3\", \"want\":\n[PASS] step_reopened: {\"ok\": true, \"detail\": \"cadquery importStep reopen (twice: features + difference)\"}\n\nplate regression PASS -> /Users/aydemir/Desktop/drawingto3d/eval/audits/20261007-g12r-strategy-plate/out/plate-regression-verdict.json"
+   }
+  },
+  {
+   "step": "8: parça dondurulmuş toleranslarda 120 × 80 × 15, 4 delik, 1 cep",
+   "passed": true,
+   "detail": {
+    "lengths": [
+     120.011,
+     80.002,
+     15.0
+    ],
+    "radii": [
+     3.4,
+     3.4,
+     3.4,
+     3.4,
+     9.974,
+     9.974,
+     9.979,
+     9.991,
+     25.0
+    ],
+    "holes": 4,
+    "pockets": 1,
+    "step_sha256": "c852536e697995f4812cf692a897dbb2bf2ac20fd600a286985d6a8ac5f78d15"
+   }
+  }
+ ]
+}

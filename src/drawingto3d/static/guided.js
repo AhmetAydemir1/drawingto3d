@@ -11,7 +11,12 @@ function busy(value){pending=value;for(const el of document.querySelectorAll('bu
 async function api(path,data){const response=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});const result=await response.json();if(!response.ok)throw Error(result.error||'İşlem tamamlanamadı');return result;}
 function selectOptions(id,items,chosen){const el=$(id);el.replaceChildren();for(const [value,label] of items){const opt=document.createElement('option');opt.value=value;opt.textContent=label;el.append(opt);}el.value=chosen??'';}
 function render(){if(!state)return;$('controls').hidden=false;for(const id of ['pick-profile','pick-calibration','pick-hole','pick-callout','draw-callout'])$(id).disabled=pending;
- const d=state.decisions,o=state.options;selectOptions('profile',[['','Kontur seçin'],...o.profiles.map((p,i)=>[p.id,`${i+1} · ${p.kind==='circle'?'Daire':'Kapalı kontur'}`])],d.profile_id);
+ const d=state.decisions,o=state.options;
+ // PLAN-25 §52: ana görünüş onaylıyken listeler o görünüşe daralır; seçili öğe asla menüden düşmez,
+ // "Tüm geometrileri göster" hata ayıklama kaçışı tüm listeyi geri getirir.
+ const scope=geometryScope();
+ const profileRows=o.profiles.filter(p=>!scope||p.view_id===scope||p.id===d.profile_id);
+ selectOptions('profile',[['','Kontur seçin'],...profileRows.map((p,i)=>[p.id,`${i+1} · ${p.kind==='circle'?'Daire':'Kapalı kontur'}`])],d.profile_id);
  const sel=o.profiles.find(p=>p.id===d.profile_id),fix=$('contour-fix');fix.replaceChildren();
  if(sel&&sel.contour&&sel.contour.ok===false){const lead=document.createElement('span');lead.className='hint';
   lead.textContent='Doğrulama bu konturu geçersiz buldu (çizimde işaretli). Sorunlu kenarı çıkarın; açık kalan ucu kapatmayı onaylayın:';fix.append(lead);
@@ -27,7 +32,9 @@ function render(){if(!state)return;$('controls').hidden=false;for(const id of ['
   const clear=document.createElement('button');clear.className='secondary';clear.disabled=pending;clear.textContent='Düzeltmeyi temizle';
   clear.onclick=()=>save({...d,contour:{drop:[],approve_join:false}});fix.append(note,clear);}
  const measurement=$('measurement').value;selectOptions('measurement',[['','Ölçüyü ben gireceğim'],...o.measurements.map(m=>[m.id,`${m.text} (${m.unit})`])],measurement||d.calibration?.span_id);
- const selected=$('circle').value;selectOptions('circle',[['','Daire seçin'],...o.circles.map((c,i)=>[c.id,`Daire ${i+1}`])],selected);syncDepth();
+ const selected=$('circle').value;
+ const circleRows=o.circles.filter(c=>!scope||c.view_id===scope||c.id===selected);
+ selectOptions('circle',[['','Daire seçin'],...circleRows.map((c,i)=>[c.id,`Daire ${i+1}`])],selected);syncDepth();
  $('thickness').value=d.thickness??'';$('ack').checked=d.trace_acknowledged;if(d.calibration){points=[d.calibration.first,d.calibration.second];$('cal-value').value=d.calibration.value;$('cal-unit').value=d.calibration.unit;}
  updatePoints();$('questions').replaceChildren(...state.questions.map(q=>{const el=document.createElement('li');el.textContent=q;return el;}));
  $('features').replaceChildren(...d.holes.map(h=>{const row=document.createElement('div');row.className='feature';row.textContent=`${h.kind==='through'?'Delik':'Cep'} · Ø${h.diameter} mm${h.depth?` · ${h.depth} mm derinlik`:''}`;const b=document.createElement('button');b.className='secondary';b.textContent='Kaldır';b.onclick=()=>save({...d,holes:d.holes.filter(x=>x.circle_id!==h.circle_id)});row.append(b);return row;}));
@@ -104,6 +111,14 @@ function normalizedRegion(a,b){return [clamp(Math.min(a[0],b[0]),0,picture.width
  clamp(Math.max(a[1],b[1]),0,picture.height)/picture.height];}
 function regionArea(region){return (region[2]-region[0])*(region[3]-region[1]);}
 function draw(){ctx.clearRect(0,0,sheet.width,sheet.height);if(!picture.width||!state)return;const s=scale();ctx.drawImage(picture,0,0,picture.width*s,picture.height*s);
+ // PLAN-25 §51: görünüş adayları çizimin kendi kutularıdır; etiket sunucudan gelir, rol yalnız
+ // kullanıcı seçtiyse yazılır — makine bir sınıflandırma iddia etmez.
+ for(const row of state.view_candidates||[]){const b=row.bbox;if(!b)continue;
+  ctx.save();ctx.setLineDash([7,5]);ctx.lineWidth=2;
+  ctx.strokeStyle=row.id===primaryView()?'#b56519':'#4e83a88f';ctx.strokeRect(b.x*s,b.y*s,b.w*s,b.h*s);
+  ctx.setLineDash([]);ctx.fillStyle='#4e83a8';ctx.font='13px system-ui';
+  const role=decidedRole(row.id);ctx.fillText(`${row.label}${role?' · '+((state.view_roles||{})[role]||role):''}`,b.x*s+3,Math.max(13,b.y*s-4));
+  ctx.restore();}
  for(const p of state.options.profiles){ctx.beginPath();p.points.forEach((v,i)=>i?ctx.lineTo(v[0]*s,v[1]*s):ctx.moveTo(v[0]*s,v[1]*s));ctx.closePath();ctx.strokeStyle=p.id===state.decisions.profile_id?'#178a51':'#4e83a850';ctx.lineWidth=p.id===state.decisions.profile_id?3:1;ctx.stroke();}
  // The contour audit's own positions, marked where the drawing is wrong (PLAN §26.4-A): a ring and a
  // cross at every closure gap, crossing or overlap the selected boundary carries.
@@ -716,4 +731,30 @@ $('strategy-save').onclick=()=>{const picked=document.querySelector('input[name=
  if(!picked)return status('Önce bir oluşturma biçimi seçin.',true);
  if(picked.disabled)return status('Bu seçenek bu sürümde yok.',true);
  chooseStrategy(picked.value);};
-render=(base=>function(){base();renderTarget();renderStrategy();loadReadiness();})(render);
+// --- G12.3 (PLAN-25 §47/§51/§52): görünüş adayları, roller ve menü kapsamı --------------------
+let showAllGeometry=false;
+function primaryView(){for(const row of (state&&state.drawing_views)||[])if(row.role==='primary')return row.view_id;return null;}
+function decidedRole(viewId){for(const row of (state&&state.drawing_views)||[])if(row.view_id===viewId)return row.role;return null;}
+function geometryScope(){if(showAllGeometry)return null;return primaryView();}
+async function chooseViewRole(viewId,role){busy(true);
+ try{state=await api('/api/guided/view',{token:state.token,revision:state.revision,view_id:viewId,role});
+  status(role?'Görünüş rolü kaydedildi.':'Görünüş rolü kaldırıldı.');}
+ catch(e){status(e.message,true);if(/oturum değişti/.test(e.message))await refreshState();}
+ finally{busy(false);}}
+function renderViews(){const box=$('view-choices');if(!box)return;
+ const candidates=(state&&state.view_candidates)||[],roles=(state&&state.view_roles)||{};
+ box.replaceChildren(...candidates.map(row=>{const line=document.createElement('div');line.className='view-choice';
+  const name=document.createElement('span');name.textContent=row.label;
+  const select=document.createElement('select');select.dataset.view=row.id;
+  const blank=document.createElement('option');blank.value='';blank.textContent='Rol seçilmedi';select.append(blank);
+  for(const [value,label] of Object.entries(roles)){const opt=document.createElement('option');opt.value=value;opt.textContent=label;select.append(opt);}
+  select.value=decidedRole(row.id)||'';
+  select.onchange=()=>chooseViewRole(row.id,select.value||null);
+  line.append(name,select);return line;}));
+ const decided=(state&&state.drawing_views)||[];
+ text('view-state',candidates.length?(decided.length?`${decided.length} görünüşün rolü onaylandı.`
+  :'Roller henüz seçilmedi; üretim onaylanan ana görünüşün geometrisini kullanır.')
+ :'Bu çizimde görünüş adayı bulunamadı.');
+ $('show-all-geometry').checked=showAllGeometry;}
+$('show-all-geometry').onchange=()=>{showAllGeometry=$('show-all-geometry').checked;render();};
+render=(base=>function(){base();renderTarget();renderStrategy();renderViews();loadReadiness();})(render);

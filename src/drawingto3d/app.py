@@ -99,6 +99,11 @@ class Handler(BaseHTTPRequestHandler):
                         result = GUIDED.set_strategy(data.get("token"), data.get("revision"),
                                                      {key: value for key, value in data.items()
                                                       if key not in ("token", "revision")})
+                    elif path == "/api/guided/view":
+                        # G12.3 (PLAN-25 §47): görünüş rolleri — istemci yalnız aday kimliğini ve rolü
+                        # adlandırır; geometry_version'ı sunucu kendi kaydından damgalar.
+                        result = GUIDED.set_drawing_view(data.get("token"), data.get("revision"),
+                                                         data.get("view_id"), data.get("role"))
                     elif path == "/api/guided/readiness":
                         # G8 (PLAN §14): what the build waits on, in the shared categories.
                         result = GUIDED.readiness(data.get("token"))

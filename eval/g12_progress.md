@@ -113,6 +113,27 @@ Kanıt demeti: `eval/audits/20261007-g12r-strategy-plate/` — taze Plate kabul�
 **1569 passed / 339 deselected / 26:54 / EXIT=0** (`pytest-broad.log`; 1543 → 1569).
 Eski G12.2 kanıt dizini ve tarihsel G9/G11 kanıtları değişmedi; ana metrik hâlâ **1/9**.
 
+## G12.3 — view-scoped geometry foundation (PLAN-25 §45–§54) ✓
+
+Ölçülen şey görünüşün kendisidir: adaylar oturumla **bir kez** yazılır (§46), her kontur/daire sahibi
+`view_id`'yi taşır (§48; belirsiz sınır → `None`, en yakın komşu tahmini yok), rol kararı kullanıcının ve
+sunucunun damgasıyladır (§47), `GEOMETRY_VERSION 3 → 4` (§49) ve hedef/strateji parmak izi hem satır
+sahiplerini hem onaylı rolleri içerir (§50) — rol ya da sahiplik değişince eski onay güncelliğini yitirir.
+Kapı: `view_scope_conflict` — seçilen kontur onaylı ana görünüşün dışındaysa, izometrik adayın içindeyse
+ya da rol damgası eski bir geometri sürümündense üretim **başlamaz** (§52). Sahipsiz kontur çatışma
+değildir (ilişki kurulmamıştır, çapraz değildir) — mevcut tek görünüşlü yollar bozulmadan çalışır.
+
+UI (§51/§52): görünüş paneli + rol seçimi (`/api/guided/view`, istemci sürüm uydurmaz), tuval üstünde
+aday kutuları ve etiketleri, ana görünüş onaylıyken kontur/daire menülerinin daralması ve "Tüm
+geometrileri göster" kaçışı.
+
+Kanıt: `eval/audits/20261008-g12-3-view-scope/` — gerçek Chrome **7/7** (adaylar, roller, menü kapsamı,
+yeniden yüklemede kalıcılık + yeniden segment yok), ilgili süit **628 passed / 235,04 s / EXIT=0**,
+G12R Plate kabulü v4 altında **11/11**, R-01/R-02 gerçek Chrome yeniden kontrolü nihai kodla **11/11** ve
+genüş regresyon **1582 passed / 339 deselected / 27:17 / EXIT=0** (`pytest-broad.log`; 1569 → +13). Bu fazda inşa doğruluğu
+iddiası yoktur (§54). Eski kanıt dizinleri, dondurulmuş manifest ve `eval/metrics.py` değişmedi; ana
+metrik hâlâ **1/9**. Sıradaki faz: **G12.4 — exact supported 2D constraints** (§55–§60).
+
 ## Kural hatırlatması (her faz sonu, §96)
 
 Case/file/hash dallanması yok · evaluator değeri producer'a kopyalanmaz · gerçek ölçü "gereksiz" diye

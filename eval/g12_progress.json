@@ -148,8 +148,26 @@
   },
   {
    "id": "G12.3",
-   "title": "view-scoped geometry foundation (§45–§54: görünüş sahipliği + GEOMETRY_VERSION 3→4)",
-   "status": "pending"
+   "title": "view-scoped geometry foundation",
+   "plan": "PLAN-25 §45–§54",
+   "status": "done",
+   "what": [
+    "view_candidates oturumla bir kez yazılır (§46); migration aynı kimlik kurallarıyla tazeler",
+    "DrawingViewDecision + Decisions.drawing_views, ViewConfirm'e dokunulmadı (§47)",
+    "her profil/daire sahibi view_id taşır; belirsiz → None (§48)",
+    "GEOMETRY_VERSION 3→4 (§49); geometry_key satır view_id + onaylı roller (§50)",
+    "set_drawing_view komutu (sunucu damgası) + /api/guided/view",
+    "readiness kategorisi view_scope_conflict + dispatch_plan kapısı (§52)",
+    "UI: görünüş paneli, rol seçimi, menü kapsamı, 'Tüm geometrileri göster' (§51/§52)"
+   ],
+   "evidence": "eval/audits/20261008-g12-3-view-scope/",
+   "tests": {
+    "new": "tests/test_g12_view_scope.py (11) + tests/test_g12_view_ui.py (2)",
+    "relevant_suite": "628 passed / 235,04 s / EXIT=0 — eval/audits/20261008-g12-3-view-scope/pytest-relevant.log",
+    "browser": "gerçek Chrome 7/7 (A–G) — eval/audits/20261008-g12-3-view-scope/browser/ui-run.log",
+    "plate_regression": "G12R Plate kabulü v4 altında 11/11 (plate-regression.log); G12R gerçek Chrome R-01/R-02 yeniden kontrolü nihai kodla 11/11 (browser/r01_r02-recheck.log)",
+    "broad": "pytest -q tests -k \"not semread\" → 1582 passed, 339 deselected, 1637.49s (27:17), EXIT=0 — eval/audits/20261008-g12-3-view-scope/pytest-broad.log"
+   }
   },
   {
    "id": "G12.4",

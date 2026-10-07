@@ -1,0 +1,179 @@
+{
+ "token": "fbcb10cf51324fb49cda1bf58a3c9cca",
+ "steps": [
+  {
+   "step": "A: adaylar sunucuda ve panelde; roller henüz seçilmedi; izometrik adayı üretim kaynağı değil",
+   "passed": true,
+   "detail": {
+    "labels": [
+     "İzometrik adayı",
+     "Görünüş 1",
+     "Görünüş 2",
+     "Görünüş 3",
+     "Kesit adayı"
+    ],
+    "roles": [
+     "",
+     "",
+     "",
+     "",
+     ""
+    ],
+    "isometric": {
+     "id": "view-0",
+     "used_for_solid": false
+    },
+    "view_state": "Roller henüz seçilmedi; üretim onaylanan ana görünüşün geometrisini kullanır."
+   }
+  },
+  {
+   "step": "B: gerçek olayla ana görünüş onaylandı — geometri sürümü sunucunun damgasıdır",
+   "passed": true,
+   "detail": {
+    "stored": {
+     "view_id": "view-3",
+     "role": "primary",
+     "geometry_version": 4
+    },
+    "geometry_version": 4,
+    "panel": {
+     "label": "Görünüş 3",
+     "role": "primary"
+    }
+   }
+  },
+  {
+   "step": "C: kesit adayına rol verildi — kararlar tek tek, aynı komutla yazılır",
+   "passed": true,
+   "detail": {
+    "drawing_views": [
+     {
+      "view_id": "view-3",
+      "role": "primary",
+      "geometry_version": 4
+     },
+     {
+      "view_id": "view-4",
+      "role": "section",
+      "geometry_version": 4
+     }
+    ],
+    "view_state": "2 görünüşün rolü onaylandı."
+   }
+  },
+  {
+   "step": "D: ana görünüş onaylıyken kontur menüsü o görünüşe daraldı (§52)",
+   "passed": true,
+   "detail": {
+    "menu": [
+     "",
+     "outline_1",
+     "circle_g8",
+     "circle_g9",
+     "circle_g12",
+     "circle_g10",
+     "circle_g11",
+     "circle_g63"
+    ],
+    "expected": [
+     "",
+     "outline_1",
+     "circle_g8",
+     "circle_g9",
+     "circle_g12",
+     "circle_g10",
+     "circle_g11",
+     "circle_g63"
+    ],
+    "primary": "view-3"
+   }
+  },
+  {
+   "step": "E: “Tüm geometrileri göster” tüm listeyi geri getirir; kapanınca menü yine daralır",
+   "passed": true,
+   "detail": {
+    "all": [
+     "",
+     "outline_1",
+     "outline_3",
+     "circle_g8",
+     "outline_2",
+     "outline_4",
+     "circle_g9",
+     "circle_g12",
+     "circle_g10",
+     "circle_g11",
+     "circle_g61",
+     "circle_g63"
+    ],
+    "narrow": [
+     "",
+     "outline_1",
+     "circle_g8",
+     "circle_g9",
+     "circle_g12",
+     "circle_g10",
+     "circle_g11",
+     "circle_g63"
+    ]
+   }
+  },
+  {
+   "step": "F: sayfa yeniden yüklendi — roller durur, aday listesi AYNI (yeniden segment yok), menü yine dar",
+   "passed": true,
+   "detail": {
+    "candidates_unchanged": true,
+    "roles": [
+     {
+      "view_id": "view-3",
+      "role": "primary",
+      "geometry_version": 4
+     },
+     {
+      "view_id": "view-4",
+      "role": "section",
+      "geometry_version": 4
+     }
+    ],
+    "menu": [
+     "",
+     "outline_1",
+     "circle_g8",
+     "circle_g9",
+     "circle_g12",
+     "circle_g10",
+     "circle_g11",
+     "circle_g63"
+    ],
+    "panel_roles": [
+     "",
+     "",
+     "",
+     "primary",
+     "section"
+    ],
+    "expected_roles": [
+     "",
+     "",
+     "",
+     "primary",
+     "section"
+    ]
+   }
+  },
+  {
+   "step": "G: ekran görüntüsü — aday kutuları ve etiketleri çizimin üstünde",
+   "passed": true,
+   "detail": {
+    "visible": true,
+    "labels": [
+     "İzometrik adayı",
+     "Görünüş 1",
+     "Görünüş 2",
+     "Görünüş 3",
+     "Kesit adayı"
+    ]
+   }
+  }
+ ]
+}

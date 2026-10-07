@@ -28,7 +28,7 @@ import numpy as np
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
 
 from drawingto3d import advise
-from drawingto3d import build_strategy
+from drawingto3d import build_strategy, view_scope
 from drawingto3d.build_strategy import BuildStrategyDecision
 from drawingto3d import callout_bind
 from drawingto3d import callout_compile
@@ -39,6 +39,7 @@ from drawingto3d import callout_review
 from drawingto3d import callouts
 from drawingto3d.general import GeneralPlan, build_general
 from drawingto3d.ingest import load_page
+from drawingto3d.views import segment_views
 from drawingto3d.observe import observe
 from drawingto3d import contour_audit
 from drawingto3d import sketch_constraints as constraint_core
@@ -137,6 +138,20 @@ class ViewConfirm(BaseModel):
     geometry_version: int | None = None
 
 
+class DrawingViewDecision(BaseModel):
+    """Which orthographic/section view plays which role (PLAN-25 §47) — not the sheet's axes.
+
+    `ViewConfirm` says how the page's x/y lie on the sheet; this says which *drawing views* the solid
+    is read from. The version it was decided against is the server's own stamp: a client that posts
+    one is ignored, exactly as with the build strategy (G12R-01/G12R-02).
+    """
+
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
+    view_id: str = Field(min_length=1, max_length=40)
+    role: Literal["primary", "plan", "side", "section", "isometric_ignore", "unused"]
+    geometry_version: int
+
+
 class Decisions(BaseModel):
     model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
     calibration: Calibration | None = None
@@ -159,6 +174,10 @@ class Decisions(BaseModel):
     # profile never implies an extrude. Backward-compatible: an older record simply has none, and the
     # build asks for it instead of assuming one.
     build_strategy: BuildStrategyDecision | None = None
+    # G12.3 (PLAN-25 §47): which drawing view plays which role — its own decision, one row per view.
+    # Backward-compatible the same way: an older record has none and nothing is inferred from the
+    # picture (a candidate the segmenter called isometric is not a solid source either).
+    drawing_views: list[DrawingViewDecision] = Field(default_factory=list, max_length=50)
 
     @model_validator(mode="after")
     def one_callout_entry_each(self):
@@ -166,7 +185,8 @@ class Decisions(BaseModel):
         for name, rows, key_field in (("transcriptions", self.transcriptions, "callout_id"),
                                       ("callout_targets", self.callout_targets, "callout_id"),
                                       ("manual_callouts", self.manual_callouts, "id"),
-                                      ("callout_reviews", self.callout_reviews, "callout_id")):
+                                      ("callout_reviews", self.callout_reviews, "callout_id"),
+                                      ("drawing_views", self.drawing_views, "view_id")):
             seen = set()
             for row in rows:
                 key = getattr(row, key_field)
@@ -1272,6 +1292,10 @@ def dispatch_plan(ctx):
     """
     problems=build_strategy.strategy_questions(ctx.record)
     if problems: raise ValueError(" ".join(problems))
+    # PLAN-25 §52: cross-view geometry never reaches the compiler without an explicit relation —
+    # this version has none, so the conflict is refused by name.
+    scope_problems=view_scope.conflict_questions(ctx.record)
+    if scope_problems: raise ValueError(" ".join(scope_problems))
     kind=ctx.decisions.build_strategy.kind
     if kind=="extrude_profile": return compile_extrude_plan(ctx)
     if kind=="revolve_profile": return compile_revolve_plan(ctx)
@@ -1404,9 +1428,12 @@ def _audit_summary(folder: Path) -> dict:
             "checks": audit.get("checks", {})}
 
 
-GEOMETRY_VERSION = 3
+GEOMETRY_VERSION = 4
 """P01: the version of the base-geometry contract.
 
+v4 (PLAN-25 §49) adds *view ownership*: every profile/circle carries the candidate view that
+contains it and the confirmed drawing-view roles are part of the fingerprint, so a view change moves
+the target/strategy keys instead of leaving an approval falsely current.
 v3 compares the reader's *identities* (profile/edge/circle/measurement ids, and the frame) instead of the v2
 name-only check, so a changed edge id or measurement id is a mismatch (the audit's F03). A record below the
 current version may carry geometry a build already rewrote: `GuidedStore.load` backs it up, re-reads the
@@ -1875,6 +1902,31 @@ def _refuse_forged_strategy(record: dict, decisions: dict) -> None:
     if stored != posted:
         raise ValueError("oluşturma biçimi yalnız `set_build_strategy` komutuyla yazılır; "
                          "istemci strategy_key/geometry_version uyduramaz")
+
+
+def _view_row(value) -> dict | None:
+    """One comparable form of a drawing-view role row, by value (G12R-01: JSON spelling never matters)."""
+    if not isinstance(value, dict):
+        return None
+    version = value.get("geometry_version")
+    return {"view_id": value.get("view_id"), "role": value.get("role"),
+            "geometry_version": None if version is None else int(version)}
+
+
+def _refuse_forged_views(record: dict, decisions: dict) -> None:
+    """PLAN-25 §47: `/save` may carry the stored role rows; it may not author or edit one.
+
+    `geometry_version` is the server's own stamp (that is what makes staleness decidable), so the only
+    writer of these rows is the `set_drawing_view` command. A payload that invents, edits or drops one
+    is refused by name rather than silently ignored — the same contract `/save` has for the strategy.
+    """
+    stored = sorted((_view_row(row) for row in (record.get("decisions") or {}).get("drawing_views") or []),
+                    key=lambda row: (row or {}).get("view_id") or "")
+    posted = sorted((_view_row(row) for row in decisions.get("drawing_views") or []),
+                    key=lambda row: (row or {}).get("view_id") or "")
+    if stored != posted:
+        raise ValueError("görünüş rolleri yalnız `set_drawing_view` komutuyla yazılır; istemci "
+                         "geometry_version uyduramaz")
 
 
 def _normalized_decisions(record: dict) -> dict:
@@ -2397,6 +2449,13 @@ def _sheet_issues(record: dict) -> list[dict]:
     if not decisions.profile_id:
         issues.append({"category": "missing_profile", "reason": "profile_not_chosen",
                        "detail": "Ana görünüşte dış konturu seçin."})
+    # PLAN-25 §52/§53: the selected contour must belong to the view the user confirmed as the solid's
+    # source. The conflict is named in the same categories the checklist shows, so the panel and the
+    # build tell one story (a picture is never a source; ambiguity is never assigned).
+    scope = view_scope.conflict(record)
+    if scope:
+        issues.append({"category": view_scope.CATEGORY, "reason": scope["reason"],
+                       "detail": scope["detail"]})
     if not decisions.calibration:
         issues.append({"category": "missing_calibration", "reason": "calibration_missing",
                        "detail": "Bilinen ölçünün iki noktasını ve uzunluğunu belirtin."})
@@ -2495,10 +2554,26 @@ class GuidedStore:
             _log(record,"system","migrate","geometry",None,{"backup":str(backup)},
                  "Eski sonuç tarihsel: temel geometri kaynaktan doğrulanamadı; kararlar korundu.")
         else:
+            # PLAN-25 §46: the reader/geometry migration is the one path allowed to re-read the view
+            # candidates (a reopen without a version change never does). If the sheet's own page cannot
+            # be read for them while the geometry itself re-read fine, the stored list is kept and the
+            # miss is logged — never a silent resegment, never a crash.
+            candidates, candidate_note = [], None
+            try:
+                candidates=[view.model_dump(mode="json") for view in segment_views(load_page(Path(record["source"])))]
+            except Exception as error:
+                candidate_note = " ".join(str(error).split())[:160]
             steps = _geometry_diff(record.get("options") or {}, fresh)
             if not steps:
                 moved = _moved_geometry(record.get("options") or {}, fresh)
                 record["options"] = fresh
+                if candidates:
+                    record["view_candidates"] = candidates
+                else:
+                    candidates = record.get("view_candidates") or []
+                    _log(record,"system","migrate","view_candidates",None,{"reason":candidate_note},
+                         "Görünüş adayları yenilenemedi; kayıttaki liste korundu: " + str(candidate_note))
+                view_scope.assign_view_ids(fresh, candidates)
                 record["geometry_version"] = GEOMETRY_VERSION
                 _log(record,"system","migrate","geometry",GEOMETRY_VERSION,
                      {"profiles":len(fresh.get("profiles") or []),"circles":len(fresh.get("circles") or []),
@@ -2544,11 +2619,16 @@ class GuidedStore:
             candidates=[]
         page=load_page(source);(folder/"drawing.png").write_bytes(page.image_png)
         options=drawing_options(observations)
+        # PLAN-25 §46/§48: the segmenter runs once, here; each profile/circle is owned by the one
+        # candidate that actually contains it, and the candidate list is part of the record from now on.
+        view_candidates=[view.model_dump(mode="json") for view in segment_views(page)]
+        view_scope.assign_view_ids(options, view_candidates)
         archetype=part_class(observations)
         reading=advise.reading_record(source)
         suggested=advise.proposals(options,reading,archetype)
         record={"version":1,"geometry_version":GEOMETRY_VERSION,"token":token,"revision":0,"source":str(source.resolve()),
-                "source_sha256":source_sha,"options":options,"decisions":Decisions().model_dump(mode="json"),
+                "source_sha256":source_sha,"options":options,"view_candidates":view_candidates,
+                "decisions":Decisions().model_dump(mode="json"),
                 "archetype":archetype,
                 "callout_schema_version":callout_models.CALLOUT_SCHEMA_VERSION,"callout_candidates":candidates,
                 "callout_detection":{"detector_version":detection.detector_version,"diagnostics":diagnostics},
@@ -2609,6 +2689,7 @@ class GuidedStore:
             else:
                 if decisions is not None and not (produced or ()):
                     _refuse_forged_strategy(r,decisions)
+                    _refuse_forged_views(r,decisions)
                 merged=_merge_callout_defaults(r,decisions)
                 d,written=_with_end_evidence(r,Decisions.model_validate(merged))
                 d=_prepare_callouts(r,d)
@@ -2688,6 +2769,38 @@ class GuidedStore:
                          {"strategy_key":row["strategy_key"],"evidence":row["evidence"]},
                          f"Kullanıcı parçanın ana oluşturma biçimini seçti: {build_strategy.STRATEGY_LABEL.get(kind,kind)}.")]
             return self._commit(token,revision,decisions=decisions,events=events,produced="build_strategy")
+
+    def set_drawing_view(self,token,revision,view_id,role,payload=None):
+        """G12.3 (PLAN-25 §47): which role a drawing-view candidate plays — the user's decision.
+
+        The client names the candidate and the role; everything decidable is computed here from the
+        record itself (`geometry_version` is stamped, never read from the payload), the view id must
+        be one of *this* session's candidates, and `role=None` clears the row as its own undoable
+        step. Changing a role moves the target/strategy fingerprints (§50).
+        """
+        with self.lock:
+            r=self.load(token)
+            if type(revision) is not int or revision != r["revision"]: raise ValueError("oturum değişti; yeniden açın")
+            candidates=[row["id"] for row in r.get("view_candidates") or []]
+            if not candidates: raise ValueError("bu oturumda görünüş adayı yok; görünüş katmanı sonradan kurulmaz")
+            if view_id not in candidates: raise ValueError(f"görünüş adayı bulunamadı: {view_id}")
+            if role is not None and role not in view_scope.ROLES:
+                raise ValueError(f"geçersiz görünüş rolü: {role} (izinli: {', '.join(view_scope.ROLES)})")
+            decisions=json.loads(json.dumps(r["decisions"]))
+            rows=[row for row in decisions.get("drawing_views") or [] if row.get("view_id")!=view_id]
+            label=view_scope.candidate_labels(r.get("view_candidates") or []).get(view_id,view_id)
+            if role is None:
+                note=f"Kullanıcı «{label}» için görünüş rolünü kaldırdı."
+                events=[("veto","drawing_view",view_id,None,note)]
+            else:
+                row={"view_id":view_id,"role":role,
+                     "geometry_version":int(r.get("geometry_version") or GEOMETRY_VERSION)}
+                rows.append(row);rows.sort(key=lambda item:item["view_id"])
+                note=(f"Kullanıcı «{label}» görünüşünün rolünü belirledi: "
+                      f"{view_scope.ROLE_LABELS.get(role,role)}.")
+                events=[("edit","drawing_view",row,{"view_id":view_id,"role":role},note)]
+            decisions["drawing_views"]=rows
+            return self._commit(token,revision,decisions=decisions,events=events,produced="drawing_view")
 
     def propose(self, token, callout_id):
         """G5 on demand: ranked, evidence-based target proposals for one callout (a read).
@@ -2914,6 +3027,7 @@ class GuidedStore:
         if build:
             status=build["status"] if (ready or build.get("status")!="complete") else "historical"
         prefix=f"/guided-session/{r['token']}"
+        view_labels=view_scope.candidate_labels(r.get("view_candidates") or [])
         reading=r.get("reading") or {}
         return {**{key:r[key] for key in ("token","revision","options","decisions")},
                 "questions":questions(Decisions.model_validate(r["decisions"]), r.get("sketch"), r["options"]), "can_undo":bool(r["history"]),
@@ -2931,6 +3045,13 @@ class GuidedStore:
                 # parse/target flags, so "unsupported" can never be shown as resolved in the UI while
                 # the backend blocks the build on it.
                 "coverage":callout_readiness.callout_coverage(r),
+                # G12.3 (PLAN-25 §46/§51): the segmenter's own boxes ride in the public state with
+                # candidate labels (never a claimed classification), and the roles menu is the
+                # server's own vocabulary; `drawing_views` is what the user confirmed so far.
+                "view_candidates":[dict(row, label=view_labels[row["id"]])
+                                   for row in (r.get("view_candidates") or [])],
+                "view_roles":view_scope.ROLE_LABELS,
+                "drawing_views":(r.get("decisions") or {}).get("drawing_views") or [],
                 # G12.2 (PLAN-25 §42): the panel reads the decision, its freshness and the
                 # evidence-based proposals from here — all three computed from the record itself.
                 "build_strategy":{"state":build_strategy.strategy_state(r),

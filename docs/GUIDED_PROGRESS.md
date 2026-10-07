@@ -7,7 +7,8 @@
 - G2 initial HEAD: `316518eb8d67c7a4ad81eed59c09e6c59ef4df37`
 - G3 initial HEAD: `ff97295065260ba8d46bf6fcd2c6e864e63dfcef` (`ff97295` = G2)
 - G3R initial HEAD: `2cdb4d0424b17e4299d625066c24e6a0eab4de6d` (`2cdb4d0` = G3 + G1R3-01 kabul commit'i; eski “G3 commit edilmedi” ifadesi artık geçerli değil)
-- Current HEAD: `0c1b721` (**G12R** — bağımsız inceleme düzeltme turu: beş bulgu düzeltildi, taze Plate 11/11 + gerçek Chrome 11/11); öncesi `190a065` (G12.2 kapanışı)
+- Current HEAD: `0c1b721` (**G12R** — bağımsız inceleme düzeltme turu: beş bulgu düzeltildi, taze Plate 11/11 + gerçek Chrome 11/11); öncesi `190a065` (G12.2 kapanışı).
+- **G12.3 tamamlandı (commit bekliyor):** view-scoped geometry foundation (PLAN-25 §45–§54) — adaylar oturumla bir kez yazılır, geometri sahibi `view_id` taşır, roller kullanıcının (sunucu damgalı), `GEOMETRY_VERSION 4`, `geometry_key` sahiplik+rolleri içerir, `view_scope_conflict` kapısı + görünüş paneli/menü kapsamı. Kanıt: `eval/audits/20261008-g12-3-view-scope/` (gerçek Chrome 7/7, ilgili süit 628 passed, Plate kabulü v4 altında 11/11). Sıradaki: G12.4 (§55–§60).
 - Active plan (güncel): `PLAN-24-G12-CORRECTNESS` (kök `PLAN.md`, commit `5605cb5`) + devam planı `PLAN-25-G12-CONTINUATION` (kullanıcı girdisi `PLAN-21.md`: G12.1b → dondurulmuş manifest kabulü)
 - G11 baseline: **1/9** (`plate-pocket-vector`; payda sabit — PLAN-24 §75) — bu bir ölçümdür, kabul değil
 - Current task: **G12R tamamlandı** — bağımsız incelemenin (`eval/audits/20261007-guided-g12-2-independent-review`) beş bulgusu düzeltildi (R-01 değer bazlı strateji eşitliği; R-02 sunucu pinli kapsam onayı + `stale_scope_claim` + şema 5; R-03 yazılı karar listeli kabul betiği; R-04 kaynak-only varsayılan sürücü + G11 reddi; R-05 reçete alan denetimi + strateji alanı uçtan uca). Kanıt: `eval/audits/20261007-g12r-strategy-plate/` — taze Plate **11/11**, gerçek Chrome **11/11**, ilgili süit + geniş regresyon log'ları

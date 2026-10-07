@@ -401,7 +401,10 @@ def _numbers(value) -> list[float] | None:
 
 def _profile_row(profile: dict) -> dict:
     """One contour as the fingerprint sees it: edges in their own order (never re-sorted)."""
-    row = {"id": str(profile.get("id")), "kind": profile.get("kind")}
+    row = {"id": str(profile.get("id")), "kind": profile.get("kind"),
+           # PLAN-25 §48/§50: the view that owns this contour is part of its identity — a contour
+           # that moved to another view (or lost its owner) is not the same contour.
+           "view_id": profile.get("view_id") if profile.get("view_id") is not None else None}
     edges = []
     for edge in profile.get("edges") or []:
         item = {"id": str(edge.get("id")), "kind": edge.get("kind")}
@@ -422,6 +425,7 @@ def _profile_row(profile: dict) -> dict:
 
 def _circle_row(circle: dict) -> dict:
     return {"id": str(circle.get("id")), "center": _numbers(circle.get("center")),
+            "view_id": circle.get("view_id") if circle.get("view_id") is not None else None,
             "radius": None if circle.get("radius") is None else float(circle["radius"])}
 
 
@@ -466,6 +470,12 @@ def geometry_key(record: dict, decisions: dict | None = None) -> str:
                            key=lambda row: row["id"]),
         "circles": sorted((_circle_row(item) for item in options.get("circles") or []),
                           key=lambda row: row["id"]),
+        # PLAN-25 §50: the confirmed drawing-view roles are part of the fingerprint — changing which
+        # view is the primary (or any other role) moves the key, so an old target cannot stay current.
+        "drawing_views": sorted(({"view_id": str(row.get("view_id")), "role": row.get("role"),
+                                  "geometry_version": row.get("geometry_version")}
+                                 for row in decisions.get("drawing_views") or []),
+                                key=lambda row: row["view_id"]),
     }
     blob = json.dumps(payload, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
     return hashlib.sha256(blob.encode("utf-8")).hexdigest()

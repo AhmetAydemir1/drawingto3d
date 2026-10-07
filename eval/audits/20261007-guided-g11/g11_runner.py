@@ -157,7 +157,11 @@ def main() -> int:
         fail("DETECT_MISS", {"what": "contour", "profile_id": profile_id,
                              "visible": [row["id"] for row in data["options"]["profiles"]]})
     else:
-        if page.ev(f"$('profile').value !== {json.dumps(profile_id)}"):  # idempotent on re-runs
+        # Server-authoritative: never skip the pick because the select's DOM happens to show the id.
+        # (The pilot's exercise-13 run ended `missing_profile` at the gate with no profile write in the
+        # session log — the DOM skip at this line was the only non-failing path through the block.)
+        server_now = UX.server(page) or {}
+        if (server_now.get("decisions") or {}).get("profile_id") != profile_id:
             page.click_selector("#pick-profile")
             time.sleep(0.3)
             picked = False
@@ -359,13 +363,27 @@ def main() -> int:
                                         if row["status"] == "parsed")
     log = final.get("log") or []
     record["parse_edit_count"] = sum(1 for row in log if row.get("action") == "edit_transcription")
+    # §29 counters, derived from the session's own log (the pilot's hardcoded `profile_selections: 1`
+    # claimed a selection for a session that had none — counters must come from the record).
+    typed_from_log = [row for row in log if row.get("action") in ("transcribe", "edit_transcription")
+                      and not (row.get("evidence") or {}).get("accepted_hint")]
+    hints_from_log = [row for row in log if (row.get("evidence") or {}).get("accepted_hint") is True]
+    singles_from_log = [row for row in log if row.get("action") == "ignore_callout"
+                        and (row.get("evidence") or {}).get("bulk") is not True]
+    bulk_from_log = [row for row in log if row.get("action") == "bulk_ignore_callouts"]
+    decisions_now = final.get("decisions") or {}
     record["user_interventions"] = {
-        "typed_texts": typed_texts, "hint_clicks": hint_clicks, "single_ignores": single_ignores,
-        "bulk_rows": bulk_rows, "bulk_actions": 1 if bulk_rows else 0, "edge_drops": edge_drops,
+        "typed_texts": len(typed_from_log) or typed_texts,
+        "hint_clicks": len(hints_from_log) or hint_clicks,
+        "single_ignores": len(singles_from_log) or single_ignores,
+        "bulk_rows": sum(int((row.get("value") or {}).get("count") or 0) for row in bulk_from_log) or bulk_rows,
+        "bulk_actions": len(bulk_from_log),
+        "edge_drops": edge_drops,
         "proposal_accepts": len(recipe.get("accept_proposals") or []),
-        "profile_selections": 1, "calibration_entries": 1 if measurement else 0,
-        "thickness_entries": 1 if recipe.get("thickness_mm") is not None else 0,
-        "trace_acknowledgements": 1 if recipe.get("acknowledge_trace") else 0,
+        "profile_selections": 1 if decisions_now.get("profile_id") else 0,
+        "calibration_entries": 1 if decisions_now.get("calibration") else 0,
+        "thickness_entries": 1 if decisions_now.get("thickness") is not None else 0,
+        "trace_acknowledgements": 1 if decisions_now.get("trace_acknowledged") else 0,
     }
 
     # --- readiness (its blockers are recorded verbatim, never smoothed) --------------------------

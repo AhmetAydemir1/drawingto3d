@@ -373,38 +373,49 @@ def main() -> int:
         page.screenshot(str(shots / f"{case_id}-03-blocked.png"))
     else:
         page.screenshot(str(shots / f"{case_id}-03-ready.png"))
-        page.click_selector("#build")
         try:
-            final = UX.wait_server(page, lambda d: bool(d.get("step")), timeout=420, label="built STEP")
-            record["build_success"] = final.get("build_status") == "complete"
-            if not record["build_success"]:
-                fail("CAD_WRONG", {"build_status": final.get("build_status"), "error": final.get("error")})
+            page.wait_ev("!$('build').disabled", timeout=120, label="build enabled")
         except TimeoutError:
-            fail("CAD_UNSUPPORTED", {"what": "build did not produce a STEP"})
+            late = UX.readiness_of(page)
+            record["build_blockers"] = [row["text"] for row in late["questions"]] or \
+                ["üretim düğmesi 120 sn içinde etkinleşmedi"]
+            fail("CONSTRAINT_UNSUPPORTED", {"what": "build button stayed disabled"})
             final = UX.server(page)
-        page.screenshot(str(shots / f"{case_id}-04-built.png"))
-
-        for name, key in (("part.step", "step"), ("plan.json", "plan"), ("plan-audit.json", "audit")):
-            url = APP + (final.get(key) or "")
+        else:
+            page.click_selector("#build")
             try:
-                with urllib.request.urlopen(url, timeout=60) as response:
-                    (out_dir / name).write_bytes(response.read())
-                record["artifacts"][name] = str((out_dir / name).relative_to(ROOT))
-            except Exception as error:  # noqa: BLE001 - a missing artifact is a recorded failure
-                fail("STEP_EXPORT", {"artifact": name, "error": str(error)})
-        (out_dir / "session-public.json").write_text(json.dumps(final, ensure_ascii=False, indent=2),
-                                                     encoding="utf-8")
-        record["artifacts"]["session-public.json"] = str((out_dir / "session-public.json").relative_to(ROOT))
-        bundle = page.ev_async("""const token = new URLSearchParams(location.search).get('session');
-          return await (await fetch('/api/guided/export', {method: 'POST',
-            headers: {'Content-Type': 'application/json'}, body: JSON.stringify({token})})).json();""")
-        (out_dir / "review-bundle.json").write_text(json.dumps(bundle, ensure_ascii=False, indent=2),
-                                                    encoding="utf-8")
-        record["artifacts"]["review-bundle.json"] = str((out_dir / "review-bundle.json").relative_to(ROOT))
-        if (out_dir / "plan.json").exists():
-            plan = json.loads((out_dir / "plan.json").read_text(encoding="utf-8"))
-            record["features"] = {"plan_lists": {key: len(value) for key, value in plan.items()
-                                                 if isinstance(value, list)}}
+                final = UX.wait_server(page, lambda d: bool(d.get("step")), timeout=420, label="built STEP")
+                record["build_success"] = final.get("build_status") == "complete"
+                if not record["build_success"]:
+                    fail("CAD_WRONG", {"build_status": final.get("build_status"), "error": final.get("error")})
+            except TimeoutError:
+                fail("CAD_UNSUPPORTED", {"what": "build did not produce a STEP"})
+                final = UX.server(page)
+            page.screenshot(str(shots / f"{case_id}-04-built.png"))
+
+        if final.get("step"):  # artifacts only exist once the build really produced them
+            for name, key in (("part.step", "step"), ("plan.json", "plan"), ("plan-audit.json", "audit")):
+                url = APP + (final.get(key) or "")
+                try:
+                    with urllib.request.urlopen(url, timeout=60) as response:
+                        (out_dir / name).write_bytes(response.read())
+                    record["artifacts"][name] = str((out_dir / name).relative_to(ROOT))
+                except Exception as error:  # noqa: BLE001 - a missing artifact is a recorded failure
+                    fail("STEP_EXPORT", {"artifact": name, "error": str(error)})
+            (out_dir / "session-public.json").write_text(json.dumps(final, ensure_ascii=False, indent=2),
+                                                         encoding="utf-8")
+            record["artifacts"]["session-public.json"] = str((out_dir / "session-public.json").relative_to(ROOT))
+            bundle = page.ev_async("""const token = new URLSearchParams(location.search).get('session');
+              return await (await fetch('/api/guided/export', {method: 'POST',
+                headers: {'Content-Type': 'application/json'}, body: JSON.stringify({token})})).json();""")
+            (out_dir / "review-bundle.json").write_text(json.dumps(bundle, ensure_ascii=False, indent=2),
+                                                        encoding="utf-8")
+            record["artifacts"]["review-bundle.json"] = str((out_dir / "review-bundle.json").relative_to(ROOT))
+            plan_file = out_dir / "plan.json"
+            if plan_file.exists() and plan_file.read_text(encoding="utf-8", errors="replace").lstrip().startswith("{"):
+                plan = json.loads(plan_file.read_text(encoding="utf-8"))
+                record["features"] = {"plan_lists": {key: len(value) for key, value in plan.items()
+                                                     if isinstance(value, list)}}
 
     errors = [row for row in page.console if row["level"] == "error"]
     record["console_errors"] = errors

@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Çizimden STEP</title>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Iowan Old Style", Palatino, "Palatino Linotype", Georgia, serif;
+    background: #f3efe6;
+    color: #1c1915;
+  }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 20px 16px 48px; }
+  header { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; }
+  h1 { font-size: 1.7rem; font-weight: 600; margin: 0; letter-spacing: -0.02em; }
+  header p { margin: 4px 0 0; color: #5c564c; font-family: system-ui, sans-serif; font-size: 0.92rem; }
+  label.pick {
+    font-family: system-ui, sans-serif;
+    background: #1c1915;
+    color: #f3efe6;
+    padding: 10px 16px;
+    border-radius: 999px;
+    cursor: pointer;
+    font-size: 0.92rem;
+  }
+  label.pick input { display: none; }
+  label.pick.busy { opacity: 0.45; pointer-events: none; }
+  .stage {
+    margin-top: 16px;
+    background: #fffdf8;
+    border: 1px solid #ddd4c6;
+    border-radius: 14px;
+    padding: 14px 16px;
+    font-family: system-ui, sans-serif;
+  }
+  .stage strong { display: block; font-size: 1.05rem; }
+  .stage .detail { margin: 4px 0 10px; color: #5c564c; }
+  ol.events { list-style: none; margin: 0; padding: 0; max-height: 168px; overflow: auto; }
+  ol.events li { position: relative; padding: 5px 0 5px 18px; color: #6b645b; font-size: 0.9rem; }
+  ol.events li::before {
+    content: "";
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #d9d0c3;
+    position: absolute; left: 0; top: 9px;
+  }
+  ol.events li.done { color: #3f3a34; }
+  ol.events li.done::before { background: #1d6b3a; }
+  ol.events li.now { color: #1c1915; font-weight: 650; }
+  ol.events li.now::before { background: #9a3412; box-shadow: 0 0 0 4px #f3d6c8; }
+  main {
+    margin-top: 16px;
+    display: grid;
+    grid-template-columns: minmax(0, 1.45fr) minmax(260px, 0.8fr);
+    gap: 16px;
+    align-items: start;
+  }
+  .panel {
+    background: #fffdf8;
+    border: 1px solid #ddd4c6;
+    border-radius: 14px;
+    padding: 12px;
+    min-width: 0;
+  }
+  canvas { width: 100%; height: auto; background: white; border-radius: 10px; }
+  canvas:not([hidden]) { display: block; }
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-family: system-ui, sans-serif; font-size: 0.9rem; }
+  td, th { text-align: left; padding: 8px 6px; border-bottom: 1px solid #eadfce; vertical-align: top; }
+  tr.bad td { background: #f8e4df; }
+  tr.warn td { background: #f8efcf; }
+  tr.record { cursor: pointer; }
+  tr.record.active td { background: #efe6d6; }
+  input[data-role] { width: 100%; min-width: 72px; padding: 6px 8px; border: 1px solid #c8c0b4; border-radius: 8px; font: inherit; }
+  select[data-span], input[data-value] { width: 100%; padding: 5px 6px; border: 1px solid #c8c0b4; border-radius: 8px; font: inherit; font-size: 0.88rem; background: white; }
+  input[data-value] { min-width: 64px; }
+  td.text { font-family: ui-monospace, Menlo, monospace; white-space: nowrap; }
+  .actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 12px; font-family: system-ui, sans-serif; }
+  button {
+    padding: 10px 16px;
+    border: 0;
+    border-radius: 999px;
+    background: #9a3412;
+    color: white;
+    font: inherit;
+    cursor: pointer;
+  }
+  button:disabled { background: #c8c0b4; cursor: default; }
+  a { color: #1d6b3a; font-family: system-ui, sans-serif; }
+  a.disabled { pointer-events: none; color: #a39b90; }
+  .empty { color: #6b645b; font-family: system-ui, sans-serif; padding: 28px 8px; text-align: center; }
+  @media (max-width: 840px) {
+    main { grid-template-columns: 1fr; }
+    h1 { font-size: 1.4rem; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Çizimden STEP</h1>
+      <p>Yerel inceleme. Her ölçünün rolünü denetle, yanlışı düzelt, sonra katıyı kur.</p>
+      <p><a href="/guided">Yönlendirmeli çizim → STEP: konturu ve özellikleri sen seç</a></p>
+    </div>
+    <label class="pick" id="pick">Çizim seç
+      <input id="file" type="file" accept=".png,.jpg,.jpeg,.pdf" />
+    </label>
+  </header>
+  <section class="stage" id="stage" hidden>
+    <strong id="now">Bekleniyor</strong>
+    <p class="detail" id="detail"></p>
+    <ol class="events" id="events"></ol>
+  </section>
+  <main>
+    <div class="panel">
+      <canvas id="sheet" width="800" height="560" hidden></canvas>
+      <p class="empty" id="empty">Henüz çizim yok. Seçtiğin resim burada görünür.</p>
+    </div>
+    <div class="panel">
+      <div class="table-wrap">
+        <table id="roles"></table>
+      </div>
+      <div class="actions">
+        <button id="build" disabled>STEP üret</button>
+        <a id="step" class="disabled" href="#">STEP</a>
+        <a id="audit" class="disabled" href="#">Denetim</a>
+        <a id="plan" class="disabled" href="#">CAD planı</a>
+      </div>
+      <canvas id="preview" width="360" height="240" hidden style="margin-top:12px"></canvas>
+    </div>
+  </main>
+</div>
+<script>
+const sheet = document.getElementById("sheet");
+const preview = document.getElementById("preview");
+const sctx = sheet.getContext("2d");
+const pctx = preview.getContext("2d");
+const stage = document.getElementById("stage");
+const nowEl = document.getElementById("now");
+const detailEl = document.getElementById("detail");
+const eventsEl = document.getElementById("events");
+const pick = document.getElementById("pick");
+let state = null;
+let image = new Image();
+let polling = 0;
+const ROLE_LABELS = {
+  edge: "Kenar / uzunluk",
+  thickness: "Kalınlık",
+  outer_diameter: "Dış çap",
+  inner_diameter: "İç çap",
+  bend_radius: "Büküm yarıçapı",
+  hole_diameter: "Delik çapı",
+  hole_spacing: "Delik aralığı",
+  corner_radius: "Köşe yarıçapı",
+  fillet: "Kavis (fillet)",
+  chamfer: "Pah",
+  angle: "Açı",
+  unknown: "Bilinmiyor"
+};
+
+document.getElementById("file").onchange = async (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
+  const raw = await file.arrayBuffer();
+  setBusy(true);
+  showWait("Sayfa gönderiliyor", "Dosya bu makinede işlenecek.");
+  const response = await fetch("/api/convert", { method: "POST", body: raw });
+  const started = await response.json();
+  if (!started.job) {
+    showWait("Durdu", started.error || "Dosya alınamadı.");
+    setBusy(false);
+    return;
+  }
+  watch(started.job);
+};
+
+function setBusy(busy) {
+  pick.classList.toggle("busy", busy);
+  document.getElementById("file").disabled = busy;
+  document.getElementById("build").disabled = busy || !state;
+}
+
+function showWait(title, detail) {
+  stage.hidden = false;
+  nowEl.textContent = title;
+  detailEl.textContent = detail;
+}
+
+function paintEvents(events) {
+  eventsEl.innerHTML = events.map((item, index) => {
+    const cls = index === events.length - 1 ? "now" : "done";
+    return `<li class="${cls}">${item.title}</li>`;
+  }).join("");
+  const last = events[events.length - 1];
+  if (last) showWait(last.title, last.detail);
+  eventsEl.scrollTop = eventsEl.scrollHeight;
+}
+
+function watch(job) {
+  clearInterval(polling);
+  polling = setInterval(async () => {
+    const response = await fetch("/api/job/" + job);
+    const jobState = await response.json();
+    paintEvents(jobState.events || []);
+    if (!jobState.done) return;
+    clearInterval(polling);
+    setBusy(false);
+    if (jobState.error) {
+      showWait("Durdu", jobState.error);
+      return;
+    }
+    state = jobState.result;
+    image = new Image();
+    image.onload = () => {
+      document.getElementById("empty").hidden = true;
+      sheet.hidden = false;
+      draw();
+    };
+    image.src = state.drawing;
+    render();
+  }, 700);
+}
+
+function draw(active) {
+  sctx.clearRect(0, 0, sheet.width, sheet.height);
+  if (!image.width) return;
+  const scale = Math.min(sheet.width / image.width, sheet.height / image.height);
+  sctx.drawImage(image, 0, 0, image.width * scale, image.height * scale);
+  for (const view of state.views || []) {
+    sctx.strokeStyle = view.used_for_solid ? "#1d6b3a" : "#8a8175";
+    sctx.strokeRect(view.bbox.x * scale, view.bbox.y * scale, view.bbox.w * scale, view.bbox.h * scale);
+  }
+  if (active) {
+    sctx.strokeStyle = "#9a3412";
+    sctx.lineWidth = 2;
+    sctx.strokeRect(active.x * scale, active.y * scale, active.w * scale, active.h * scale);
+    sctx.lineWidth = 1;
+  }
+}
+
+function escapeHtml(text) {
+  return String(text).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+function render() {
+  const table = document.getElementById("roles");
+  const build = document.getElementById("build");
+  if (state.plate_plan) {
+    renderPlan(table);
+    build.textContent = "Taslak STEP üret";
+    build.disabled = false;
+  } else if (state.records && state.records.length) {
+    renderRecords(table);
+    build.textContent = "Katıyı kur";
+    build.disabled = false;
+  } else {
+    renderBindings(table);
+    build.textContent = "STEP üret";
+    build.disabled = false;
+  }
+  const ready = Boolean(state.step);
+  document.getElementById("step").textContent = state.plate_plan ? "Taslak STEP" : "STEP";
+  for (const id of ["step", "audit"]) {
+    document.getElementById(id).className = ready || id === "audit" ? "" : "disabled";
+  }
+  document.getElementById("step").href = state.step || "#";
+  document.getElementById("audit").href = state.audit || "#";
+  document.getElementById("plan").href = state.plan || "#";
+  document.getElementById("plan").className = state.plan ? "" : "disabled";
+  preview.hidden = true;
+  if (state.stl) showStl(state.stl);
+}
+
+const PLAN_LABELS = {
+  width: "Dış uzunluk", height: "Dış genişlik", thickness: "Kalınlık",
+  corner_radius: "Köşe yarıçapı", hole_dx: "Yatay delik aralığı", hole_dy: "Dikey delik aralığı",
+  hole_diameter: "Dört deliğin çapı", pocket_diameter: "Merkez cep çapı", pocket_depth: "Cep derinliği"
+};
+
+function renderPlan(table) {
+  const plan = state.plate_plan;
+  const labels = { printed: "Çizimde yazılı", derived: "Geometriden türetildi", user: "Senin düzeltmen" };
+  const rows = Object.entries(PLAN_LABELS).map(([key, label]) => {
+    const evidence = plan.evidence[key];
+    return `<tr><td>${label}</td><td><input aria-label="${label}" data-parameter="${key}" type="number" min="0" step="any" value="${plan[key]}" /></td>` +
+      `<td>${escapeHtml(labels[evidence.kind])}</td></tr>`;
+  }).join("");
+  const notes = plan.assumptions.map(note => `<li>${escapeHtml(note)}</li>`).join("");
+  table.innerHTML = `<tr><th>Özellik</th><th>mm</th><th>Kaynak</th></tr>${rows}` +
+    `<tr><td colspan="3"><strong>İncelenecek kabuller</strong><ul>${notes}</ul>` +
+    `Çıktı taslaktır. Geometri bu plana göre denetlenir; türetilen ölçüler imalat öncesinde doğrulanmalıdır.</td></tr>`;
+}
+
+function renderRecords(table) {
+  const roles = state.roles || Object.keys(ROLE_LABELS);
+  const rows = state.records.map((record) => {
+    const options = roles.map((role) => {
+      const selected = role === record.role ? " selected" : "";
+      return `<option value="${role}"${selected}>${ROLE_LABELS[role] || role}</option>`;
+    }).join("");
+    const count = record.count > 1 ? ` <small>×${record.count}</small>` : "";
+    const cls = record.role === "unknown" ? "record warn" : "record";
+    return `<tr class="${cls}" data-span="${escapeHtml(record.span_id)}">` +
+      `<td class="text">${escapeHtml(record.text)}${count}</td>` +
+      `<td><input data-value="${escapeHtml(record.span_id)}" inputmode="decimal" value="${record.value}" /></td>` +
+      `<td><select data-span="${escapeHtml(record.span_id)}">${options}</select></td></tr>`;
+  }).join("");
+  const unknown = state.records.filter((record) => record.role === "unknown").length;
+  const note = unknown ? `Sarı satırların rolü okunamadı; seçebilirsin, seçmezsen model o sayıyı kullanmaz.` : "Tüm ölçülerin rolü var.";
+  table.innerHTML = `<tr><th>Yazı</th><th>mm</th><th>Rol</th></tr>${rows}<tr><td colspan="3">${note}</td></tr>`;
+  for (const row of table.querySelectorAll("tr.record")) {
+    row.onclick = (event) => {
+      if (event.target.tagName === "SELECT" || event.target.tagName === "INPUT") return;
+      for (const other of table.querySelectorAll("tr.record")) other.classList.remove("active");
+      row.classList.add("active");
+      const span = (state.spans || []).find((item) => item.id === row.dataset.span);
+      if (span) draw(span.bbox);
+    };
+  }
+  for (const select of table.querySelectorAll("select[data-span]")) {
+    select.onchange = () => {
+      const row = select.closest("tr");
+      row.classList.toggle("warn", select.value === "unknown");
+    };
+  }
+}
+
+function renderBindings(table) {
+  const questions = state.questions || [];
+  const asked = new Set(questions.map((q) => q.role));
+  const bound = (state.bindings || []).filter((item) => !asked.has(item.role));
+  const read = (state.spans || []).map((span) => span.text).join(", ");
+  const boundRows = bound.map((item) => {
+    return `<tr><td>${item.role}</td><td>${item.value}</td><td>${item.kind || ""} ${item.text || "okundu"}</td></tr>`;
+  }).join("");
+  const questionRows = questions.map((q) => {
+    const span = (state.spans || []).find((item) => q.span_ids && q.span_ids.includes(item.id));
+    return `<tr class="bad" data-span="${span ? span.id : ""}"><td>${q.role}</td><td><input data-role="${q.role}" inputmode="decimal" /></td><td>${q.reason}</td></tr>`;
+  }).join("");
+  table.innerHTML = `<tr><th>Rol</th><th>Değer</th><th>Kaynak</th></tr>${boundRows}${questionRows}<tr><td colspan="3">Okunan yazılar: ${read || "yok"}</td></tr>`;
+  for (const row of table.querySelectorAll("tr.bad")) {
+    row.onclick = () => {
+      const span = (state.spans || []).find((item) => item.id === row.dataset.span);
+      if (span) draw(span.bbox);
+    };
+  }
+}
+
+document.getElementById("build").onclick = async () => {
+  await buildSolid();
+};
+
+async function buildSolid() {
+  const parameters = {};
+  for (const input of document.querySelectorAll("input[data-parameter]")) {
+    const value = Number(input.value);
+    if (input.value.trim() === "" || !Number.isFinite(value) || value <= 0) {
+      showWait("Ölçüyü kontrol et", "Tüm ölçüler pozitif sayı olmalı.");
+      return;
+    }
+    parameters[input.dataset.parameter] = value;
+  }
+  const records = [];
+  for (const select of document.querySelectorAll("select[data-span]")) {
+    const spanId = select.dataset.span;
+    const input = document.querySelector(`input[data-value="${spanId}"]`);
+    const value = input && input.value !== "" ? Number(input.value) : null;
+    records.push({ span_id: spanId, role: select.value, value: Number.isFinite(value) ? value : null });
+  }
+  setBusy(true);
+  showWait("Kayıt gönderiliyor", state.plate_plan ? "Özelliklerden katı oluşturuluyor." : "Roller ve ölçüler kod modeline gidiyor.");
+  const response = await fetch("/api/solid", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token: state.token, records, parameters })
+  });
+  const started = await response.json();
+  if (!started.job) {
+    showWait("Durdu", started.error || "Oturum yok.");
+    setBusy(false);
+    return;
+  }
+  watch(started.job);
+}
+
+async function showStl(url) {
+  const buffer = await fetch(url).then((res) => res.arrayBuffer());
+  const view = new DataView(buffer);
+  const count = view.getUint32(80, true);
+  const triangles = [];
+  let offset = 84;
+  for (let i = 0; i < count && offset + 50 <= buffer.byteLength; i++) {
+    offset += 12;
+    const tri = [];
+    for (let v = 0; v < 3; v++) {
+      tri.push([view.getFloat32(offset, true), view.getFloat32(offset + 4, true), view.getFloat32(offset + 8, true)]);
+      offset += 12;
+    }
+    triangles.push(tri);
+    offset += 2;
+  }
+  pctx.clearRect(0, 0, preview.width, preview.height);
+  // Isometric projection keeps the plate face and pocket visible in every axis convention.
+  const project = p => [(p[0] - p[1]) / Math.sqrt(2),
+    (p[0] + p[1] - 2 * p[2]) / Math.sqrt(6)];
+  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+  for (const tri of triangles) for (const p of tri) {
+    const [x, y] = project(p);
+    minX = Math.min(minX, x); maxX = Math.max(maxX, x);
+    minY = Math.min(minY, y); maxY = Math.max(maxY, y);
+  }
+  const scale = Math.min(preview.width / (maxX - minX || 1), preview.height / (maxY - minY || 1)) * 0.85;
+  const ox = preview.width / 2, oy = preview.height / 2;
+  const pixels = pctx.createImageData(preview.width, preview.height);
+  const depths = new Float64Array(preview.width * preview.height).fill(-Infinity);
+  for (const tri of triangles) {
+    const u = tri[1].map((v, i) => v - tri[0][i]);
+    const v = tri[2].map((v, i) => v - tri[0][i]);
+    const n = [u[1]*v[2]-u[2]*v[1], u[2]*v[0]-u[0]*v[2], u[0]*v[1]-u[1]*v[0]];
+    const length = Math.hypot(...n) || 1;
+    const light = Math.max(0, (0.3*n[0]+0.5*n[1]+0.8*n[2])/length);
+    const shade = Math.round(75 + 115 * light);
+    const projected = tri.map(p => {
+      const q = project(p);
+      return [ox + (q[0] - (minX + maxX) / 2) * scale,
+        oy + (q[1] - (minY + maxY) / 2) * scale, p[0] + p[1] + p[2]];
+    });
+    const [a, b, c] = projected;
+    const denominator = (b[1]-c[1])*(a[0]-c[0]) + (c[0]-b[0])*(a[1]-c[1]);
+    if (Math.abs(denominator) < 1e-8) continue;
+    const x0 = Math.max(0, Math.floor(Math.min(a[0], b[0], c[0])));
+    const x1 = Math.min(preview.width-1, Math.ceil(Math.max(a[0], b[0], c[0])));
+    const y0 = Math.max(0, Math.floor(Math.min(a[1], b[1], c[1])));
+    const y1 = Math.min(preview.height-1, Math.ceil(Math.max(a[1], b[1], c[1])));
+    // Depth per pixel is necessary: sorting whole triangles fails around holes and pockets.
+    for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
+      const wa = ((b[1]-c[1])*(x+0.5-c[0]) + (c[0]-b[0])*(y+0.5-c[1])) / denominator;
+      const wb = ((c[1]-a[1])*(x+0.5-c[0]) + (a[0]-c[0])*(y+0.5-c[1])) / denominator;
+      const wc = 1-wa-wb;
+      if (Math.min(wa,wb,wc) < -1e-8) continue;
+      const z = wa*a[2] + wb*b[2] + wc*c[2];
+      const offset = y*preview.width+x;
+      if (z <= depths[offset]) continue;
+      depths[offset] = z;
+      pixels.data.set([shade, shade+7, shade+10, 255], offset*4);
+    }
+  }
+  pctx.putImageData(pixels, 0, 0);
+  preview.hidden = false;
+}
+</script>
+</body>
+</html>

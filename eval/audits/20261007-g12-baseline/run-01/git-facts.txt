@@ -1,0 +1,15 @@
+?? eval/audits/20261007-g12-baseline/
+?? eval/audits/20261007-guided-g11-fixes-independent-review/
+---
+cc36f8de62548299761a5b9c8d9a1b97320635f1
+---
+cc36f8d g11 fix turu: kabul kontrolü yeşil — acceptance.json + check_fixes 'yalnız MDR' düzeltmesi
+3919cc3 g11 güzeltme turu: G11R-01–05 (bağımsız inceleme) — metrik paydası, doğrulanmış kalibrasyon, oto-ilerleme, kanıt zorunluluğu, hata sınıflaması
+0ff46a8 g11: resmî 10-pafta koşusu TAMAM — 10/10 kayıtlı, GUIDED_CORRECT_STEP_RATE=0.17 (1/6); teslimler + 4 token-sürdürmeli raster vaka + sürücü v3
+7559fbb g11_runner: yavaş raster ingest'e karşı token yakala + yeniden bağlan (900 sn kapısı 4 vakayı driver-error'a düşürdü)
+7f432ae g11_runner: UX-01 tek-tık ipucu kabulü (#callout-hint-yes) — ilk resmî koşu plate'te eski #callout-hint-save çağrısıyla düştü; abort kanıtı yeniden oluşturulmuş alıntı olarak saklandı
+bab523a g11: flange probe (token kurtarma) + resmî reçetesi — circle_g385 (flat-part), kalibrasyon 90.00 denemesi
+7948e7f g11: my-part probe (token kurtarma) + resmî reçetesi — kalibrasyon sunulmadı (uydurma yok), en büyük tutarlı kontur outline_12
+ab35eb3 g11: resmî koşu hazırlığı — pilot kayıtları cases/pilot+a shots/pilot+a ayrıldı; recipes-official (token'sız); run_official.py + probe_recover.py; flange-elbow-90 probe + reçetesi (noref)
+2104e79 g11_runner: kontur seçimi sunucu-otoriter + §29 sayaçları oturum log'undan
+491372b ux01: dokümanlar + tam regresyon kanıtı + exercise-13 pilot kaydı

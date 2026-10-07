@@ -1,0 +1,27 @@
+G12.0.4 ilgili süit — oturum çıktısı (arka plan koşusu; komut + tam stdout + sonuç)
+
+$ cd /Users/aydemir/Desktop/drawingto3d && .venv/bin/python -m pytest -q \
+    tests/test_callout_models.py tests/test_callout_bind.py tests/test_callout_candidates.py \
+    tests/test_callout_compile.py tests/test_callout_parse.py tests/test_callout_review.py \
+    tests/test_guided.py tests/test_guided_callout_candidates.py tests/test_guided_callout_chain.py \
+    tests/test_guided_callout_http.py tests/test_guided_callout_parse.py tests/test_guided_callout_review.py \
+    tests/test_guided_callout_ux.py tests/test_guided_callout_ux_advance.py tests/test_guided_callouts.py \
+    tests/test_guided_geometry_migration.py tests/test_guided_geometry_state.py tests/test_guided_html.py \
+    tests/test_guided_proposals.py tests/test_g11_report.py tests/test_g11_evidence.py \
+    tests/test_general_plan.py tests/test_geo.py
+
+........................................................................ [ 13%]
+........................................................................ [ 26%]
+........................................................................ [ 40%]
+........................................................................ [ 53%]
+........................................................................ [ 66%]
+........................................................................ [ 80%]
+........................................................................ [ 93%]
+....................................                                     [100%]
+540 passed in 189.20s (0:03:09)
+
+exit=0  (2026-10-07, HEAD cc36f8de62548299761a5b9c8d9a1b97320635f1)
+
+Not: bu koşu aynı zamanda tests/test_g12_baseline_contract.py ve tests/test_g12_runner_boundary.py
+yazılmadan ÖNCEki durumdur; süit pytest glob'uyla genişletildiğinde (test_callout*.py vb.) bu iki
+dosya ayrıca yeşildir (9 passed, run-01 README).

@@ -649,3 +649,19 @@ oto-ilerleme çözülmemiş satırdan zıplıyordu, `rowResolved` şartı eklend
 `history` yanılgısı kaldı; koşu 04 temiz PASS. Metro: `ux01` kabul sürücüsü mevcut CDP koşum takımını
 yeniden kullanır (`cdp_client` + `browser_acceptance` + ux-round yardımcıları); kararlar hep gerçek input
 olayı, `Runtime.evaluate` yalnız okuma/kaydırma.
+
+---
+
+## G12 — PLAN-24-G12-CORRECTNESS (devam ediyor)
+
+Kök `PLAN.md` artık PLAN-24-G12-CORRECTNESS; eski kök plan byte-kopya olarak
+`docs/PLAN_ROOT_BEFORE_G12_20261007.md`, yeni plan `docs/PLAN-24-G12-CORRECTNESS.md`
+(SHA256'lar: `eval/audits/20261007-g12-baseline/run-01/plan-handoff-sha256.txt`).
+Durum satırları (§100): G9 PASS · G10 frozen · UX-01 PASS · **G11 baseline 1/9** (kabul edilmiş ürün
+DEĞİL — ölçüm) · G11R-01–05 PASS · **G12 current: G12.1 (false readiness / decision coverage)**.
+
+G12.0 (truth lock) tamam: donmuş manifest 10/9/1 ve rapor 1/9 testle çivilendi
+(`tests/test_g12_baseline_contract.py`); G9 Plate dondurulmuş evaluator **PASS** (9/9,
+`eval/audits/20261007-g12-baseline/run-01/plate-regression-verdict.json`); ilgili süit **540 passed**
+(189 s); referans sızma **süreç sınırı** kuruldu (`eval/g12_runner/` + `tests/test_g12_runner_boundary.py`).
+Ayrıntı: `eval/g12_progress.md` / `eval/g12_progress.json`.

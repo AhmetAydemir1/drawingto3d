@@ -1,0 +1,59 @@
+{
+  "plan": "PLAN-24-G12-CORRECTNESS",
+  "root_plan": "PLAN.md (docs/PLAN-24-G12-CORRECTNESS.md byte kopya)",
+  "updated_at": "2026-10-07",
+  "baseline_head": "cc36f8de62548299761a5b9c8d9a1b97320635f1",
+  "metric": {
+    "correct_full_step": 1,
+    "denominator": 9,
+    "guided_correct_step_rate": 0.1111111111111111,
+    "note": "G11 baseline; G12 boyunca aynı payda — düşürülmez (§75)"
+  },
+  "frozen": {
+    "manifest_sha256": "f4a850c344e61a90623b2f9525ff34129fe392abf0cd96a66e5d525604e248d8",
+    "report_json_sha256": "423350ded42e8e98ac426c8bedacf739d4d94fbb6709f5afd0cceef6ee097587",
+    "report_md_sha256": "ff1828dd8d34e95e1b62ea6d042726ef232e3e34ede445b1d0abe2caf514ce54",
+    "evidence_digests": "eval/audits/20261007-g12-baseline/run-01/frozen-evidence-sha256.txt"
+  },
+  "phases": [
+    {
+      "id": "G12.0",
+      "title": "truth lock / baseline",
+      "status": "done",
+      "head": "cc36f8de62548299761a5b9c8d9a1b97320635f1",
+      "tests": {
+        "contract_pins": "tests/test_g12_baseline_contract.py (3 passed)",
+        "leakage_boundary": "tests/test_g12_runner_boundary.py (6 passed)",
+        "relevant_suite": "540 passed in 189.20s — eval/audits/20261007-g12-baseline/run-01/pytest-relevant.log"
+      },
+      "cad_synthetic": null,
+      "browser": null,
+      "affected_real_cases": ["plate-pocket-vector (guard)"],
+      "plate_guard": "PASS 9/9 — run-01/plate-regression-verdict.json",
+      "before_verdict": "G11: 1/9 correct, 5 CAD_WRONG, 3 unproduced, 1 scope-only",
+      "after_verdict": "aynı (baseline)",
+      "root_cause_changes": ["—"],
+      "evidence": "eval/audits/20261007-g12-baseline/run-01/README.md"
+    },
+    {
+      "id": "G12.1",
+      "title": "false readiness / decision coverage",
+      "status": "in_progress",
+      "deliverables": [
+        "callout disposition sözleşmesi (not_model_input / redundant / build_relevant_unsupported)",
+        "legacy ignored/unbindable → legacy_unclassified (fresh koşuda bloklar)",
+        "callout_coverage(record) + readiness kuralı",
+        "bulk yalnız not_model_input",
+        "UI copy + coverage paneli",
+        "runner policy v2 (blanket ignore yasak)"
+      ]
+    },
+    {"id": "G12.2", "title": "build strategy contract", "status": "pending"},
+    {"id": "G12.3", "title": "raster contour + extrude correctness", "status": "pending"},
+    {"id": "G12.4", "title": "axisymmetric / revolve path", "status": "pending"},
+    {"id": "G12.5", "title": "multi-view composite v1", "status": "pending"},
+    {"id": "G12.6", "title": "advanced operation capability audit", "status": "pending"},
+    {"id": "G12.F", "title": "frozen manifest rerun 9/9 + 1/1", "status": "pending"}
+  ],
+  "counts": {"correct": 1, "wrong": 5, "blocked": 3, "unsupported": 1}
+}

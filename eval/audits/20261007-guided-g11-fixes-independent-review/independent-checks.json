@@ -1,0 +1,145 @@
+[
+  {
+    "check": "metric",
+    "denominator": 9,
+    "correct": [
+      "plate-pocket-vector"
+    ],
+    "rate": 0.1111111111111111,
+    "published_matches": true
+  },
+  {
+    "check": "recovery",
+    "case": "exercise-13-raster",
+    "label": "recovered-after-run",
+    "not_run_time_evidence": true,
+    "session_sha_matches": true,
+    "source_sha_matches": true,
+    "resume_token_matches": true,
+    "files": [
+      "RECOVERY.json",
+      "readiness.json",
+      "review-bundle.json",
+      "server-error-recompute.json",
+      "session-public.json"
+    ]
+  },
+  {
+    "check": "recovery",
+    "case": "my-part-raster",
+    "label": "recovered-after-run",
+    "not_run_time_evidence": true,
+    "session_sha_matches": true,
+    "source_sha_matches": true,
+    "resume_token_matches": true,
+    "files": [
+      "RECOVERY.json",
+      "readiness.json",
+      "review-bundle.json",
+      "server-error-recompute.json",
+      "session-public.json"
+    ]
+  },
+  {
+    "check": "recovery",
+    "case": "flange-elbow-90-raster-noref",
+    "label": "recovered-after-run",
+    "not_run_time_evidence": true,
+    "session_sha_matches": true,
+    "source_sha_matches": true,
+    "resume_token_matches": null,
+    "files": [
+      "RECOVERY.json",
+      "readiness.json",
+      "review-bundle.json",
+      "server-error-recompute.json",
+      "session-public.json"
+    ]
+  },
+  {
+    "check": "recovery",
+    "case": "exercise-17-raster",
+    "label": "recovered-after-run",
+    "not_run_time_evidence": true,
+    "session_sha_matches": true,
+    "source_sha_matches": true,
+    "resume_token_matches": true,
+    "files": [
+      "RECOVERY.json",
+      "readiness.json",
+      "review-bundle.json",
+      "server-error-recompute.json",
+      "session-public.json"
+    ]
+  },
+  {
+    "check": "round2",
+    "case": "flange-raster",
+    "calibration": {
+      "first": [
+        900.75,
+        1476.75
+      ],
+      "second": [
+        1077.75,
+        1584.75
+      ],
+      "value": 35,
+      "unit": "mm",
+      "span_id": null
+    },
+    "px_per_mm": 5.9242152670722765,
+    "recipe_hash_matches": true,
+    "token_matches": true,
+    "evaluator_exit": 0,
+    "step_reopen": true,
+    "bbox": [
+      20.0,
+      30.907,
+      30.907
+    ],
+    "pass": false,
+    "verdict_matches": true,
+    "failure_codes": [
+      "CAD_WRONG"
+    ]
+  },
+  {
+    "check": "round2",
+    "case": "exercise-51-raster",
+    "calibration": {
+      "first": [
+        773.25,
+        851.25
+      ],
+      "second": [
+        534.75,
+        987.75
+      ],
+      "value": 70,
+      "unit": "mm",
+      "span_id": null
+    },
+    "px_per_mm": 3.925700249507034,
+    "recipe_hash_matches": true,
+    "token_matches": true,
+    "evaluator_exit": 0,
+    "step_reopen": true,
+    "bbox": [
+      15.0,
+      49.978,
+      49.978
+    ],
+    "pass": false,
+    "verdict_matches": true,
+    "failure_codes": [
+      "CAD_WRONG"
+    ]
+  },
+  {
+    "check": "old_evidence_and_evaluator",
+    "unchanged": true,
+    "diff": "",
+    "exit": 0
+  }
+]

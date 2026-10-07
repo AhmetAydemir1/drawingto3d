@@ -222,6 +222,7 @@ def test_ux01_hint_actions_are_single_click_and_drafts_stay_local():
     ignore = script[script.index("$('callout-hint-ignore').onclick="):]
     ignore = ignore[:ignore.index("};")]
     assert "command('set_ignored'" in ignore
+    assert "$('callout-hint-yes').hidden=!row.machine_text_hint;" in script, "ipucu yoksa elle yazma yolu: ipucu düğmeleri gizlenir"
     assert "$('callout-text').oninput=()=>{if(selectedCallout)drafts.set(selectedCallout,$('callout-text').value);renderCallouts();}" in script
 
 

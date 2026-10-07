@@ -559,9 +559,11 @@ Dürüstlük: koşu 01 ve 02 sürücü tarafında durdu (koşu 01: next-unresolv
 
 **Sıradaki: G11** — dondurulmuş manifest ile ilk 10-pafta koşusu (sürücü + vaka kayıtları + rapor).
 
-## G11 — ilk 10-pafta koşusu (sürüyor) — 2026-10-07
+## G11 — pilot turu (7/10 kayıtlı) — 2026-10-07
 
-Yöntem donduruldu (`eval/audits/20261007-guided-g11/DELIVERY-PLAN.md`, ilk vaka koşusundan önce):
+Bu turdaki kayıtlar **pilot** doğrulama kayıtlarıdır (UX-01 öncesi kod; sürücü/akış doğrulaması).
+Kullanıcı sırası gereği **resmî G11 koşusu UX-01 PASS'ten sonra** başlar (UX_PLAN §29); resmî koşu 10
+paftayı UX-01 sonrası kodla, aynı dondurulmuş manifestle sıfırdan koşar. Yöntem donduruldu (`eval/audits/20261007-guided-g11/DELIVERY-PLAN.md`, ilk vaka koşusundan önce):
 taze oturum/vaka, aynı ürün HEAD'i, kararlar yalnız görünen oturum verisi + çizim okumasıyla
 (`recipes/<case_id>.json`, denetlenebilir), referans STEP yalnız evaluator'a; tahmin yok — belirsizlik
 kayıtta durur. Taksonomi: `DETECT_MISS · DETECT_FALSE_POSITIVE · TRANSCRIPTION · PARSE_UNSUPPORTED ·
@@ -576,7 +578,8 @@ CONSTRAINT_CONFLICT · CAD_UNSUPPORTED · CAD_WRONG · STEP_EXPORT · STEP_REOPE
 | exercise-12-vector | kayıtlı — CAD_WRONG | 70 aday; rotational okuma (Ø270×20) alt küme kaldı: 1.02 L vs 4.79 L |
 | exercise-51-raster | kayıtlı — CAD_WRONG | 26 aday; okuma önerisiz, OCR başlık artığı; ana kontur tespitte parçalı → göbek dairesi (g340) modellendi; kalibrasyon belirsiz (40, g340–g341); göbek 15×28.6×28.6 vs ref 60×100×245; ingest ~20 CPU-dk (istemci koptu, token ile kurtarıldı) |
 | exercise-17-raster | kayıtlı — CAD_UNSUPPORTED | 20 aday; okuma önerisiz; kontur parçalı (en büyük tutarlı = outline_2), trace çakışma düzeltmesi tutmadı; üretim isteği sunucuda **400** ile reddedildi, STEP üretilemedi; sürücü kanıt: `cases/exercise-17-raster/` + log (üretim düğmesi beklemesi ve kanıt indirme koruması bu vakada eklendi) |
-| exercise-13-raster · my-part-raster · flange-raster · flange-elbow-90-raster-noref | bekliyor | sonuncusu referanssız: yalnız okuma/kapsam beyanıyla puanlanır |
+| exercise-13-raster | kayıtlı — CONSTRAINT_UNSUPPORTED | 32 aday; okuma önerisiz; sürücü dış konturu doğrulayamadı (`missing_profile`: „Ana görünüşte dış konturu seçin“) → build hiç koşmadı; 32 satır tek toplu eylemle kapsam dışı |
+| my-part-raster · flange-raster · flange-elbow-90-raster-noref | pilot bekliyor | sonuncusu referanssız: yalnız okuma/kapsam beyanıyla puanlanır; resmî koşuda yeniden |
 
 Altyapı: `g11_runner.py` (vaka sürücüsü; öneri kabul yolu, hint/kapsam akışları UX turunun
 yardımcılarını yeniden kullanır), `g11_probe.py` (görünen veri dökümü), `g11_author.py` (kontur izi
@@ -588,5 +591,36 @@ Dürüstlük: drawing-2 ilk denemesi sürücü hatasıyla durdu (kutu-tabanlı t
 düştü (raster gözlem + saatlerce açık kalmış uygulama; yeniden başlatma + 900 s). Sürücü verdict
 fail'de exit≠0 verir (verdict farkı bilinçli; kanıt log/taksonomide).
 
-Kalan adımlar: exercise-51 kaydını tamamla → kalan 5 raster vakayı koş → `g11_report.py` ile iki
-teslimi üret → commit/push. Ayrıntılı loglar: `eval/audits/20261007-guided-g11/logs/`.
+Kalan adımlar (sıra: UX_PLAN §29): **resmî G11 koşusu** — 10 paftanın tamamı UX-01 sonrası kodla →
+`g11_report.py` ile iki teslim → commit/push. Ayrıntılı loglar: `eval/audits/20261007-guided-g11/logs/`.
+
+---
+
+## UX-01 — guided akış sadeleştirme PASS (2026-10-07)
+
+Kullanıcının verdiği sıra korundu (G10 freeze `3cdeb5f` → UX-01 → resmî G11). Backend doğruluk
+sözleşmeleri değişmedi (parser/binder/compiler/CAD'e dokunulmadı). Plan: kullanıcının `UX_PLAN.md`'si;
+kabul ve kanıt eşlemesi: `eval/audits/20261007-guided-ux01/DELIVERY.md`.
+
+| Akış | Ürün değişikliği | Kanıt |
+|---|---|---|
+| Sonraki eksik | `#callout-prev`/`#callout-remaining`/`#callout-next`; çözülmüş tanımı plan §6.2 birebir (parse durumu otoriter `callout_parses` satırından); oto-ilerleme **yalnız başarılı karar + satır çözülünce** | koşu 04 adım 4–8, 11–12 |
+| Toplu „modele ait değil“ | atomik `bulk_set_ignored`: 1 revizyon / 1 history / 1 undo / 1 audit; unknown/stale/foreign/boş tümden red; UI: `#callout-multi` → checkbox → `#callout-bulk-apply` (tek istek) | adım 13–17; `test_guided_callout_http.py` 8 test |
+| İpucu tek tık | `#callout-hint-yes` (Evet, doğru) → normal `transcribe`+`accept_hint` (sunucu hint'i birebir doğrular); `#callout-hint-edit` yalnız draft; `#callout-hint-ignore` → `set_ignored` | adım 4–10 |
+| Eksik kalanlar | ○ görev satırları (backend readiness satırlarından sayıyla gruplu) + ✓ tamamlananlar; tıklama ilgili denetime odaklar; backend `ready` değilken „hazır“ denmez | adım 18–21, 30 |
+| Teknik ayrıntılar | günlük `<details id="technical-details">`, callout ham kimliği `<details id="callout-technical">`; ana copy insan diline (Daire N/Köşe N/Dış şekil); `target_kind` normalde gizli | adım 2, 3 + yapı pinleri |
+
+Kabul: gerçek Chrome **35/35 PASS** (koşu 04; 0 console error, 0 reddedilen istek). Plate smoke: build
+`complete`; dondurulmuş değerlendirici **verdict pass**; bbox [15, 80.002, 120.011] G9/g11 kaydıyla aynı
+(1 katı, 16 yüz, aynı silindirler). Metrikler (`ux01-metrics.json`): 45 aday · 4 elle metin · 4 tek-tık
+ipucu · kuyruk tek toplu eylem (senaryo gereği +6+6 egzersiz) · 1 tek-satır ignore · 1 elle hedef.
+
+Regresyon: guided/callout seti **507 passed**; `pytest -q tests -k "not semread"` → **1450 passed / 339 deselected (25:58)**;
+semread bloğu bu turda koşulmadı (bilinçli: ağır blok ayrı parkta). Yeni RED→GREEN: HTTP bulk matrisi +
+UX-01 HTML pinleri.
+
+Dürüstlük: koşu 01 sürücü hatasıyla durdu (bileşik seçici); koşu 02'de **gerçek ürün bulgusu** yakalandı —
+oto-ilerleme çözülmemiş satırdan zıplıyordu, `rowResolved` şartı eklendi + pin; koşu 03'te tek test-tarafı
+`history` yanılgısı kaldı; koşu 04 temiz PASS. Metro: `ux01` kabul sürücüsü mevcut CDP koşum takımını
+yeniden kullanır (`cdp_client` + `browser_acceptance` + ux-round yardımcıları); kararlar hep gerçek input
+olayı, `Runtime.evaluate` yalnız okuma/kaydırma.

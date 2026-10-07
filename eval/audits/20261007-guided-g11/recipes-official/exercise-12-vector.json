@@ -1,0 +1,26 @@
+{
+  "case_id": "exercise-12-vector",
+  "source_path": "examples/pdf with steps/10/Exercise 12.pdf",
+  "contour": {
+    "profile_id": "circle_g50"
+  },
+  "accept_proposals": [
+    "Kalınlık",
+    "Ölçek",
+    "hole:g60",
+    "hole:g44",
+    "hole:g45",
+    "hole:g46",
+    "hole:g47",
+    "hole:g48",
+    "hole:g49"
+  ],
+  "thickness_mm": null,
+  "acknowledge_trace": true,
+  "decisions": [],
+  "notes": [
+    "Sınıf: rotational-flanged (uygulamanın kendi okuması). Dış kontur önerisi circle_g50 (eş merkezli yığının en büyük dairesi, basılı \"270.00\", çizilen 274.31 mm).",
+    "Kalınlık 20 (basılı \"20.00\"), ölçek 270 mm (t0, 1.5747 px/mm; 6.68 px sapma — tüm parça ~%1.6 büyük okunuyor) ve delikler (Ø76 g60 + 6× Ø18 g44..g49) okumanın önerilerinden onaylandı.",
+    "70 adayın tamamı kapsam dışı: özellikler öneri yoluyla girdi; kalan metinler callout derlemesine girmiyor."
+  ]
+}

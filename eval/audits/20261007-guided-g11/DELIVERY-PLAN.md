@@ -13,8 +13,9 @@ donduruldu; koşu boyunca **değişmez**). **Spec:** kök `PLAN.md` §17.
    ürün koduna girmez — kararlar `recipes/<case_id>.json` içinde, denetlenebilir biçimde durur.
 3. **Tahmin yok:** eksik/çelişkili bilgi karar uydurularak kapatılmaz; vaka kendi taksonomi koduyla
    kaydedilir (aşağıda) ve koşu devam eder. Ürün düzeltmesi G12'nin işidir (generic fix → yeni koşu).
-4. Toplu kapsam kararı (UX turu) standart akıştır: karara bağlanmamış satırlar tek açık eylemle
-   kapatılır; kararlı satırlar dokunulmaz.
+4. Toplu kapsam kararı (UX-01 akışı: `#callout-multi` → checkbox → `#callout-bulk-apply`) standart
+   akıştır: karara bağlanmamış satırlar tek açık eylemle (atomik `bulk_set_ignored`) kapatılır; kararlı
+   satırlar dokunulmaz.
 
 ## Vaka kaydı (PLAN §17 alanları — birebir)
 
@@ -62,14 +63,25 @@ yutulmaz, hiçbir başarı olmayan şey "PASS" yazılmaz.
 PYTHONPATH=src .venv/bin/python -m drawingto3d.app                     # 127.0.0.1:8765
 "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
   --remote-debugging-port=9222 --user-data-dir=~/.hermes/cache/scratch/chrome-g11 about:blank
-~/.hermes/cache/scratch/cdp-venv/bin/python eval/audits/20261007-guided-g11/g11_runner.py \
-  eval/audits/20261007-guided-g11/recipes/<case_id>.json
+~/.hermes/cache/scratch/cdp-venv/bin/python eval/audits/20261007-guided-g11/run_official.py
+  # (manifest sırasında 10 vaka; her vaka: recipes-official/<case_id>.json → cases/<case_id>.json)
 .venv-cad/bin/python eval/audits/20261007-guided-g11/g11_report.py       # raporları yazar
 ```
 
 Sürücü, G9/UX koşularının kanıtlanmış yardımcılarını yeniden kullanır
 (`eval/audits/20261007-guided-ux-round/ux_acceptance.py` + g3-review `cdp_client.py`); bu dosya
 yalnız vaka akışını ve kaydı ekler.
+
+## Addendum — resmî koşu düzeni (yerleşim notu, yöntem değişmedi)
+
+- Pilot turu (UX-01 öncesi, 7/10) `cases/pilot/` + `shots/pilot/` altında ayrı durur; resmî kayıtlar
+  `cases/*.json` + `shots/*.png` yoluna yazılır (`run_official.py`, manifest sırası).
+- Resmî koşu, UX-01 PASS'inden sonra ve **UX-01 sonrası kodla** yapılır (kabul kanıtı:
+  `eval/audits/20261007-guided-ux01/DELIVERY.md`). Reçeteler `recipes-official/` altında, pilot
+  oturum token'ları taşımaz (resmî kayıt taze oturum şartını uygular: yeni `set_file` yüklemesi).
+- §29 metrikleri (`USER_INTERVENTIONS_PER_SHEET`, `bulk_ignore_actions`, `one_click_hint_accepts`,
+  `manual_transcriptions`, `manual_target_corrections`) vaka kaydının `user_interventions` alanında,
+  oturum log'undan türetilerek tutulur.
 
 ## Kapsam dışı
 

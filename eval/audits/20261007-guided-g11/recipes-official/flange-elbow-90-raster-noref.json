@@ -1,0 +1,18 @@
+{
+  "case_id": "flange-elbow-90-raster-noref",
+  "source_path": "examples/flange-elbow-90.png",
+  "contour": {"profile_id": "outline_17"},
+  "calibration": {"measurement_text": "360", "circles": ["g173", "g174"]},
+  "thickness_mm": 10,
+  "acknowledge_trace": true,
+  "confirm_view": true,
+  "decisions": [],
+  "notes": [
+    "Raster pafta, REFERANSSIZ (callout_scope_only): puanlama yalnız okuma/kapsam beyanlarında; geometric verdict yok.",
+    "Parça 90° dirsek + iki kare flanş (360×360, 4-R20, 4×Ø60 cıvata delikleri, 4×Ø30). Okuma öneri üretmedi (0 öneri); sınıf 'unknown'.",
+    "Kontur: en tutarlı büyük kapalı kontur outline_17 (97 nokta; section A-A üst görünüşündeki flanş dış hattı). Dirsek gövdesinin L-dış hattı tek tutarlı kontur olarak sunulmadı (bölünmüş) — kayıt 'en büyük tutarlı kontur' kuralıyla.",
+    "Kalibrasyon: basılı en uzun açıklık 360 (flanş genişliği iki kez), çapa olarak iki büyük daire merkezi (g173 r=60.2 px, g174 r=57.5 px) denendi — karar 'denenen' belirsizlik taşır; rasterda tutarlı ölçek çapası yok.",
+    "Kalınlık 10 (section A-A'daki plaka kalınlığı adayı) — belirsizlik kayıtta; 50/150 de basılı.",
+    "Kapsam: 27 adayın tamamı modele ait değil (uydurma metin yok); okuma yalnız aday/ölçü listesiyle sınırlı."
+  ]
+}

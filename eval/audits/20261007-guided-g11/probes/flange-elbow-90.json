@@ -1,0 +1,684 @@
+{
+  "case_source": "examples/flange-elbow-90.png",
+  "token": "4fc64ede35f34c07add438ac9fb99f3d",
+  "candidates": [
+    {
+      "id": "4c4c5a2b6a8f15063a12a7af3e41a5809a9d2a74cadcfab752616f0ed90fbfce",
+      "hint": "oe",
+      "region": [
+        0.3662,
+        0.2178,
+        0.4156,
+        0.2559
+      ]
+    },
+    {
+      "id": "fdd0fd7417a783b191155f454924bf0ba254b9972e3a94d7bfe70ca6d9c62f75",
+      "hint": "a8 a 7 rH",
+      "region": [
+        0.0253,
+        0.2832,
+        0.4638,
+        0.4443
+      ]
+    },
+    {
+      "id": "46bea551bb5361829629f16039fd94d1ffe7e131343ef99cb4b66a496625c2a3",
+      "hint": "50:",
+      "region": [
+        0.1504,
+        0.4736,
+        0.1711,
+        0.4873
+      ]
+    },
+    {
+      "id": "bb03573710c24fed6bd9390c8233ccaa9d9ff1fe96347b1d21d1a652f39fd9a9",
+      "hint": "260",
+      "region": [
+        0.2388,
+        0.4736,
+        0.2698,
+        0.4873
+      ]
+    },
+    {
+      "id": "b0575073b7fbf4fa424623ff58b321ce51f12ce19151c3e20683a91151f0a7fb",
+      "hint": "4x2-960",
+      "region": [
+        0.7623,
+        0.4912,
+        0.8393,
+        0.5049
+      ]
+    },
+    {
+      "id": "244d734225658c0aa2a7ba998c8b135bce38b8794411b146e8071151af9f461a",
+      "hint": "360",
+      "region": [
+        0.2388,
+        0.5068,
+        0.2698,
+        0.5195
+      ]
+    },
+    {
+      "id": "09d59c0c54eb98572fe1e66bba401c9328c99af73e4b21f7ad1cf491d5e5bbb8",
+      "hint": "4x2-030",
+      "region": [
+        0.7623,
+        0.5381,
+        0.8393,
+        0.5518
+      ]
+    },
+    {
+      "id": "607f56ef7528f6cfb44e6d22504e96860019152dc72ff1032202a5fe02ddad60",
+      "hint": "C10",
+      "region": [
+        0.2262,
+        0.5498,
+        0.2606,
+        0.5635
+      ]
+    },
+    {
+      "id": "66699aca7883da5e41afdcae42f15e40aea49b9972d78a5bb493d7f211d6d4bb",
+      "hint": "ot",
+      "region": [
+        0.5982,
+        0.5957,
+        0.62,
+        0.6074
+      ]
+    },
+    {
+      "id": "f668370cb684a3183435f2d05278e63055e07fffb976f8af44e0fcd66a518845",
+      "hint": "NS",
+      "region": [
+        0.8668,
+        0.6035,
+        0.9047,
+        0.6416
+      ]
+    },
+    {
+      "id": "442ba67d0bf95dd1f77adff2534579a4424701c9ab5330d64f0ac850f53c85b5",
+      "hint": "tot a",
+      "region": [
+        0.0448,
+        0.6055,
+        0.1883,
+        0.6377
+      ]
+    },
+    {
+      "id": "e31b9ed9a27e154b2b35d95f0c51d07e38c625b2f727d6cb15546460fbe486b1",
+      "hint": "if",
+      "region": [
+        0.3192,
+        0.6074,
+        0.3605,
+        0.6621
+      ]
+    },
+    {
+      "id": "d9919ccf576f8937e78c7331d75b321a7fe029cef1f9dbc03a7b92de58d21297",
+      "hint": "CuSLATHA",
+      "region": [
+        0.6889,
+        0.6074,
+        0.9024,
+        0.6299
+      ]
+    },
+    {
+      "id": "a057ae3815822a4c0b6ffb4d6ebb786798b379775091312b39489f3d2f65be07",
+      "hint": "Sj",
+      "region": [
+        0.5982,
+        0.6094,
+        0.62,
+        0.6201
+      ]
+    },
+    {
+      "id": "da5b622ee65729b824e1b1118a4665dd51a9c697940a03a392dabf73dbfec457",
+      "hint": "Xo",
+      "region": [
+        0.9208,
+        0.6641,
+        0.946,
+        0.6797
+      ]
+    },
+    {
+      "id": "5de9f0becaaeff693ed237c74c1189036afca72818350bd86164683b36d679c3",
+      "hint": "ey",
+      "region": [
+        0.6177,
+        0.6729,
+        0.6728,
+        0.7158
+      ]
+    },
+    {
+      "id": "9843927cdb0e61879dc5ac0f513c00ea764adacc47794b9247eff8980656ca42",
+      "hint": "c10",
+      "region": [
+        0.566,
+        0.6924,
+        0.6005,
+        0.7061
+      ]
+    },
+    {
+      "id": "72d3d9faaef4125bb204c6cfb4ac31960614de603010ac9c242a07eab9250f0f",
+      "hint": "<LVZ ZZ]",
+      "region": [
+        0.3743,
+        0.7246,
+        0.4994,
+        0.7607
+      ]
+    },
+    {
+      "id": "e43837c76b317b93f8ac4901d9bbcd3ccb3a54b6fd749dca2c16fdacd62731f1",
+      "hint": "Y",
+      "region": [
+        0.2009,
+        0.7725,
+        0.2423,
+        0.8174
+      ]
+    },
+    {
+      "id": "32d5995b41ab899189d00ca1fe591aa9f0dbb36bc00b022248a9dce1e4d98eff",
+      "hint": "gic o/o",
+      "region": [
+        0.938,
+        0.8018,
+        0.9816,
+        0.8203
+      ]
+    },
+    {
+      "id": "090241b85c3a80b49ae61a056fab3cc013332b25a0e9ed62b36da498356d2575",
+      "hint": "x",
+      "region": [
+        0.2308,
+        0.8086,
+        0.2893,
+        0.8535
+      ]
+    },
+    {
+      "id": "7faa4dd0fc0ccec2ef47df7f2cafe9f5a434e4c707f19b2d8e08baa5700f4060",
+      "hint": "WY Nm",
+      "region": [
+        0.729,
+        0.8174,
+        0.9816,
+        0.873
+      ]
+    },
+    {
+      "id": "baee82e11e98e5784cd63d5cdca092b18aaf03da7889403105f16296f14991c4",
+      "hint": "Qrra77 “J",
+      "region": [
+        0.3077,
+        0.8457,
+        0.4994,
+        0.9062
+      ]
+    },
+    {
+      "id": "105c04e64ba09bb46233d01d214a9cd88a5b61212dc3a072e102fdd72f741c03",
+      "hint": "50",
+      "region": [
+        0.4765,
+        0.9238,
+        0.496,
+        0.9375
+      ]
+    },
+    {
+      "id": "541d9498d286047f8f3864b7468fdefbb6d3401eaa3563b17dda60bd61d40c40",
+      "hint": "260",
+      "region": [
+        0.7807,
+        0.9346,
+        0.8117,
+        0.9473
+      ]
+    },
+    {
+      "id": "2ca25ad2c72b51bd5a76fc554c9cfcd04cd56ddd342e31076b31f8f04fea2cae",
+      "hint": "360",
+      "region": [
+        0.7807,
+        0.9648,
+        0.8117,
+        0.9775
+      ]
+    },
+    {
+      "id": "5e90bd2179f11cd1eefd4a95ca20e59cc0a91122afb7587aee77527c72758598",
+      "hint": "150",
+      "region": [
+        0.442,
+        0.9668,
+        0.4719,
+        0.9795
+      ]
+    }
+  ],
+  "profiles": [
+    {
+      "id": "outline_15",
+      "points": 27,
+      "bbox": [
+        669,
+        50,
+        734,
+        465
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "arc",
+        "line",
+        "line"
+      ]
+    },
+    {
+      "id": "circle_g173",
+      "points": 60,
+      "bbox": [
+        160,
+        305,
+        280,
+        425
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "circle_g174",
+      "points": 60,
+      "bbox": [
+        633,
+        777,
+        748,
+        892
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "outline_27",
+      "points": 26,
+      "bbox": [
+        805,
+        306,
+        887,
+        424
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "arc",
+        "line"
+      ]
+    },
+    {
+      "id": "outline_16",
+      "points": 4,
+      "bbox": [
+        633,
+        30,
+        701,
+        476
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "line",
+        "line",
+        "line"
+      ]
+    },
+    {
+      "id": "outline_18",
+      "points": 4,
+      "bbox": [
+        606,
+        25,
+        680,
+        402
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "line",
+        "line",
+        "line"
+      ]
+    },
+    {
+      "id": "outline_17",
+      "points": 97,
+      "bbox": [
+        629,
+        611,
+        788,
+        701
+      ],
+      "closed": null,
+      "edges": [
+        "arc",
+        "arc",
+        "arc",
+        "line",
+        "arc"
+      ]
+    },
+    {
+      "id": "outline_5",
+      "points": 50,
+      "bbox": [
+        744,
+        172,
+        791,
+        439
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "arc",
+        "arc",
+        "line"
+      ]
+    },
+    {
+      "id": "outline_13",
+      "points": 72,
+      "bbox": [
+        222,
+        777,
+        316,
+        898
+      ],
+      "closed": null,
+      "edges": [
+        "arc",
+        "arc",
+        "arc"
+      ]
+    },
+    {
+      "id": "outline_24",
+      "points": 73,
+      "bbox": [
+        208,
+        593,
+        267,
+        720
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "arc",
+        "arc",
+        "arc"
+      ]
+    },
+    {
+      "id": "outline_28",
+      "points": 50,
+      "bbox": [
+        661,
+        77,
+        732,
+        138
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "arc",
+        "arc",
+        "line"
+      ]
+    },
+    {
+      "id": "outline_14",
+      "points": 72,
+      "bbox": [
+        281,
+        697,
+        364,
+        743
+      ],
+      "closed": null,
+      "edges": [
+        "arc",
+        "arc",
+        "arc"
+      ]
+    }
+  ],
+  "circles": [
+    {
+      "id": "g173",
+      "radius": 60.2,
+      "center": [
+        219.8,
+        365.2
+      ]
+    },
+    {
+      "id": "g174",
+      "radius": 57.5,
+      "center": [
+        690.8,
+        834.8
+      ]
+    }
+  ],
+  "measurements": [
+    {
+      "id": "t2",
+      "text": "50:",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t3",
+      "text": "260",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t4",
+      "text": "4x2-960",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t5",
+      "text": "360",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t6",
+      "text": "4x2-030",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t7",
+      "text": "C10",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t16",
+      "text": "c10",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t23",
+      "text": "50",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t24",
+      "text": "260",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t25",
+      "text": "360",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t26",
+      "text": "150",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    }
+  ],
+  "sketch_keys": [
+    "bindings",
+    "conflicts",
+    "consistent",
+    "fit",
+    "join_gap_max_px",
+    "px_per_mm",
+    "rows",
+    "source",
+    "unbound_circles",
+    "unbound_edges"
+  ],
+  "proposals": [],
+  "detection": {
+    "detector_version": "callout-detector/1",
+    "diagnostics": []
+  },
+  "summary": "12 kontur · 2 daire · 11 ölçü adayı · sınıf: unknown · kayıt 0"
+}

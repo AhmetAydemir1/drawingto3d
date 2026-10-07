@@ -1,0 +1,9 @@
+[PASS] drawing opens in a fresh session and candidates are listed: {"token": "390916ea9f784ea18eb322abc4aabbaa", "callouts": 45}
+[PASS] clicking the plate outline selects it as the contour: {"profile": "outline_1", "edges": 8, "kinds": ["line", "arc", "line", "arc", "line", "arc", "line", "arc"]}
+[PASS] two hole centres are calibrated with the printed 100,00 span: {"value": 100, "unit": "mm", "span_id": "t0", "span_px": 787.57, "px_per_mm": 7.8757}
+[PASS] thickness 15 is entered and stored: {"thickness": 15}
+[PASS] the traced draft is acknowledged: {}
+[FAIL] the hole note transcribes and parses as written: {"text": "4 x Ø6,80 THRU ALL", "status": "unsupported", "warnings": ["unknown_tokens", "unit_unresolved"], "semantic": {"form": "diameter", "size": 6.8, "count": 4, "termination": "thru"}}
+
+STOPPED at the transcription step (recorded); see g9-steps.json
+EXIT=2

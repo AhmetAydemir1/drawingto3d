@@ -1,0 +1,326 @@
+{
+  "app": "http://127.0.0.1:8765",
+  "drawing": "/Users/aydemir/Desktop/drawingto3d/examples/pdf with steps/5/Plate With A Pocket Drawing.PDF",
+  "token": "e754a64a40dc4b1ba42c09d7dd7a20a4",
+  "steps": [
+    {
+      "step": "drawing opens in a fresh session and candidates are listed",
+      "passed": true,
+      "detail": {
+        "token": "e754a64a40dc4b1ba42c09d7dd7a20a4",
+        "callouts": 45
+      }
+    },
+    {
+      "step": "clicking the plate outline selects it as the contour",
+      "passed": true,
+      "detail": {
+        "profile": "outline_1",
+        "edges": 8,
+        "kinds": [
+          "line",
+          "arc",
+          "line",
+          "arc",
+          "line",
+          "arc",
+          "line",
+          "arc"
+        ]
+      }
+    },
+    {
+      "step": "two hole centres are calibrated with the printed 100,00 span",
+      "passed": true,
+      "detail": {
+        "value": 100,
+        "unit": "mm",
+        "span_id": "t0",
+        "span_px": 787.57,
+        "px_per_mm": 7.8757
+      }
+    },
+    {
+      "step": "thickness 15 is entered and stored",
+      "passed": true,
+      "detail": {
+        "thickness": 15
+      }
+    },
+    {
+      "step": "the traced draft is acknowledged",
+      "passed": true,
+      "detail": {}
+    },
+    {
+      "step": "the hole note transcribes and parses as written",
+      "passed": true,
+      "detail": {
+        "text": "4 x Ø6,80 THRU ALL",
+        "semantic": {
+          "form": "diameter",
+          "size": 6.8,
+          "count": 4,
+          "termination": "thru",
+          "unit": null
+        },
+        "warnings": [
+          "unit_unresolved"
+        ]
+      }
+    },
+    {
+      "step": "hole proposals are shown (or none, with the manual pick offered)",
+      "passed": true,
+      "detail": {
+        "state": "hedef onaylanmadı",
+        "proposals": [
+          "Seç1. daire grubu · g10, g11, g12, g9 · T2 · pdf-3 · basılı 6.8 mm",
+          "Seç2. tek daire · g12 · T2 · pdf-3 · basılı 6.8 mm",
+          "Seç3. tek daire · g9 · T2 · pdf-3 · basılı 6.8 mm",
+          "Seç4. tek daire · g10 · T2 · pdf-3 · basılı 6.8 mm",
+          "Seç5. tek daire · g11 · T2 · pdf-3 · basılı 6.8 mm",
+          "Seç6. tek daire · g61 · T5 · çizilen Ø3.111 mm ≠ yazılan Ø6.8 mm"
+        ]
+      }
+    },
+    {
+      "step": "the four hole circles are confirmed by hand (user_click evidence)",
+      "passed": true,
+      "detail": {
+        "target": {
+          "callout_id": "0f5ccd0e2f4973b11d48712503677ae71fb9f1219f9c9c81ff152330d01d47e6",
+          "target_kind": "circle_group",
+          "target_ids": [
+            "g9",
+            "g11",
+            "g10",
+            "g12"
+          ],
+          "geometry_version": 3,
+          "geometry_key": "680ee23d8803a00390024098c1ac5ba17389759f656b5913855d60270ced2085",
+          "profile_id": "outline_1",
+          "transcription_revision": 5,
+          "parser_version": "callout-parser/2",
+          "evidence": [
+            {
+              "kind": "user_click",
+              "ref": "circle_group · g9, g11, g10, g12"
+            }
+          ],
+          "status": "confirmed",
+          "reconfirm": false
+        }
+      }
+    },
+    {
+      "step": "the “4 x” fragment is declared not-a-callout (its text travelled with the note)",
+      "passed": true,
+      "detail": {
+        "callout": "599ad74670dd5582e216b0e8c56c12bebc3b57a66a1c6f1457dbe32ff233bde4"
+      }
+    },
+    {
+      "step": "the pocket transcribes (Ø50 from the view, depth 8 from the section) and parses",
+      "passed": true,
+      "detail": {
+        "text": "Ø50 8 DEEP",
+        "semantic": {
+          "form": "diameter",
+          "size": 50,
+          "termination": "blind",
+          "depth": 8
+        },
+        "warnings": [
+          "unit_unresolved"
+        ]
+      }
+    },
+    {
+      "step": "the pocket circle is confirmed for Ø50",
+      "passed": true,
+      "detail": {
+        "target": {
+          "callout_id": "2513f1a12341b145ae7d58b0f9da8375ad2408a8c9143a95c5f2ab303216cbdf",
+          "target_kind": "circle",
+          "target_ids": [
+            "g8"
+          ],
+          "geometry_version": 3,
+          "geometry_key": "680ee23d8803a00390024098c1ac5ba17389759f656b5913855d60270ced2085",
+          "profile_id": "outline_1",
+          "transcription_revision": 8,
+          "parser_version": "callout-parser/2",
+          "evidence": [
+            {
+              "kind": "proposal",
+              "ref": "T1 · g8"
+            }
+          ],
+          "status": "confirmed",
+          "reconfirm": false
+        },
+        "proposals": [
+          "Seç1. tek daire · g8 · T1 · g127→g8 · uç daireye temas ediyor",
+          "Seç2. tek daire · g63 · T5 · çizilen Ø3.106 mm ≠ yazılan Ø50.0 mm"
+        ]
+      }
+    },
+    {
+      "step": "the thread note is read and stays outside the grammar (no invented feature)",
+      "passed": true,
+      "detail": {
+        "text": "M8 - 6H THRU ALL",
+        "status": "unsupported",
+        "warnings": [
+          "unsupported_syntax",
+          "ambiguous_number",
+          "unknown_tokens"
+        ]
+      }
+    },
+    {
+      "step": "the thread note is declared out of scope (unbindable, not silent)",
+      "passed": true,
+      "detail": {
+        "callout_id": "845682b289fedf3398c22eca7b08d8b4b480c5df63443dd735b8e845faf6f723",
+        "region_override": null,
+        "ignored": false,
+        "unbindable": true,
+        "revision": 11
+      }
+    },
+    {
+      "step": "printed dimension '1 00,00' is read as '100,00'",
+      "passed": true,
+      "detail": {
+        "callout": "3135f80a24cbcbbe62457dd7d7691a69ab58a0ad9292fe5363ac1ab64b46cdb6",
+        "semantic": {
+          "form": "linear",
+          "size": 100
+        },
+        "warnings": [
+          "unit_unresolved"
+        ]
+      }
+    },
+    {
+      "step": "printed dimension '80,00' is read as '80,00'",
+      "passed": true,
+      "detail": {
+        "callout": "86db004917d2d153fbc87cb4c3d6cccd578020c1aecb5c0363958a5023cb6424",
+        "semantic": {
+          "form": "linear",
+          "size": 80
+        },
+        "warnings": [
+          "unit_unresolved"
+        ]
+      }
+    },
+    {
+      "step": "printed dimension '60,00' is read as '60,00'",
+      "passed": true,
+      "detail": {
+        "callout": "3a329c85e41583748a44d918a39d2b34892cbfb507871f9185a457aa14012a98",
+        "semantic": {
+          "form": "linear",
+          "size": 60
+        },
+        "warnings": [
+          "unit_unresolved"
+        ]
+      }
+    },
+    {
+      "step": "printed dimension '1 5,00' is read as '15,00'",
+      "passed": true,
+      "detail": {
+        "callout": "34ad8443dfc6b49b1ba10cd992961a03dd41badcb2e0d290cc3abcbcb67d2533",
+        "semantic": {
+          "form": "linear",
+          "size": 15
+        },
+        "warnings": [
+          "unit_unresolved"
+        ]
+      }
+    },
+    {
+      "step": "printed dimension '8,00' is read as '8,00'",
+      "passed": true,
+      "detail": {
+        "callout": "11b4bc4edc5e9d92bce358fa5b5cb5c08c4851d922d683f30450ee80815d884c",
+        "semantic": {
+          "form": "linear",
+          "size": 8
+        },
+        "warnings": [
+          "unit_unresolved"
+        ]
+      }
+    },
+    {
+      "step": "the printed dimensions are declared un-bindable in this version (arc contour: centre ties only)",
+      "passed": true,
+      "detail": {
+        "count": 5
+      }
+    },
+    {
+      "step": "every remaining candidate is an explicit scope decision (ignore), none silently dropped",
+      "passed": true,
+      "detail": {
+        "callouts": 45,
+        "ignored": 37,
+        "swept_now": 36
+      }
+    },
+    {
+      "step": "the readiness gate is clean before the build",
+      "passed": true,
+      "detail": {
+        "summary": "Hazır: 45 callout derlendi · 5 delik · 0 ölçü bağı · 43 kapsam dışı.",
+        "questions": [],
+        "buildDisabled": false
+      }
+    },
+    {
+      "step": "the build runs and the session carries a fresh STEP",
+      "passed": true,
+      "detail": {
+        "build_status": "complete",
+        "step": "/guided-session/e754a64a40dc4b1ba42c09d7dd7a20a4/part.step",
+        "error": null
+      }
+    },
+    {
+      "step": "the review bundle carries the compiled chain for both feature callouts",
+      "passed": true,
+      "detail": {
+        "compiled": [
+          {
+            "callout_id": "2513f1a12341b145ae7d58b0f9da8375ad2408a8c9143a95c5f2ab303216cbdf",
+            "raw_text": "Ø50 8 DEEP",
+            "status": null
+          },
+          {
+            "callout_id": "0f5ccd0e2f4973b11d48712503677ae71fb9f1219f9c9c81ff152330d01d47e6",
+            "raw_text": "4 x Ø6,80 THRU ALL",
+            "status": null
+          }
+        ]
+      }
+    },
+    {
+      "step": "no unexpected console errors and no rejected requests",
+      "passed": true,
+      "detail": {
+        "unexpected": [],
+        "failures": []
+      }
+    }
+  ],
+  "console": [],
+  "rejected_requests": []
+}

@@ -574,7 +574,7 @@ CONSTRAINT_CONFLICT · CAD_UNSUPPORTED · CAD_WRONG · STEP_EXPORT · STEP_REOPE
 | drawing-2-vector | kayıtlı — CAD_WRONG | 66 aday; kesit taraması üst görünüm konturunu böldü; sol gövde (R20) modellendi; ref 50×80×134 |
 | plastic-enclosure-vector | kayıtlı — CAD_WRONG (şekil ok) | 65 aday; bbox 0.12 mm içinde ama dolu levha 182.5 cm³ vs içi boş kabuk 23.5 cm³ |
 | exercise-12-vector | kayıtlı — CAD_WRONG | 70 aday; rotational okuma (Ø270×20) alt küme kaldı: 1.02 L vs 4.79 L |
-| exercise-51-raster | **bekliyor** | raster gözlem yavaş; oturum beklemesi 900 s'ye çıkarıldı, uygulama yeniden başlatıldı |
+| exercise-51-raster | kayıtlı — CAD_WRONG | 26 aday; okuma önerisiz, OCR başlık artığı; ana kontur tespitte parçalı → göbek dairesi (g340) modellendi; kalibrasyon belirsiz (40, g340–g341); göbek 15×28.6×28.6 vs ref 60×100×245; ingest ~20 CPU-dk (istemci koptu, token ile kurtarıldı) |
 | exercise-17-raster · exercise-13-raster · my-part-raster · flange-raster · flange-elbow-90-raster-noref | bekliyor | sonuncusu referanssız: yalnız okuma/kapsam beyanıyla puanlanır |
 
 Altyapı: `g11_runner.py` (vaka sürücüsü; öneri kabul yolu, hint/kapsam akışları UX turunun

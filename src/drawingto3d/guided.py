@@ -1890,7 +1890,12 @@ def _log_callout_changes(record: dict, before: dict, payload: dict, produced=Non
 
 # --- G3 user commands (PLAN-21 §6.4): one command, one history step, one revision ---------------
 
-_CALLOUT_COMMANDS = ("add_region", "edit_region", "set_ignored", "set_unbindable", "transcribe")
+_CALLOUT_COMMANDS = ("add_region", "edit_region", "set_ignored", "set_unbindable", "set_ignored_many",
+                     "transcribe")
+
+# G9 UX turu: one bulk decision may close many callouts at once, but never an unbounded number —
+# the same order of magnitude the review import already accepts.
+BULK_IGNORE_LIMIT = 200
 
 
 def _next_callout_revision(record: dict) -> int:
@@ -1971,11 +1976,43 @@ def _apply_callout_command(record: dict, decisions: dict, action: str, payload: 
                   "Kullanıcı çizim üzerinde yeni bir callout alanı çizdi.")],
                 [("manual_callouts", row.id)])
 
+    if action == "set_ignored_many":
+        # G9 UX turu: the burden the plate run measured — one click per out-of-scope candidate — gets
+        # one *explicit* action that closes every still-undecided callout in a single history step.
+        # Two properties make it safe rather than a silent filter: it acts only on callouts with no
+        # decision at all (a written text or an earlier scope verdict is never overridden), and it is
+        # refused whole — a bulk action must not report success while quietly skipping a row.
+        ids = payload.get("callout_ids")
+        if not isinstance(ids, list) or not ids:
+            raise ValueError("toplu kapsam kararı için callout kimlikleri listesi gerekli")
+        if any(not isinstance(item, str) or not item for item in ids):
+            raise ValueError("toplu kapsam kararı kimlikleri metin olmalı")
+        if len(set(ids)) != len(ids):
+            raise ValueError("toplu kapsam kararı aynı kimliği iki kez taşıyamaz")
+        if len(ids) > BULK_IGNORE_LIMIT:
+            raise ValueError(f"toplu kapsam kararı tek adımda en çok {BULK_IGNORE_LIMIT} callout kapatır")
+        for callout_id in ids:
+            row = _effective_row(record, decisions, callout_id)
+            decided = bool(row["ignored"]) or bool(row.get("unbindable")) or any(
+                item.get("callout_id") == callout_id for item in decisions.get("transcriptions") or [])
+            if decided:
+                raise ValueError(f"toplu kapsam kararı yalnız henüz karara bağlanmamış callout'lara "
+                                 f"uygulanır: {callout_id}")
+        events = []
+        for callout_id in ids:
+            row = _effective_row(record, decisions, callout_id)
+            _set_review(record, decisions, callout_id, region_override=row["region_override"],
+                        ignored=True, unbindable=False)
+            events.append(("ignore_callout", f"callout:{callout_id}", None,
+                           {"callout_id": callout_id, "bulk": True},
+                           "Kullanıcı bu callout'u 'callout değil' olarak işaretledi "
+                           "(toplu kapsam kararı)."))
+        return events, [("callout_reviews", callout_id) for callout_id in ids]
+
     callout_id = payload.get("callout_id")
     if not isinstance(callout_id, str) or not callout_id:
         raise ValueError("callout kimliği gerekli")
     current = _effective_row(record, decisions, callout_id)
-
     if action == "edit_region":
         region = callout_models.check_region(payload.get("region"))
         _set_review(record, decisions, callout_id, region_override=region, ignored=current["ignored"])
@@ -2018,6 +2055,19 @@ def _apply_callout_command(record: dict, decisions: dict, action: str, payload: 
     if action == "transcribe":
         if current["ignored"]:
             raise ValueError("yok sayılan bir callout'a metin yazılamaz; önce geri alın")
+        # G9 UX turu — the machine hint's single-click acceptance. The hint is the server's own
+        # reading of this box, so "accept the hint" is checked against it here: a client cannot use
+        # the flag to write text the drawing never showed. The decision stays the user's, and the
+        # event names the hint it accepted (the audit chain keeps saying where the text came from).
+        accept_hint = payload.get("accept_hint", False)
+        if not isinstance(accept_hint, bool):
+            raise ValueError("accept_hint true/false olmalı")
+        hint = str(current.get("machine_text_hint") or "").strip()
+        if accept_hint:
+            if not hint:
+                raise ValueError("bu callout'ta makine ipucu yok; metni kendiniz yazın")
+            if str(payload.get("raw_text") or "").strip() != hint:
+                raise ValueError("ipucu kabulü metnin makine ipucuyla birebir aynı olmasını gerektirir")
         row = callout_models.TranscriptionDecision(callout_id=callout_id, raw_text=payload.get("raw_text"),
                                                    source_region=current["region"], revision=0,
                                                    # GX: dış inceleme metni kendi kaynağıyla yazılır — kullanıcı
@@ -2033,10 +2083,15 @@ def _apply_callout_command(record: dict, decisions: dict, action: str, payload: 
                       if item.get("callout_id") == callout_id), None)
         if _transcription_carried(prior, stored_row):
             return [], [("transcriptions", callout_id)]      # aynı karar: olay yok, yazım da olmayacak
+        evidence = {"callout_id": callout_id, "source_region": row.source_region}
+        note = (f"{subject} callout metnini yazdı." if prior is None
+                else f"{subject} callout metnini düzenledi.")
+        if accept_hint:
+            evidence["accepted_hint"] = True
+            evidence["machine_text_hint"] = hint
+            note = f"{subject} makine ipucunu doğrulayıp callout metnini {'yazdı' if prior is None else 'düzenledi'}."
         return ([("transcribe" if prior is None else "edit_transcription", f"callout:{callout_id}",
-                  row.raw_text, {"callout_id": callout_id, "source_region": row.source_region},
-                  f"{subject} callout metnini yazdı." if prior is None
-                  else f"{subject} callout metnini düzenledi.")],
+                  row.raw_text, evidence, note)],
                 [("transcriptions", callout_id)])
 
     raise ValueError(f"işlem bulunamadı: {action}")

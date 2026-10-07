@@ -158,3 +158,41 @@ def test_the_target_confirm_button_writes_the_proposal_the_panel_shows():
     assert "$('target-confirm').onclick=()=>{const item=activeProposal();" in script, \
         "Onayla, o anda aktif olan öneriyi yazmalı"
     assert "`Onayla · ${" in script, "düğme hangi öneriyi yazacağını açıkça belirtmeli"
+
+
+def test_the_review_panel_carries_the_burden_reduction_controls():
+    """G9 UX turu: 45 aday / 43 kapsam dışı yükünü azaltan üç denetim birer kez servis edilir."""
+    collector = parse()
+    for name in ("callout-next", "callout-ignore-many", "callout-hint-save"):
+        assert collector.by_id.get(name) == "button", (name, collector.by_id.get(name))
+        assert collector.counts[name] == 1, (name, collector.counts[name])
+    html = (ROOT / "guided.html").read_text(encoding="utf-8")
+    assert "İpucu doğru" in html, "makine ipucu tek tıkla kabul edilebilmeli"
+    script = (ROOT / "guided.js").read_text(encoding="utf-8")
+    assert "function undecidedRows(" in script and "$('callout-next').onclick=" in script
+    assert "accept_hint" in script and "$('callout-hint-save').onclick=" in script
+
+
+def test_the_bulk_scope_decision_is_written_only_by_its_own_explicit_button():
+    """Sessiz filtreleme yok: toplu kapsam kararını yazan tek yol kullanıcının kendi düğmesidir.
+
+    Tarayıcı kendi başına hiçbir adayı kapsam dışı ilan etmez; toplu komut yalnız iki adımlı,
+    açıkça silahlanan düğmeden çıkar ve gövdesi kararsız listesini sunucudan okur.
+    """
+    script = (ROOT / "guided.js").read_text(encoding="utf-8")
+    assert "set_ignored_many" in script and "$('callout-ignore-many').onclick=" in script
+    assert "undecidedRows()" in script, "toplu liste kararsızlardan türetilmeli"
+    assert "bulkArmed" in script, "toplu karar iki adımlı ve açıkça silahlanmalı"
+
+
+def test_the_readiness_list_is_an_actionable_checklist():
+    """G9 UX turu: hazırlık bir eylem listesidir — her madde kendi `action`ıyla hedefe götürür."""
+    collector = parse()
+    assert collector.by_id.get("readiness-questions") == "ul"
+    assert collector.counts["readiness-questions"] == 1
+    script = (ROOT / "guided.js").read_text(encoding="utf-8")
+    assert "function readinessGo(" in script
+    for action in ("'transcribe'", "'confirm_target'", "'confirm_view'"):
+        assert action in script, action
+    assert "scrollIntoView" in script
+    assert "dataset.action" not in script, "eylem doğrudan sunucu satırından okunmalı, DOM'dan geri değil"

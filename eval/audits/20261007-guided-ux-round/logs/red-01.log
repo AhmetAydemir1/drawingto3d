@@ -1,0 +1,389 @@
+FFFFFFFFFFFF.FFF..........FFF                                            [100%]
+=================================== FAILURES ===================================
+_ test_a_bulk_scope_decision_closes_every_undecided_callout_in_one_history_step _
+
+store = <drawingto3d.guided.GuidedStore object at 0x10e9f8da0>
+
+    def test_a_bulk_scope_decision_closes_every_undecided_callout_in_one_history_step(store):
+        _three_undecided(store)
+        before = store.load(TOKEN)
+>       state = command(store, "set_ignored_many", {"callout_ids": ["k1", "k2", "k3"]})
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_guided_callout_ux.py:72: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_guided_callout_ux.py:35: in command
+    return store.edit_callout(TOKEN, store.load(TOKEN)["revision"], action, payload)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <drawingto3d.guided.GuidedStore object at 0x10e9f8da0>
+token = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', revision = 0
+action = 'set_ignored_many', payload = {'callout_ids': ['k1', 'k2', 'k3']}
+
+    def edit_callout(self,token,revision,action,payload=None):
+        """One G3 user command on the callout layer (PLAN-21 §6.4).
+    
+        The command only *proposes* a change to a working copy of the decisions and names the rows it
+        is the writer of; the commit goes through the one `_commit` path, so validation, the byte-level
+        no-op check, history, the global revision, the stale build and the log behave exactly as they
+        do for every other decision. A failed validation or a revision conflict leaves the record
+        untouched — and an unknown action is refused before anything is even copied.
+        """
+        if action not in _CALLOUT_COMMANDS:
+>           raise ValueError(f"işlem bulunamadı: {action}")
+E           ValueError: işlem bulunamadı: set_ignored_many
+
+src/drawingto3d/guided.py:2342: ValueError
+______ test_a_bulk_scope_decision_keeps_a_region_the_user_drew_themselves ______
+
+store = <drawingto3d.guided.GuidedStore object at 0x10ea73ec0>
+
+    def test_a_bulk_scope_decision_keeps_a_region_the_user_drew_themselves(store):
+        """The box the user corrected is not silently reset by declaring it not-a-callout."""
+        _three_undecided(store)
+        command(store, "edit_region", {"callout_id": "k2", "region": [0.62, 0.12, 0.72, 0.22]})
+>       command(store, "set_ignored_many", {"callout_ids": ["k1", "k2", "k3"]})
+
+tests/test_guided_callout_ux.py:91: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_guided_callout_ux.py:35: in command
+    return store.edit_callout(TOKEN, store.load(TOKEN)["revision"], action, payload)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <drawingto3d.guided.GuidedStore object at 0x10ea73ec0>
+token = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', revision = 1
+action = 'set_ignored_many', payload = {'callout_ids': ['k1', 'k2', 'k3']}
+
+    def edit_callout(self,token,revision,action,payload=None):
+        """One G3 user command on the callout layer (PLAN-21 §6.4).
+    
+        The command only *proposes* a change to a working copy of the decisions and names the rows it
+        is the writer of; the commit goes through the one `_commit` path, so validation, the byte-level
+        no-op check, history, the global revision, the stale build and the log behave exactly as they
+        do for every other decision. A failed validation or a revision conflict leaves the record
+        untouched — and an unknown action is refused before anything is even copied.
+        """
+        if action not in _CALLOUT_COMMANDS:
+>           raise ValueError(f"işlem bulunamadı: {action}")
+E           ValueError: işlem bulunamadı: set_ignored_many
+
+src/drawingto3d/guided.py:2342: ValueError
+____ test_a_bulk_scope_decision_refuses_a_callout_that_already_carries_text ____
+
+store = <drawingto3d.guided.GuidedStore object at 0x10ea73d40>
+
+    def test_a_bulk_scope_decision_refuses_a_callout_that_already_carries_text(store):
+        _three_undecided(store)
+        command(store, "transcribe", {"callout_id": "k1", "raw_text": HINT})
+        before, revision = bytes_of(store), store.load(TOKEN)["revision"]
+>       with pytest.raises(ValueError, match="karara bağlanmamış"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'karara bağlanmamış'
+E         Actual message: 'işlem bulunamadı: set_ignored_many'
+
+tests/test_guided_callout_ux.py:100: AssertionError
+____ test_a_bulk_scope_decision_refuses_a_callout_the_user_already_decided _____
+
+store = <drawingto3d.guided.GuidedStore object at 0x10ea73740>
+
+    def test_a_bulk_scope_decision_refuses_a_callout_the_user_already_decided(store):
+        _three_undecided(store)
+        command(store, "set_unbindable", {"callout_id": "k2", "unbindable": True})
+        before, revision = bytes_of(store), store.load(TOKEN)["revision"]
+>       with pytest.raises(ValueError, match="karara bağlanmamış"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'karara bağlanmamış'
+E         Actual message: 'işlem bulunamadı: set_ignored_many'
+
+tests/test_guided_callout_ux.py:109: AssertionError
+_ test_a_bulk_scope_decision_validates_its_payload_before_any_write[payload0-liste gerekli] _
+
+store = <drawingto3d.guided.GuidedStore object at 0x10ea84140>
+payload = {'callout_ids': []}, match = 'liste gerekli'
+
+    @pytest.mark.parametrize("payload, match", [
+        ({"callout_ids": []}, "liste gerekli"),
+        ({"callout_ids": "k1"}, "liste gerekli"),
+        ({"callout_ids": ["k1", "k1"]}, "iki kez"),
+        ({"callout_ids": ["k1", 7]}, "metin olmalı"),
+        ({"callout_ids": ["k1", ""]}, "metin olmalı"),
+        ({"callout_ids": ["k1", "ghost"]}, "böyle bir callout yok"),
+    ])
+    def test_a_bulk_scope_decision_validates_its_payload_before_any_write(store, payload, match):
+        _three_undecided(store)
+        before, revision = bytes_of(store), store.load(TOKEN)["revision"]
+>       with pytest.raises(ValueError, match=match):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'liste gerekli'
+E         Actual message: 'işlem bulunamadı: set_ignored_many'
+
+tests/test_guided_callout_ux.py:125: AssertionError
+_ test_a_bulk_scope_decision_validates_its_payload_before_any_write[payload1-liste gerekli] _
+
+store = <drawingto3d.guided.GuidedStore object at 0x10ea86450>
+payload = {'callout_ids': 'k1'}, match = 'liste gerekli'
+
+    @pytest.mark.parametrize("payload, match", [
+        ({"callout_ids": []}, "liste gerekli"),
+        ({"callout_ids": "k1"}, "liste gerekli"),
+        ({"callout_ids": ["k1", "k1"]}, "iki kez"),
+        ({"callout_ids": ["k1", 7]}, "metin olmalı"),
+        ({"callout_ids": ["k1", ""]}, "metin olmalı"),
+        ({"callout_ids": ["k1", "ghost"]}, "böyle bir callout yok"),
+    ])
+    def test_a_bulk_scope_decision_validates_its_payload_before_any_write(store, payload, match):
+        _three_undecided(store)
+        before, revision = bytes_of(store), store.load(TOKEN)["revision"]
+>       with pytest.raises(ValueError, match=match):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'liste gerekli'
+E         Actual message: 'işlem bulunamadı: set_ignored_many'
+
+tests/test_guided_callout_ux.py:125: AssertionError
+_ test_a_bulk_scope_decision_validates_its_payload_before_any_write[payload2-iki kez] _
+
+store = <drawingto3d.guided.GuidedStore object at 0x10ea3f7a0>
+payload = {'callout_ids': ['k1', 'k1']}, match = 'iki kez'
+
+    @pytest.mark.parametrize("payload, match", [
+        ({"callout_ids": []}, "liste gerekli"),
+        ({"callout_ids": "k1"}, "liste gerekli"),
+        ({"callout_ids": ["k1", "k1"]}, "iki kez"),
+        ({"callout_ids": ["k1", 7]}, "metin olmalı"),
+        ({"callout_ids": ["k1", ""]}, "metin olmalı"),
+        ({"callout_ids": ["k1", "ghost"]}, "böyle bir callout yok"),
+    ])
+    def test_a_bulk_scope_decision_validates_its_payload_before_any_write(store, payload, match):
+        _three_undecided(store)
+        before, revision = bytes_of(store), store.load(TOKEN)["revision"]
+>       with pytest.raises(ValueError, match=match):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'iki kez'
+E         Actual message: 'işlem bulunamadı: set_ignored_many'
+
+tests/test_guided_callout_ux.py:125: AssertionError
+_ test_a_bulk_scope_decision_validates_its_payload_before_any_write[payload3-metin olmal\u0131] _
+
+store = <drawingto3d.guided.GuidedStore object at 0x10ea3e0f0>
+payload = {'callout_ids': ['k1', 7]}, match = 'metin olmalı'
+
+    @pytest.mark.parametrize("payload, match", [
+        ({"callout_ids": []}, "liste gerekli"),
+        ({"callout_ids": "k1"}, "liste gerekli"),
+        ({"callout_ids": ["k1", "k1"]}, "iki kez"),
+        ({"callout_ids": ["k1", 7]}, "metin olmalı"),
+        ({"callout_ids": ["k1", ""]}, "metin olmalı"),
+        ({"callout_ids": ["k1", "ghost"]}, "böyle bir callout yok"),
+    ])
+    def test_a_bulk_scope_decision_validates_its_payload_before_any_write(store, payload, match):
+        _three_undecided(store)
+        before, revision = bytes_of(store), store.load(TOKEN)["revision"]
+>       with pytest.raises(ValueError, match=match):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'metin olmalı'
+E         Actual message: 'işlem bulunamadı: set_ignored_many'
+
+tests/test_guided_callout_ux.py:125: AssertionError
+_ test_a_bulk_scope_decision_validates_its_payload_before_any_write[payload4-metin olmal\u0131] _
+
+store = <drawingto3d.guided.GuidedStore object at 0x10ea87ef0>
+payload = {'callout_ids': ['k1', '']}, match = 'metin olmalı'
+
+    @pytest.mark.parametrize("payload, match", [
+        ({"callout_ids": []}, "liste gerekli"),
+        ({"callout_ids": "k1"}, "liste gerekli"),
+        ({"callout_ids": ["k1", "k1"]}, "iki kez"),
+        ({"callout_ids": ["k1", 7]}, "metin olmalı"),
+        ({"callout_ids": ["k1", ""]}, "metin olmalı"),
+        ({"callout_ids": ["k1", "ghost"]}, "böyle bir callout yok"),
+    ])
+    def test_a_bulk_scope_decision_validates_its_payload_before_any_write(store, payload, match):
+        _three_undecided(store)
+        before, revision = bytes_of(store), store.load(TOKEN)["revision"]
+>       with pytest.raises(ValueError, match=match):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'metin olmalı'
+E         Actual message: 'işlem bulunamadı: set_ignored_many'
+
+tests/test_guided_callout_ux.py:125: AssertionError
+_ test_a_bulk_scope_decision_validates_its_payload_before_any_write[payload5-b\xf6yle bir callout yok] _
+
+store = <drawingto3d.guided.GuidedStore object at 0x10ea84050>
+payload = {'callout_ids': ['k1', 'ghost']}, match = 'böyle bir callout yok'
+
+    @pytest.mark.parametrize("payload, match", [
+        ({"callout_ids": []}, "liste gerekli"),
+        ({"callout_ids": "k1"}, "liste gerekli"),
+        ({"callout_ids": ["k1", "k1"]}, "iki kez"),
+        ({"callout_ids": ["k1", 7]}, "metin olmalı"),
+        ({"callout_ids": ["k1", ""]}, "metin olmalı"),
+        ({"callout_ids": ["k1", "ghost"]}, "böyle bir callout yok"),
+    ])
+    def test_a_bulk_scope_decision_validates_its_payload_before_any_write(store, payload, match):
+        _three_undecided(store)
+        before, revision = bytes_of(store), store.load(TOKEN)["revision"]
+>       with pytest.raises(ValueError, match=match):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'böyle bir callout yok'
+E         Actual message: 'işlem bulunamadı: set_ignored_many'
+
+tests/test_guided_callout_ux.py:125: AssertionError
+_______________ test_undo_brings_every_bulk_ignored_callout_back _______________
+
+store = <drawingto3d.guided.GuidedStore object at 0x10ea84650>
+
+    def test_undo_brings_every_bulk_ignored_callout_back(store):
+        _three_undecided(store)
+>       state = command(store, "set_ignored_many", {"callout_ids": ["k1", "k2", "k3"]})
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_guided_callout_ux.py:132: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_guided_callout_ux.py:35: in command
+    return store.edit_callout(TOKEN, store.load(TOKEN)["revision"], action, payload)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <drawingto3d.guided.GuidedStore object at 0x10ea84650>
+token = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', revision = 0
+action = 'set_ignored_many', payload = {'callout_ids': ['k1', 'k2', 'k3']}
+
+    def edit_callout(self,token,revision,action,payload=None):
+        """One G3 user command on the callout layer (PLAN-21 §6.4).
+    
+        The command only *proposes* a change to a working copy of the decisions and names the rows it
+        is the writer of; the commit goes through the one `_commit` path, so validation, the byte-level
+        no-op check, history, the global revision, the stale build and the log behave exactly as they
+        do for every other decision. A failed validation or a revision conflict leaves the record
+        untouched — and an unknown action is refused before anything is even copied.
+        """
+        if action not in _CALLOUT_COMMANDS:
+>           raise ValueError(f"işlem bulunamadı: {action}")
+E           ValueError: işlem bulunamadı: set_ignored_many
+
+src/drawingto3d/guided.py:2342: ValueError
+_ test_accepting_a_machine_hint_writes_the_text_and_names_the_hint_in_the_log __
+
+store = <drawingto3d.guided.GuidedStore object at 0x10ea87aa0>
+
+    def test_accepting_a_machine_hint_writes_the_text_and_names_the_hint_in_the_log(store):
+        record = store.load(TOKEN)
+        helpers.seed_callouts(store, candidates=[helpers._candidate_row(record, "k1", machine_text_hint=HINT)])
+        state = command(store, "transcribe", {"callout_id": "k1", "raw_text": HINT, "accept_hint": True})
+        stored = store.load(TOKEN)["decisions"]["transcriptions"]
+        assert len(stored) == 1 and stored[0]["raw_text"] == HINT and stored[0]["entered_by"] == "user"
+        events = [row for row in log_of(store) if row["action"] == "transcribe"]
+        assert len(events) == 1
+>       assert events[0]["evidence"]["accepted_hint"] is True
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'accepted_hint'
+
+tests/test_guided_callout_ux.py:149: KeyError
+_________ test_a_hint_acceptance_whose_text_is_not_the_hint_is_refused _________
+
+store = <drawingto3d.guided.GuidedStore object at 0x10ea73d70>
+
+    def test_a_hint_acceptance_whose_text_is_not_the_hint_is_refused(store):
+        record = store.load(TOKEN)
+        helpers.seed_callouts(store, candidates=[helpers._candidate_row(record, "k1", machine_text_hint=HINT)])
+        before = bytes_of(store)
+>       with pytest.raises(ValueError, match="birebir aynı"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ValueError
+
+tests/test_guided_callout_ux.py:169: Failed
+________ test_a_hint_acceptance_is_refused_when_the_callout_has_no_hint ________
+
+store = <drawingto3d.guided.GuidedStore object at 0x10ea85ca0>
+
+    def test_a_hint_acceptance_is_refused_when_the_callout_has_no_hint(store):
+        record = store.load(TOKEN)
+        helpers.seed_callouts(store, candidates=[helpers._candidate_row(record, "k1")])
+        before = bytes_of(store)
+>       with pytest.raises(ValueError, match="makine ipucu yok"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ValueError
+
+tests/test_guided_callout_ux.py:178: Failed
+______________ test_a_hint_flag_that_is_not_a_boolean_is_refused _______________
+
+store = <drawingto3d.guided.GuidedStore object at 0x10eafda30>
+
+    def test_a_hint_flag_that_is_not_a_boolean_is_refused(store):
+        record = store.load(TOKEN)
+        helpers.seed_callouts(store, candidates=[helpers._candidate_row(record, "k1", machine_text_hint=HINT)])
+        before = bytes_of(store)
+>       with pytest.raises(ValueError, match="true/false"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE ValueError
+
+tests/test_guided_callout_ux.py:187: Failed
+_________ test_the_review_panel_carries_the_burden_reduction_controls __________
+
+    def test_the_review_panel_carries_the_burden_reduction_controls():
+        """G9 UX turu: 45 aday / 43 kapsam dışı yükünü azaltan üç denetim birer kez servis edilir."""
+        collector = parse()
+        for name in ("callout-next", "callout-ignore-many", "callout-hint-save"):
+>           assert collector.by_id.get(name) == "button", (name, collector.by_id.get(name))
+E           AssertionError: ('callout-next', None)
+E           assert None == 'button'
+E            +  where None = <built-in method get of dict object at 0x10ec01700>('callout-next')
+E            +    where <built-in method get of dict object at 0x10ec01700> = {'file': 'input', 'status': 'div', 'empty': 'div', 'sheet': 'canvas', ...}.get
+E            +      where {'file': 'input', 'status': 'div', 'empty': 'div', 'sheet': 'canvas', ...} = <test_guided_html.Collector object at 0x10eac83e0>.by_id
+
+tests/test_guided_html.py:167: AssertionError
+___ test_the_bulk_scope_decision_is_written_only_by_its_own_explicit_button ____
+
+    def test_the_bulk_scope_decision_is_written_only_by_its_own_explicit_button():
+        """Sessiz filtreleme yok: toplu kapsam kararını yazan tek yol kullanıcının kendi düğmesidir.
+    
+        Tarayıcı kendi başına hiçbir adayı kapsam dışı ilan etmez; toplu komut yalnız iki adımlı,
+        açıkça silahlanan düğmeden çıkar ve gövdesi kararsız listesini sunucudan okur.
+        """
+        script = (ROOT / "guided.js").read_text(encoding="utf-8")
+>       assert "set_ignored_many" in script and "$('callout-ignore-many').onclick=" in script
+E       assert ('set_ignored_many' in "import {showStl} from './preview.js';\nconst $=id=>document.getElementById(id), sheet=$('sheet'), ctx=sheet.getContex...hazırlık tazelenir (okuma, karar değil).\nrender=(base=>function(){base();renderTarget();loadReadiness();})(render);\n")
+
+tests/test_guided_html.py:183: AssertionError
+______________ test_the_readiness_list_is_an_actionable_checklist ______________
+
+    def test_the_readiness_list_is_an_actionable_checklist():
+        """G9 UX turu: hazırlık bir eylem listesidir — her madde kendi `action`ıyla hedefe götürür."""
+        collector = parse()
+        assert collector.by_id.get("readiness-questions") == "ul"
+        assert collector.counts["readiness-questions"] == 1
+        script = (ROOT / "guided.js").read_text(encoding="utf-8")
+>       assert "function readinessGo(" in script
+E       assert 'function readinessGo(' in "import {showStl} from './preview.js';\nconst $=id=>document.getElementById(id), sheet=$('sheet'), ctx=sheet.getContex...hazırlık tazelenir (okuma, karar değil).\nrender=(base=>function(){base();renderTarget();loadReadiness();})(render);\n"
+
+tests/test_guided_html.py:194: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_guided_callout_ux.py::test_a_bulk_scope_decision_closes_every_undecided_callout_in_one_history_step
+FAILED tests/test_guided_callout_ux.py::test_a_bulk_scope_decision_keeps_a_region_the_user_drew_themselves
+FAILED tests/test_guided_callout_ux.py::test_a_bulk_scope_decision_refuses_a_callout_that_already_carries_text
+FAILED tests/test_guided_callout_ux.py::test_a_bulk_scope_decision_refuses_a_callout_the_user_already_decided
+FAILED tests/test_guided_callout_ux.py::test_a_bulk_scope_decision_validates_its_payload_before_any_write[payload0-liste gerekli]
+FAILED tests/test_guided_callout_ux.py::test_a_bulk_scope_decision_validates_its_payload_before_any_write[payload1-liste gerekli]
+FAILED tests/test_guided_callout_ux.py::test_a_bulk_scope_decision_validates_its_payload_before_any_write[payload2-iki kez]
+FAILED tests/test_guided_callout_ux.py::test_a_bulk_scope_decision_validates_its_payload_before_any_write[payload3-metin olmal\u0131]
+FAILED tests/test_guided_callout_ux.py::test_a_bulk_scope_decision_validates_its_payload_before_any_write[payload4-metin olmal\u0131]
+FAILED tests/test_guided_callout_ux.py::test_a_bulk_scope_decision_validates_its_payload_before_any_write[payload5-b\xf6yle bir callout yok]
+FAILED tests/test_guided_callout_ux.py::test_undo_brings_every_bulk_ignored_callout_back
+FAILED tests/test_guided_callout_ux.py::test_accepting_a_machine_hint_writes_the_text_and_names_the_hint_in_the_log
+FAILED tests/test_guided_callout_ux.py::test_a_hint_acceptance_whose_text_is_not_the_hint_is_refused
+FAILED tests/test_guided_callout_ux.py::test_a_hint_acceptance_is_refused_when_the_callout_has_no_hint
+FAILED tests/test_guided_callout_ux.py::test_a_hint_flag_that_is_not_a_boolean_is_refused
+FAILED tests/test_guided_html.py::test_the_review_panel_carries_the_burden_reduction_controls
+FAILED tests/test_guided_html.py::test_the_bulk_scope_decision_is_written_only_by_its_own_explicit_button
+FAILED tests/test_guided_html.py::test_the_readiness_list_is_an_actionable_checklist
+18 failed, 11 passed in 0.84s

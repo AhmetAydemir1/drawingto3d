@@ -1,0 +1,807 @@
+{
+  "case_source": "examples/pdf with steps/3/Exercise 17.PNG",
+  "token": "c7f2c8c463fb467ebbf889ab9ec42177",
+  "candidates": [
+    {
+      "id": "052a22fa5e74b8139b4bc0aeb2001c3b94649c2c50c6ccd976a6b147770a4c82",
+      "hint": "4.00",
+      "region": [
+        0.3709,
+        0.0729,
+        0.4021,
+        0.0894
+      ]
+    },
+    {
+      "id": "536360b8a3d9778dc61c5e4a9e67f50902e740065267ab7fb7d090996a66a453",
+      "hint": "a",
+      "region": [
+        0.1927,
+        0.2161,
+        0.2385,
+        0.2169
+      ]
+    },
+    {
+      "id": "5aae47cea05abd762987576c7769a1ba55da45dab862f315e9cbe2bb11d793f2",
+      "hint": "14.00",
+      "region": [
+        0.1845,
+        0.3184,
+        0.2236,
+        0.3349
+      ]
+    },
+    {
+      "id": "2ed15ef1b572acd83868abb3cca1ff78bc3acd531a78a942f1c9d3ad3b75548c",
+      "hint": "10.00",
+      "region": [
+        0.2758,
+        0.3184,
+        0.3148,
+        0.3349
+      ]
+    },
+    {
+      "id": "5bc54358d2b7ca706baa2221a68cb4488062d56cfc49e7a4f18ceeb827a9865a",
+      "hint": "B",
+      "region": [
+        0.9876,
+        0.6169,
+        0.9948,
+        0.6325
+      ]
+    },
+    {
+      "id": "f293da707b654d7f3497ee3214f1f6ee75a0feffb622228ae967adaf9e433ff0",
+      "hint": "L__]",
+      "region": [
+        0.3218,
+        0.6325,
+        0.3427,
+        0.6333
+      ]
+    },
+    {
+      "id": "df36562f5bc963ee1a4b81e21c9117558a6d8301f71f6756045501d775586b52",
+      "hint": "20.00",
+      "region": [
+        0.44,
+        0.7122,
+        0.4961,
+        0.7329
+      ]
+    },
+    {
+      "id": "2f260bb1b1ae4cb1e555166d85c806ebcd6c48a845d7d0226ae38bd8dd1a9712",
+      "hint": "ae)",
+      "region": [
+        0.0548,
+        0.7553,
+        0.0673,
+        0.7651
+      ]
+    },
+    {
+      "id": "7faf79bbd38d2865037443e5cc02410365f9d91f99e917aefbec12e4bd2f52e9",
+      "hint": "G Chittagong TITLE:",
+      "region": [
+        0.667,
+        0.8502,
+        0.7673,
+        0.9024
+      ]
+    },
+    {
+      "id": "95a32eca96fe7c482f8a2f63c0bd4a1e7e3952bc61bd3bffaec2783f32762cc0",
+      "hint": "Exercise University 17",
+      "region": [
+        0.7509,
+        0.8576,
+        0.8218,
+        0.8945
+      ]
+    },
+    {
+      "id": "34de7beabb27c580853fabcf6c0115d1f3ded936dd05c441283a125a35dd34a9",
+      "hint": "of Engineering A3",
+      "region": [
+        0.8255,
+        0.8576,
+        0.8985,
+        0.8949
+      ]
+    },
+    {
+      "id": "16e33e54ec7bcb7abac7d611a6df0aba89dfe7ad7bbe66f490b13f5ac121c15d",
+      "hint": "Technology A",
+      "region": [
+        0.9145,
+        0.8576,
+        0.9961,
+        0.8824
+      ]
+    },
+    {
+      "id": "15f34e8eb178159b9e90e7588f01ecc657b344a0f63439874b1272cff03909d7",
+      "hint": "SCALE:",
+      "region": [
+        0.6715,
+        0.9118,
+        0.7006,
+        0.9196
+      ]
+    },
+    {
+      "id": "1e387c573324c8720db7f27b44cc270af1182df5c9ab317edda9230b76e997cb",
+      "hint": "1:1",
+      "region": [
+        0.7203,
+        0.9125,
+        0.733,
+        0.9204
+      ]
+    },
+    {
+      "id": "15b8418cdc9353cbc0160cda15b5a9ebab786cdd8c4c0fd125626bb15c0181bf",
+      "hint": "MAT: AISI 304",
+      "region": [
+        0.7645,
+        0.9125,
+        0.827,
+        0.9204
+      ]
+    },
+    {
+      "id": "7f8f79344d7d0ae38cbbeead3015b5d6e4310f96a87d4420189aa628d27ed96b",
+      "hint": "m",
+      "region": [
+        0.9421,
+        0.9361,
+        0.9527,
+        0.9447
+      ]
+    },
+    {
+      "id": "2d8b283cf3db0ef1111e7a125b2eabc64bc7c9339f1d248a78c2aa84dd795193",
+      "hint": "NAME: Fahad Elahi Khan",
+      "region": [
+        0.6718,
+        0.9365,
+        0.7782,
+        0.9451
+      ]
+    },
+    {
+      "id": "f8fa5690d5aebb96406aa69ce31793ec56bed846e4aaa0ef498e880f34e76886",
+      "hint": "SHEET 1 of 1",
+      "region": [
+        0.8476,
+        0.9369,
+        0.9024,
+        0.9451
+      ]
+    },
+    {
+      "id": "0e3404a015a62451dbf205901ab031a52d559ab393f006af61f83646eb2cf74a",
+      "hint": "DEPT: Mechanical Engineering ID: 2103017",
+      "region": [
+        0.6718,
+        0.9584,
+        0.8655,
+        0.9686
+      ]
+    },
+    {
+      "id": "9b43fb2a0bb8f66dcaba5fdcc71df3d650bd6185e631cdfd6dd62695c98d1c0b",
+      "hint": "DATE: 29-Aug-24",
+      "region": [
+        0.8994,
+        0.9588,
+        0.9721,
+        0.9694
+      ]
+    }
+  ],
+  "profiles": [
+    {
+      "id": "outline_37",
+      "points": 27,
+      "bbox": [
+        2495,
+        399,
+        2791,
+        956
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "line",
+        "arc",
+        "line"
+      ]
+    },
+    {
+      "id": "circle_g593",
+      "points": 60,
+      "bbox": [
+        1703,
+        1222,
+        2091,
+        1611
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "outline_29",
+      "points": 27,
+      "bbox": [
+        2375,
+        445,
+        2524,
+        1004
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "line",
+        "line",
+        "arc"
+      ]
+    },
+    {
+      "id": "outline_32",
+      "points": 3,
+      "bbox": [
+        2816,
+        510,
+        3041,
+        614
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "line",
+        "line"
+      ]
+    },
+    {
+      "id": "outline_54",
+      "points": 27,
+      "bbox": [
+        2276,
+        501,
+        2330,
+        881
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "line",
+        "line",
+        "arc"
+      ]
+    },
+    {
+      "id": "outline_36",
+      "points": 5,
+      "bbox": [
+        2886,
+        532,
+        3044,
+        649
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "line",
+        "line",
+        "line",
+        "line"
+      ]
+    },
+    {
+      "id": "outline_14",
+      "points": 27,
+      "bbox": [
+        2614,
+        559,
+        2709,
+        751
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "arc",
+        "line",
+        "line"
+      ]
+    },
+    {
+      "id": "outline_31",
+      "points": 3,
+      "bbox": [
+        2899,
+        521,
+        3045,
+        642
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "line",
+        "line"
+      ]
+    },
+    {
+      "id": "outline_56",
+      "points": 49,
+      "bbox": [
+        2210,
+        2107,
+        2280,
+        2192
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "arc",
+        "arc"
+      ]
+    },
+    {
+      "id": "outline_59",
+      "points": 26,
+      "bbox": [
+        877,
+        1238,
+        884,
+        1613
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "arc",
+        "line"
+      ]
+    },
+    {
+      "id": "circle_g595",
+      "points": 60,
+      "bbox": [
+        3052,
+        2283,
+        3090,
+        2321
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "circle_g594",
+      "points": 60,
+      "bbox": [
+        792,
+        1947,
+        829,
+        1984
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "outline_2",
+      "points": 53,
+      "bbox": [
+        2081,
+        207,
+        2811,
+        1023
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "line",
+        "line",
+        "line",
+        "line",
+        "arc",
+        "arc"
+      ]
+    },
+    {
+      "id": "outline_24",
+      "points": 5,
+      "bbox": [
+        2563,
+        525,
+        3042,
+        1018
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "line",
+        "line",
+        "line",
+        "line"
+      ]
+    },
+    {
+      "id": "outline_18",
+      "points": 5,
+      "bbox": [
+        2550,
+        499,
+        3043,
+        950
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "line",
+        "line",
+        "line",
+        "line"
+      ]
+    },
+    {
+      "id": "outline_11",
+      "points": 30,
+      "bbox": [
+        2519,
+        521,
+        2989,
+        951
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "line",
+        "line",
+        "line",
+        "line",
+        "arc",
+        "line"
+      ]
+    },
+    {
+      "id": "outline_40",
+      "points": 80,
+      "bbox": [
+        2182,
+        541,
+        2564,
+        996
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "line",
+        "line",
+        "line",
+        "arc",
+        "line",
+        "arc",
+        "line",
+        "line",
+        "line",
+        "arc"
+      ]
+    },
+    {
+      "id": "outline_13",
+      "points": 200,
+      "bbox": [
+        2754,
+        304,
+        3125,
+        690
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "arc",
+        "line",
+        "arc",
+        "line",
+        "arc",
+        "line",
+        "line",
+        "arc",
+        "line",
+        "arc",
+        "arc",
+        "arc",
+        "line",
+        "arc",
+        "line"
+      ]
+    },
+    {
+      "id": "outline_25",
+      "points": 135,
+      "bbox": [
+        2713,
+        508,
+        3043,
+        851
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "line",
+        "arc",
+        "arc",
+        "line",
+        "arc",
+        "arc",
+        "line",
+        "line",
+        "line",
+        "line",
+        "line",
+        "line",
+        "line",
+        "line",
+        "arc",
+        "line",
+        "line",
+        "line",
+        "line"
+      ]
+    },
+    {
+      "id": "outline_9",
+      "points": 73,
+      "bbox": [
+        2633,
+        408,
+        2846,
+        797
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "arc",
+        "arc",
+        "arc"
+      ]
+    },
+    {
+      "id": "outline_61",
+      "points": 4,
+      "bbox": [
+        2588,
+        573,
+        2685,
+        941
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "line",
+        "line",
+        "line"
+      ]
+    },
+    {
+      "id": "outline_41",
+      "points": 96,
+      "bbox": [
+        1739,
+        1240,
+        1973,
+        1353
+      ],
+      "closed": null,
+      "edges": [
+        "arc",
+        "arc",
+        "arc",
+        "arc"
+      ]
+    },
+    {
+      "id": "outline_52",
+      "points": 76,
+      "bbox": [
+        2092,
+        2155,
+        2289,
+        2284
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "arc",
+        "arc",
+        "line",
+        "arc",
+        "line",
+        "line"
+      ]
+    },
+    {
+      "id": "outline_49",
+      "points": 4,
+      "bbox": [
+        2377,
+        450,
+        2430,
+        929
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "line",
+        "line",
+        "line"
+      ]
+    },
+    {
+      "id": "outline_34",
+      "points": 73,
+      "bbox": [
+        2795,
+        333,
+        2894,
+        554
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "arc",
+        "arc",
+        "arc"
+      ]
+    },
+    {
+      "id": "outline_60",
+      "points": 7,
+      "bbox": [
+        2714,
+        615,
+        2814,
+        811
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "line",
+        "line",
+        "line",
+        "line",
+        "line",
+        "line"
+      ]
+    }
+  ],
+  "circles": [
+    {
+      "id": "g593",
+      "radius": 194.5,
+      "center": [
+        1896.8,
+        1416.8
+      ]
+    },
+    {
+      "id": "g594",
+      "radius": 18.35,
+      "center": [
+        810.8,
+        1965.8
+      ]
+    },
+    {
+      "id": "g595",
+      "radius": 18.8,
+      "center": [
+        3071.2,
+        2301.8
+      ]
+    }
+  ],
+  "measurements": [
+    {
+      "id": "t0",
+      "text": "4.00",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t2",
+      "text": "14.00",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t3",
+      "text": "10.00",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t6",
+      "text": "20.00",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t13",
+      "text": "1:1",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    }
+  ],
+  "sketch_keys": [
+    "bindings",
+    "conflicts",
+    "consistent",
+    "fit",
+    "join_gap_max_px",
+    "px_per_mm",
+    "rows",
+    "source",
+    "unbound_circles",
+    "unbound_edges"
+  ],
+  "proposals": [],
+  "detection": {
+    "detector_version": "callout-detector/1",
+    "diagnostics": []
+  },
+  "summary": "26 kontur · 3 daire · 5 ölçü adayı · sınıf: flat-part · kayıt 0"
+}

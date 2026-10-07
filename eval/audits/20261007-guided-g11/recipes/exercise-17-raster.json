@@ -1,0 +1,19 @@
+{
+  "case_id": "exercise-17-raster",
+  "source_path": "examples/pdf with steps/3/Exercise 17.PNG",
+  "session_token": "c7f2c8c463fb467ebbf889ab9ec42177",
+  "contour": {"profile_id": "outline_2"},
+  "calibration": {"measurement_text": "14.00", "circles": ["g593", "g594"]},
+  "thickness_mm": 4,
+  "acknowledge_trace": true,
+  "confirm_view": true,
+  "decisions": [],
+  "notes": [
+    "Raster pafta (90° dirsek/boru parçası): okuma öneri üretmedi (0 öneri); OCR Ø değerlerini düşürdü (menüde yalnız 4.00/14.00/10.00/20.00/1:1 kaldı, 3.00 çizim üzerinde okunuyor).",
+    "Parça bir boru dirseği (izometrik: Ø22 gövde / Ø20 iç, flanş) — tek kontur + kalınlık akışının ifade edemeyeceği bir form; en büyük tutarlı kontur outline_2 modellendi.",
+    "Kalibrasyon belirsiz: öneri yok; 14.00 + g593–g594 çapası denendi (kayıt 'denenen' olarak taşır).",
+    "Kalınlık 4.00 (uç cidarı; çizimde iki kez) — belirsizlik kayıtta.",
+    "Ingest ~23 dk duvar süresi (istemci koptu, token ile kurtarıldı).",
+    "20 adayın tamamı kapsam dışı: uydurma metin yok."
+  ]
+}

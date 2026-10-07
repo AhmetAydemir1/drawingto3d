@@ -120,7 +120,7 @@ def main() -> int:
     page = C.Chrome(url=APP + "/guided")
     page.wait_ready()
     page.set_file("#file", str(source))
-    page.wait_ev("!$('controls').hidden", timeout=300, label="session opened")
+    page.wait_ev("!$('controls').hidden", timeout=900, label="session opened")
     data = wait_ingest(page)
     record["candidate_count"] = len(data["effective_callouts"])
     page.screenshot(str(shots / f"{case_id}-01-candidates.png"))

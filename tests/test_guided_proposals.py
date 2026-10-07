@@ -225,6 +225,8 @@ def test_geometric_proposal_notes_do_not_require_printed_span_evidence(field):
 
 def test_the_accepted_decisions_build_the_measured_solid(store):
     store.accept("b" * 32, 0)
+    # G12.2 (PLAN-25 §32): kabul edilen öneriler girdiyi tamamlar; üretim biçimini kullanıcı söyler.
+    store.set_strategy("b" * 32, store.load("b" * 32)["revision"], {"kind": "extrude_profile"})
     public = store.build("b" * 32, store.load("b" * 32)["revision"])
     assert public["build_status"] == "complete", public.get("error")
     folder = Path(store.load("b" * 32)["build"]["folder"])

@@ -93,6 +93,12 @@ class Handler(BaseHTTPRequestHandler):
                     elif path == "/api/guided/propose":
                         # G5 (PLAN §10): a read — ranked target proposals for one callout, written nowhere.
                         result = GUIDED.propose(data.get("token"), data.get("callout_id"))
+                    elif path == "/api/guided/strategy":
+                        # G12.2 (PLAN-25 §36): the explicit build strategy — the server pins the key
+                        # and the geometry version; the client names the kind and nothing else.
+                        result = GUIDED.set_strategy(data.get("token"), data.get("revision"),
+                                                     {key: value for key, value in data.items()
+                                                      if key not in ("token", "revision")})
                     elif path == "/api/guided/readiness":
                         # G8 (PLAN §14): what the build waits on, in the shared categories.
                         result = GUIDED.readiness(data.get("token"))

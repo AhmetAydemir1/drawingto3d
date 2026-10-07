@@ -241,6 +241,14 @@ async function command(action,payload,after){busy(true);const known=new Set((sta
   if(/oturum değişti/.test(e.message)){await refreshState();status(`${e.message} — yazdığınız metin duruyor; güncel durum alındı, kararı tekrar kaydedebilirsiniz.`,true);}}
  finally{busy(false);}
  if(advance)advanceAfterDecision(advance.id,advance.order);}
+// G12.2 (PLAN-25 §36/§42): üretim biçimi açık bir kullanıcı kararıdır. Anahtarı ve geometri sürümünü
+// sunucu sabitler; istemci yalnız türü söyler, bu yüzden burada `save()` değil komut yolu kullanılır.
+async function chooseStrategy(kind){busy(true);
+ try{state=await api('/api/guided/strategy',{token:state.token,revision:state.revision,kind});
+  status(kind==='unsupported'?'Parça "bu sürümde desteklenmiyor" olarak işaretlendi; üretim başlamaz.'
+                            :'Oluşturma biçimi kaydedildi.');}
+ catch(e){status(e.message,true);if(/oturum değişti/.test(e.message))await refreshState();}
+ finally{busy(false);}}
 function distSegment(p,a,b){const x=b[0]-a[0],y=b[1]-a[1],t=Math.max(0,Math.min(1,((p[0]-a[0])*x+(p[1]-a[1])*y)/(x*x+y*y||1)));return Math.hypot(p[0]-a[0]-t*x,p[1]-a[1]-t*y);}
 function holeAt(p,displayed){const far=c=>Math.hypot(p[0]-c.center[0],p[1]-c.center[1]);
  const rim=state.options.circles.map(c=>[Math.abs(far(c)-c.radius),c]).sort((a,b)=>a[0]-b[0])[0];
@@ -562,7 +570,11 @@ const READINESS_TASK={missing_transcription:'Ölçü/not kontrolü',parse_error:
  // G12.1b (PLAN-25 §18): üç kapsam kategorisi kullanıcının yapacağı işe çevrilir.
  unsupported_build_relevant:'Desteklenmeyen gerçek bilgiyi gözden geçir',
  legacy_unclassified:'Eski kapsam kararını yeniden ver',
- stale_duplicate_reference:'Dayanağı yeniden bağla'};
+ stale_duplicate_reference:'Dayanağı yeniden bağla',
+ // G12.2 (PLAN-25 §42): üretim biçimi maddesinin kontrol listesi karşılığı.
+ missing_build_strategy:'Parçanın ana oluşturma biçimini seç',
+ stale_build_strategy:'Oluşturma biçimini yeniden onayla',
+ unsupported_build_strategy:'Oluşturma biçimini gözden geçir'};
 // PLAN-25 §19: kapsam özeti yalnız backend counts'undan çizilir; teknik kova adları görünmez.
 const COVERAGE_WORDING={not_model_input:'modele ait değil',build_applied:'modele uygulandı',
  redundant:'zaten temsil ediliyor',build_relevant_unsupported:'desteklenmiyor'};
@@ -580,6 +592,8 @@ function readinessGo(q){const row=q&&q.callout_id?calloutRow(q.callout_id):null;
   if(first){selectedCallout=first.id;render();}return go($('callout-text'));}
  if(action==='confirm_target'||action==='review_callout'||action==='review_conflict')return go($('target-panel'));
  if(action==='confirm_view')return go($('view-confirm'));
+ // G12.2 §42: strateji maddesi paneli öne alır — kullanıcı seçimi orada yapar.
+ if(action==='choose_build_strategy')return go($('strategy-choices'));
  const byReason={profile_not_chosen:$('profile'),calibration_missing:$('pick-calibration'),
   thickness_missing:$('thickness'),trace_not_acknowledged:$('ack'),binding_axis_missing:$('bind-axis'),
   binding_unsupported:$('bindings'),binding_unresolved:$('bindings'),view_not_confirmed:$('view-confirm'),
@@ -676,4 +690,29 @@ $('redundant-save').onclick=()=>{const row=calloutRow(selectedCallout);if(!row)r
  if(!reference)return status('Dayanak seçin: hangi karar bu bilgiyi zaten temsil ediyor?',true);
  command('set_disposition',{callout_id:row.id,disposition:'redundant',duplicate_of:reference},closeDispositionBoxes);};
 // render() sarmalayıcısı: her yeniden çizimde hedef paneli ve hazırlık tazelenir (okuma, karar değil).
-render=(base=>function(){base();renderTarget();loadReadiness();})(render);
+function renderStrategy(){const box=$('strategy-choices');if(!box)return;
+ // Sıra PLAN-25 §42'nin kendi listesidir; öneri gelmeyen tür de görünür kalır (kullanıcı yine seçebilir).
+ const data=(state&&state.build_strategy)||{},labels=data.labels||{},decision=data.decision||null;
+ const byKind=new Map((data.proposals||[]).map(row=>[row.kind,row]));
+ const kinds=['extrude_profile','revolve_profile','multi_view_composite','unsupported'];
+ box.replaceChildren(...kinds.map(kind=>{const row=byKind.get(kind)||{},pending=row.status==='capability_pending';
+  const label=document.createElement('label');label.className='strategy-choice';
+  const input=document.createElement('input');input.type='radio';input.name='strategy';input.value=kind;
+  input.checked=!!(decision&&decision.kind===kind);input.disabled=!!pending;
+  const span=document.createElement('span');span.textContent=row.label||labels[kind]||kind;
+  if(pending){const note=document.createElement('small');note.className='muted';note.textContent=' (bu sürümde yok)';span.append(note);}
+  else if(row.confidence==='high'){const note=document.createElement('small');note.className='muted';note.textContent=' (önerilir)';span.append(note);}
+  label.append(input,span);return label;}));
+ const stateText={missing:'Henüz seçilmedi — üretim bu kararı bekler.',
+                  stale:'Karar güncel değil (profil, kontur, görüş ya da okuma değişti); yeniden onaylayın.',
+                  current:`Seçili: ${labels[(decision||{}).kind]||(decision||{}).kind||''}`}[data.state]||'';
+ text('strategy-state',stateText);
+ const rows=[];for(const row of (data.proposals||[])){if(row.reasons&&row.reasons.length)rows.push(row.reasons.join(' '));
+  for(const item of (row.evidence||[]))rows.push(`${item.kind}: ${item.detail}`);}
+ text('strategy-evidence',rows.length?[...new Set(rows)].join('\n'):'Kanıt satırı yok.');
+ $('strategy-save').disabled=!(state&&state.decisions);}
+$('strategy-save').onclick=()=>{const picked=document.querySelector('input[name="strategy"]:checked');
+ if(!picked)return status('Önce bir oluşturma biçimi seçin.',true);
+ if(picked.disabled)return status('Bu seçenek bu sürümde yok.',true);
+ chooseStrategy(picked.value);};
+render=(base=>function(){base();renderTarget();renderStrategy();loadReadiness();})(render);

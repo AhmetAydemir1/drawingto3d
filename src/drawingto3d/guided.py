@@ -28,6 +28,8 @@ import numpy as np
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
 
 from drawingto3d import advise
+from drawingto3d import build_strategy
+from drawingto3d.build_strategy import BuildStrategyDecision
 from drawingto3d import callout_bind
 from drawingto3d import callout_compile
 from drawingto3d import callout_models
@@ -153,6 +155,10 @@ class Decisions(BaseModel):
     # (region correction / "not a callout") of any callout. Both undo-scoped, like every decision.
     manual_callouts: list[callout_models.ManualCalloutDecision] = Field(default_factory=list, max_length=200)
     callout_reviews: list[callout_models.CalloutReviewDecision] = Field(default_factory=list, max_length=200)
+    # G12.2 (PLAN-25 §31): the part's own build strategy — an explicit user decision, so a selected
+    # profile never implies an extrude. Backward-compatible: an older record simply has none, and the
+    # build asks for it instead of assuming one.
+    build_strategy: BuildStrategyDecision | None = None
 
     @model_validator(mode="after")
     def one_callout_entry_each(self):
@@ -1249,6 +1255,49 @@ def make_plan(record: dict) -> GeneralPlan:
             if e["kind"]=="line": entities.append({"type":"line","start":xy(key+"_start",e["start"],axes_for(f"vertex:v{i}")),"end":xy(key+"_end",e["end"],axes_for(f"vertex:v{(i+1)%len(profile['edges'])}"))})
             else: entities.append({"type":"arc","center":xy(key+"_center",e["center"]),"radius":value(key+"_radius",e["radius"]/scale),"start_degrees":e["a"],"end_degrees":e["b"]})
     sketches={"outer":{"entities":entities}}
+    # PLAN-25 §38: ortak bağlam buraya kadar hazırdır — nasıl üretileceğine KARAR veren şey kullanıcının
+    # oluşturma biçimidir. Burada eskiden olduğu gibi bir extrude'a DÜŞÜLMEZ; strateji yoksa plan yoktur.
+    ctx=SimpleNamespace(record=record,options=options,decisions=d,diagnostics=diagnostics,profile=profile,
+                        scale=scale,points=points,origin=origin,solution=solution,fixed=fixed,params=params,
+                        sketches=sketches,value=value,xy=xy,axes_for=axes_for)
+    return dispatch_plan(ctx)
+
+
+def dispatch_plan(ctx):
+    """PLAN-25 §38: explicit strategy dispatch — no default extrude, ever.
+
+    Missing and stale strategies are refused with the same sentences `build_readiness` asks (§41), and
+    a geometry-class blacklist is deliberately *not* used: a circle profile builds like any other once
+    the user confirms `extrude_profile` (§40). What is refused is the *assumption*, not the shape.
+    """
+    problems=build_strategy.strategy_questions(ctx.record)
+    if problems: raise ValueError(" ".join(problems))
+    kind=ctx.decisions.build_strategy.kind
+    if kind=="extrude_profile": return compile_extrude_plan(ctx)
+    if kind=="revolve_profile": return compile_revolve_plan(ctx)
+    if kind=="multi_view_composite": return compile_multiview_plan(ctx)
+    raise ValueError(" ".join(build_strategy.strategy_questions(ctx.record))
+                     or f"oluşturma biçimi bu sürümde uygulanamıyor: {kind}")
+
+
+def compile_revolve_plan(ctx):
+    """PLAN-25 §38: revolve's own contract point — controlled unsupported until G12.6 builds it."""
+    raise ValueError("döndürme (revolve) oluşturma biçimi bu sürümde uygulanamıyor: "
+                     "kesit/eksen geometrisi G12.6'da kurulur.")
+
+
+def compile_multiview_plan(ctx):
+    """PLAN-25 §38: multi-view composite's contract point — controlled unsupported until G12.7."""
+    raise ValueError("çok görünüşlü birleştirme oluşturma biçimi bu sürümde uygulanamıyor: "
+                     "görünüş grafiği ve özellik bağlama G12.7'de kurulur.")
+
+
+def compile_extrude_plan(ctx):
+    """The one strategy this version builds: a profile at a constant thickness (PLAN-25 §35)."""
+    options=ctx.options; d=ctx.decisions; profile=ctx.profile; solution=ctx.solution
+    params=ctx.params; value=ctx.value; xy=ctx.xy; axes_for=ctx.axes_for; fixed=ctx.fixed
+    points=ctx.points; origin=ctx.origin; scale=ctx.scale; diagnostics=ctx.diagnostics; record=ctx.record
+    sketches=ctx.sketches
     operations=[{"op":"extrude","id":"base_extrusion","output":"base","sketch":"outer","distance":"thickness"}]
     body="base"
     for i,h in enumerate(d.holes):
@@ -1792,6 +1841,37 @@ def _check_target_geometry(record: dict, row: dict, payload: dict) -> None:
               for identity, target in zip(identities, targets)]
     if same_physical_point(points[0], points[1]):
         raise ValueError(f"vertex_pair aynı fiziksel noktayı iki kez seçemez: {targets}")
+
+
+def _strategy_fingerprint(value) -> str | None:
+    """One comparable form of a strategy row: `None`, or the decision's own canonical JSON.
+
+    The public state hands the client the server's row, so a client that echoes it back carries it
+    unchanged — that is the only shape `/save` may post (PLAN-25 §36).
+    """
+    if value in (None, {}):
+        return None
+    if not isinstance(value, dict):
+        raise ValueError("oluşturma biçimi bir nesne ya da null olmalı")
+    try:
+        return build_strategy.BuildStrategyDecision.model_validate(value).model_dump_json()
+    except ValidationError as error:
+        raise ValueError("oluşturma biçimi bu şemaya uymuyor: " + str(error)) from error
+
+
+def _refuse_forged_strategy(record: dict, decisions: dict) -> None:
+    """PLAN-25 §36: `/save` may carry the stored strategy; it may not author one.
+
+    `strategy_key` and `geometry_version` are pinned by the server (that is what makes staleness
+    decidable), so the only writer of the row is the `set_build_strategy` command. A payload that
+    invents or edits a strategy is refused by name rather than silently ignored — the same contract
+    `/save` already has for rows the server derives.
+    """
+    stored = _strategy_fingerprint((record.get("decisions") or {}).get("build_strategy"))
+    posted = _strategy_fingerprint(decisions.get("build_strategy"))
+    if stored != posted:
+        raise ValueError("oluşturma biçimi yalnız `set_build_strategy` komutuyla yazılır; "
+                         "istemci strategy_key/geometry_version uyduramaz")
 
 
 def _normalized_decisions(record: dict) -> dict:
@@ -2516,6 +2596,8 @@ class GuidedStore:
                 for field,value in _changed_fields(before,r["decisions"]):
                     _log(r,"user","undo",field,value,None,"Geri alma ile eski değere döndü.")
             else:
+                if decisions is not None and not (produced or ()):
+                    _refuse_forged_strategy(r,decisions)
                 merged=_merge_callout_defaults(r,decisions)
                 d,written=_with_end_evidence(r,Decisions.model_validate(merged))
                 d=_prepare_callouts(r,d)
@@ -2567,6 +2649,34 @@ class GuidedStore:
             decisions=json.loads(json.dumps(r["decisions"]))
             events,produced=_apply_callout_command(r,decisions,action,payload if isinstance(payload,dict) else {})
             return self._commit(token,revision,decisions=decisions,events=events,produced=produced)
+
+    def set_strategy(self,token,revision,payload=None):
+        """G12.2 (PLAN-25 §36): the explicit build strategy — one command, one revision, undoable.
+
+        The strategy, its key and the geometry version it was confirmed against are computed here from
+        the record itself; whatever the client sends for `strategy_key`, `geometry_version` or
+        `evidence` is never read. `clear` removes the decision (back to "no strategy yet"), which is a
+        user action like any other and therefore its own history step.
+        """
+        payload=dict(payload or {})
+        clear=bool(payload.pop("clear",False))
+        kind=payload.get("kind")
+        with self.lock:
+            r=self.load(token)
+            if type(revision) is not int or revision != r["revision"]: raise ValueError("oturum değişti; yeniden açın")
+            decisions=json.loads(json.dumps(r["decisions"]))
+            if clear:
+                if decisions.get("build_strategy") is None:
+                    return self.public(r)
+                decisions["build_strategy"]=None
+                events=[("veto","build_strategy",None,None,"Kullanıcı oluşturma biçimi kararını kaldırdı.")]
+            else:
+                decisions["build_strategy"]=build_strategy.decision_for(r,decisions,kind,payload=payload)
+                row=decisions["build_strategy"]
+                events=[("edit","build_strategy",row,
+                         {"strategy_key":row["strategy_key"],"evidence":row["evidence"]},
+                         f"Kullanıcı parçanın ana oluşturma biçimini seçti: {build_strategy.STRATEGY_LABEL.get(kind,kind)}.")]
+            return self._commit(token,revision,decisions=decisions,events=events,produced="build_strategy")
 
     def propose(self, token, callout_id):
         """G5 on demand: ranked, evidence-based target proposals for one callout (a read).
@@ -2810,6 +2920,13 @@ class GuidedStore:
                 # parse/target flags, so "unsupported" can never be shown as resolved in the UI while
                 # the backend blocks the build on it.
                 "coverage":callout_readiness.callout_coverage(r),
+                # G12.2 (PLAN-25 §42): the panel reads the decision, its freshness and the
+                # evidence-based proposals from here — all three computed from the record itself.
+                "build_strategy":{"state":build_strategy.strategy_state(r),
+                                  "decision":build_strategy.strategy_of(r),
+                                  "labels":build_strategy.STRATEGY_LABEL,
+                                  "proposals":[row.model_dump(mode="json")
+                                               for row in build_strategy.propose_strategies(r)]},
                 # PLAN-21 §6.2: the one effective list — base detections plus the user's own regions,
                 # with the reviewed region/ignore state applied. Derived, never a decision itself.
                 "effective_callouts":callout_models.effective_callouts(r),

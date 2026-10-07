@@ -6,7 +6,7 @@ import math
 from pathlib import Path
 
 import pytest
-from drawingto3d import guided
+from drawingto3d import build_strategy, guided
 from drawingto3d.guided import (Decisions, GuidedStore, drawing_options, make_plan, user_dimensions,
                                  _atomic)
 from drawingto3d.observe import Observations, observe
@@ -104,6 +104,9 @@ def test_flange_sheet_builds_the_sheets_printed_flange(tmp_path):
     for row in store.public(store.load(opened["token"]))["callouts"]:
         store.edit_callout(opened["token"], store.load(opened["token"])["revision"], "set_ignored",
                            {"callout_id": row["id"], "ignored": True})
+    # G12.2 (PLAN-25 §32): üretim biçimi açık bir kullanıcı kararıdır — bu pafta bir profil uzatmasıdır
+    # ve kullanıcı bunu söylemeden hiçbir şey üretilmez.
+    store.set_strategy(opened["token"], store.load(opened["token"])["revision"], {"kind": "extrude_profile"})
     state = store.build(opened["token"], store.load(opened["token"])["revision"])
     build = state.get("build") or store.load(opened["token"])["build"]
     assert build["status"] == "complete", build.get("error")
@@ -141,10 +144,14 @@ def record(tmp_path):
     # The sheet border is a frame loop and is skipped, so the part is the only wire offered: name it by
     # that fact instead of by an index the frame now occupies (PLAN 8.6's border moved it to outline_1).
     wire=next(p_['id'] for p_ in options['profiles'] if p_['kind']=='wire')
-    return {'version':1,'geometry_version':guided.GEOMETRY_VERSION,'token':'a'*32,'revision':0,'source':str(source),'source_sha256':obs.source.sha256,
+    record={'version':1,'geometry_version':guided.GEOMETRY_VERSION,'token':'a'*32,'revision':0,'source':str(source),'source_sha256':obs.source.sha256,
             'options':options,'decisions':{'calibration':{'first':[20,20],'second':[120,20],'value':50,'unit':'mm'},
             'profile_id':wire,'thickness':10,'holes':[{'circle_id':'c0','kind':'through','diameter':6},
             {'circle_id':'c1','kind':'pocket','diameter':10,'depth':3}],'trace_acknowledged':True},'history':[],'build':None}
+    # G12.2 (PLAN-25 §31/§36): the fixture's user confirms the strategy the way any user does. The record
+    # is written straight to disk, so the key comes from the server's own rule — nothing here invents one.
+    record['decisions']['build_strategy']=build_strategy.decision_for(record,record['decisions'],'extrude_profile')
+    return record
 
 
 @pytest.fixture

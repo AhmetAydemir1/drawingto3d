@@ -11,7 +11,7 @@ from pathlib import Path
 
 import pytest
 
-from drawingto3d import callout_models, contour_audit, guided
+from drawingto3d import build_strategy, callout_models, contour_audit, guided
 from drawingto3d.callout_models import CALLOUT_PARSER_VERSION
 from drawingto3d.guided import GuidedStore, _atomic, drawing_options
 from drawingto3d.observe import Observations
@@ -42,14 +42,20 @@ def _base_record(tmp_path):
                                 primitives=primitives)
     options = drawing_options(observations)
     wire = next(row["id"] for row in options["profiles"] if row["kind"] == "wire")
-    return {"version": 1, "geometry_version": guided.GEOMETRY_VERSION, "token": TOKEN, "revision": 0,
-            "source": str(source), "source_sha256": observations.source.sha256, "options": options,
-            "decisions": {"calibration": {"first": [20, 20], "second": [120, 20], "value": 50, "unit": "mm"},
-                          "profile_id": wire, "thickness": 10,
-                          "holes": [{"circle_id": "c0", "kind": "through", "diameter": 6},
-                                    {"circle_id": "c1", "kind": "pocket", "diameter": 10, "depth": 3}],
-                          "trace_acknowledged": True},
-            "history": [], "build": None}
+    record = {"version": 1, "geometry_version": guided.GEOMETRY_VERSION, "token": TOKEN, "revision": 0,
+              "source": str(source), "source_sha256": observations.source.sha256, "options": options,
+              "decisions": {"calibration": {"first": [20, 20], "second": [120, 20], "value": 50, "unit": "mm"},
+                            "profile_id": wire, "thickness": 10,
+                            "holes": [{"circle_id": "c0", "kind": "through", "diameter": 6},
+                                      {"circle_id": "c1", "kind": "pocket", "diameter": 10, "depth": 3}],
+                            "trace_acknowledged": True},
+              "history": [], "build": None}
+    # G12.2 (PLAN-25 §31/§36): üretim biçimi açık bir kullanıcı kararıdır — fixture'ın kullanıcısı onu
+    # sunucunun kuralıyla onaylar, böylece bu dosyanın (ve onu helper olarak içe aktaran dosyaların)
+    # payload'ları kararı aynen taşır.
+    record["decisions"]["build_strategy"] = build_strategy.decision_for(
+        record, record["decisions"], "extrude_profile")
+    return record
 
 
 @pytest.fixture

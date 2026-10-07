@@ -56,6 +56,11 @@ def _record(tmp_path, *, transpose=False, rotation=0, view=None, name="session",
     record = {"version": 1, "geometry_version": guided.GEOMETRY_VERSION, "token": "a" * 32, "revision": 0,
               "source": "synthetic.pdf", "source_sha256": observations.source.sha256, "options": options,
               "decisions": decisions, "history": [], "build": None}
+    # G12.2 (PLAN-25 §31/§36): üretim biçimi kullanıcının kararıdır; fixture onu sunucunun kuralıyla onaylar.
+    from drawingto3d import build_strategy
+
+    record["decisions"]["build_strategy"] = build_strategy.decision_for(
+        record, record["decisions"], "extrude_profile")
     _atomic(folder / "session.json", record)
     return record
 

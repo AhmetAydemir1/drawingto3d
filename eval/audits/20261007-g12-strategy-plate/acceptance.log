@@ -1,0 +1,15 @@
+PASS 0: kontur + ölçek (100,00) + kalınlık (15) + izleme onayı kaydedildi  {"revision": 1, "profile_id": "outline_1", "span_id": "t0"}
+PASS 1: reçetedeki her ipucu bu paftanın callout'larından biriyle eşleşti  {"hints": 33, "missing": [], "rows": {"6": ["b1aea745ec1f819dfc763387c51e067d1368623fa3041d511f6ecb365b7a1139", "da1baf44138661f81299d1215f6b7bb6602d4ac3aafa7f1600ff92dc4cb12b00"], "4": ["0670ce69c0ee72e81790d00424114230
+PASS 1b: reçete dışındaki satırlar da tek tek adıyla karara bağlandı (örtük kapatma yok)  {"remaining_rows": 36, "groups": ["1", "2", "2026", "3", "4", "5", "6", "A", "A4", "ALLOY STEEL", "B", "C", "D", "DRAFTCRAFT", "MATERIAL:", "NAME:", "PRO", "Plate With A Pocket", "SCALE1:1", "SECTION B-B", "SHEET 1 OF 1"
+FAIL 2: kapsam kapandı — kalan tek madde ÜRETİM BİÇİMİ, hiçbir callout sorusu yok  {"categories": {"unsupported_build_relevant": 6, "missing_build_strategy": 1}, "questions": 7}
+PASS 3: strateji yokken üretim BAŞLAMAZ (örtük extrude yok)  {"ready": false}
+Traceback (most recent call last):
+  File "/Users/aydemir/Desktop/drawingto3d/eval/audits/20261007-g12-strategy-plate/g12_strategy_plate_acceptance.py", line 262, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/Users/aydemir/Desktop/drawingto3d/eval/audits/20261007-g12-strategy-plate/g12_strategy_plate_acceptance.py", line 202, in main
+    blocked = store.build(token, store.load(token)["revision"])
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/aydemir/Desktop/drawingto3d/src/drawingto3d/guided.py", line 2847, in build
+    raise ValueError("üretim için eksik/uyumsuz girdiler var: "
+ValueError: üretim için eksik/uyumsuz girdiler var: «11b4bc4edc5e9d92bce358fa5b5cb5c08c4851d922d683f30450ee80815d884c» bu gerçek ölçü/not mevcut modelleme yetenekleriyle uygulanamıyor (same as 80,00). «34ad8443dfc6b49b1ba10cd992961a03dd41badcb2e0d290cc3abcbcb67d2533» bu gerçek ölçü/not mevcut modelleme yetenekleriyle uygulanamıyor (printed spacing '1 5,00' corrected to 15,00). «3135f80a24cbcbbe62457dd7d7691a69ab58a0ad9292fe5363ac1ab64b46cdb6» bu gerçek ölçü/not mevcut modelleme yetenekleriyle uygulanamıyor (printed spacing '1 00,00' is ambiguous to the parser; the user corrects it to 100,00).

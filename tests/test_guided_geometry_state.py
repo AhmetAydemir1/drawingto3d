@@ -86,8 +86,12 @@ def test_measure_add_build_remove_build_undo_reopen_keeps_base_geometry(tmp_path
 
     wire, circles, decisions = decisions_for(opened["options"])
     revision = store.save(token, opened["revision"], decisions)["revision"]
+    # G12.2 (PLAN-25 §31): kullanıcı parçanın ana üretim biçimini söyler; söylemeden üretim yoktur.
+    store.set_strategy(token, revision, {"kind": "extrude_profile"})
     _declare_callouts_out_of_scope(store, token)          # G8: kapsam kararı olmadan üretim beklemede
     revision = store.load(token)["revision"]
+    # Bundan sonraki kayıtlar kararı ve kapsam kararlarını AYNEN taşır (istemci uydurmaz, düşürmez).
+    decisions = store.load(token)["decisions"]
     built = store.build(token, revision)
     assert built["build_status"] == "complete", built.get("error")
     folder = Path(store.load(token)["build"]["folder"])

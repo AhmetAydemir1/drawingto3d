@@ -59,7 +59,10 @@ def test_a_compiled_callout_is_build_applied_and_nothing_blocks():
     assert coverage["build_applied"] == ["k1"]
     assert coverage["coverage_complete"] is True
     readiness = callout_readiness.build_readiness(row, sheet_issues=[])
-    assert readiness["ready"] is True, readiness["questions_text"] if "questions_text" in readiness else readiness
+    # G12.2 (PLAN-25 §41): readiness artık üretim biçimini de bekler. Bu testin iddiası KAPSAMIN
+    # bloklamadığıdır: hiçbir callout sorusu kalmaz, kalan tek kapı stratejidir.
+    assert readiness["categories"] == {"missing_build_strategy": 1}, readiness["categories"]
+    assert [q for q in readiness["questions"] if q["callout_id"]] == [], readiness["questions"]
     assert readiness["coverage"]["build_applied"] == ["k1"]
 
 
@@ -68,7 +71,9 @@ def test_title_block_as_not_model_input_does_not_block():
     coverage = _coverage(row)
     assert coverage["not_model_input"] == ["k1"]
     assert coverage["coverage_complete"] is True
-    assert callout_readiness.build_readiness(row, sheet_issues=[])["ready"] is True
+    readiness = callout_readiness.build_readiness(row, sheet_issues=[])
+    # G12.2 §41: kapsam hiçbir callout sorusu bırakmaz; bekleyen tek madde stratejidir.
+    assert readiness["categories"] == {"missing_build_strategy": 1}, readiness["categories"]
 
 
 def test_a_real_dimension_marked_build_relevant_unsupported_blocks_the_build():
@@ -112,7 +117,8 @@ def test_redundant_with_a_decision_reference_does_not_block():
     assert coverage["redundant"] == ["k1"]
     assert coverage["invalid_duplicate"] == []
     assert coverage["coverage_complete"] is True
-    assert callout_readiness.build_readiness(row, sheet_issues=[])["ready"] is True
+    readiness = callout_readiness.build_readiness(row, sheet_issues=[])
+    assert readiness["categories"] == {"missing_build_strategy": 1}, readiness["categories"]
 
 
 def test_redundant_citing_another_covered_callout_does_not_block():

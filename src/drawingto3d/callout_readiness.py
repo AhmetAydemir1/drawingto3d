@@ -20,14 +20,16 @@ disposition) is reported as a declared exclusion, not as an issue.
 """
 from __future__ import annotations
 
-from drawingto3d import callout_bind, callout_compile, callout_models
+from drawingto3d import build_strategy, callout_bind, callout_compile, callout_models
 
 CATEGORIES = ("missing_transcription", "parse_error", "parse_ambiguous", "missing_unit", "missing_target",
               "ambiguous_target", "stale_target", "unsupported_semantic", "callout_conflict",
               "missing_profile", "missing_view", "missing_calibration", "geometry_conflict",
               "unsupported_cad_feature",
               # G12.1 coverage categories (PLAN-24 §15/§16)
-              "legacy_unclassified", "unsupported_build_relevant", "stale_duplicate_reference")
+              "legacy_unclassified", "unsupported_build_relevant", "stale_duplicate_reference",
+              # G12.2 build-strategy categories (PLAN-25 §41)
+              "missing_build_strategy", "stale_build_strategy", "unsupported_build_strategy")
 
 # --- G12.1 disposition coverage --------------------------------------------------------------
 
@@ -213,6 +215,11 @@ _QUESTION = {
     "unsupported_build_relevant": "«{id}» bu gerçek ölçü/not mevcut modelleme yetenekleriyle "
                                   "uygulanamıyor ({reason}).",
     "stale_duplicate_reference": "«{id}» bu bilgi için seçilen dayanak («{reason}») artık güncel değil.",
+    # G12.2 (PLAN-25 §41): oluşturma biçimi kategorileri — cümlenin kendisi `build_strategy`de yaşar,
+    # böylece build ile kontrol listesi aynı kuralı söyler (tek uygulama, ikinci bir kopya yok).
+    "missing_build_strategy": "{reason}",
+    "stale_build_strategy": "{reason}",
+    "unsupported_build_strategy": "{reason}",
 }
 
 
@@ -256,6 +263,14 @@ def build_readiness(record: dict, *, sheet_issues: list[dict] | None = None,
     # build here, even though the compiler excludes those rows from its own chain.
     coverage = callout_coverage(record, compilation=compilation)
     issues.extend(coverage_issues(coverage, record))
+
+    # G12.2 (PLAN-25 §41): the strategy gate rides in readiness too — the same sentences `make_plan`
+    # refuses with, so the checklist and the build can never disagree about what is still missing.
+    strategy_category = build_strategy.strategy_category(record)
+    if strategy_category:
+        issues.append({"category": strategy_category, "callout_id": None, "action": "choose_build_strategy",
+                       "reason": strategy_category,
+                       "detail": " ".join(build_strategy.strategy_questions(record))})
 
     excluded = [{"callout_id": row.get("callout_id"), "reason": row.get("reason")}
                 for row in compilation.get("excluded") or []]

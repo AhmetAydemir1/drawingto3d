@@ -1,0 +1,190 @@
+- banner:
+  - heading "Çizimden parçaya, birlikte" [level=1]
+  - generic: Konturu seç, eksik ölçüleri tamamla, taslak STEP'i incele. Bu akış yerelde ve model olmadan çalışır.
+  - generic: Çizim aç
+- status: Metin kaydedildi; onaylanan hedefle birlikte derlemeye girer.
+- main:
+  - heading "Çizim" [level=2]
+  - link "Önceki arayüz":
+    - /url: /
+  - generic "Kontur ve kalibrasyon noktası seçimi"
+  - button "Kontur seç"
+  - button "İki ölçü noktası seç"
+  - button "Daire seç"
+  - button "Ölçü/not incele"
+  - button "Yeni alan çiz"
+  - paragraph: Dış konturun kenarına tıklayın veya listeden seçin.
+  - generic: 4 kontur · 2 daire · 0 ölçü adayı · kayıt 5
+  - heading "Ölçü / not inceleme" [level=2]
+  - button "Önceki"
+  - text: Tüm ölçü/not kontrolleri tamamlandı.
+  - button "Sonraki eksik" [disabled]
+  - paragraph:
+    - text: "Kaydedilen ölçü/not metinleri artık üretime girer: onaylanmış hedefler delik/ölçü kararına derlenir ve"
+    - strong: eksik kalanlar tamamlanmadan üretim başlamaz
+    - text: . Makine ipucu bir
+    - emphasis: öneridir
+    - text: ; karar siz onayladığınızda doğar. Doğruysa “Evet, doğru” deyin; seçtiğiniz alanları tek adımda “modele ait değil” ilan edebilirsiniz.
+  - generic: 1 makine adayı · 1 etkin alan · 1 incelendi · 0 modele ait değil · 0 kontrol bekliyor
+  - list:
+    - strong: C1
+    - text: · makine adayı · Zaten temsil ediliyor
+  - strong: C1 · makine tespiti
+  - generic: Zaten temsil ediliyor
+  - generic "Callout bölgesi kırpması"
+  - text: Kırpma yalnız inceleme kolaylığıdır; doğruluk kararı değildir.
+  - paragraph: Çizimde şu mu yazıyor? 4x Ø8 THRU
+  - button "Evet, doğru"
+  - button "Düzelt"
+  - button "Bu bir ölçü/not değil"
+  - text: Basılı metin
+  - textbox "Basılı metin":
+    - /placeholder: Çizimde yazanı aynen yazın
+    - text: "30.00"
+  - button "Metni kaydet"
+  - button "Bu bir ölçü/not değil"
+  - button "Alanı düzelt"
+  - paragraph
+  - generic "Teknik ayrıntılar"
+  - separator
+  - strong: Bu ölçü/not nereyi gösteriyor?
+  - generic: zaten başka bir bilgiyle temsil ediliyor
+  - paragraph: "Zaten başka bir bilgiyle temsil ediliyor (dayanak: decision:thickness)."
+  - paragraph: "Programın önerdiği yer:"
+  - button "Seç"
+  - text: 1. iki uç · Köşe 2 (başlangıç), Köşe 2 (bitiş) · T3 · iki uç arası 60.00 px ≈ yazılan 30.0 mm
+  - button "Seç"
+  - text: 2. iki uç · Köşe 3 (başlangıç), Köşe 3 (bitiş) · T3 · iki uç arası 100.00 px ≈ yazılan 30.0 mm
+  - button "Seç"
+  - text: 3. iki uç · Köşe 5 (başlangıç), Köşe 5 (bitiş) · T3 · iki uç arası 60.00 px ≈ yazılan 30.0 mm
+  - button "Seç"
+  - text: 4. iki uç · Köşe 6 (başlangıç), Köşe 6 (bitiş) · T3 · iki uç arası 20.00 px ≈ yazılan 30.0 mm
+  - button "Seç"
+  - text: 5. iki uç · Köşe 7 (başlangıç), Köşe 7 (bitiş) · T3 · iki uç arası 60.00 px ≈ yazılan 30.0 mm
+  - button "Seç"
+  - text: 6. iki uç · Köşe 8 (başlangıç), Köşe 8 (bitiş) · T3 · iki uç arası 20.00 px ≈ yazılan 30.0 mm
+  - button "Seç"
+  - text: 7. iki uç · Köşe 4 (başlangıç), Köşe 4 (bitiş) · T3 · iki uç arası 60.00 px ≈ yazılan 30.0 mm
+  - button "Seç"
+  - text: 8. kontur · Dış şekil · T3 · kontur ölçüsü 50.00×30.00 mm yazılan 30.0 mm ile uyuşuyor
+  - button "Doğru · 1. öneri"
+  - button "Başka yer seç"
+  - button "Birden fazla yer seç"
+  - button "Gerçek ölçü/not ama şu an modele uygulanamıyor"
+  - button "Bu kararı geri al"
+  - paragraph
+  - paragraph: Onayladığınız yer, metnin okumasıyla birlikte delik/ölçü kararına derlenir.
+  - button "Çoklu seç"
+  - button "Yeni alan çiz"
+  - checkbox "Modele ait olmayanları göster"
+  - text: Modele ait olmayanları göster
+  - paragraph: 1 zaten temsil ediliyor
+  - heading "Eksik kalanlar" [level=3]
+  - paragraph: ✓ Tüm gerekli bilgiler tamamlandı
+  - list:
+    - listitem: ✓ Dış şekil seçildi
+    - listitem: ✓ Kalınlık girildi
+    - listitem: ✓ Ölçek girildi
+  - button "İnceleme paketini indir"
+  - generic: Paket içe aktar
+  - paragraph: Paket bu oturumun okumasını dış incelemeye taşır; içe aktarılan her eylem bu kaydın kendi doğrulamasından geçer ve “dış inceleme” olarak işaretlenir.
+  - paragraph: Metinsiz bir çizim normal bir sonuçtur; o zaman alanı buradan çizersiniz. Bir kutuyu seçmek için “Ölçü/not incele” aracıyla çizimde tıklayın.
+  - heading "0 · Okumanın önerileri" [level=2]
+  - paragraph: "Bu çizim için öneri yok: okuma bir ölçü ya da özellik bağlayamadı. Aşağıdaki adımları elle tamamlayın."
+  - paragraph: "Her satır çizimin kendi okumasından gelir ve kanıtıyla gösterilir: basılı metin, okumanın span kimliği, ölçülen piksel uzunluğu ve sapma. Onaylamadığınız satırı tek tıkla reddedebilir, aşağıdaki bölümlerden elle girebilirsiniz. Onaylanan her öneri sizin kararınız olarak kaydedilir."
+  - heading "1 · Dış kontur" [level=2]
+  - text: Çizimdeki kapalı kontur
+  - combobox "Çizimdeki kapalı kontur":
+    - option "Kontur seçin"
+    - option "1 · Kapalı kontur" [selected]
+    - option "2 · Kapalı kontur"
+    - option "3 · Daire"
+    - option "4 · Daire"
+  - text: Çizimdeki yeşil konturdan üretilecek. Ana görünüşü seçin; kesit veya ölçü çizgileri de aday olabilir.
+  - heading "2 · Bilinen ölçüyle ölçek" [level=2]
+  - text: Okunan ölçü (isteğe bağlı)
+  - combobox "Okunan ölçü (isteğe bağlı)":
+    - option "Ölçüyü ben gireceğim" [selected]
+  - text: Gerçek uzunluk
+  - spinbutton "Gerçek uzunluk": "50"
+  - text: Birim
+  - combobox "Birim":
+    - option "mm" [selected]
+    - option "inç"
+  - paragraph: 2/2 nokta seçildi · çizimde 100.0 piksel
+  - button "Ölçeği uygula"
+  - separator
+  - generic: Basılı ölçüyü çizime bağla
+  - text: "Ölçüyü yukarıdan seçin, değeri yazın, sonra çizimde iki uca tıklayın: kontur köşesi ya da daire merkezi. Bağlanan ölçüler ölçeği en küçük karelerle çözer ve delik konumlarını kısıtlar."
+  - text: Eksen
+  - combobox "Eksen":
+    - option "Eksen seçin" [selected]
+    - option "X ekseni boyunca"
+    - option "Y ekseni boyunca"
+  - text: Yön
+  - combobox "Yön":
+    - option "Yön seçin" [selected]
+    - option "İkinci uç + eksende"
+    - option "İkinci uç − eksende"
+  - button "Seçili ölçüyü bağla"
+  - generic: "Henüz bağ yok: ölçek yalnız iki noktalı kalibrasyondan geliyor."
+  - separator
+  - generic: Görüş yönü (PLAN §8.6)
+  - text: Paftanın kendi çerçevesi ve eksen yönü okumadan gelir; döndürülmüş paftada sayfa X'i parça X'i sayılmaz. Onaylanmadan üretim bu yönü varsaymaz.
+  - paragraph: "çerçeve 10 / 10 / 290 / 190 px; öneri: X sağ, Y yukarı · pafta çerçevesi outline_0: kapalı yol sayfanın %93.3×%90.0'ini kaplıyor; kenarları sayfa eksenlerinden en fazla 0.0° sapıyor (sayfa eksenlerine 2° içinde hizalı)"
+  - checkbox "Eksen yönünü ve çerçeveyi onaylıyorum"
+  - text: Eksen yönünü ve çerçeveyi onaylıyorum
+  - button "Görüş yönünü kaydet"
+  - checkbox "Çerçeveyi ve eksenleri çizimde göster" [checked]
+  - text: Çerçeveyi ve eksenleri çizimde göster
+  - heading "3 · Gövde ve özellikler" [level=2]
+  - text: Kalınlık · mm
+  - spinbutton "Kalınlık · mm": "10"
+  - button "Kalınlığı kaydet"
+  - separator
+  - text: Delik / cep dairesi
+  - combobox "Delik / cep dairesi":
+    - option "Daire seçin" [selected]
+    - option "Daire 1"
+    - option "Daire 2"
+  - text: Tür
+  - combobox "Tür":
+    - option "Geçişli delik" [selected]
+    - option "Kör cep (üstten)"
+  - text: Çap · mm
+  - spinbutton "Çap · mm"
+  - button "Özelliği ekle / güncelle"
+  - text: Delik · Ø6 mm
+  - button "Kaldır"
+  - text: Cep · Ø10 mm · 3 mm derinlik
+  - button "Kaldır"
+  - heading "4 · Bağlanan ölçüler ve ortak ölçek" [level=2]
+  - paragraph: Ölçek 2.0000 px/mm · iki noktalı kalibrasyondan (bağ yok).
+  - paragraph: "Bağlanmayan: 2 daire, 4 kenar pikselden izlenen taslaktır (kontur bağlı değil)."
+  - paragraph: Kontur kapanış hatası 0 piksel.
+  - paragraph: "Bu panel yalnız sizin bağladığınız basılı ölçüleri gösterir: ölçek o bağlardan çözülür, her bağın çizimde ölçülen karşılığı ve sapması burada durur. Bağlanmayan kenar ve daireler pikselden izlenen taslaktır ve öyle etiketlenir. Tek bir ölçek çelişen bağları uzlaştıramaz; çelişki soru olarak sorulur."
+  - heading "Parçanın ana oluşturma biçimi" [level=2]
+  - radio "Sabit kalınlıklı profili uzat (önerilir)" [checked]
+  - generic: Sabit kalınlıklı profili uzat (önerilir)
+  - radio "Bir kesiti eksen etrafında döndür (bu sürümde yok)" [disabled]
+  - generic: Bir kesiti eksen etrafında döndür (bu sürümde yok)
+  - radio "Birden fazla görünüşü birlikte kullan (bu sürümde yok)" [disabled]
+  - generic: Birden fazla görünüşü birlikte kullan (bu sürümde yok)
+  - radio "Bu sürümde desteklenmiyor"
+  - text: Bu sürümde desteklenmiyor
+  - paragraph: "Seçili: Sabit kalınlıklı profili uzat"
+  - generic "Teknik ayrıntılar"
+  - paragraph: "Bu sürüm yalnız profil uzatma uygular. Seçim sizin kararınızdır: konturu seçmek tek başına üretim demek değildir, parçanın nasıl oluşacağını burada söylersiniz. Profil, kontur, görüş ya da okuma değişirse karar güncelliğini yitirir ve yeniden onay bekler."
+  - button "Oluşturma biçimini kaydet"
+  - heading "5 · İncele ve üret" [level=2]
+  - checkbox "Seçilen kontur ve merkezleri çizimden izlenen taslak olarak kullan." [checked]
+  - text: Seçilen kontur ve merkezleri çizimden izlenen taslak olarak kullan.
+  - paragraph:
+    - text: Kalınlık ve girdiğiniz çap/derinlikler ölçülüdür. Kontur ve merkezler henüz tüm basılı ölçülerle kısıtlanmadı; çıktı inceleme amaçlı taslaktır. Onaylanmış hedefler (delik/ölçü) üretime derlenir; çözülmemiş ya da çelişkili bir ölçü/not varsa üretim
+    - strong: başlamaz
+    - text: ve nedeni aşağıda listelenir.
+  - list
+  - button "3B Modeli Oluştur"
+  - button "Son kararı geri al"
+  - paragraph: Kararlar bu oturumun bağlantısında saklanır. Sayfayı yeniden açabilirsiniz.
+  - generic "Teknik ayrıntılar · günlük ve kanıt"

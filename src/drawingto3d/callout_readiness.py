@@ -29,7 +29,9 @@ CATEGORIES = ("missing_transcription", "parse_error", "parse_ambiguous", "missin
               # G12.1 coverage categories (PLAN-24 §15/§16)
               "legacy_unclassified", "unsupported_build_relevant", "stale_duplicate_reference",
               # G12.2 build-strategy categories (PLAN-25 §41)
-              "missing_build_strategy", "stale_build_strategy", "unsupported_build_strategy")
+              "missing_build_strategy", "stale_build_strategy", "unsupported_build_strategy",
+              # G12R scope-claim category (G12R-02): onayın kendi okuması değişti
+              "stale_scope_claim")
 
 # --- G12.1 disposition coverage --------------------------------------------------------------
 
@@ -67,10 +69,55 @@ _COMPILE_BLOCKED = ("missing_unit", "parse_ambiguous", "parse_unsupported", "uns
                     "stale_target", "missing_parse")
 
 
+# The decision keys each `decision:<name>` citation names (G12R-02): the pin stores *what* was cited,
+# so a citation stops covering the moment the value it relied on changes.
+DECISION_FIELDS: dict[str, tuple[str, ...]] = {
+    "calibration": ("calibration",), "profile": ("profile_id",), "thickness": ("thickness",),
+    "holes": ("holes",), "bindings": ("bindings",), "contour": ("contour",), "view": ("view",),
+    "trace": ("trace_acknowledged",),
+}
+
+
+def decision_value(decisions: dict, name: str) -> dict:
+    """The cited decision's own content, as the pin stores it (numbers compare by value, not spelling)."""
+    return {key: (decisions or {}).get(key) for key in DECISION_FIELDS.get(str(name), ())}
+
+
 def decision_ref_present(decisions: dict, name: str) -> bool:
     """Is the decision a `decision:<name>` citation names actually present in this session?"""
     check = DECISION_REFS.get(str(name))
     return bool(check and check(decisions or {}))
+
+
+def _latest_transcription_revision(decisions: dict, callout_id: str) -> int | None:
+    revisions = [row.get("revision") for row in (decisions or {}).get("transcriptions") or []
+                 if row.get("callout_id") == callout_id and isinstance(row.get("revision"), int)]
+    return max(revisions) if revisions else None
+
+
+def _region_of(record: dict, callout_id: str) -> list[float] | None:
+    for row in callout_models.effective_callouts(record):
+        if row["id"] == callout_id:
+            return [round(float(value), 3) for value in row.get("region") or []]
+    return None
+
+
+def approval_pin(record: dict, decisions: dict, callout_id: str, reference: str) -> dict:
+    """The evidence the SERVER writes with a `redundant` approval (G12R-02) — never from the client.
+
+    Two things are pinned: the row's own reading (`own`: transcription revision + region) and the
+    citation's content (the decision's value, or the cited callout's reading). A later change to either
+    side means the approval no longer proves anything, so the row asks for it again.
+    """
+    own = {"revision": _latest_transcription_revision(decisions, callout_id),
+           "region": _region_of(record, callout_id)}
+    prefix = callout_models.DISPOSITION_DECISION_PREFIX
+    if str(reference).startswith(prefix):
+        name = str(reference)[len(prefix):]
+        return {"kind": "decision", "name": name, "value": decision_value(decisions, name), "own": own}
+    return {"kind": "callout", "callout_id": reference,
+            "revision": _latest_transcription_revision(decisions, reference),
+            "region": _region_of(record, reference), "own": own}
 
 
 def _state_stale(state: dict) -> bool:
@@ -96,6 +143,18 @@ def callout_coverage(record: dict, *, compilation: dict | None = None) -> dict:
     def state_for(callout_id: str) -> dict:
         return states.get(callout_id) or {}
 
+    def own_context_current(row: dict) -> bool:
+        """Is the row's *own* reading the one the approval was given for? (G12R-02)
+
+        A `redundant` claim says "this box's content is already represented elsewhere". The answer can
+        only stand for the text and region it was given for: a re-transcription or a moved region makes
+        the older approval say nothing about the newer reading, so it asks for the user again.
+        """
+        pin = row.get("duplicate_pin") or {}
+        own = pin.get("own") or {}
+        return (own.get("revision") == _latest_transcription_revision(decisions, row["id"])
+                and own.get("region") == _region_of(record, row["id"]))
+
     def covered_for_citation(callout_id: str, stack: frozenset) -> bool:
         """Can this callout be cited as 'the fact is already represented here'?"""
         if callout_id in stack:
@@ -107,7 +166,7 @@ def callout_coverage(record: dict, *, compilation: dict | None = None) -> dict:
         if disposition == "not_model_input":
             return True
         if disposition == "redundant":
-            return citation_ok(row, stack | {callout_id})
+            return own_context_current(row) and citation_ok(row, stack | {callout_id})
         if disposition == "build_relevant_unsupported":
             return False
         if row.get("ignored") or row.get("unbindable"):
@@ -115,10 +174,24 @@ def callout_coverage(record: dict, *, compilation: dict | None = None) -> dict:
         return (compile_rows.get(callout_id) or {}).get("status") == "compiled"
 
     def citation_ok(row: dict, stack: frozenset) -> bool:
+        """Is the citation itself still the one that was approved — value and identity included?"""
+        pin = row.get("duplicate_pin")
+        if not isinstance(pin, dict) or not pin:
+            # Şema 4 onayı: ne dayanağın değeri ne kendi okuması sabitlenmiş → kanıtlanamaz.
+            return False
         reference = str(row.get("duplicate_of") or "")
         if reference.startswith(callout_models.DISPOSITION_DECISION_PREFIX):
             name = reference[len(callout_models.DISPOSITION_DECISION_PREFIX):]
-            return decision_ref_present(decisions, name)
+            if pin.get("kind") != "decision" or pin.get("name") != name:
+                return False
+            return (decision_ref_present(decisions, name)
+                    and pin.get("value") == decision_value(decisions, name))
+        if pin.get("kind") != "callout" or pin.get("callout_id") != reference:
+            return False
+        if _latest_transcription_revision(decisions, reference) != pin.get("revision"):
+            return False
+        if _region_of(record, reference) != pin.get("region"):
+            return False
         return covered_for_citation(reference, stack | {row["id"]})
 
     for row in effective:
@@ -131,8 +204,12 @@ def callout_coverage(record: dict, *, compilation: dict | None = None) -> dict:
             buckets["not_model_input"].append(callout_id)
             continue
         if disposition == "redundant":
-            (buckets["redundant"] if citation_ok(row, frozenset()) else buckets["invalid_duplicate"]
-             ).append(callout_id)
+            if not own_context_current(row):
+                # Satırın kendi okuması/bölgesi değişti: eski kapsam onayı bu okumayı kapsamıyor.
+                buckets["stale"].append(callout_id)
+            else:
+                (buckets["redundant"] if citation_ok(row, frozenset())
+                 else buckets["invalid_duplicate"]).append(callout_id)
             continue
         if row.get("ignored") or row.get("unbindable"):
             # Pre-G12.1 rows: the flag is real, the *claim* was never made.
@@ -167,6 +244,14 @@ def coverage_issues(coverage: dict, record: dict) -> list[dict]:
         issues.append({"category": "unsupported_build_relevant", "callout_id": callout_id,
                        "action": "review_callout", "reason": "build_relevant_unsupported",
                        "detail": reason or "gerçek ölçü/not bu sürümde uygulanamıyor"})
+    for callout_id in coverage.get("stale") or []:
+        # Makine tarafı bayatlık zaten derleyicinin kendi kategorileriyle gelir; burada YALNIZ bir
+        # kapsam onayı taşıyan satır sorulur — onay kendi okumasına bağlı olduğu için yenilenmeli.
+        if not (by_id.get(callout_id) or {}).get("disposition"):
+            continue
+        issues.append({"category": "stale_scope_claim", "callout_id": callout_id,
+                       "action": "review_callout", "reason": "stale_scope_claim",
+                       "detail": "Satırın metni ya da bölgesi değişti; kapsam kararı güncelliğini yitirdi."})
     for callout_id in coverage.get("invalid_duplicate") or []:
         reference = (by_id.get(callout_id) or {}).get("duplicate_of")
         issues.append({"category": "stale_duplicate_reference", "callout_id": callout_id,
@@ -215,6 +300,7 @@ _QUESTION = {
     "unsupported_build_relevant": "«{id}» bu gerçek ölçü/not mevcut modelleme yetenekleriyle "
                                   "uygulanamıyor ({reason}).",
     "stale_duplicate_reference": "«{id}» bu bilgi için seçilen dayanak («{reason}») artık güncel değil.",
+    "stale_scope_claim": "«{id}» satırının okuması değişti («{reason}»); kapsam kararını yeniden onaylayın.",
     # G12.2 (PLAN-25 §41): oluşturma biçimi kategorileri — cümlenin kendisi `build_strategy`de yaşar,
     # böylece build ile kontrol listesi aynı kuralı söyler (tek uygulama, ikinci bir kopya yok).
     "missing_build_strategy": "{reason}",

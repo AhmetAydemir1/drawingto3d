@@ -120,6 +120,33 @@
    "open": []
   },
   {
+   "id": "G12R",
+   "title": "bağımsız inceleme düzeltme turu (G12R-01 … G12R-05)",
+   "status": "done",
+   "review": "eval/audits/20261007-guided-g12-2-independent-review (bağımsız inceleme, HEAD f8d32f4)",
+   "fixes": [
+    "G12R-01 strateji eşitliği değer bazlı: tarayıcının 10.0→10 turu sahte sayılmaz; uydurma anahtar reddi durur",
+    "G12R-02 kapsam onayı sunucu pinine bağlı (kendi okuma revizyonu+bölge, dayanağın onaylanan değeri/kimliği); şema 4→5; yeni kategori stale_scope_claim",
+    "G12R-03 kabul betiği yazılı karar listesi kullanır; listede olmayan satır kabulü durdurur (fallback gerekçe kaldırıldı)",
+    "G12R-04 produce_case varsayılan sürücüsü kaynak-only G12 sürücüsü; tarihsel G11 sürücüsü G12 yolunda reddedilir",
+    "G12R-05 v2 reçete uygulanmayan dolu alanları oturum açmadan reddeder; strategy_decision uçtan uca; notes'ta model dosyası adı yasak"
+   ],
+   "tests": {
+    "new_regressions": "tests/test_g12r_review_fixes.py (13) · tests/test_g12r_acceptance_discipline.py (3) · test_g12_recipe_v2 (+4) · test_g12_runner_boundary (+3)",
+    "relevant_suite": "615 passed / 212,84 s / EXIT=0 — eval/audits/20261007-g12r-strategy-plate/pytest-relevant.log (incelemenin kendi komutu; 589 → +26)",
+    "broad": "pytest -q tests -k \"not semread\" → 1569 passed, 339 deselected, 1614.08s (26:54), EXIT=0 — eval/audits/20261007-g12r-strategy-plate/pytest-broad.log",
+    "browser": "browser/ui_acceptance.py — 11/11 adım PASS (gerçek fare/klavye; R-01 C/D, R-02 C2/E/F)"
+   },
+   "cad_acceptance": {
+    "script": "eval/audits/20261007-g12r-strategy-plate/g12r_strategy_plate_acceptance.py",
+    "result": "11/11 PASS, EXIT=0 (taze Plate; yazılı karar listesiyle, örtük kapatma yok)",
+    "frozen_evaluator": "9/9 PASS (step_reopened dahil) — out/plate-regression-verdict.json",
+    "part": "120,011 × 80,002 × 15 · 4 delik (Ø6,8) · 1 cep (Ø50) · STEP 52.008 bayt, sha256 c05da6f2…"
+   },
+   "evidence": "eval/audits/20261007-g12r-strategy-plate/ (README.md + acceptance.log + pytest-*.log + browser/)",
+   "frozen_untouched": "G9/G11 dizinleri, eval/guided_10_* ve eval/metrics.py değişmedi; ana metrik hâlâ 1/9"
+  },
+  {
    "id": "G12.3",
    "title": "view-scoped geometry foundation (§45–§54: görünüş sahipliği + GEOMETRY_VERSION 3→4)",
    "status": "pending"

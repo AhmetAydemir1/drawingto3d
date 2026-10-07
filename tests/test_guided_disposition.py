@@ -239,6 +239,13 @@ def test_a_neighbouring_edit_never_drops_a_disposition(store):
     _command(store, "transcribe", {"callout_id": "k1", "raw_text": "15,00"})
     review = _review(store)
     assert review["disposition"] == "redundant", "metin düzeltmesi claim'i düşürmez"
+    # G12R-02: karar satırda kalır (PLAN-24 §11) ama onay ESKİ okumaya aitti — metin/bölge değiştiği
+    # için kapsam kendini yenilemeden geçerli sayılmaz; kullanıcı yeni okuma üzerinden yeniden onaylar.
+    state = store.readiness(TOKEN)
+    assert state["ready"] is False
+    assert [q["category"] for q in state["questions"] if q["callout_id"] == "k1"] == ["stale_scope_claim"]
+    _command(store, "set_disposition", {"callout_id": "k1", "disposition": "redundant",
+                                        "duplicate_of": "decision:calibration"})
     assert store.readiness(TOKEN)["ready"] is True
     reopened = GuidedStore(store.root)
     assert reopened.load(TOKEN)["decisions"]["callout_reviews"][0]["disposition"] == "redundant"

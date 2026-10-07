@@ -25,7 +25,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-CALLOUT_SCHEMA_VERSION = 4
+CALLOUT_SCHEMA_VERSION = 5
 """Version of the callout layer itself (PLAN-20 §6.1) — *not* `guided.GEOMETRY_VERSION`.
 
 Adding the callout fields must never bump the geometry contract; a change to these records bumps
@@ -228,6 +228,10 @@ class CalloutReviewDecision(BaseModel):
     disposition: DispositionName | None = None
     duplicate_of: str | None = Field(default=None, min_length=1, max_length=120)
     disposition_reason: str | None = Field(default=None, min_length=1, max_length=500)
+    # G12R-02 (şema 5): onayın KANITI sunucu tarafından yazılır — dayanağın onaylandığı andaki değeri
+    # ve satırın kendi okuması (transcription revizyonu + bölge). İstemci bunu taşımaz; metin, bölge
+    # ya da dayanak değişince kapsam onayı kendiliğinden güncelliğini yitirir.
+    duplicate_pin: dict | None = None
     revision: int = Field(default=0, ge=0)
 
     @field_validator("region_override")
@@ -263,6 +267,8 @@ class CalloutReviewDecision(BaseModel):
         if self.disposition == "redundant" and not (self.duplicate_of or "").strip():
             raise ValueError("'redundant' kararı dayanağını yazmak zorunda (duplicate_of): "
                              "başka bir callout kimliği ya da decision:<ad>")
+        if self.duplicate_pin is not None and self.disposition != "redundant":
+            raise ValueError("duplicate_pin yalnız 'redundant' kararında taşınır")
         if self.disposition == "build_relevant_unsupported" and not (self.disposition_reason or "").strip():
             raise ValueError("'build_relevant_unsupported' kararı gerekçesiz olamaz "
                              "(disposition_reason): gerçek bilgi neden uygulanamıyor?")
@@ -530,6 +536,7 @@ def effective_callouts(record: dict) -> list[dict]:
             "disposition": review.get("disposition"),
             "duplicate_of": review.get("duplicate_of"),
             "disposition_reason": review.get("disposition_reason"),
+            "duplicate_pin": review.get("duplicate_pin"),
             "provenance": {"kind": "detected", "observation_ids": list(candidate.get("observation_ids") or []),
                            "detector_version": candidate.get("detector_version"),
                            "geometry_version": candidate.get("geometry_version")},
@@ -558,6 +565,7 @@ def effective_callouts(record: dict) -> list[dict]:
             "disposition": review.get("disposition"),
             "duplicate_of": review.get("duplicate_of"),
             "disposition_reason": review.get("disposition_reason"),
+            "duplicate_pin": review.get("duplicate_pin"),
             "provenance": {"kind": "manual", "observation_ids": [], "detector_version": None,
                            "geometry_version": None},
         })

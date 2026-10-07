@@ -1843,18 +1843,21 @@ def _check_target_geometry(record: dict, row: dict, payload: dict) -> None:
         raise ValueError(f"vertex_pair aynı fiziksel noktayı iki kez seçemez: {targets}")
 
 
-def _strategy_fingerprint(value) -> str | None:
-    """One comparable form of a strategy row: `None`, or the decision's own canonical JSON.
+def _strategy_fingerprint(value) -> dict | None:
+    """One comparable form of a strategy row: `None`, or the decision's own validated fields.
 
     The public state hands the client the server's row, so a client that echoes it back carries it
-    unchanged — that is the only shape `/save` may post (PLAN-25 §36).
+    unchanged — that is the only shape `/save` may post (PLAN-25 §36). Comparison is by **value**, not
+    by JSON spelling (G12R-01): the browser's own round trip turns the server's `10.0` evidence into
+    `10`, and the same decision must not read as a forged one. `10.0 == 10` and key order never matter
+    here; `strategy_key`/`geometry_version` are typed fields, so an invented key still differs.
     """
     if value in (None, {}):
         return None
     if not isinstance(value, dict):
         raise ValueError("oluşturma biçimi bir nesne ya da null olmalı")
     try:
-        return build_strategy.BuildStrategyDecision.model_validate(value).model_dump_json()
+        return build_strategy.BuildStrategyDecision.model_validate(value).model_dump(mode="json")
     except ValidationError as error:
         raise ValueError("oluşturma biçimi bu şemaya uymuyor: " + str(error)) from error
 
@@ -2014,7 +2017,8 @@ def _review_passthrough(current: dict, **changes) -> dict:
     explicitly; nothing is ever silently dropped by a neighbouring edit.
     """
     carried = {key: current.get(key) for key in ("ignored", "unbindable", "disposition",
-                                                 "duplicate_of", "disposition_reason")}
+                                                 "duplicate_of", "disposition_reason",
+                                                 "duplicate_pin")}
     carried.update(changes)
     return carried
 
@@ -2022,7 +2026,7 @@ def _review_passthrough(current: dict, **changes) -> dict:
 def _set_review(record: dict, decisions: dict, callout_id: str, *,
                 region_override: list[float] | None, ignored: bool, unbindable: bool = False,
                 disposition: "callout_models.DispositionName | None" = None, duplicate_of: str | None = None,
-                disposition_reason: str | None = None) -> None:
+                disposition_reason: str | None = None, duplicate_pin: dict | None = None) -> None:
     """Write the one review row for a callout — or remove it when every decision is taken back.
 
     An unchanged decision keeps its stored revision, so repeating a command is a true no-op rather
@@ -2037,7 +2041,8 @@ def _set_review(record: dict, decisions: dict, callout_id: str, *,
     stored = list(decisions.get("callout_reviews") or [])
     prior = next((item for item in stored if item.get("callout_id") == callout_id), None)
     if (region_override is None and not ignored and not unbindable
-            and disposition is None and duplicate_of is None and disposition_reason is None):
+            and disposition is None and duplicate_of is None and disposition_reason is None
+            and duplicate_pin is None):
         decisions["callout_reviews"] = [item for item in stored if item.get("callout_id") != callout_id]
         return
     same = (prior is not None and prior.get("region_override") == region_override
@@ -2045,12 +2050,14 @@ def _set_review(record: dict, decisions: dict, callout_id: str, *,
             and bool(prior.get("unbindable")) == bool(unbindable)
             and prior.get("disposition") == disposition
             and (prior.get("duplicate_of") or None) == (duplicate_of or None)
-            and (prior.get("disposition_reason") or None) == (disposition_reason or None))
+            and (prior.get("disposition_reason") or None) == (disposition_reason or None)
+            and (prior.get("duplicate_pin") or None) == (duplicate_pin or None))
     revision = (prior or {}).get("revision", 0) if same else _next_callout_revision(record)
     row = callout_models.CalloutReviewDecision(callout_id=callout_id, region_override=region_override,
                                                ignored=bool(ignored), unbindable=bool(unbindable),
                                                disposition=disposition, duplicate_of=duplicate_of,
                                                disposition_reason=disposition_reason,
+                                               duplicate_pin=duplicate_pin,
                                                revision=revision)
     decisions["callout_reviews"] = _upsert(stored, "callout_id", row.model_dump(mode="json"))
 
@@ -2240,7 +2247,7 @@ def _apply_callout_command(record: dict, decisions: dict, action: str, payload: 
             _set_review(record, decisions, callout_id, region_override=current["region_override"],
                         **_review_passthrough(current, ignored=False, unbindable=False,
                                               disposition=None, duplicate_of=None,
-                                              disposition_reason=None))
+                                              disposition_reason=None, duplicate_pin=None))
             return ([("clear_callout_disposition", f"callout:{callout_id}", None,
                       {"callout_id": callout_id},
                       "Kullanıcı callout'un kapsam kararını kaldırdı; yeniden değerlendirilecek.")],
@@ -2288,12 +2295,16 @@ def _apply_callout_command(record: dict, decisions: dict, action: str, payload: 
                        "disposition_reason": reason},
                       f"Kullanıcı bu callout'un gerçek bir ölçü/not olduğunu ama bu sürümün "
                       f"uygulayamadığını bildirdi; kapsam tamamlanana kadar build açılmaz.")}[disposition]
+        # G12R-02: onayın kanıtı sunucuda doğar — dayanağın O ANKİ değeri ve satırın kendi okuması.
+        pin = (callout_readiness.approval_pin(record, decisions, callout_id, duplicate_of)
+               if disposition == "redundant" else None)
         _set_review(record, decisions, callout_id, region_override=current["region_override"],
                     **_review_passthrough(current, ignored=False,
                                           unbindable=disposition == "build_relevant_unsupported",
                                           disposition=disposition, duplicate_of=duplicate_of,
                                           disposition_reason=reason if disposition == "build_relevant_unsupported"
-                                          else None))
+                                          else None,
+                                          duplicate_pin=pin))
         return ([events], [("callout_reviews", callout_id)])
 
     subject = "Dış inceleme" if actor == "external_review" else "Kullanıcı"

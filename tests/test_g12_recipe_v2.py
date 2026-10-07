@@ -239,3 +239,49 @@ def test_the_runner_builds_only_when_readiness_is_ready(tmp_path):
     record = G12_RUNNER.run_recipe(recipe, transport, source_path=source)
     assert [call[0] for call in transport.calls] == ["open", "command", "readiness", "build"]
     assert record["build_status"] == "complete"
+
+
+# --- G12R-05: uygulanmayan dolu alanlar sessizce kabul edilmez (PLAN-25 §23) ---------------------
+
+def test_a_nonempty_future_field_is_refused_before_any_session():
+    """`profile_actions` vb. dolu geldiyse koşu oturum açmadan durur — sessiz yok sayma yok."""
+    for field in ("profile_actions", "view_decisions", "dimension_bindings", "feature_links"):
+        with pytest.raises(RECIPE_V2.RecipeError) as error:
+            RECIPE_V2.validate(base_recipe(**{field: [{"anything": 1}]}))
+        assert field in str(error.value) and "uygulanmıyor" in str(error.value)
+
+
+def test_an_empty_future_field_is_still_accepted():
+    """Boş gelecek-faz alanları kalabilir: reçete bunları taşıyabilir, sözleşme değişmez."""
+    recipe = RECIPE_V2.validate(base_recipe(profile_actions=[], view_decisions=[], dimension_bindings=[],
+                                            feature_links=[], strategy_decision=None))
+    assert recipe["profile_actions"] == [] and recipe["strategy_decision"] is None
+
+
+def test_the_strategy_decision_becomes_a_guided_strategy_request():
+    """Strateji alanı artık UÇTAN UCA: `/api/guided/strategy` sözleşmesiyle tek istek yazar."""
+    recipe = RECIPE_V2.validate(base_recipe(strategy_decision={"kind": "extrude_profile"}))
+    requests = RECIPE_V2.planned_actions(recipe)
+    assert requests[-1] == {"http_action": "set_strategy", "payload": {"kind": "extrude_profile"},
+                            "reason": "oluşturma biçimi reçetede açıkça seçildi"}
+    assert [row["http_action"] for row in requests[:1]] == ["set_disposition"]
+
+
+def test_an_unknown_strategy_kind_is_refused():
+    with pytest.raises(RECIPE_V2.RecipeError) as error:
+        RECIPE_V2.validate(base_recipe(strategy_decision={"kind": "teleport"}))
+    assert "teleport" in str(error.value)
+
+
+def test_the_recipe_strategy_kinds_match_the_product_vocabulary():
+    """Kayma koruması: reçetenin sözlüğü ürünün `build_strategy.KINDS` kümesine uyar."""
+    from drawingto3d import build_strategy
+
+    assert set(RECIPE_V2.STRATEGY_KINDS) <= set(build_strategy.KINDS)
+    assert "extrude_profile" in RECIPE_V2.STRATEGY_KINDS
+
+
+def test_notes_cannot_carry_a_solid_model_file_name():
+    with pytest.raises(RECIPE_V2.RecipeError) as error:
+        RECIPE_V2.validate(base_recipe(notes=["kontrol: /tmp/part.step ile karşılaştır"]))
+    assert "notes" in str(error.value)

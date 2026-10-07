@@ -16,7 +16,7 @@ import json
 from drawingto3d import callout_readiness
 from drawingto3d.callout_parse import semantic_parse
 
-from callout_fixtures import record as fixture_record
+from callout_fixtures import pin_claims, record as fixture_record
 
 REGION = [0.1, 0.2, 0.4, 0.5]
 
@@ -125,6 +125,7 @@ def test_redundant_citing_another_covered_callout_does_not_block():
     _add_callout(row, "k2", "M8 - 6H THRU ALL")
     row["decisions"]["callout_reviews"].append({"callout_id": "k2", "ignored": False, "revision": 1,
                                                 "disposition": "redundant", "duplicate_of": "k1"})
+    pin_claims(row)
     coverage = _coverage(row)
     assert coverage["redundant"] == ["k2"]
     assert coverage["build_applied"] == ["k1"]
@@ -151,9 +152,22 @@ def test_redundant_citing_an_undecided_callout_blocks():
     _add_callout(row, "k2", "50,00")                    # k2: metin var, hedef/karar yok
     row["decisions"]["callout_reviews"].append({"callout_id": "k1", "ignored": False, "revision": 1,
                                                 "disposition": "redundant", "duplicate_of": "k2"})
+    pin_claims(row)
     coverage = _coverage(row)
     assert coverage["invalid_duplicate"] == ["k1"]
     assert coverage["coverage_complete"] is False
+
+
+def test_a_schema4_claim_without_a_pin_asks_again():
+    """Şema-4 onayı pinsizdir: kanıtı olmadığı için kapsamı kapatmaz, kendi kategorisiyle sorulur."""
+    row = fixture_record("15,00", REGION, disposition="redundant", duplicate_of="decision:calibration",
+                         pin_claim=False)
+    coverage = _coverage(row)
+    assert coverage["redundant"] == [] and coverage["stale"] == ["k1"]
+    assert coverage["coverage_complete"] is False
+    readiness = callout_readiness.build_readiness(row, sheet_issues=[])
+    assert readiness["ready"] is False
+    assert [q["category"] for q in readiness["questions"] if q["callout_id"] == "k1"] == ["stale_scope_claim"]
 
 
 def test_stale_transcription_is_counted_stale_not_silently_dropped():

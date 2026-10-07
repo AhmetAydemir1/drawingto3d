@@ -27,6 +27,10 @@ import producer_input  # noqa: E402 — G12.0 süreç sınırı: aynı yasak sö
 
 CALLING_ACTIONS = ("not_model_input", "redundant", "build_relevant_unsupported", "bulk_not_model_input")
 
+STRATEGY_KINDS = ("extrude_profile", "revolve_profile")
+"""Reçetenin seçebileceği oluşturma biçimleri (G12R-05). Ürün sözlüğüyle kayma koruması testtedir:
+`build_strategy.KINDS` kümesinin bu sürümde uygulanabilen üyeleri. `set_strategy` komutuna gider."""
+
 FORBIDDEN_RECIPE_FIELDS = ("ignore_rest", "bulk_remaining", "ignore_all_unhandled",
                            "ignore_remaining", "remaining_not_model_input", "close_rest")
 """Blanket kapsam eyleminin alan adları — hangi derinlikte olursa olsun reçete reddedilir."""
@@ -95,14 +99,28 @@ def validate(recipe: dict) -> dict:
     normalized = [validate_action(item, index) for index, item in enumerate(actions)]
     for field in ("profile_actions", "view_decisions", "dimension_bindings", "feature_links"):
         value = recipe.get(field)
-        if value is not None and not isinstance(value, list):
+        if value in (None, []):
+            continue                       # boş gelecek-faz alanı serbest
+        if not isinstance(value, list):
             raise RecipeError(f"{field} bir liste olmalı (bu sürümde boş)")
+        # G12R-05: dolu ama uygulanmayan alan SESSİZCE yok sayılmaz — koşu oturum açmadan durur.
+        raise RecipeError(f"{field} bu sürümde uygulanmıyor; boş bırakılmalı (PLAN-25 §23)")
     strategy = recipe.get("strategy_decision")
-    if strategy is not None and not isinstance(strategy, dict):
-        raise RecipeError("strategy_decision nesne ya da null olmalı")
+    if strategy is not None:
+        if not isinstance(strategy, dict) or set(strategy) != {"kind"}:
+            raise RecipeError("strategy_decision yalnız `kind` taşır (PLAN-25 §36)")
+        if strategy.get("kind") not in STRATEGY_KINDS:
+            raise RecipeError(f"oluşturma biçimi tanınmıyor: {strategy.get('kind')!r} "
+                              f"(izinli: {', '.join(STRATEGY_KINDS)})")
+        strategy = {"kind": str(strategy["kind"])}
     notes = recipe.get("notes") or []
     if not isinstance(notes, list) or any(not isinstance(item, str) for item in notes):
         raise RecipeError("notes metin listesi olmalı")
+    for index, note in enumerate(notes):
+        # §26'nın not tarafı: not serbest metindir ama içinde katı model dosyası adı geçemez —
+        # `_reject_model_file` yalnız SON eki görür, notta ad geçebileceği için tam tarama yapılır.
+        if any(token in str(note).lower() for token in STEP_SUFFIXES):
+            raise RecipeError(f"notes[{index}]: reçete katı model dosyası adı taşıyamaz")
     return {"case_id": recipe["case_id"], "source_sha256": str(sha),
             "operator_basis": OPERATOR_BASIS, "callout_actions": normalized,
             "profile_actions": list(recipe.get("profile_actions") or []),
@@ -190,8 +208,14 @@ def planned_actions(recipe: dict) -> list[dict]:
                 payload["duplicate_of"] = item["duplicate_of"]
             requests.append({"http_action": "set_disposition", "payload": payload,
                              "reason": item["reason"]})
+    if recipe.get("strategy_decision"):
+        # G12R-05: strateji alanı artık uçtan uca — mevcut `/api/guided/strategy` sözleşmesi
+        # (PLAN-25 §36): sunucu anahtarı kendisi sabitler, istemci yalnız biçimi adlandırır.
+        requests.append({"http_action": "set_strategy",
+                         "payload": {"kind": recipe["strategy_decision"]["kind"]},
+                         "reason": "oluşturma biçimi reçetede açıkça seçildi"})
     return requests
 
 
-__all__ = ["CALLING_ACTIONS", "FORBIDDEN_RECIPE_FIELDS", "REFERENCE_FIELDS", "RecipeError",
-           "load", "planned_actions", "validate", "validate_action"]
+__all__ = ["CALLING_ACTIONS", "FORBIDDEN_RECIPE_FIELDS", "REFERENCE_FIELDS", "STRATEGY_KINDS",
+           "RecipeError", "load", "planned_actions", "validate", "validate_action"]

@@ -43,7 +43,8 @@ def record(text, region, *, circles=None, count=None, leader=None, arcs=(), clai
            unbindable=False, manual_holes=(), manual_bindings=(), region_override=None,
            token=TOKEN, revision=1, sheet_unit: "str | None" = None, geometry_version=3, parses=None,
            source_sha256=SOURCE, candidates=True, callout_id="k1", second_text=None, calibration=True,
-           sheet_frame=True, view=None, disposition=None, duplicate_of=None, disposition_reason=None):
+           sheet_frame=True, view=None, disposition=None, duplicate_of=None, disposition_reason=None,
+           pin_claim=True, duplicate_pin=None):
     """One synthetic session record: geometry, one detected callout, its text and its real parse."""
     circles = circles if circles is not None else [{"id": "c0", "center": [45.0, 45.0], "radius": 6.0}]
     review = {"callout_id": callout_id, "ignored": bool(ignored), "revision": 1}
@@ -120,6 +121,33 @@ def record(text, region, *, circles=None, count=None, leader=None, arcs=(), clai
             "evidence": [{"kind": "user_click", "ref": "c0"}], "status": "confirmed", "reconfirm": False,
             **stored_target}]
         row["decisions"]["callout_targets"][0]["geometry_key"] = geometry_key(row, row["decisions"])
+    # G12R-02: `redundant` onayının kanıtını ÜRÜN yazar — fixture elle pin uydurmaz, store komutunun
+    # çağırdığı fonksiyonu çağırır (`pin_claim=False` şema-4 onayını, yani pinsiz satırı modeller).
+    from drawingto3d import callout_readiness
+
+    for review_row in row["decisions"]["callout_reviews"]:
+        if review_row.get("disposition") != "redundant" or not review_row.get("duplicate_of"):
+            continue
+        if duplicate_pin is not None:
+            review_row["duplicate_pin"] = copy.deepcopy(duplicate_pin)
+        elif pin_claim:
+            review_row["duplicate_pin"] = callout_readiness.approval_pin(
+                row, row["decisions"], review_row["callout_id"], review_row["duplicate_of"])
+    return row
+
+
+def pin_claims(row: dict) -> dict:
+    """Elle eklenen `redundant` onaylarının kanıtını ÜRÜN yazar (store komutuyla aynı fonksiyon).
+
+    Testler kaydı kurarken onay satırını elle ekleyebilir; pin'i uydurmak yerine ürünün kendi
+    fonksiyonu çağrılır — fixture ürün gibi davranır (G12R-02).
+    """
+    from drawingto3d import callout_readiness
+
+    for review in row["decisions"]["callout_reviews"]:
+        if review.get("disposition") == "redundant" and review.get("duplicate_of"):
+            review["duplicate_pin"] = callout_readiness.approval_pin(
+                row, row["decisions"], review["callout_id"], review["duplicate_of"])
     return row
 
 

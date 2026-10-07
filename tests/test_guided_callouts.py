@@ -190,7 +190,7 @@ def test_save_persists_a_transcription_and_reopen_keeps_raw_text(store):
     reopened = GuidedStore(store.root)                   # fresh instance, same folder
     public = reopened.public(reopened.load(TOKEN))
     assert public["decisions"]["transcriptions"][0]["raw_text"] == "  4 × Ø8 THRU  "
-    assert public["callout_schema_version"] == 4                   # G3: alan/yok sayma; G5-GX: arc/profile + bağlanamaz + external_review; G12.1: disposition
+    assert public["callout_schema_version"] == 5                   # G3: alan/yok sayma; G5-GX: arc/profile + bağlanamaz + external_review; G12.1: disposition; G12R: onay pini
     assert public["callouts"] == [{
         "id": "k1", "page_index": 0, "source_kind": "vector_text", "manual": False, "ignored": False,
         "unbindable": False, "disposition": None, "duplicate_of": None, "disposition_reason": None,

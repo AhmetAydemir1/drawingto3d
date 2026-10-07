@@ -1,0 +1,216 @@
+[
+  {
+    "probe": "cited_decision_value_changed",
+    "before_thickness": 10,
+    "after_thickness": 20,
+    "before_ready": true,
+    "after_ready": true,
+    "coverage": {
+      "total": 1,
+      "not_model_input": [],
+      "redundant": [
+        "k1"
+      ],
+      "build_applied": [],
+      "build_relevant_unsupported": [],
+      "unclassified": [],
+      "legacy_unclassified": [],
+      "stale": [],
+      "compile_blocked": [],
+      "invalid_duplicate": [],
+      "counts": {
+        "not_model_input": 0,
+        "redundant": 1,
+        "build_applied": 0,
+        "build_relevant_unsupported": 0,
+        "unclassified": 0,
+        "legacy_unclassified": 0,
+        "stale": 0,
+        "compile_blocked": 0,
+        "invalid_duplicate": 0
+      },
+      "coverage_complete": true
+    },
+    "plan_thickness": {
+      "unit": "mm",
+      "source": "user",
+      "value": 20.0,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcının kalınlık kararı."
+    }
+  },
+  {
+    "probe": "redundant_own_text_changed",
+    "raw_text": "30.00",
+    "actual_thickness": 20,
+    "ready": true,
+    "coverage": {
+      "total": 1,
+      "not_model_input": [],
+      "redundant": [
+        "k1"
+      ],
+      "build_applied": [],
+      "build_relevant_unsupported": [],
+      "unclassified": [],
+      "legacy_unclassified": [],
+      "stale": [],
+      "compile_blocked": [],
+      "invalid_duplicate": [],
+      "counts": {
+        "not_model_input": 0,
+        "redundant": 1,
+        "build_applied": 0,
+        "build_relevant_unsupported": 0,
+        "unclassified": 0,
+        "legacy_unclassified": 0,
+        "stale": 0,
+        "compile_blocked": 0,
+        "invalid_duplicate": 0
+      },
+      "coverage_complete": true
+    }
+  },
+  {
+    "probe": "redundant_region_changed",
+    "ready": true,
+    "coverage": {
+      "total": 1,
+      "not_model_input": [],
+      "redundant": [
+        "k1"
+      ],
+      "build_applied": [],
+      "build_relevant_unsupported": [],
+      "unclassified": [],
+      "legacy_unclassified": [],
+      "stale": [],
+      "compile_blocked": [],
+      "invalid_duplicate": [],
+      "counts": {
+        "not_model_input": 0,
+        "redundant": 1,
+        "build_applied": 0,
+        "build_relevant_unsupported": 0,
+        "unclassified": 0,
+        "legacy_unclassified": 0,
+        "stale": 0,
+        "compile_blocked": 0,
+        "invalid_duplicate": 0
+      },
+      "coverage_complete": true
+    },
+    "callout_states": [
+      {
+        "id": "k1",
+        "page_index": 0,
+        "source_kind": "vector_text",
+        "manual": false,
+        "ignored": false,
+        "unbindable": false,
+        "disposition": "redundant",
+        "duplicate_of": "decision:thickness",
+        "disposition_reason": null,
+        "transcription": {
+          "state": "stale",
+          "revision": 4,
+          "reason": "region_changed"
+        },
+        "parse": {
+          "state": "stale",
+          "reason": "region_changed"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      }
+    ]
+  },
+  {
+    "probe": "acceptance_unknown_leftover",
+    "actions": [
+      [
+        "unexpected-callout",
+        "not_model_input",
+        "basılı ölçünün parçası (kendi kutusunda okundu)"
+      ]
+    ]
+  },
+  {
+    "probe": "producer_default",
+    "driver": "eval/audits/20261007-guided-g11/g11_runner.py",
+    "driver_reads_full_manifest": true,
+    "driver_reads_reference": true,
+    "driver_uses_producer_input": false
+  },
+  {
+    "probe": "unapplied_recipe_fields",
+    "accepted": {
+      "case_id": "review",
+      "source_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "operator_basis": "source_drawing_only",
+      "callout_actions": [],
+      "profile_actions": [
+        {
+          "profile_id": "outline_1"
+        }
+      ],
+      "view_decisions": [],
+      "strategy_decision": {
+        "kind": "extrude_profile"
+      },
+      "dimension_bindings": [],
+      "feature_links": [],
+      "notes": [
+        "examples/reference.STEP"
+      ]
+    },
+    "planned_actions": []
+  }
+]
+{
+  "probe": "browser_json_roundtrip_rejected",
+  "strategy_structurally_equal": true,
+  "stored_evidence": [
+    {
+      "kind": "profile_closure",
+      "detail": "seçilen kontur kapalı",
+      "closed": true,
+      "circle": false
+    },
+    {
+      "kind": "thickness",
+      "detail": "sabit kalınlık kullanıcı tarafından girildi",
+      "value": 10.0
+    },
+    {
+      "kind": "sheet_frame",
+      "detail": "pafta çerçevesi okundu",
+      "aligned": true,
+      "rotation": 0
+    }
+  ],
+  "posted_evidence": [
+    {
+      "kind": "profile_closure",
+      "detail": "seçilen kontur kapalı",
+      "closed": true,
+      "circle": false
+    },
+    {
+      "kind": "thickness",
+      "detail": "sabit kalınlık kullanıcı tarafından girildi",
+      "value": 10
+    },
+    {
+      "kind": "sheet_frame",
+      "detail": "pafta çerçevesi okundu",
+      "aligned": true,
+      "rotation": 0
+    }
+  ],
+  "error": "oluşturma biçimi yalnız `set_build_strategy` komutuyla yazılır; istemci strategy_key/geometry_version uyduramaz",
+  "saved_thickness": 10
+}

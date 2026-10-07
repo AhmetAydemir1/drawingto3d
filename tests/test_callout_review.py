@@ -36,7 +36,7 @@ def test_the_bundle_carries_every_required_field_and_the_chain_per_callout():
     bundle = callout_review.export_bundle(row)
     for key in ("schema_version", "session", "base_revision", "source_digest", "page", "callouts"):
         assert key in bundle, key
-    assert bundle["schema_version"] == CALLOUT_SCHEMA_VERSION == 4
+    assert bundle["schema_version"] == CALLOUT_SCHEMA_VERSION == 5
     assert bundle["session"] == row["token"] and bundle["base_revision"] == row["revision"] == 1
     assert bundle["source_digest"] == row["source_sha256"]
     callout = bundle["callouts"][0]
@@ -47,6 +47,7 @@ def test_the_bundle_carries_every_required_field_and_the_chain_per_callout():
     assert callout["freshness"]["target"] == {"state": "current", "reason": None}
     assert callout["confirmed_target"]["target_ids"] == ["c0"]
     assert callout["ignored"] is False and callout["unbindable"] is False
+    assert "duplicate_pin" in callout, "dış inceleme onayın kanıtını görür (G12R-02)"
     assert [item["target_kind"] for item in callout["target_proposals"]] == ["circle", "circle"]
     assert callout["target_proposals"][0]["evidence_tier"] == "T0", "onaylanmış hedef ilk sırada"
 

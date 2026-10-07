@@ -145,3 +145,102 @@ def test_product_source_has_no_case_names_or_reference_tokens():
                 if token in text:
                     offenders.append((relative, lineno, token))
     assert not offenders, f"ürün kodunda vaka/referans sabiti: {offenders}"
+
+
+# --- G12R-04: varsayılan sürücü kaynak-only G12 sürücüsüdür; eski G11 yolu reddedilir -------------
+
+def test_the_default_driver_is_the_source_only_g12_driver():
+    """Belgelenen varsayılan komut kaynak-only sürücüyü çalıştırır — G11 koşucusu değil."""
+    assert PRODUCE_CASE.DEFAULT_DRIVER == RUNNER / "g12_runner.py"
+    assert "g11" not in str(PRODUCE_CASE.DEFAULT_DRIVER).lower()
+
+
+def test_the_legacy_g11_driver_is_refused_on_the_g12_producer_path(tmp_path):
+    """Tarihsel G11 koşucusu G12 üretici yolunda SESSİZCE çalışmaz: açık ret, sürücü hiç başlamaz."""
+    legacy = ROOT / "eval/audits/20261007-guided-g11/g11_runner.py"
+    assert legacy.exists(), "tarihsel koşucu yerinde duruyor (dokunulmadı)"
+    code = PRODUCE_CASE.main(["--case", "plate-pocket-vector", "--round", str(tmp_path),
+                              "--driver", str(legacy), "--prepare-only"])
+    assert code == PRODUCE_CASE.EXIT_LEGACY_DRIVER
+    # Ret, hiçbir dosya yazmadan döner: yanlışlıkla tarihsel bir dizin verilse bile oraya dokunulmaz.
+    assert not list(tmp_path.rglob("*")), "ret koşusu hiçbir dosya yazmaz"
+    assert PRODUCE_CASE.refuse_legacy_driver(legacy) == "legacy-g11-driver"
+    assert PRODUCE_CASE.refuse_legacy_driver(pathlib.Path("g12_runner.py")) is None
+
+
+def test_the_default_command_runs_the_source_only_driver_end_to_end(tmp_path):
+    """Gerçek varsayılan komut: üretici girdisi → sürücü → istenen tur dizinine yazılan kayıtlar.
+
+    Sahte uygulama (yalnız `/api/guided/*` uçları) koşar; sürücünün gördüğü tek bilgi üretici girdisi
+    ve reçetedir. Tarihsel G11 dizini koşu boyunca değişmez — varsayılan yol artık oraya yazmaz.
+    """
+    import http.server
+    import threading
+
+    manifest = _manifest()
+    entry = next(row for row in manifest["cases"] if row["case_id"] == "plate-pocket-vector")
+    seen: list[tuple[str, dict]] = []
+
+    class Handler(http.server.BaseHTTPRequestHandler):
+        def log_message(self, *_args):        # sessiz
+            pass
+
+        def _reply(self, payload: dict):
+            body = json.dumps(payload).encode()
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+        def do_POST(self):                    # noqa: N802 — stdlib adı
+            size = int(self.headers.get("Content-Length") or 0)
+            raw = self.rfile.read(size)
+            try:
+                payload = json.loads(raw.decode())
+            except Exception:                 # noqa: BLE001 — /open gövdesi ham bayt olabilir
+                payload = {"raw_bytes": len(raw)}
+            seen.append((self.path, payload))
+            if self.path == "/api/guided/open":
+                self._reply({"token": "t" * 32, "revision": 1, "callout_candidates": [{"id": "k1"}],
+                             "effective_callouts": [{"id": "k1"}], "coverage": {"coverage_complete": False}})
+            elif self.path == "/api/guided/callout":
+                self._reply({"token": "t" * 32, "revision": 2})
+            elif self.path == "/api/guided/strategy":
+                self._reply({"token": "t" * 32, "revision": 3})
+            elif self.path == "/api/guided/readiness":
+                self._reply({"ready": False, "questions": [], "coverage": {"coverage_complete": False}})
+            else:
+                self._reply({})
+
+    server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    history = ROOT / "eval/audits/20261007-guided-g11/cases"
+    before = sorted(path.name for path in history.iterdir()) if history.exists() else None
+    recipe_path = tmp_path / "recipe.json"
+    recipe_path.write_text(json.dumps({
+        "case_id": "plate-pocket-vector", "source_sha256": entry["source_sha256"],
+        "operator_basis": "source_drawing_only",
+        "callout_actions": [{"callout_id": "k1", "action": "not_model_input", "reason": "sentetik"}],
+        "strategy_decision": {"kind": "extrude_profile"}, "notes": []}, ensure_ascii=False), encoding="utf-8")
+    try:
+        code = PRODUCE_CASE.main(["--case", "plate-pocket-vector", "--round", str(tmp_path),
+                                  "--recipe", str(recipe_path)],
+                                 _app_environment={"G12_APP": f"http://127.0.0.1:{server.server_port}"})
+    finally:
+        server.shutdown()
+        server.server_close()
+    assert code == 0, code
+    case_dir = tmp_path / "cases" / "plate-pocket-vector"
+    produce = json.loads((case_dir / "produce-run.json").read_text(encoding="utf-8"))
+    run = json.loads((case_dir / "g12-run.json").read_text(encoding="utf-8"))
+    assert produce["driver_ran"] is True and produce["exit"] == 0
+    assert produce["reference_checked"] is True
+    assert run["remaining_closed_automatically"] is False
+    assert run["build_status"] == "skipped:not-ready" and run["readiness_ready"] is False
+    assert [path for path, _ in seen] == ["/api/guided/open", "/api/guided/callout",
+                                          "/api/guided/strategy", "/api/guided/readiness"]
+    assert run["source_sha256_checked"] is True
+    assert (sorted(path.name for path in history.iterdir()) if history.exists() else None) == before, \
+        "varsayılan komut tarihsel G11 dizinine yazmamalı"

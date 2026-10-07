@@ -81,6 +81,10 @@ class HttpTransport:
         return self._post("/api/guided/callout",
                           {"token": token, "revision": revision, "action": action, "payload": payload})
 
+    def strategy(self, token: str, revision: int, payload: dict) -> dict:
+        """`/api/guided/strategy` (G12R-05): gövde `{token, revision, kind}` — anahtarı sunucu yazar."""
+        return self._post("/api/guided/strategy", {"token": token, "revision": revision, **payload})
+
     def readiness(self, token: str) -> dict:
         return self._post("/api/guided/readiness", {"token": token})
 
@@ -133,7 +137,11 @@ def run_recipe(recipe: dict, transport, *, source_path: pathlib.Path, case_id: s
                  "callout_ids": item["payload"].get("callout_ids"), "revision_before": state.get("revision"),
                  "ok": False, "error": None}
         try:
-            state = transport.command(token, state.get("revision"), item["http_action"], item["payload"])
+            if item["http_action"] == "set_strategy":
+                state = transport.strategy(token, state.get("revision"), item["payload"])
+            else:
+                state = transport.command(token, state.get("revision"), item["http_action"],
+                                          item["payload"])
             entry["ok"] = True
             entry["revision_after"] = state.get("revision")
         except Exception as error:  # noqa: BLE001 — reddedilen eylem kayda geçer ve koşu DURUR
@@ -142,7 +150,9 @@ def run_recipe(recipe: dict, transport, *, source_path: pathlib.Path, case_id: s
             fail("action-refused", {"action": item["http_action"], "detail": str(error)})
             return _write(record, out_dir)
         record["actions"].append(entry)
-        record["action_ids"].extend(item["payload"].get("callout_ids") or [item["payload"].get("callout_id")])
+        if item["payload"].get("callout_ids") or item["payload"].get("callout_id"):
+            record["action_ids"].extend(item["payload"].get("callout_ids")
+                                        or [item["payload"].get("callout_id")])
     record["effective_callout_count"] = len(state.get("effective_callouts") or [])
     record["coverage"] = state.get("coverage")
 

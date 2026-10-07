@@ -83,6 +83,36 @@ Sayaçlar (§75/§76): correct 1 · wrong 5 · blocked 3 (üretilmedi) · scope-
   1637,22 s (27:17), EXIT=0** — `eval/audits/20261007-g12-strategy-plate/pytest-broad.log`
   (1527 → 1543: +11 build_strategy, +5 strateji UI).
 
+## G12R (bağımsız inceleme düzeltme turu, PLAN-25'ten sonra / G12.3'ten önce)
+
+İnceleme: `eval/audits/20261007-guided-g12-2-independent-review` (HEAD `f8d32f4`); beş bulgu, hepsi
+düzeltildi. Kural: önce başarısız regresyon, sonra generic düzeltme.
+
+- **G12R-01** strateji eşitliği artık **değer** bazlı (`model_dump(mode="json")`): tarayıcının
+  `10.0 → 10` turu aynı karar sayılır, normal kayıtlar onaydan sonra reddedilmez; değişen tür ya da
+  uydurulmuş `strategy_key` yine reddedilir. `tests/test_g12r_review_fixes.py`.
+- **G12R-02** kapsam onayı **sunucunun yazdığı pine** bağlı: satırın kendi okuması (transcription
+  revizyonu + bölge) ve dayanağın onaylandığı içerik (değer anlık görüntüsü / callout revizyonu).
+  Metin, bölge ya da dayanak değişince onay düşer; yeni kategori `stale_scope_claim` («Kapsam
+  kararını yeniden ver»). Şema **4 → 5** (`duplicate_pin`); şema-4 onayları pinsiz → yeniden onay
+  ister (satırın kararı silinmez, PLAN-24 §11 durur). İçe aktarmada pin istemciden alınmaz.
+- **G12R-03** kabul betiği artık "kalan" satırı kapatmaz: reçete dışı satırlar **yazılı** listeden
+  (`NON_MODEL_RECIPE`, 24 satır, her biri kendi gerekçesiyle) karara bağlanır; listede olmayan satır
+  kabulü **durdurur**. `_reason_for` varsayılanı kaldırıldı; eski betik tarihsel kayıt olarak durur.
+- **G12R-04** `produce_case.py` varsayılanı kaynak-only **G12 sürücüsü**; tarihsel G11 koşucusu G12
+  üretici yolunda reddedilir (çıkış 4, dosya yazılmaz). Varsayılan gerçek komut sahte uygulamayla
+  uçtan uca test edilir (yalnız guided uçları; kayıt yalnız tur dizinine).
+- **G12R-05** v2 reçete dolu `profile_actions`/`view_decisions`/`dimension_bindings`/`feature_links`
+  alanlarını oturum açılmadan reddeder; `strategy_decision` uçtan uca uygulanır
+  (`/api/guided/strategy`, yalnız `kind`); `notes` katı model dosyası adı taşıyamaz.
+
+Kanıt demeti: `eval/audits/20261007-g12r-strategy-plate/` — taze Plate kabulü **11/11 PASS**
+(dondurulmuş evaluator **9/9**, parça 120 × 80 × 15 · 4 delik · 1 cep), gerçek Chrome **11/11 PASS**
+(R-01: C/D; R-02: C2 değer ayağı, E okuma ayağı, F yeniden onay), ilgili süit **615 passed /
+212,84 s / EXIT=0** (incelemenin kendi komutu; 589 → +26) ve geniş regresyon
+**1569 passed / 339 deselected / 26:54 / EXIT=0** (`pytest-broad.log`; 1543 → 1569).
+Eski G12.2 kanıt dizini ve tarihsel G9/G11 kanıtları değişmedi; ana metrik hâlâ **1/9**.
+
 ## Kural hatırlatması (her faz sonu, §96)
 
 Case/file/hash dallanması yok · evaluator değeri producer'a kopyalanmaz · gerçek ölçü "gereksiz" diye

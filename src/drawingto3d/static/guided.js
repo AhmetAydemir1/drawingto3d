@@ -479,7 +479,7 @@ function renderTarget(){const panel=$('target-panel');if(!panel)return;const row
  const summary=$('target-summary');
  // PLAN-25 §16: desteklenmeyen satıra gelindiğinde panel ne olduğunu ve ne gerektiğini söyler.
  summary.textContent=unsupported?`Bu gerçek bilgi şu an modele uygulanamıyor. Model oluşturmak için bu capability çözülmeli veya karar düzeltilmeli.${row.disposition_reason?` (Gerekçe: ${row.disposition_reason})`:''}`
-  :redundant?`Zaten başka bir bilgiyle temsil ediliyor (dayanak: ${row.duplicate_of||'—'}).${coverageBucket(row.id)==='invalid_duplicate'?' Dayanak şu an geçerli değil: dayanağı yeniden bağlayın.':''}`
+  :redundant?`Zaten başka bir bilgiyle temsil ediliyor (dayanak: ${row.duplicate_of||'—'}).${coverageBucket(row.id)==='invalid_duplicate'?' Dayanak şu an geçerli değil: dayanağı yeniden bağlayın.':''}${coverageBucket(row.id)==='stale'?' Okuma değişti: kararı yeniden onaylayın.':''}`
   :(targetInfo===null?'Öneriler alınıyor…':(target.state==='stale'?`Gösterdiği yer eskidi (${target.reason||'—'}); yeniden onaylayın — onay eski geometriye bağlanmaz.`
    :(stored?`Onaylı: ${targetDescription(stored)} · ${evidenceText(stored)}`:'Gösterdiği yer henüz onaylanmadı.')));
  const box=$('target-proposals');box.replaceChildren();
@@ -574,7 +574,8 @@ const READINESS_TASK={missing_transcription:'Ölçü/not kontrolü',parse_error:
  // G12.2 (PLAN-25 §42): üretim biçimi maddesinin kontrol listesi karşılığı.
  missing_build_strategy:'Parçanın ana oluşturma biçimini seç',
  stale_build_strategy:'Oluşturma biçimini yeniden onayla',
- unsupported_build_strategy:'Oluşturma biçimini gözden geçir'};
+ unsupported_build_strategy:'Oluşturma biçimini gözden geçir',
+ stale_scope_claim:'Kapsam kararını yeniden ver'};
 // PLAN-25 §19: kapsam özeti yalnız backend counts'undan çizilir; teknik kova adları görünmez.
 const COVERAGE_WORDING={not_model_input:'modele ait değil',build_applied:'modele uygulandı',
  redundant:'zaten temsil ediliyor',build_relevant_unsupported:'desteklenmiyor'};

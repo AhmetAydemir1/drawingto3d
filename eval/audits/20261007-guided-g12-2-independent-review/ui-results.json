@@ -1,0 +1,21 @@
+[
+  {
+    "step": "no-strategy",
+    "buildEnabled": false
+  },
+  {
+    "step": "explicit-strategy",
+    "buildEnabled": true
+  },
+  {
+    "step": "thickness-edit-after-strategy",
+    "status": "oluşturma biçimi yalnız `set_build_strategy` komutuyla yazılır; istemci strategy_key/geometry_version uyduramaz",
+    "thickness": null
+  },
+  {
+    "step": "changed-callout-text-still-resolved",
+    "text": "",
+    "ready": true,
+    "buildEnabled": true
+  }
+]

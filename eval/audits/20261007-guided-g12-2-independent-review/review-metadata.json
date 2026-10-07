@@ -1,0 +1,18 @@
+{
+  "reviewed_head": "f8d32f4a9f5363a7dc3f120f64df570be730abb0",
+  "regression": {
+    "passed": 589,
+    "exit": 0,
+    "seconds": 161.99
+  },
+  "plate_saved_step_evaluator": {
+    "passed": 9,
+    "exit": 0
+  },
+  "scope": "G12.1/G12.2; no product edits",
+  "sha256": {
+    "src/drawingto3d/guided.py": "bdab3eb71aaeff6f461a070189e556a38b35f782c7b17d575b7f6766f9a9bd57",
+    "src/drawingto3d/callout_readiness.py": "c9e7cfe7da3a7995149042fee9750c67320c8dbf32aa9e1c7283ce60f28296dc",
+    "src/drawingto3d/static/guided.js": "c9819d2f6fdf902159b7db59ad28185cd67c6f66e771ff0ce617a92eb253567d"
+  }
+}

@@ -1,9 +1,9 @@
-"""G12.2 — taze Plate oturumu kabulü (PLAN-25 §44).
+"""G12R — taze Plate oturumu kabulü (PLAN-25 §44; G12R-03 düzeltmesiyle).
 
-TARİHSEL KAYIT (G12R-03): bu betik, reçetede olmayan satırları "kalan" diye toplayıp toplu kapatıyordu.
-O davranış bağımsız incelemede bulgu oldu (G12R-03) ve güncel betikte yazılı karar listesiyle
-değiştirildi: `../20261007-g12r-strategy-plate/g12r_strategy_plate_acceptance.py`. Bu dosya o günkü
-koşunun kaydı olarak aynen duruyor; yeni kabul için GÜNCEL betiği kullanın.
+G12R-03: reçete dışındaki satırlar artık "kalan ne varsa" diye KAPATILMAZ. Paftanın kendi
+okumasından yazılmış, gerekçesiyle duran bir liste (`NON_MODEL_RECIPE`) vardır; listede olmayan bir
+satır görülürse kabul DURUR (`beklenmeyen satır`). Bir gerekçe fonksiyonunun bilinmeyen metne
+varsayılan dönmesi de kaldırıldı: her satırın gerekçesi elle yazılıdır (PLAN-25 §24).
 
 Akış, kullanıcının akışıdır; hiçbir adım atlanmaz:
 
@@ -72,24 +72,45 @@ STEPS: list[dict] = []
 # Üst veri ve ölçü parçaları: kullanıcı bunları "modele ait değil" diye adıyla işaretler. Bu liste
 # reçetenin dışında kalan satırlar içindir ve GEREKÇE GRUPLARI paftanın kendi okumasından türer —
 # hiçbir satır sessizce kapatılmaz (PLAN-25 §24).
-TITLE_BLOCK_HINTS = {"A4", "ALLOY STEEL", "DRAFTCRAFT", "MATERIAL:", "NAME:", "PRO",
-                     "Plate With A Pocket", "SCALE1:1", "SECTION B-B", "SHEET 1 OF 1", "TITLE:",
-                     "WEIGHT:", "date:", "2026"}
-MARKER_HINTS = {"A", "B", "C", "D"}
-FRAGMENT_HINTS = {"1", "2", "3", "4", "5", "6"}
+# Paftanın KENDİ okumasından yazılmış, gerekçesiyle duran liste (G12R-03): reçete dışındaki her satır
+# burada tek tek yazılıdır. Listede olmayan bir satır görülürse kabul DURUR — koşucu "kalan" diye bir
+# küme bilmez ve hiçbir satırı kendiliğinden kapatmaz (PLAN-25 §24). Sıra: okuma düzeni.
+NON_MODEL_RECIPE = [
+    {"hint": "A4", "reason": "başlık bloğu: pafta boyutu; parça geometrisi değil"},
+    {"hint": "DRAFTCRAFT", "reason": "başlık bloğu: çizimi yayımlayan firma adı"},
+    {"hint": "ALLOY STEEL", "reason": "başlık bloğu: malzeme notu; ölçü ya da özellik değil"},
+    {"hint": "MATERIAL:", "reason": "başlık bloğu: malzeme etiketi"},
+    {"hint": "NAME:", "reason": "başlık bloğu: ad etiketi"},
+    {"hint": "PRO", "reason": "başlık bloğunda kesilmiş metin parçası; kendi başına anlam taşımıyor"},
+    {"hint": "Plate With A Pocket", "reason": "başlık bloğu: parça adı, geometri değil"},
+    {"hint": "SCALE1:1", "reason": "başlık bloğu: ölçek notu — ölçek KALİBRASYON kararından gelir"},
+    {"hint": "SECTION B-B", "reason": "kesit başlığı: görünüş etiketi, parça geometrisi değil"},
+    {"hint": "SHEET 1 OF 1", "reason": "başlık bloğu: sayfa numarası"},
+    {"hint": "TITLE:", "reason": "başlık bloğu: başlık etiketi"},
+    {"hint": "WEIGHT:", "reason": "başlık bloğu: ağırlık etiketi (değer basılı değil)"},
+    {"hint": "date:", "reason": "başlık bloğu: tarih etiketi (değer basılı değil)"},
+    {"hint": "2026", "reason": "başlık bloğundaki tarih değeri; parça geometrisi değil"},
+    {"hint": "A", "reason": "görünüş/bölüm oku ve harfi (çizimin kendi işareti)"},
+    {"hint": "B", "reason": "görünüş/bölüm oku ve harfi (SECTION B-B'nin harfi)"},
+    {"hint": "C", "reason": "görünüş/bölüm oku ve harfi"},
+    {"hint": "D", "reason": "görünüş/bölüm oku ve harfi"},
+    {"hint": "1", "reason": "basılı ölçünün kendi kutusundaki parçası / sıra işareti"},
+    {"hint": "2", "reason": "basılı ölçünün kendi kutusundaki parçası / sıra işareti"},
+    {"hint": "3", "reason": "basılı ölçünün kendi kutusundaki parçası / sıra işareti"},
+    {"hint": "4", "reason": "basılı ölçünün kendi kutusundaki parçası / sıra işareti"},
+    {"hint": "5", "reason": "basılı ölçünün kendi kutusundaki parçası / sıra işareti"},
+    {"hint": "6", "reason": "basılı ölçünün kendi kutusundaki parçası / sıra işareti"},
+]
 
-FALLBACK_REASON = "basılı ölçünün parçası (kendi kutusunda okundu)"
 
 
-def _reason_for(hint: str) -> str:
-    if hint in TITLE_BLOCK_HINTS:
-        return "başlık bloğu: çizim üst verisi, parça geometrisi değil"
-    if hint in MARKER_HINTS:
-        return "görünüş/bölüm işareti (SECTION B-B çizimi), parça geometrisi değil"
-    if hint in FRAGMENT_HINTS:
-        return "basılı ölçünün kendi kutusundaki parçası"
-    return FALLBACK_REASON
+def unexpected_rows(rows: dict, written: dict, recipe_hints) -> list[str]:
+    """Yazılı listede ve reçetede ADI GEÇMEYEN satırlar (G12R-03): boş değilse kabul durur.
 
+    Saf fonksiyon: kabul betiğinin sözleşmesi burada ölçülür — "kalanları kapat" yolu yoktur,
+    yalnız "tanımadığım satır var" sonucu vardır.
+    """
+    return sorted(hint for hint in rows if hint not in written and hint not in set(recipe_hints))
 
 
 def record(name: str, passed: bool, detail: dict) -> None:
@@ -211,18 +232,23 @@ def main() -> int:
                    target=item.get("target") if item["action"] == "transcribe" else None,
                    duplicate_of=citation(item))
 
-    # --- 1b. reçetenin dışında kalan satırlar: kullanıcı onları da ADIYLA karara bağlar -----------
+    # --- 1b. reçete dışındaki satırlar: YAZILI listeden, satır satır (G12R-03) -------------------
+    # Beklenmeyen satır varsa kabul burada DURUR: ne kapatılır ne yok sayılır.
+    written = {item["hint"]: item["reason"] for item in NON_MODEL_RECIPE}
+    unexpected = unexpected_rows(rows, written, [item["hint"] for item in CALL_RECIPE])
+    record("1b: reçete dışındaki satırlar yazılı listeden karara bağlandı (beklenmeyen satır yok)",
+           not unexpected, {"unexpected_rows": unexpected, "written_rows": len(written)})
+    if unexpected:
+        return _finish(landing, out, passed=False)
+    closed_ids = []
+    for item in NON_MODEL_RECIPE:
+        for callout_id in rows.get(item["hint"], []):
+            decide(callout_id, "not_model_input", item["reason"])
+            closed_ids.append(callout_id)
     decided = {row["callout_id"] for row in store.load(token)["decisions"]["callout_reviews"]}
-    decided |= {row["callout_id"] for row in store.load(token)["decisions"].get("callout_targets") or []}
-    remaining = {hint: [callout_id for callout_id in ids if callout_id not in decided]
-                 for hint, ids in rows.items()}
-    remaining = {hint: ids for hint, ids in remaining.items() if ids}
-    open_ids = [callout_id for ids in remaining.values() for callout_id in ids]
-    for hint, ids in remaining.items():
-        for callout_id in ids:
-            decide(callout_id, "not_model_input", _reason_for(hint))
-    record("1b: reçete dışındaki satırlar da tek tek adıyla karara bağlandı (örtük kapatma yok)",
-           True, {"remaining_rows": len(open_ids), "groups": sorted(remaining), "decided": len(decided)})
+    record("1c: yazılı listedeki her satır karara bağlandı — kalan satır yok",
+           len(decided) >= len(closed_ids), {"closed_rows": len(closed_ids), "decided": len(decided),
+                                             "groups": sorted(written)})
 
     readiness = callout_readiness.build_readiness(store.load(token))
     categories = readiness["categories"]
@@ -294,9 +320,9 @@ def main() -> int:
 
 
 def _finish(landing: pathlib.Path, out: pathlib.Path, *, passed: bool) -> int:
-    payload = {"case": "plate-pocket-vector", "phase": "G12.2", "plan": "PLAN-25 §44",
+    payload = {"case": "plate-pocket-vector", "phase": "G12R", "plan": "PLAN-25 §44 (G12R-03 düzeltmesi)",
                "passed": passed, "steps": STEPS}
-    (landing / "g12-strategy-plate-steps.json").write_text(
+    (landing / "g12r-strategy-plate-steps.json").write_text(
         json.dumps(payload, ensure_ascii=False, indent=1), encoding="utf-8")
     print(("TÜMÜ GEÇTİ " if passed else "KALAN VAR ") + f"{sum(1 for s in STEPS if s['passed'])}/{len(STEPS)}")
     return 0 if passed else 1

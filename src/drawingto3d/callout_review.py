@@ -83,6 +83,9 @@ def export_bundle(record: dict, *, artifacts: dict | None = None, proposals_limi
             "disposition": review.get("disposition"),
             "duplicate_of": review.get("duplicate_of"),
             "disposition_reason": review.get("disposition_reason"),
+            # G12R-02: dış inceleme onayın KANITINI görür (hangi değere, hangi okumaya bağlandı);
+            # içe aktarmada bu alan istemciden gelmez, sunucu onay anında yeniden hesaplar.
+            "duplicate_pin": review.get("duplicate_pin"),
             "freshness": {"transcription": state.get("transcription"), "parse": state.get("parse"),
                           "target": state.get("target")},
             "raw_text": transcription.get("raw_text"),
@@ -266,6 +269,7 @@ def validate_import(record: dict, bundle: dict, *, session_token: str | None = N
                 errors.append({"index": index, "callout_id": callout_id, "reason": "unknown_disposition",
                                "detail": str(disposition)})
                 continue
+            payload.pop("duplicate_pin", None)      # G12R-02: pin sunucunun yazdığı kanıttır
             duplicate_of = item.get("duplicate_of")
             reason = item.get("disposition_reason")
             if disposition == "redundant":

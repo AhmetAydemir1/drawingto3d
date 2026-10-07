@@ -1,15 +1,16 @@
 # Guided progress
 
 - Scope: G0 + G1 (düzeltme turu 1 ve 2 dahil) + G2 (tamamlandı) + G3 + G1R3-01 (PLAN-21, tamamlandı) + **G3R-01–04 kayıt sınırı düzeltmeleri (kök `PLAN.md`, tamamlandı)**
-- Active plan: kök `PLAN.md` (G3R turu; önceki kök arşivleri `docs/PLAN_ROOT_BEFORE_G3_REVIEW_20261006.md` sha256 `09e18c82…` ve `docs/PLAN_ROOT_BEFORE_G3_ACCEPTANCE_REVIEW_20261006.md` sha256 `5743bb06…` = `docs/PLAN-22.md`) + `docs/PLAN-20.md`
+- Active plan: kök `PLAN.md` = **PLAN-25-G12-CONTINUATION** (byte kopya `docs/PLAN-25-G12-CONTINUATION.md`, sha256 `02c924c9…`; kullanıcı girdisi `PLAN-21.md`) + `docs/PLAN-24-G12-CORRECTNESS.md` (sha256 `2535e1e6…`, donmuş tarih: G12.0–G12.2 orada planlandı)
+- Önceki kök arşivler: `docs/PLAN_ROOT_BEFORE_G3_REVIEW_20261006.md` `09e18c82…` ve `docs/PLAN_ROOT_BEFORE_G3_ACCEPTANCE_REVIEW_20261006.md` `5743bb06…` (= bugünkü `docs/PLAN-22.md`; dikkat: `docs/PLAN-21.md` de `09e18c82…` = PLAN-18 kopyasıdır, bugünkü `PLAN-21.md` girdisiyle karıştırılmamalı)
 - Initial HEAD: `5175f373f1d6892e481341ed2cbcfd89dec29e36`
 - G2 initial HEAD: `316518eb8d67c7a4ad81eed59c09e6c59ef4df37`
 - G3 initial HEAD: `ff97295065260ba8d46bf6fcd2c6e864e63dfcef` (`ff97295` = G2)
 - G3R initial HEAD: `2cdb4d0424b17e4299d625066c24e6a0eab4de6d` (`2cdb4d0` = G3 + G1R3-01 kabul commit'i; eski “G3 commit edilmedi” ifadesi artık geçerli değil)
-- Current HEAD: `4592275` (G12.1b kapanışı + G12.2 ara kaydı; bu bölümün commit'i **G12.2 kapanışı**nı izler)
+- Current HEAD: `190a065` (G12.2 kapanışı: taze Plate kabulü 10/10 + gerçek Chrome 7/7; bu bölümün commit'i **plan devri**ni izler)
 - Active plan (güncel): `PLAN-24-G12-CORRECTNESS` (kök `PLAN.md`, commit `5605cb5`) + devam planı `PLAN-25-G12-CONTINUATION` (kullanıcı girdisi `PLAN-21.md`: G12.1b → dondurulmuş manifest kabulü)
 - G11 baseline: **1/9** (`plate-pocket-vector`; payda sabit — PLAN-24 §75) — bu bir ölçümdür, kabul değil
-- Current task: **G12.2 tamamlandı (açık üretim biçimi + taze Plate kabulü 10/10); sıradaki G12.3** — view-scoped geometry foundation (PLAN-25 §45–§54)
+- Current task: **G12.2 tamamlandı (açık üretim biçimi; taze Plate kabulü 10/10 + gerçek Chrome 7/7, commit `190a065`); sıradaki G12.3** — view-scoped geometry foundation (PLAN-25 §45–§54): ilk iş görünüş adaylarının BİR KEZ kalıcı yazılması (§46) + "görünüş" ve "geometri" kavramlarının ayrılması (§47) + geometriyi görünüşe atama (§48) + `GEOMETRY_VERSION 3→4` ve `geometry_key` güncellemesi (§49/§50); RED testleri §53, gerçek Chrome §54
 - Initial worktree changes: `?? PLAN-17-HERMES.md` (kullanıcının verdiği plan kaynağı; **korunur, stage edilmez**)
 - Current task: **G12.1b tamamlandı — sıradaki G12.2** (explicit build strategy sözleşmesi + implicit extrude'un kaldırılması; aşağıdaki "G12" bölümü)
 

@@ -31,9 +31,15 @@ def main() -> int:
     name = sys.argv[2]
     out = G11_DIR / "probes"
     out.mkdir(exist_ok=True)
-    page = C.Chrome(url=G3.APP + "/guided")
-    page.wait_ready()
-    page.set_file("#file", str(source))
+    token = sys.argv[3] if len(sys.argv) > 3 else ""
+    if token:
+        # recover an orphaned session whose client fetch died (the server kept computing)
+        page = C.Chrome(url=G3.APP + "/guided?session=" + token)
+        page.wait_ready()
+    else:
+        page = C.Chrome(url=G3.APP + "/guided")
+        page.wait_ready()
+        page.set_file("#file", str(source))
     page.wait_ev("!$('controls').hidden", timeout=900, label="session opened")
     data = wait_ingest(page)
     time.sleep(1.0)

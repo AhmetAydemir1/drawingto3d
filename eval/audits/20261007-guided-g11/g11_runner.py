@@ -117,9 +117,15 @@ def main() -> int:
     def note(text: str) -> None:
         record["notes"].append(text)
 
-    page = C.Chrome(url=APP + "/guided")
-    page.wait_ready()
-    page.set_file("#file", str(source))
+    token = recipe.get("session_token")
+    if token:
+        # recover an orphaned session: the server computed it but the client fetch died
+        page = C.Chrome(url=APP + "/guided?session=" + token)
+        page.wait_ready()
+    else:
+        page = C.Chrome(url=APP + "/guided")
+        page.wait_ready()
+        page.set_file("#file", str(source))
     page.wait_ev("!$('controls').hidden", timeout=900, label="session opened")
     data = wait_ingest(page)
     record["candidate_count"] = len(data["effective_callouts"])

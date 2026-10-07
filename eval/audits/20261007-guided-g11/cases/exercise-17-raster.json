@@ -1,0 +1,55 @@
+{
+  "case_id": "exercise-17-raster",
+  "run_id": "20261007-055036",
+  "at": "2026-10-07T05:50:36+0300",
+  "git_head": "c23b3a629a536bb9ca0132cb9cdf63722a3b09ed",
+  "source_path": "examples/pdf with steps/3/Exercise 17.PNG",
+  "source_sha256": "5c926b6dc7e881204fbb60945eb435a0184250a907a32910166ea41cd4e0b2f5",
+  "source_sha256_checked": true,
+  "scope_class": "full_step",
+  "prior_exposure": "previously_seen",
+  "recipe": "exercise-17-raster.json",
+  "candidate_count": 20,
+  "manual_region_count": 0,
+  "ignored_count": 20,
+  "transcription_count": 0,
+  "parse_success_count": 0,
+  "parse_edit_count": 0,
+  "proposal_count": 0,
+  "proposal_accept_count": 0,
+  "manual_target_correction_count": 0,
+  "review_import_used": false,
+  "build_blockers": [
+    "Ana görünüşte dış konturu seçin."
+  ],
+  "build_success": false,
+  "step_reopen": null,
+  "bbox": null,
+  "features": null,
+  "final_geometry_verdict": null,
+  "user_interventions": {
+    "typed_texts": 0,
+    "hint_clicks": 0,
+    "single_ignores": 0,
+    "bulk_rows": 20,
+    "bulk_actions": 1,
+    "proposal_accepts": 0,
+    "profile_selections": 1,
+    "calibration_entries": 1,
+    "thickness_entries": 1,
+    "trace_acknowledgements": 1
+  },
+  "failures": [
+    {
+      "code": "CONSTRAINT_UNSUPPORTED",
+      "detail": {
+        "what": "build never ran",
+        "blockers": 1
+      }
+    }
+  ],
+  "notes": [],
+  "artifacts": {},
+  "console_errors": [],
+  "rejected_requests": []
+}

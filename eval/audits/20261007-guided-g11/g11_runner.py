@@ -157,13 +157,22 @@ def main() -> int:
         if page.ev(f"$('profile').value !== {json.dumps(profile_id)}"):  # idempotent on re-runs
             page.click_selector("#pick-profile")
             time.sleep(0.3)
-            click_image_point(page, profile["points"][0])
-            try:
-                page.wait_ev(f"$('profile').value === {json.dumps(profile_id)}", timeout=30, label="profile")
-            except TimeoutError:
-                # a second vertex of the same profile is a fair retry: the click missed the edge
-                click_image_point(page, profile["points"][len(profile["points"]) // 2])
-                page.wait_ev(f"$('profile').value === {json.dumps(profile_id)}", timeout=30, label="profile retry")
+            picked = False
+            for point in (profile["points"][0], profile["points"][len(profile["points"]) // 2],
+                          profile["points"][len(profile["points"]) // 4]):
+                click_image_point(page, point)
+                try:
+                    # the server, not the select's DOM value: that is where the decision lives
+                    UX.wait_server(page, lambda d: d["decisions"].get("profile_id") == profile_id,
+                                   20, "profile")
+                    picked = True
+                    break
+                except TimeoutError:
+                    page.click_selector("#pick-profile")
+                    time.sleep(0.3)
+            if not picked:
+                fail("DETECT_MISS", {"what": "contour click", "profile_id": profile_id,
+                                     "reason": "sunucu seçimi kaydetmedi"})
 
     # --- contour validation issues (PLAN §7.3 UI): the user approves closing an open end ----------
     if page.ev("!![...$('contour-fix').querySelectorAll('input[type=checkbox]')].length"):

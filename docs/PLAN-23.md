@@ -209,12 +209,15 @@ No filesystem/network/model/OCR/reference.
 Parser identity:
 
 ```text
-CALLOUT_PARSER_VERSION = "callout-parser/1"
+CALLOUT_PARSER_VERSION = "callout-parser/2"
 ```
+
+(v2: standart `THRU ALL` niteleyicisi — G9 koşusunda paftadaki `4 x Ø6,80 THRU ALL` notu okunamadığı
+için genel düzeltme; v1 okumaları bu sürümle bayatlar.)
 
 ---
 
-# 8. G4 grammar v1
+# 8. G4 grammar v2
 
 Destek:
 
@@ -226,6 +229,7 @@ mm / in
 R
 x / X / × count
 THRU / THROUGH
+THRU ALL / THROUGH ALL (standart niteleyici; yalnız THRU'dan hemen sonra)
 DEPTH / DEEP
 simple diameter + depth
 simple radius
@@ -246,6 +250,8 @@ R5
 4x Ø8
 4 X Ø8
 4 × Ø8 THRU
+4 x Ø6,80 THRU ALL
+Ø8 THROUGH ALL
 Ø10 6 DEEP
 Ø10 DEPTH 6
 .375 DIA

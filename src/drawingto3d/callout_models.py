@@ -52,8 +52,11 @@ also keeps a server-assigned id from ever colliding with a detected candidate's 
 """
 MANUAL_ID_PATTERN = r"manual:[0-9a-f]{32}"
 
-CALLOUT_PARSER_VERSION = "callout-parser/1"
+CALLOUT_PARSER_VERSION = "callout-parser/2"
 """The parser contract version this slice expects (PLAN-20 §6.5).
+
+v2 reads the standard `THRU ALL` qualifier (a word the grammar knows only behind THRU) — the plate
+sheet's own `4 x Ø6,80 THRU ALL` note — so parses computed under v1 are stale by design.
 
 G1 stores no parser, so this is the explicit expectation freshness is judged against: a parse
 record is current only while it was written for this same version. G4 feeds the real parser's

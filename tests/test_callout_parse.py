@@ -30,6 +30,10 @@ POSITIVE = [
     ("4x Ø8", {"form": "diameter", "size": 8.0, "count": 4}),
     ("4 X Ø8", {"form": "diameter", "size": 8.0, "count": 4}),
     ("4 × Ø8 THRU", {"form": "diameter", "size": 8.0, "count": 4, "termination": "thru"}),
+    # `THRU ALL` standart atölye dilidir (paftada: `4 x Ø6,80 THRU ALL`); ALL sonlandırmayı niteler,
+    # ölçüyü değil. Yalnız THRU'dan hemen sonra tanınır — tek başına ALL sözcüğü hâlâ bilinmezdir.
+    ("4 x Ø6,80 THRU ALL", {"form": "diameter", "size": 6.8, "count": 4, "termination": "thru"}),
+    ("Ø8 THROUGH ALL", {"form": "diameter", "size": 8.0, "termination": "thru"}),
     ("Ø10 6 DEEP", {"form": "diameter", "size": 10.0, "termination": "blind", "depth": 6.0}),
     ("Ø10 DEPTH 6", {"form": "diameter", "size": 10.0, "termination": "blind", "depth": 6.0}),
     (".375 DIA", {"form": "diameter", "size": 0.375}),
@@ -45,7 +49,7 @@ def test_the_positive_matrix_parses_to_exactly_these_fields(text, expected):
 
 @pytest.mark.parametrize("text", [text for text, _ in POSITIVE])
 def test_the_parser_version_is_the_one_the_contract_expects(text):
-    assert callout_parse.CALLOUT_PARSER_VERSION == CALLOUT_PARSER_VERSION == "callout-parser/1"
+    assert callout_parse.CALLOUT_PARSER_VERSION == CALLOUT_PARSER_VERSION == "callout-parser/2"
     assert parse_callout(text).status == "parsed"
 
 
@@ -105,6 +109,9 @@ NEGATIVE = [
     ("4x", "count_without_feature"),
     ("4x 25", "count_without_feature"),
     ("Ø8 HELLO", "unknown_tokens"),
+    ("ALL", "unknown_tokens"),
+    ("Ø8 ALL", "unknown_tokens"),      # THRU olmadan ALL bir şey söylemez: uydurulmaz
+    ("ALL THRU", "unknown_tokens"),    # akış yönü THRU → ALL'dir; tersi standart değil
     ("???", "unknown_tokens"),
     ("Ø8 THRU DEEP 6", "thru_with_depth"),
     ("Ø0", "invalid_value"),

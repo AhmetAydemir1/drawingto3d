@@ -5,15 +5,17 @@ model, no OCR, no reference STEP, no store. The authority is the *user's own tra
 machine text hint never reaches this function by itself, and this module never invents a field the
 user did not write (PLAN §4: "yazmayan bilgiyi uydurma").
 
-What the grammar knows (v1): a plain number (integer, decimal, `.375`, `25,5`), an explicit `mm`/`in`,
+What the grammar knows (v2): a plain number (integer, decimal, `.375`, `25,5`), an explicit `mm`/`in`,
 the diameter glyphs `Ø ⌀ ∅` and the words `DIA`/`DIAM`, the radius prefix `R`, a count written
-`4x`/`4 X`/`4 ×`, `THRU`/`THROUGH`, and `DEPTH n`/`n DEEP`. `parse_callout` is pure and deterministic:
-the same text yields the same reading, whatever the locale or the input order.
+`4x`/`4 X`/`4 ×`, `THRU`/`THROUGH` — the standard qualifier `ALL` riding directly behind it
+(`THRU ALL`, the shop-drawing phrase) — and `DEPTH n`/`n DEEP`. `parse_callout` is pure and
+deterministic: the same text yields the same reading, whatever the locale or the input order.
 
 No-guess is part of the contract, not a style: `Ø8` means *diameter 8 and nothing more* — not a hole,
 not through, not one place count; `R5` means *radius 5* — not a fillet. A missing unit stays missing
 (`unit_unresolved`), never the sheet's unit: the sheet's own unit is only ever allowed to *disagree*
-out loud (`unit_differs_from_sheet`).
+out loud (`unit_differs_from_sheet`). The word `ALL` is known only as part of `THRU ALL`, where it
+qualifies the termination the text already states; standing anywhere else it stays an unknown token.
 
 Machine codes (Turkish wording lives in the interface, `guided.js`):
 
@@ -71,6 +73,7 @@ _AMBIGUOUS_CODES = ("ambiguous_number",)
 _THREAD_RE = re.compile(r"(?<![A-Za-z0-9])M\s*\d")
 
 # Tek geçişli tarayıcı: boşluk, özellik simgeleri, sayı, adet işareti, thru/derinlik, birim, sözcük, geri kalan.
+# `ALL` ayrı bir grup: yalnız `THRU`dan hemen sonra bilinen standart ifadedir; başka yerde bilinmez kalır.
 _TOKEN_RE = re.compile(
     r"""
       (?P<space>\s+)
@@ -79,6 +82,7 @@ _TOKEN_RE = re.compile(
     | (?P<number>\d+(?:[.,]\d+)?|\.\d+)
     | (?P<times>[xX×])
     | (?P<thru>THROUGH|THRU)
+    | (?P<all>ALL)(?![A-Za-z])
     | (?P<depthword>DEPTH|DEEP)
     | (?P<mm>MM)
     | (?P<inch>INCHES|INCH|IN|")
@@ -203,6 +207,12 @@ def parse_callout(raw_text: str, *, sheet_unit: str | None = None) -> CalloutRea
             count = int(value)
         elif kind == "thru":
             thru = True
+        elif kind == "all":
+            # `THRU ALL` standart atölye ifadesidir: ALL, metnin zaten söylediği bitişi niteler —
+            # ölçü ya da ad değildir. Yalnız THRU'dan hemen sonra tanınır; başka yerde token
+            # bilinmez kalır (no-guess: anlamı tanımlı olmayan sözcük uydurulmaz).
+            if index == 0 or tokens[index - 1][0] != "thru":
+                warnings.add("unknown_tokens")
         elif kind == "depthword":
             depth_words.append(index)
         elif kind == "mm":

@@ -307,9 +307,11 @@ def test_an_edited_text_leaves_the_old_parse_and_target_stale():
 
 
 def test_a_new_parser_version_stales_parse_and_target():
-    record = make_record(transcriptions=[transcription(revision=5)], parses=[parse()],
-                         targets=[target(transcription_revision=5)])
-    rows = callout_states(record, expected_parser_version="callout-parser/2")
+    """Eski sürümle yazılmış okuma/hedef, beklenti ilerleyince bayatlar (v1 → güncel beklenti)."""
+    record = make_record(transcriptions=[transcription(revision=5)],
+                         parses=[parse(parser_version="callout-parser/1")],
+                         targets=[target(transcription_revision=5, parser_version="callout-parser/1")])
+    rows = callout_states(record)
     assert rows[0]["parse"] == {"state": "stale", "reason": "parser_version_changed"}
     assert rows[0]["target"] == {"state": "stale", "reason": "parser_version_changed"}
 

@@ -73,6 +73,14 @@ def click_image_point(page: C.Chrome, px_point: list) -> None:
     page.click(target["x"], target["y"])
 
 
+def click_element(page, selector: str) -> None:
+    """Click any CSS selector via its box (click_selector only resolves plain ids)."""
+    page.ev(f"document.querySelector({json.dumps(selector)}).scrollIntoView({{block:'center'}});")
+    time.sleep(0.25)
+    box = page.box(selector)
+    page.click(box["x"] + box["w"] / 2, box["y"] + box["h"] / 2)
+
+
 def main() -> int:
     recipe = json.loads(pathlib.Path(sys.argv[1]).read_text(encoding="utf-8"))
     case_id, run_id = recipe["case_id"], time.strftime("%Y%m%d-%H%M%S")
@@ -129,7 +137,7 @@ def main() -> int:
                                      "visible": [text[:120] for text in rows or []]})
                 continue
             selector = f"#proposals .proposal:nth-child({index + 1}) button"
-            page.click_selector(selector)
+            click_element(page, selector)
             time.sleep(0.9)
         page.screenshot(str(shots / f"{case_id}-00-proposals.png"))
 

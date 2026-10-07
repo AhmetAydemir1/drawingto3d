@@ -1,0 +1,25 @@
+[case drawing-2-vector] candidates=66
+Traceback (most recent call last):
+  File "/Users/aydemir/Desktop/drawingto3d/eval/audits/20261006-guided-g3-review/cdp_client.py", line 181, in ev
+    return self.evaluate(expression)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/aydemir/Desktop/drawingto3d/eval/audits/20261006-guided-g3-review/cdp_client.py", line 168, in evaluate
+    raise RuntimeError(result["exceptionDetails"].get("text") + " " + json.dumps(
+RuntimeError: Uncaught "TypeError: Cannot read properties of null (reading 'scrollIntoView')\n    at <anonymous>:1:120\n    at <anonymous>:1:156"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/aydemir/Desktop/drawingto3d/eval/audits/20261007-guided-g11/g11_runner.py", line 372, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/Users/aydemir/Desktop/drawingto3d/eval/audits/20261007-guided-g11/g11_runner.py", line 132, in main
+    page.click_selector(selector)
+  File "/Users/aydemir/Desktop/drawingto3d/eval/audits/20261006-guided-g3-review/cdp_client.py", line 244, in click_selector
+    self.ev(f"{self.field(selector)}.scrollIntoView({{block:'center'}});")
+  File "/Users/aydemir/Desktop/drawingto3d/eval/audits/20261006-guided-g3-review/cdp_client.py", line 186, in ev
+    return self.evaluate(expression)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/aydemir/Desktop/drawingto3d/eval/audits/20261006-guided-g3-review/cdp_client.py", line 168, in evaluate
+    raise RuntimeError(result["exceptionDetails"].get("text") + " " + json.dumps(
+RuntimeError: Uncaught "TypeError: Cannot read properties of null (reading 'scrollIntoView')\n    at <anonymous>:1:120\n    at <anonymous>:1:156"

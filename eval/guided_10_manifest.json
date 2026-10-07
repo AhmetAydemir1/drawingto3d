@@ -1,0 +1,210 @@
+{
+  "manifest_version": 1,
+  "created_at_git_head": "3b92938345988d9c60f98e0c56aa508cccadba72",
+  "created_at": "2026-10-07",
+  "frozen_before_results": true,
+  "expected_count": 10,
+  "scope_classes": {
+    "full_step": "Reference STEP exists: the run must reach a STEP judged against the reference (correctness scored).",
+    "callout_scope_only": "No reference STEP: scored on reading/transcription/scope declarations only; never reported as geometric correctness."
+  },
+  "notes": [
+    "Frozen before any G11 run; results were not seen when this manifest was written.",
+    "Exactly 10 cases. After a run the scope is never changed retroactively; a new corpus is a new manifest version and a new run.",
+    "reference_identifier_evaluator_only is evaluator-only: it is never an input to the producer (drawing + user decisions only).",
+    "prior_exposure: the plate is the G9 regression; every other sheet has been used in development before (reading/proposal measurements), so the corpus carries no unseen case — labels are honest, not aspirational.",
+    "Diversity coverage: vector PDF (4), raster png/jpg (6); plate/profile; holes; pocket; THRU; depth; count; radius/arc; multiple callouts; layout variation."
+  ],
+  "cases": [
+    {
+      "case_id": "plate-pocket-vector",
+      "source_path": "examples/pdf with steps/5/Plate With A Pocket Drawing.PDF",
+      "format": "pdf",
+      "source_kind": "vector_pdf",
+      "expected_scope_class": "full_step",
+      "reference_identifier_evaluator_only": "examples/pdf with steps/5/plate with a pocket.STEP",
+      "prior_exposure": "regression",
+      "tags": [
+        "plate",
+        "holes",
+        "pocket",
+        "thru_all",
+        "depth",
+        "count",
+        "multiple_callouts"
+      ],
+      "note": "G9 golden path (already seen). Labeled a regression; never reported as unseen.",
+      "source_sha256": "9e34e6713de6ef8d95bad464e0c87330b515976abc7e5e2e0f9bb0fe701d96ef",
+      "page_index": 0,
+      "view": "primary",
+      "reference_available": true
+    },
+    {
+      "case_id": "drawing-2-vector",
+      "source_path": "examples/pdf with steps/2/Drawing.pdf",
+      "format": "pdf",
+      "source_kind": "vector_pdf",
+      "expected_scope_class": "full_step",
+      "reference_identifier_evaluator_only": "examples/pdf with steps/2/Part-2.STEP",
+      "prior_exposure": "previously_seen",
+      "tags": [
+        "multi_view",
+        "diameters",
+        "bores",
+        "section",
+        "layout_variation"
+      ],
+      "note": null,
+      "source_sha256": "cdf6285583f54f9a2350c45cf8061a0d74d5ec2077b30af33adef1bda9ed2114",
+      "page_index": 0,
+      "view": "primary",
+      "reference_available": true
+    },
+    {
+      "case_id": "plastic-enclosure-vector",
+      "source_path": "examples/pdf with steps/6/plastic enclosue.pdf",
+      "format": "pdf",
+      "source_kind": "vector_pdf",
+      "expected_scope_class": "full_step",
+      "reference_identifier_evaluator_only": "examples/pdf with steps/6/plastic enclosue.STEP",
+      "prior_exposure": "previously_seen",
+      "tags": [
+        "profile",
+        "radius_arc",
+        "layout_variation"
+      ],
+      "note": null,
+      "source_sha256": "7698e830ca02ad46aa89f910c67f2efb6b1c930ff63d30bb0b80a8585519da4d",
+      "page_index": 0,
+      "view": "primary",
+      "reference_available": true
+    },
+    {
+      "case_id": "exercise-12-vector",
+      "source_path": "examples/pdf with steps/10/Exercise 12.pdf",
+      "format": "pdf",
+      "source_kind": "vector_pdf",
+      "expected_scope_class": "full_step",
+      "reference_identifier_evaluator_only": "examples/pdf with steps/10/Exercise 12.STEP",
+      "prior_exposure": "previously_seen",
+      "tags": [
+        "multiple_callouts",
+        "dimensions",
+        "contour_profile"
+      ],
+      "note": null,
+      "source_sha256": "0a03e53e950f464fde9a14846d8350635b80c72ba9aaeaf8439fbe9477436f1a",
+      "page_index": 0,
+      "view": "primary",
+      "reference_available": true
+    },
+    {
+      "case_id": "exercise-51-raster",
+      "source_path": "examples/pdf with steps/1/Exercise_51.PNG",
+      "format": "png",
+      "source_kind": "raster_png",
+      "expected_scope_class": "full_step",
+      "reference_identifier_evaluator_only": "examples/pdf with steps/1/Exercise 51.STEP",
+      "prior_exposure": "previously_seen",
+      "tags": [
+        "radius_arc",
+        "contour_profile"
+      ],
+      "note": null,
+      "source_sha256": "b19423550cd579ec24a2ef0630babd8af7bbe50a0ce7b2b9532f9bcec476abe8",
+      "page_index": 0,
+      "view": "primary",
+      "reference_available": true
+    },
+    {
+      "case_id": "exercise-17-raster",
+      "source_path": "examples/pdf with steps/3/Exercise 17.PNG",
+      "format": "png",
+      "source_kind": "raster_png",
+      "expected_scope_class": "full_step",
+      "reference_identifier_evaluator_only": "examples/pdf with steps/3/Exercise 17.STEP",
+      "prior_exposure": "previously_seen",
+      "tags": [
+        "radius_arc",
+        "contour_profile"
+      ],
+      "note": null,
+      "source_sha256": "5c926b6dc7e881204fbb60945eb435a0184250a907a32910166ea41cd4e0b2f5",
+      "page_index": 0,
+      "view": "primary",
+      "reference_available": true
+    },
+    {
+      "case_id": "exercise-13-raster",
+      "source_path": "examples/pdf with steps/4/Exercise 13.PNG",
+      "format": "png",
+      "source_kind": "raster_png",
+      "expected_scope_class": "full_step",
+      "reference_identifier_evaluator_only": "examples/pdf with steps/4/Exercise 13.STEP",
+      "prior_exposure": "previously_seen",
+      "tags": [
+        "contour_profile"
+      ],
+      "note": null,
+      "source_sha256": "fbc8e970056d4d4cd8c620a170076b1e44b1e46d83b0f653819b5f7f8d6a4895",
+      "page_index": 0,
+      "view": "primary",
+      "reference_available": true
+    },
+    {
+      "case_id": "my-part-raster",
+      "source_path": "examples/pdf with steps/7/my_part.jpg",
+      "format": "jpg",
+      "source_kind": "raster_jpg",
+      "expected_scope_class": "full_step",
+      "reference_identifier_evaluator_only": "examples/pdf with steps/7/my_part.STEP",
+      "prior_exposure": "previously_seen",
+      "tags": [
+        "contour_profile",
+        "jpg_sample"
+      ],
+      "note": null,
+      "source_sha256": "54adde53e376b5df4a330eaff4cc26ca37f2698160d5656d12745af4f144b7d8",
+      "page_index": 0,
+      "view": "primary",
+      "reference_available": true
+    },
+    {
+      "case_id": "flange-raster",
+      "source_path": "examples/pdf with steps/8/Flange.PNG",
+      "format": "png",
+      "source_kind": "raster_png",
+      "expected_scope_class": "full_step",
+      "reference_identifier_evaluator_only": "examples/pdf with steps/8/Flange.STEP",
+      "prior_exposure": "previously_seen",
+      "tags": [
+        "radius_arc",
+        "flange"
+      ],
+      "note": null,
+      "source_sha256": "9c0a91e21bf7265d13074adad10ba36171e802cc0e70895cfd4c24656933282a",
+      "page_index": 0,
+      "view": "primary",
+      "reference_available": true
+    },
+    {
+      "case_id": "flange-elbow-90-raster-noref",
+      "source_path": "examples/flange-elbow-90.png",
+      "format": "png",
+      "source_kind": "raster_png",
+      "expected_scope_class": "callout_scope_only",
+      "reference_identifier_evaluator_only": null,
+      "prior_exposure": "previously_seen",
+      "tags": [
+        "rotational_flanged",
+        "elbow",
+        "no_reference_step"
+      ],
+      "note": "No reference STEP exists: scored on reading/transcription/scope declarations only.",
+      "source_sha256": "20a2e6b4968960caab806ff91808fd7e625fc60fd5b98de5a1bb07f133babbff",
+      "page_index": 0,
+      "view": "primary",
+      "reference_available": false
+    }
+  ]
+}

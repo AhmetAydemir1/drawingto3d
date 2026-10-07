@@ -6,9 +6,9 @@
 - G2 initial HEAD: `316518eb8d67c7a4ad81eed59c09e6c59ef4df37`
 - G3 initial HEAD: `ff97295065260ba8d46bf6fcd2c6e864e63dfcef` (`ff97295` = G2)
 - G3R initial HEAD: `2cdb4d0424b17e4299d625066c24e6a0eab4de6d` (`2cdb4d0` = G3 + G1R3-01 kabul commit'i; eski “G3 commit edilmedi” ifadesi artık geçerli değil)
-- Current HEAD: `a187bf3` (G3R kayıt sınırı düzeltmeleri; `git push origin main` → `2cdb4d0..a187bf3`)
+- Current HEAD: `3b92938` (G9 plate golden path PASS; `git push origin main` → `1a40d86..3b92938`)
 - Initial worktree changes: `?? PLAN-17-HERMES.md` (kullanıcının verdiği plan kaynağı; **korunur, stage edilmez**)
-- Current task: **G3R-01–04 tamamlandı** — dört dar düzeltme + anlamlı kırmızı regresyonlar + dört bağımsız probe + gerçek tarayıcı kabulü PASS; commit `a187bf3` push edildi; G4+ açılmadı, model çağrısı 0
+- Current task: **G9 PASS kabul edildi; G10 manifesti sonuçlar görülmeden donduruldu** (`eval/guided_10_manifest.json`) — sıradaki iş dar UX turu; G11 bekliyor (aşağıdaki "G9 kabul + G10" bölümü)
 
 | İş | Durum | Kanıt | Kalan |
 |---|---|---|---|
@@ -507,3 +507,23 @@ test**; ek sınır probu **33/33** (dönüş/uç sırası + aynı sürüm geomet
 
 Açık: geniş semread regresyon ağı ve gerçek CAD/STEP üretimi bu düzeltme turunda koşulmadı; sıradaki
 adım kapsamında alınmalı.
+
+## G9 kabul + G10 manifesti donduruldu — 2026-10-07
+
+**G9 PASS kabul edildi (kullanıcı kararı).** Kanıt: `eval/audits/20261007-guided-g9-plate/DELIVERY.md`
+(24/24 gerçek-tarayıcı adımı, `verdict.json` tüm kapılar PASS, `THRU ALL` dilbilgisi düzeltmesi commit
+`1a40d86`). G9 kaydı böylece "kabul edildi" olarak kapanır; G10 açılır.
+
+**G10 — sabit 10-pafta manifesti, sonuçlar görülmeden donduruldu:** `eval/guided_10_manifest.json`
+(manifest_version 1, `created_at_git_head` = `3b92938345988d9c60f98e0c56aa508cccadba72`). Tam 10 vaka;
+her kaynak hash'i dosyadan hesaplandı ve dosyadan geri okunarak doğrulandı. Kapsam sınıfları koşu
+öncesi bildirildi (`full_step` / `callout_scope_only`) ve koşu sonrası geriye dönük değiştirilmez.
+Referans STEP yolları yalnız evaluator içindir (`reference_identifier_evaluator_only`), üreticiye
+kapalıdır. Ön maruziyet dürüst etiketlendi: plate = G9 regresyonu (unseen diye raporlanmaz); kalan
+dokuz pafta geliştirmede kullanıldı (`previously_seen`) — bu korpusta "unseen" vaka yok.
+
+**Sıra (kullanıcı yönlendirmesi).** G11 henüz başlatılmadı; önce G9'da gözlenen 45 aday / 43 kapsam
+dışı kullanıcı yükünü generic biçimde azaltan dar UX turu yürütülür: next-unresolved akışı, açık
+(explicit) toplu ignore, makine ipucu için tek-tık kabul akışı ve hazırlığın eyleme dönük kontrol
+listesi. Sessiz başlık-bloğu filtreleme veya vakaya özel kural eklenmez. Browser kabulü ve mevcut
+callout regresyonları yeşil olduktan sonra dondurulmuş manifest değiştirilmeden G11'e geçilir.

@@ -486,11 +486,12 @@ def main() -> int:
            and all(reviews[callout_id]["ignored"] for callout_id in undecided),
            {"undecided": len(undecided), "revision_before": revision_before,
             "revision_after": swept["revision"], "can_undo": swept["can_undo"]})
-    record("every closed row keeps its own log line, bulk-flagged, all at that same revision",
+    record("every closed row keeps its own log line, bulk-flagged, all stamped at the one revision the batch came from",
            len(bulk_log) == 36 and len({row["field"] for row in bulk_log}) == 36
-           and {row["revision"] for row in bulk_log} == {swept["revision"]}
+           and {row["revision"] for row in bulk_log} == {revision_before}
            and all("toplu" in (row.get("note") or "") for row in bulk_log),
-           {"log_rows": len(bulk_log), "sample": bulk_log[0] if bulk_log else None})
+           {"log_rows": len(bulk_log), "stamp": sorted({row["revision"] for row in bulk_log}),
+            "sample": bulk_log[0] if bulk_log else None})
     record("decided rows were not touched: hole, pocket, fragment, M8 and the five dimensions keep their decisions",
            not (reviews.get(hole_id) or {}).get("ignored") and not (reviews.get(pocket_id) or {}).get("ignored")
            and reviews[fragment]["ignored"] is True and reviews[m8_id]["unbindable"] is True

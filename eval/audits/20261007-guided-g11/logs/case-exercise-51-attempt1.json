@@ -1,0 +1,55 @@
+{
+  "case_id": "exercise-51-raster",
+  "run_id": "20261007-051724",
+  "at": "2026-10-07T05:17:24+0300",
+  "git_head": "e82fa464247b1f986de38e822b8c079e9b459acb",
+  "source_path": "examples/pdf with steps/1/Exercise_51.PNG",
+  "source_sha256": "b19423550cd579ec24a2ef0630babd8af7bbe50a0ce7b2b9532f9bcec476abe8",
+  "source_sha256_checked": true,
+  "scope_class": "full_step",
+  "prior_exposure": "previously_seen",
+  "recipe": "exercise-51-raster.json",
+  "candidate_count": 26,
+  "manual_region_count": 0,
+  "ignored_count": 26,
+  "transcription_count": 0,
+  "parse_success_count": 0,
+  "parse_edit_count": 0,
+  "proposal_count": 0,
+  "proposal_accept_count": 0,
+  "manual_target_correction_count": 0,
+  "review_import_used": false,
+  "build_blockers": [
+    "Görüş eksenini ve çerçeveyi onaylayın (öneri: X sağ, Y yukarı); kapalı çerçeve yolu bulunamadı (0 kapalı yolun hiçbiri sayfanın %80×%80'ini kaplamıyor): eksen yönü sayfanın kendi /Rotate değerinden okundu."
+  ],
+  "build_success": false,
+  "step_reopen": null,
+  "bbox": null,
+  "features": null,
+  "final_geometry_verdict": null,
+  "user_interventions": {
+    "typed_texts": 0,
+    "hint_clicks": 0,
+    "single_ignores": 0,
+    "bulk_rows": 26,
+    "bulk_actions": 1,
+    "proposal_accepts": 0,
+    "profile_selections": 1,
+    "calibration_entries": 1,
+    "thickness_entries": 1,
+    "trace_acknowledgements": 1
+  },
+  "failures": [
+    {
+      "code": "CONSTRAINT_UNSUPPORTED",
+      "detail": {
+        "what": "build never ran",
+        "blockers": 1
+      }
+    }
+  ],
+  "notes": [],
+  "artifacts": {},
+  "console_errors": [],
+  "rejected_requests": []
+}

@@ -154,15 +154,16 @@ def main() -> int:
         fail("DETECT_MISS", {"what": "contour", "profile_id": profile_id,
                              "visible": [row["id"] for row in data["options"]["profiles"]]})
     else:
-        page.click_selector("#pick-profile")
-        time.sleep(0.3)
-        click_image_point(page, profile["points"][0])
-        try:
-            page.wait_ev(f"$('profile').value === {json.dumps(profile_id)}", timeout=30, label="profile")
-        except TimeoutError:
-            # a second vertex of the same profile is a fair retry: the click missed the edge
-            click_image_point(page, profile["points"][len(profile["points"]) // 2])
-            page.wait_ev(f"$('profile').value === {json.dumps(profile_id)}", timeout=30, label="profile retry")
+        if page.ev(f"$('profile').value !== {json.dumps(profile_id)}"):  # idempotent on re-runs
+            page.click_selector("#pick-profile")
+            time.sleep(0.3)
+            click_image_point(page, profile["points"][0])
+            try:
+                page.wait_ev(f"$('profile').value === {json.dumps(profile_id)}", timeout=30, label="profile")
+            except TimeoutError:
+                # a second vertex of the same profile is a fair retry: the click missed the edge
+                click_image_point(page, profile["points"][len(profile["points"]) // 2])
+                page.wait_ev(f"$('profile').value === {json.dumps(profile_id)}", timeout=30, label="profile retry")
 
     # --- calibration (skipped when the reading's own calibration proposal was accepted) ----------
     calibration = recipe.get("calibration")
@@ -200,12 +201,22 @@ def main() -> int:
             fail("TRANSCRIPTION", {"what": "thickness", "value": recipe["thickness_mm"]})
 
     # --- the traced draft (a user decision, not a silent default) --------------------------------
-    if recipe.get("acknowledge_trace"):
+    if recipe.get("acknowledge_trace") and not page.ev("$('ack').checked"):
         page.click_selector("#ack")
         try:
             UX.wait_server(page, lambda d: d["decisions"].get("trace_acknowledged") is True, 40, "ack")
         except TimeoutError:
             fail("TRANSCRIPTION", {"what": "trace acknowledgement"})
+
+    # --- the view direction / sheet frame: the user confirms it before producing (PLAN §8.6) ------
+    if recipe.get("confirm_view") and not (UX.server(page) or {}).get("decisions", {}).get("view"):
+        if not page.ev("$('view-ack').checked"):
+            page.click_selector("#view-ack")
+        page.click_selector("#view-confirm")
+        try:
+            UX.wait_server(page, lambda d: bool(d["decisions"].get("view")), 40, "view")
+        except TimeoutError:
+            fail("CONSTRAINT_UNSUPPORTED", {"what": "view confirmation"})
 
     # --- the authored callout decisions ----------------------------------------------------------
     typed_texts = hint_clicks = single_ignores = 0

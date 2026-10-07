@@ -6,6 +6,7 @@
   "calibration": {"measurement_text": "40", "circles": ["g340", "g341"]},
   "thickness_mm": 15,
   "acknowledge_trace": true,
+  "confirm_view": true,
   "decisions": [],
   "notes": [
     "Raster pafta (bell-crank levyesi): okuma öneri üretmedi (0 öneri); OCR metinleri başlık bloğu artığı (\"Sa)\", \"oo\", \"P,\" vb.) — yalnız 150.00/32.00/80.00/40 okunabilir kaldı.",

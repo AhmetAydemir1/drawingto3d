@@ -103,7 +103,8 @@ def test_the_callout_panel_has_the_review_controls_the_contract_requires():
     for name, kind in (("pick-callout", "button"), ("draw-callout", "button"), ("callout-crop", "canvas"),
                        ("callout-text", "textarea"), ("callout-save", "button"), ("callout-ignore", "button"),
                        ("callout-restore", "button"), ("callout-edit", "button"), ("callout-new", "button"),
-                       ("callout-use-hint", "button"), ("callout-show-ignored", "input")):
+                       ("callout-hint-yes", "button"), ("callout-hint-edit", "button"), ("callout-hint-ignore", "button"),
+                       ("callout-show-ignored", "input")):
         assert collector.by_id.get(name) == kind, (name, collector.by_id.get(name))
         assert collector.counts[name] == 1, (name, collector.counts[name])
 
@@ -121,8 +122,9 @@ def test_the_production_panel_says_the_saved_text_reaches_the_build_and_gates_it
     neither that the text is unused (the old admission, now false) nor that a build may start with a
     callout still unresolved."""
     html = (ROOT / "guided.html").read_text(encoding="utf-8")
-    assert "Kaydedilen callout metinleri artık üretime girer" in html
-    assert "hazırlık geçmeden üretim başlamaz" in html
+    assert "Kaydedilen ölçü/not metinleri artık üretime girer" in html
+    assert "eksik kalanlar tamamlanmadan üretim başlamaz" in html
+    assert "Onaylanmış hedefler (delik/ölçü) üretime derlenir" in html
     assert "Kaydedilen callout metinleri bu taslak üretiminde henüz kullanılmıyor" not in html
 
 
@@ -157,32 +159,111 @@ def test_the_target_confirm_button_writes_the_proposal_the_panel_shows():
     assert "function activeProposal()" in script, "aktif öneri tek state'ten okunmalı"
     assert "$('target-confirm').onclick=()=>{const item=activeProposal();" in script, \
         "Onayla, o anda aktif olan öneriyi yazmalı"
-    assert "`Onayla · ${" in script, "düğme hangi öneriyi yazacağını açıkça belirtmeli"
+    assert "`Doğru · ${" in script, "düğme hangi öneriyi yazacağını açıkça belirtmeli"
 
 
-def test_the_review_panel_carries_the_burden_reduction_controls():
-    """G9 UX turu: 45 aday / 43 kapsam dışı yükünü azaltan üç denetim birer kez servis edilir."""
+def test_the_review_panel_carries_the_ux01_burden_reduction_controls():
+    """UX-01 §6–§8: "Sonraki eksik" çubuğu + makine ipucunun üçlü akışı birer kez servis edilir."""
     collector = parse()
-    for name in ("callout-next", "callout-ignore-many", "callout-hint-save"):
-        assert collector.by_id.get(name) == "button", (name, collector.by_id.get(name))
+    for name, kind in (("callout-prev", "button"), ("callout-remaining", "span"), ("callout-next", "button"),
+                       ("callout-hint-yes", "button"), ("callout-hint-edit", "button"),
+                       ("callout-hint-ignore", "button")):
+        assert collector.by_id.get(name) == kind, (name, collector.by_id.get(name))
         assert collector.counts[name] == 1, (name, collector.counts[name])
     html = (ROOT / "guided.html").read_text(encoding="utf-8")
-    assert "İpucu doğru" in html, "makine ipucu tek tıkla kabul edilebilmeli"
+    assert "Sonraki eksik" in html and "Önceki" in html, "çözülmemiş akışı panelin en üstünde"
+    assert "Evet, doğru" in html and "Bu bir ölçü/not değil" in html, "ipucu tek tıkla karar olabilmeli"
     script = (ROOT / "guided.js").read_text(encoding="utf-8")
-    assert "function undecidedRows(" in script and "$('callout-next').onclick=" in script
-    assert "accept_hint" in script and "$('callout-hint-save').onclick=" in script
+    assert "function unresolvedRows(" in script and "$('callout-next').onclick=" in script
+    assert "accept_hint" in script and "$('callout-hint-yes').onclick=" in script
 
 
-def test_the_bulk_scope_decision_is_written_only_by_its_own_explicit_button():
-    """Sessiz filtreleme yok: toplu kapsam kararını yazan tek yol kullanıcının kendi düğmesidir.
+def test_the_bulk_scope_decision_is_one_atomic_request_from_the_users_own_selection():
+    """Sessiz filtreleme yok (UX-01 §7): toplu karar tek atomik `bulk_set_ignored` isteğidir.
 
-    Tarayıcı kendi başına hiçbir adayı kapsam dışı ilan etmez; toplu komut yalnız iki adımlı,
-    açıkça silahlanan düğmeden çıkar ve gövdesi kararsız listesini sunucudan okur.
+    Seçim yalnız kullanıcının kendi checkbox tıklamalarından doğar; gövde tek istekle gider.
+    N ardışık `set_ignored` isteği ya da iki adımlı silah (bulkArmed) yoktur.
     """
     script = (ROOT / "guided.js").read_text(encoding="utf-8")
-    assert "set_ignored_many" in script and "$('callout-ignore-many').onclick=" in script
-    assert "undecidedRows()" in script, "toplu liste kararsızlardan türetilmeli"
-    assert "bulkArmed" in script, "toplu karar iki adımlı ve açıkça silahlanmalı"
+    assert "bulk_set_ignored" in script and "$('callout-bulk-apply').onclick=" in script
+    assert "selectedForBulk" in script, "seçim yalnız kullanıcının kendi checkbox tıklamalarından gelir"
+    assert "bulkArmed" not in script, "iki adımlı silah kaldırıldı: tek açık eylem kaldı"
+    assert "set_ignored_many" not in script, "arayüz artık yönlendirilmiş toplu istek üretmez"
+    handler = script[script.index("$('callout-bulk-apply').onclick="):]
+    handler = handler[:handler.index("};")]
+    assert handler.count("command(") == 1, "toplu karar tek istekte gider"
+
+
+def test_ux01_next_missing_flow_selects_from_unresolved_and_navigation_writes_nothing():
+    """UX-01 §6: "Sonraki eksik" çözülmemiş listesinden seçer; oto-ilerleme yalnız başarılı karardan sonra."""
+    script = (ROOT / "guided.js").read_text(encoding="utf-8")
+    assert "function rowResolved(" in script and "function unresolvedRows(" in script
+    assert "function advanceAfterDecision(" in script
+    assert "advance=previous" in script, "oto-ilerleme yalnız komut başarısında kurulur"
+    assert "['transcribe','set_ignored','set_unbindable'].includes(action)" in script
+    assert "Tüm ölçü/not kontrolleri tamamlandı." in script
+    next_handler = script[script.index("$('callout-next').onclick="):]
+    next_handler = next_handler[:next_handler.index("};")]
+    assert "command(" not in next_handler and "api(" not in next_handler, "navigasyon karar yazmaz"
+    assert "if(action==='transcribe')drafts.delete(payload.callout_id)" in script, "taslak yalnız yazılan kararla temizlenir"
+
+
+def test_ux01_hint_actions_are_single_click_and_drafts_stay_local():
+    """UX-01 §8: üç düğme; "Düzelt" yalnız taslak kurar, "Evet, doğru" açık tıkla karar yazar."""
+    script = (ROOT / "guided.js").read_text(encoding="utf-8")
+    yes = script[script.index("$('callout-hint-yes').onclick="):]
+    yes = yes[:yes.index("};")]
+    assert "raw_text:row.machine_text_hint" in yes and "accept_hint:true" in yes
+    edit = script[script.index("$('callout-hint-edit').onclick="):]
+    edit = edit[:edit.index("};")]
+    assert "drafts.set(" in edit and "command(" not in edit and "api(" not in edit
+    ignore = script[script.index("$('callout-hint-ignore').onclick="):]
+    ignore = ignore[:ignore.index("};")]
+    assert "command('set_ignored'" in ignore
+    assert "$('callout-text').oninput=()=>{if(selectedCallout)drafts.set(selectedCallout,$('callout-text').value);renderCallouts();}" in script
+
+
+def test_ux01_readiness_is_the_missing_items_checklist_and_build_waits_for_backend():
+    """UX-01 §9: başlık "Eksik kalanlar"; görev satırları + ✓ satırları; hazır kararı backend'den."""
+    html = (ROOT / "guided.html").read_text(encoding="utf-8")
+    assert "<h3>Eksik kalanlar</h3>" in html
+    assert "3B Modeli Oluştur" in html
+    script = (ROOT / "guided.js").read_text(encoding="utf-8")
+    for task in ("Ölçü/not kontrolü", "Gösterdiği yeri seç", "Dış şekli seç", "Ölçeği tamamla",
+                 "Görüş yönünü onayla", "Modele uygulanıp uygulanmayacağına karar ver",
+                 "Çelişkiyi düzelt", "Çizim/geometri sorununu düzelt"):
+        assert task in script, task
+    assert "const READINESS_TASK={missing_transcription:'Ölçü/not kontrolü'" in script
+    assert "Tüm gerekli bilgiler tamamlandı" in script
+    assert "build.disabled=pending||!r.ready" in script, "hazır kararı backend'den gelir; frontend ready diyemez"
+    assert "r.questions.length" in script, "sayılar backend readiness satırlarından gelir"
+
+
+def test_ux01_technical_ids_are_collapsed_and_main_copy_is_human():
+    """UX-01 §10/§12: teknik ayrıntı <details> altında; ana copy ham kimlik göstermez."""
+    html = (ROOT / "guided.html").read_text(encoding="utf-8")
+    assert '<details id="technical-details">' in html and "<summary>Teknik ayrıntılar" in html
+    assert "<h2>Günlük · her adım</h2>" not in html, "günlük artık collapsed teknik bölümün altında yaşar"
+    assert '<details id="callout-technical">' in html
+    script = (ROOT / "guided.js").read_text(encoding="utf-8")
+    assert "function humanRef(" in script
+    assert "Köşe ${" in script and "'Dış şekil'" in script
+    assert "(row.target_ids||[]).map(humanRef)" in script, "hedef özeti insan okunur etiketlerle"
+    assert "callout-raw" in script and "kimlik:" in script, "ham kimlikler teknik satıra iner"
+
+
+def test_ux01_user_language_has_no_internal_jargon_in_the_main_flow():
+    """UX-01 §5: ana ekranda Callout/Target/jargon yok — ölçü/not ve gösterdiği yer dili."""
+    html = (ROOT / "guided.html").read_text(encoding="utf-8")
+    for gone in ("Callout inceleme", "Bu callout değil", "Hedef</strong>", "target-circle ·", "Sıradaki kararsız"):
+        assert gone not in html, gone
+    for present in ("Ölçü / not inceleme", "Bu ölçü/not nereyi gösteriyor?", "Programın önerdiği yer:",
+                    "Modele uygulanmayacak", "Eksik kalanlar"):
+        assert present in html, present
+    script = (ROOT / "guided.js").read_text(encoding="utf-8")
+    assert "Çizimde şu mu yazıyor?" in script, "ipucu bir soru olarak sorulur"
+    for gone in ("Önce bir callout seçin.", "Bu callout'ta makine ipucu yok", "Hedef türü", "hedef onayı güncel"):
+        assert gone not in script, gone
 
 
 def test_the_readiness_list_is_an_actionable_checklist():

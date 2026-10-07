@@ -1891,7 +1891,7 @@ def _log_callout_changes(record: dict, before: dict, payload: dict, produced=Non
 # --- G3 user commands (PLAN-21 §6.4): one command, one history step, one revision ---------------
 
 _CALLOUT_COMMANDS = ("add_region", "edit_region", "set_ignored", "set_unbindable", "set_ignored_many",
-                     "transcribe")
+                     "bulk_set_ignored", "transcribe")
 
 # G9 UX turu: one bulk decision may close many callouts at once, but never an unbounded number —
 # the same order of magnitude the review import already accepts.
@@ -2007,6 +2007,44 @@ def _apply_callout_command(record: dict, decisions: dict, action: str, payload: 
                            {"callout_id": callout_id, "bulk": True},
                            "Kullanıcı bu callout'u 'callout değil' olarak işaretledi "
                            "(toplu kapsam kararı)."))
+        return events, [("callout_reviews", callout_id) for callout_id in ids]
+
+    if action == "bulk_set_ignored":
+        # UX-01 B (plan §7): the atomic bulk scope decision. One explicit request closes every
+        # selected row in ONE revision, ONE history step, ONE undo and ONE audit event — never N
+        # sequential per-row writes. Validation is all-or-nothing: an unknown or foreign id refuses
+        # the whole action; an empty list is refused; rows that already carry the requested verdict
+        # are a no-op *inside* the same action (they don't fail it and they don't rewrite history).
+        ids = payload.get("callout_ids")
+        ignored = payload.get("ignored")
+        if not isinstance(ignored, bool):
+            raise ValueError("toplu kapsam kararı true/false olmalı")
+        if not isinstance(ids, list) or not ids:
+            raise ValueError("toplu kapsam kararı için callout kimlikleri listesi gerekli")
+        if any(not isinstance(item, str) or not item for item in ids):
+            raise ValueError("toplu kapsam kararı kimlikleri metin olmalı")
+        if len(set(ids)) != len(ids):
+            raise ValueError("toplu kapsam kararı aynı kimliği iki kez taşıyamaz")
+        if len(ids) > BULK_IGNORE_LIMIT:
+            raise ValueError(f"toplu kapsam kararı tek adımda en çok {BULK_IGNORE_LIMIT} callout kapatır")
+        for callout_id in ids:
+            _effective_row(record, decisions, callout_id)   # bilinmeyen/yabancı kimlik: tümü reddedilir
+        changed = []
+        for callout_id in ids:
+            row = _effective_row(record, decisions, callout_id)
+            if bool(row["ignored"]) == ignored:
+                continue                                     # aynı kararı taşıyan satır: içeride no-op
+            _set_review(record, decisions, callout_id, region_override=row["region_override"],
+                        ignored=ignored,
+                        unbindable=False if ignored else bool(row.get("unbindable")))
+            changed.append(callout_id)
+        if not changed:
+            return [], []                                    # bayt düzeyinde no-op: revizyon ve olay yok
+        note = (f"Kullanıcı {len(ids)} ölçü/not alanını tek adımda 'modele ait değil' ilan etti."
+                if ignored else
+                f"Kullanıcı {len(ids)} ölçü/not alanını tek adımda yeniden değerlendirmeye aldı.")
+        events = [("bulk_ignore_callouts" if ignored else "bulk_restore_callouts", "callout:*",
+                   {"count": len(ids), "callout_ids": list(ids)}, None, note)]
         return events, [("callout_reviews", callout_id) for callout_id in ids]
 
     callout_id = payload.get("callout_id")

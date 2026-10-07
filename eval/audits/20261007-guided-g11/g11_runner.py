@@ -148,8 +148,27 @@ def main() -> int:
         page = C.Chrome(url=APP + "/guided")
         page.wait_ready()
         page.set_file("#file", str(source))
-    page.wait_ev("!$('controls').hidden", timeout=900, label="session opened")
-    data = wait_ingest(page)
+        # the token lands in the URL as soon as the upload does — keep it for reattachment
+        for _ in range(240):
+            token = page.ev("return new URLSearchParams(location.search).get('session');")
+            if token:
+                note(f"session token: {token}")
+                break
+            time.sleep(0.5)
+    try:
+        page.wait_ev("!$('controls').hidden", timeout=900, label="session opened")
+    except Exception:                                    # noqa: BLE001 — gate timeout or a dead CDP link
+        if not token:
+            raise
+        note("client gate failed; reattaching via token (slow raster ingest)")
+        try:
+            page.close()
+        except Exception:
+            pass
+        page = C.Chrome(url=APP + "/guided?session=" + token)
+        page.wait_ready()
+        page.wait_ev("!$('controls').hidden", timeout=2700, label="session opened (reattached)")
+    data = wait_ingest(page, timeout=2700)
     record["candidate_count"] = len(data["effective_callouts"])
     page.screenshot(str(shots / f"{case_id}-01-candidates.png"))
     print(f"[case {case_id}] candidates={record['candidate_count']}", flush=True)

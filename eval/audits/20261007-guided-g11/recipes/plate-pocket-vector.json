@@ -1,0 +1,28 @@
+{
+  "case_id": "plate-pocket-vector",
+  "source_path": "examples/pdf with steps/5/Plate With A Pocket Drawing.PDF",
+  "contour": {"profile_id": "outline_1"},
+  "calibration": {"measurement_text": "1 00,00", "circles": ["g9", "g11"]},
+  "thickness_mm": 15,
+  "acknowledge_trace": true,
+  "decisions": [
+    {"hint": "4 x", "action": "ignore",
+     "why": "the count fragment of the hole note; its text travelled with the '6,80 THRU ALL' box"},
+    {"hint": "6,80 THRU ALL", "action": "transcribe", "text": "4 x Ø6,80 THRU ALL",
+     "target": {"kind": "circle_group", "circles": ["g9", "g11", "g10", "g12"]},
+     "why": "composite text: '4 x' is printed with the drawn Ø; the four drawn circles are the targets"},
+    {"hint": "50,00", "action": "transcribe", "text": "Ø50 8 DEEP",
+     "target": {"kind": "circle", "proposal": true, "fallback_circles": ["g8"]},
+     "why": "composite: Ø50 from the view, depth 8 from the section"},
+    {"hint": "M8 - 6H THRU ALL", "action": "accept_hint", "target": "unbindable",
+     "why": "threaded hole: outside this grammar by design; declared out of scope"},
+    {"hint": "80,00", "action": "accept_hint", "target": "unbindable",
+     "why": "printed linear dimension on an arc-contoured part: arcs tie centres only in this version"},
+    {"hint": "60,00", "action": "accept_hint", "target": "unbindable", "why": "same as 80,00"},
+    {"hint": "8,00", "action": "accept_hint", "target": "unbindable", "why": "same as 80,00"},
+    {"hint": "1 00,00", "action": "transcribe", "text": "100,00", "target": "unbindable",
+     "why": "printed spacing '1 00,00' is ambiguous to the parser; the user corrects it to 100,00"},
+    {"hint": "1 5,00", "action": "transcribe", "text": "15,00", "target": "unbindable",
+     "why": "printed spacing '1 5,00' corrected to 15,00"}
+  ]
+}

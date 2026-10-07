@@ -465,6 +465,8 @@ def main() -> int:
            and len(reviews_of(after_arm)) == reviews_before,
            {"armed": armed, "revision_same": after_arm["revision"] == revision_before,
             "undecided": len(undecided)})
+    page.ev("$('callout-summary').scrollIntoView({block:'start'});")   # the evidence shot shows the panel
+    time.sleep(0.3)
     page.screenshot(str(HERE / "ux-11-armed.png"))
 
     page.click_selector("#callout-ignore-many")
@@ -505,6 +507,8 @@ def main() -> int:
            and summary_after["manyDisabled"] is True
            and summary_after["label"].startswith("Kalan kararsızları"),
            summary_after)
+    page.ev("$('callout-summary').scrollIntoView({block:'start'});")
+    time.sleep(0.3)
     page.screenshot(str(HERE / "ux-12-swept-one-step.png"))
 
     page.click_selector("#callout-show-ignored")
@@ -525,6 +529,8 @@ def main() -> int:
            and probe["items"][0]["text"].startswith("✓"),
            {"summary": probe["summary"], "items": [item["text"] for item in probe["items"]],
             "excluded": len(readiness["excluded"])})
+    page.ev("$('callout-summary').scrollIntoView({block:'start'});")
+    time.sleep(0.3)
     page.screenshot(str(HERE / "ux-13-ready.png"))
 
     page.click_selector("#build")

@@ -6,9 +6,9 @@
 - G2 initial HEAD: `316518eb8d67c7a4ad81eed59c09e6c59ef4df37`
 - G3 initial HEAD: `ff97295065260ba8d46bf6fcd2c6e864e63dfcef` (`ff97295` = G2)
 - G3R initial HEAD: `2cdb4d0424b17e4299d625066c24e6a0eab4de6d` (`2cdb4d0` = G3 + G1R3-01 kabul commit'i; eski “G3 commit edilmedi” ifadesi artık geçerli değil)
-- Current HEAD: `c229113` (UX turu koşu/sürücü commit'leri; bu kaydın kendi commit'i izler)
+- Current HEAD: `93194fa` (G11 altyapısı + 4 vaka kaydı; bu bölümün commit'i izler)
 - Initial worktree changes: `?? PLAN-17-HERMES.md` (kullanıcının verdiği plan kaynağı; **korunur, stage edilmez**)
-- Current task: **G9 UX turu PASS** (33/33 gerçek-tarayıcı adımı, 483 callout/guided regresyonu, dondurulmuş CAD regresyonu PASS) — sıradaki iş **G11**: dondurulmuş manifest (`eval/guided_10_manifest.json`) ile 10-pafta koşusu (aşağıdaki "G9 UX turu" bölümü)
+- Current task: **G11 koşusu sürüyor** — dondurulmuş manifest ile 10-pafta koşusu; 4/10 kayıtlı (aşağıdaki "G11" bölümü)
 
 | İş | Durum | Kanıt | Kalan |
 |---|---|---|---|
@@ -558,3 +558,34 @@ Dürüstlük: koşu 01 ve 02 sürücü tarafında durdu (koşu 01: next-unresolv
 (`eval/guided_10_manifest.json`) bu turda değişmedi.
 
 **Sıradaki: G11** — dondurulmuş manifest ile ilk 10-pafta koşusu (sürücü + vaka kayıtları + rapor).
+
+## G11 — ilk 10-pafta koşusu (sürüyor) — 2026-10-07
+
+Yöntem donduruldu (`eval/audits/20261007-guided-g11/DELIVERY-PLAN.md`, ilk vaka koşusundan önce):
+taze oturum/vaka, aynı ürün HEAD'i, kararlar yalnız görünen oturum verisi + çizim okumasıyla
+(`recipes/<case_id>.json`, denetlenebilir), referans STEP yalnız evaluator'a; tahmin yok — belirsizlik
+kayıtta durur. Taksonomi: `DETECT_MISS · DETECT_FALSE_POSITIVE · TRANSCRIPTION · PARSE_UNSUPPORTED ·
+PARSE_AMBIGUOUS · BIND_NO_PROPOSAL · BIND_WRONG_PROPOSAL · BIND_STALE · CONSTRAINT_UNSUPPORTED ·
+CONSTRAINT_CONFLICT · CAD_UNSUPPORTED · CAD_WRONG · STEP_EXPORT · STEP_REOPEN · EVALUATOR`.
+
+| Vaka | Durum | Kayıt |
+|---|---|---|
+| plate-pocket-vector | **kayıtlı — PASS** | 45 aday · 8 metin · 37 kapsam dışı · verdict pass (G9 ile aynı bbox) |
+| drawing-2-vector | kayıtlı — CAD_WRONG | 66 aday; kesit taraması üst görünüm konturunu böldü; sol gövde (R20) modellendi; ref 50×80×134 |
+| plastic-enclosure-vector | kayıtlı — CAD_WRONG (şekil ok) | 65 aday; bbox 0.12 mm içinde ama dolu levha 182.5 cm³ vs içi boş kabuk 23.5 cm³ |
+| exercise-12-vector | kayıtlı — CAD_WRONG | 70 aday; rotational okuma (Ø270×20) alt küme kaldı: 1.02 L vs 4.79 L |
+| exercise-51-raster | **bekliyor** | raster gözlem yavaş; oturum beklemesi 900 s'ye çıkarıldı, uygulama yeniden başlatıldı |
+| exercise-17-raster · exercise-13-raster · my-part-raster · flange-raster · flange-elbow-90-raster-noref | bekliyor | sonuncusu referanssız: yalnız okuma/kapsam beyanıyla puanlanır |
+
+Altyapı: `g11_runner.py` (vaka sürücüsü; öneri kabul yolu, hint/kapsam akışları UX turunun
+yardımcılarını yeniden kullanır), `g11_probe.py` (görünen veri dökümü), `g11_author.py` (kontur izi
+doğrulama), `evaluate_case.py` (.venv-cad; reopen + `metrics.compare`), `g11_report.py`
+(`eval/guided_10_report.json` + `.md`; `pending` vakalar açıkça listelenir).
+
+Dürüstlük: drawing-2 ilk denemesi sürücü hatasıyla durdu (kutu-tabanlı tıklama düzeltildi;
+`logs/case-drawing-2-abort1.log`). Exercise_51 ilk probe'u 300 s oturum beklemesinde zaman aşımına
+düştü (raster gözlem + saatlerce açık kalmış uygulama; yeniden başlatma + 900 s). Sürücü verdict
+fail'de exit≠0 verir (verdict farkı bilinçli; kanıt log/taksonomide).
+
+Kalan adımlar: exercise-51 kaydını tamamla → kalan 5 raster vakayı koş → `g11_report.py` ile iki
+teslimi üret → commit/push. Ayrıntılı loglar: `eval/audits/20261007-guided-g11/logs/`.

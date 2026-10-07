@@ -43,11 +43,20 @@ renderTarget=function(){};loadReadiness=function(){};
 const gotoCalls=[];
 goToCallout=(function(base){return function(id){gotoCalls.push(id);return base(id);};})(goToCallout);
 function fx(ids){return {token:'tok',revision:1,effective_callouts:ids.map(id=>({id,ignored:false,unbindable:false})),callouts:[],
+ coverage:cov({unclassified:ids}),
  decisions:{transcriptions:[],holes:[],bindings:[],profile_id:'p1'},options:{profiles:[{id:'p1',kind:'circle',points:[]}],circles:[],measurements:[]},
  questions:[],proposals:[],can_undo:false};}
+// G12.1b: kapsam kovalarını SUNUCU kurar — sürücü de sunucunun yanıtını taklit eder (PLAN-25 §15).
+function cov(lists){const names=['not_model_input','build_applied','build_relevant_unsupported','unclassified'];
+ const out={};for(const name of names)out[name]=(lists&&lists[name])||[];
+ const counts={};for(const name of names)counts[name]=out[name].length;
+ return {...out,counts,total:names.reduce((n,name)=>n+out[name].length,0),
+  coverage_complete:!counts.unclassified&&!counts.build_relevant_unsupported};}
 function reset(ids,showIgnored=false){state=fx(ids);el('callout-show-ignored').checked=showIgnored;selectedCallout=null;gotoCalls.length=0;}
 function ignorePost(id){const post=JSON.parse(JSON.stringify(state));post.revision+=1;
- post.effective_callouts=post.effective_callouts.map(r=>r.id===id?{...r,ignored:true}:r);return post;}
+ // G12.1b: sunucu set_ignored'ı adı konmuş karar olarak yazar — satır bu yüzden listeden düşer.
+ post.effective_callouts=post.effective_callouts.map(r=>r.id===id?{...r,ignored:true,disposition:'not_model_input'}:r);
+ post.coverage=cov({not_model_input:[id],unclassified:post.effective_callouts.filter(r=>r.id!==id).map(r=>r.id)});return post;}
 const results={};
 (async()=>{
  reset(['k1','k2','k3']);selectedCallout='k2';
@@ -76,6 +85,7 @@ const results={};
  results.unresolved={selected:selectedCallout,goto:gotoCalls.slice()};
  reset(['k1','k2']);selectedCallout=null;
  state.effective_callouts=state.effective_callouts.map(r=>r.id==='k2'?{...r,ignored:true}:r);
+ state.coverage=cov({not_model_input:['k2'],unclassified:['k1']});
  advanceAfterDecision('k2',['k1']);
  results.missing={selected:selectedCallout,goto:gotoCalls.slice()};
  console.log('__RESULT__'+JSON.stringify(results));

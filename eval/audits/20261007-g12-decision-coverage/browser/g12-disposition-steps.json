@@ -1,0 +1,149 @@
+{
+  "steps": [
+    {
+      "step": "the plate opens with the served coverage audit in the public state",
+      "passed": true,
+      "detail": {
+        "token": "e47fffc96ba34bcca0f8928a469229ef",
+        "callouts": 45,
+        "counts": {
+          "not_model_input": 0,
+          "redundant": 0,
+          "build_applied": 0,
+          "build_relevant_unsupported": 0,
+          "unclassified": 45,
+          "legacy_unclassified": 0,
+          "stale": 0,
+          "compile_blocked": 0,
+          "invalid_duplicate": 0
+        }
+      }
+    },
+    {
+      "step": "A: 'Bu bir ölçü/not değil' stores the named claim and the panel reports it",
+      "passed": true,
+      "detail": {
+        "badge": "Modele ait değil"
+      }
+    },
+    {
+      "step": "A: the row resolves through the backend bucket and next-unresolved advances to another row",
+      "passed": true,
+      "detail": {
+        "row": "7a15c5a29c3137bcca34007d5c80d9ea94934c7d58b3cd15cefbcd37e033da5c",
+        "hint": "A4",
+        "selected": "C36 · makine tespiti",
+        "expected_row": "f44b4e9f63d00ecbfa76876a36d943cb391c746af196f72bce6181feb03dfe96",
+        "expected_label": "C36"
+      }
+    },
+    {
+      "step": "B: the unsupported claim needs the reviewer's own reason and is stored as such",
+      "passed": true,
+      "detail": {
+        "button": "Gerçek ölçü/not ama şu an modele uygulanamıyor",
+        "typed": "yazılı daralma ölçüsü; bu sürümün uygulayamadığı bir özellik",
+        "stored": "yazılı daralma ölçüsü; bu sürümün uygulayamadığı bir özellik"
+      }
+    },
+    {
+      "step": "B: the claim blocks the build (readiness question + disabled button), it is not resolved",
+      "passed": true,
+      "detail": {
+        "questions": 48,
+        "for_row": [
+          {
+            "category": "unsupported_build_relevant",
+            "callout_id": "b1aea745ec1f819dfc763387c51e067d1368623fa3041d511f6ecb365b7a1139",
+            "action": "review_callout",
+            "reason": "build_relevant_unsupported",
+            "text": "«b1aea745ec1f819dfc763387c51e067d1368623fa3041d511f6ecb365b7a1139» bu gerçek ölçü/not mevcut modelleme yetenekleriyle uygulanamıyor (yazılı daralma ölçüsü; bu sürümün uygulayamadığı bir özellik)."
+          }
+        ],
+        "build_disabled": true
+      }
+    },
+    {
+      "step": "B: the unsupported row stays a navigation/blocker item and its panel explains the stop",
+      "passed": true,
+      "detail": {
+        "label": "C1",
+        "reached": [
+          "C43 · makine tespiti",
+          "C44 · makine tespiti",
+          "C1 · makine tespiti"
+        ],
+        "panel": {
+          "state": "gerçek ölçü/not: bu sürüm uygulayamıyor",
+          "summary": "Bu gerçek bilgi şu an modele uygulanamıyor. Model oluşturmak için bu capability çözülmeli veya karar düzeltilmeli. (Gerekçe: yazılı daralma ölçüsü; bu sürümün uygulayamadığı bir özellik)",
+          "badge": "Gerçek ölçü/not · uygulanamıyor"
+        }
+      }
+    },
+    {
+      "step": "C: 'represented by another fact' cites the backend's own decision vocabulary and resolves",
+      "passed": true,
+      "detail": {
+        "options": [
+          "b1aea745ec1f819dfc763387c51e067d1368623fa3041d511f6ecb365b7a1139",
+          "0f05d4f95f0930bfcad90a774841151f09bb56be5dd0c40cd7139ea67b269415",
+          "14efaeda88b299be50cf5692c997bc277ec7d786f7da362b95592e1a5232555d",
+          "7dbbb717df56db137d1bf5e5480e5ae38f9c0fc986d23eaebd13791777f86f2f",
+          "1e140aee429d35f2501f78d894790bf5472b5141bc58dccdc3e4d88b4a053cde",
+          "11b4bc4edc5e9d92bce358fa5b5cb5c08c4851d922d683f30450ee80815d884c",
+          "6ae0bfad2bc2fcce1faf77a9edb98fc2802ed3b984772d5e40b5a1142027a1ea",
+          "a4916d6912026e20db43c8564ab7a7a11b26e183a25e447bd9d79cc1b0b20ba4"
+        ],
+        "picked": "decision:thickness",
+        "stored": "decision:thickness",
+        "bucket": "redundant"
+      }
+    },
+    {
+      "step": "D: the dependent was valid while its dayanak was current, and becomes a blocker once it is stale",
+      "passed": true,
+      "detail": {
+        "dependent": "14efaeda88b299be50cf5692c997bc277ec7d786f7da362b95592e1a5232555d",
+        "dayanak": "0f05d4f95f0930bfcad90a774841151f09bb56be5dd0c40cd7139ea67b269415",
+        "was_valid": true,
+        "dayanak_transcription": "stale",
+        "build_disabled": true,
+        "invalid_duplicate": [
+          "14efaeda88b299be50cf5692c997bc277ec7d786f7da362b95592e1a5232555d"
+        ]
+      }
+    },
+    {
+      "step": "E: reload preserves every claim (server record, not page state) and the coverage summary renders it",
+      "passed": true,
+      "detail": {
+        "summary": "1 modele ait değil · 2 zaten temsil ediliyor · 1 desteklenmiyor · 41 kontrol bekliyor",
+        "counts": {
+          "not_model_input": 1,
+          "redundant": 2,
+          "build_applied": 0,
+          "build_relevant_unsupported": 1,
+          "unclassified": 40,
+          "legacy_unclassified": 0,
+          "stale": 0,
+          "compile_blocked": 0,
+          "invalid_duplicate": 1
+        }
+      }
+    },
+    {
+      "step": "E: undo steps back the region change and the citation is valid again — nothing was silently rewritten",
+      "passed": true,
+      "detail": {
+        "redundant": [
+          "0670ce69c0ee72e81790d00424114230846968a444d0a650072f03b59e8d7716",
+          "0f05d4f95f0930bfcad90a774841151f09bb56be5dd0c40cd7139ea67b269415",
+          "14efaeda88b299be50cf5692c997bc277ec7d786f7da362b95592e1a5232555d"
+        ],
+        "invalid": []
+      }
+    }
+  ],
+  "token": "e47fffc96ba34bcca0f8928a469229ef",
+  "failed": 0
+}

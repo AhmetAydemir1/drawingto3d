@@ -120,9 +120,10 @@ function draw(){ctx.clearRect(0,0,sheet.width,sheet.height);if(!picture.width||!
  // PLAN-21 §7.1: callout kutuları. Etiket yeniden sıralanabilir bir gösterim adıdır; gerçek kimlik
  // (ve dolayısıyla kayıt) hiç değişmez.
  for(const row of calloutList()){const box=regionBox(row.region),x=box.x*s,y=box.y*s,w=box.w*s,h=box.h*s,on=row.id===selectedCallout;
-  ctx.save();ctx.setLineDash(row.ignored?[5,4]:[]);ctx.lineWidth=on?3:2;
-  ctx.strokeStyle=row.ignored?'#9a938a':(on?'#178a51':'#2f6ea8');ctx.strokeRect(x,y,w,h);
-  ctx.fillStyle=row.ignored?'#9a938a':'#2f6ea8';ctx.font='13px system-ui';ctx.fillText(row.label,x+3,Math.max(12,y-4));ctx.restore();}
+  const excluded=row.disposition==='not_model_input';   // G12.1b: yalnız adı konmuş karar "dışarıda"
+  ctx.save();ctx.setLineDash(excluded?[5,4]:[]);ctx.lineWidth=on?3:2;
+  ctx.strokeStyle=excluded?'#9a938a':(on?'#178a51':'#2f6ea8');ctx.strokeRect(x,y,w,h);
+  ctx.fillStyle=excluded?'#9a938a':'#2f6ea8';ctx.font='13px system-ui';ctx.fillText(row.label,x+3,Math.max(12,y-4));ctx.restore();}
  drawTargetHighlight();   // G6: seçili/önerilen hedefin kendisi çizimde görünür
  if(calloutDrag){const box=regionBox(normalizedRegion(calloutDrag.start,calloutDrag.current));
   ctx.save();ctx.setLineDash([6,4]);ctx.strokeStyle='#b56519';ctx.lineWidth=2;
@@ -134,12 +135,19 @@ function renderView(){const el=$('view-text');if(!el)return;const frame=state.op
  const axes=frame.axes||[];const where=frame.found?`çerçeve ${frame.rect.map(n=>Math.round(n)).join(' / ')} px`:'çerçeve bulunamadı';
  el.textContent=`${where}; ${axes.length===2?`öneri: X ${compass(axes[0].page)}, Y ${compass(axes[1].page)}`:'eksen önerisi yok'} · ${frame.provenance||''}`;}
 // --- G3 callout inceleme (PLAN-21 §6–7): etkin liste sunucudan gelir, tarayıcı yalnız gösterir ---------
-function calloutList(){const show=$('callout-show-ignored').checked;const rows=(state.effective_callouts||[]).filter(row=>show||!row.ignored);
+function calloutList(){const show=$('callout-show-ignored').checked;
+ // G12.1b (PLAN-25 §14/§16): liste filtresi ADI KONMUŞ kapsam kararına bakar — çıplak eski "yok
+ // sayıldı" bayrağı satırı gizlemez; o satır kanıtsızdır (legacy_unclassified) ve yeniden karar
+ // beklediği için navigasyonda görünür kalır.
+ const rows=(state.effective_callouts||[]).filter(row=>show||row.disposition!=='not_model_input');
  // §7.1/§7.3: C1 yalnız bir gösterim adıdır; gerçek kimlik ve kayıt değişmez.
  const out=rows.map((row,index)=>({...row,label:`C${index+1}`}));labelById={};for(const row of out)labelById[row.id]=row.label;return out;}
 function calloutRow(id){return id?(calloutList().find(row=>row.id===id)||null):null;}
 function calloutStates(){const map={};for(const row of state.callouts||[])map[row.id]=row;return map;}
-function calloutBadge(row,stateRow){if(row.ignored)return 'Modele ait değil';if(row.unbindable)return 'Modele uygulanmayacak';const t=(stateRow&&stateRow.transcription)||{state:'missing'};
+function calloutBadge(row,stateRow){if(row.disposition==='not_model_input')return 'Modele ait değil';
+ if(row.disposition==='redundant')return 'Zaten temsil ediliyor';
+ if(row.disposition==='build_relevant_unsupported')return 'Gerçek ölçü/not · uygulanamıyor';
+ if(row.ignored)return 'Modele ait değil';if(row.unbindable)return 'Gerçek ölçü/not · uygulanamıyor';const t=(stateRow&&stateRow.transcription)||{state:'missing'};
  if(t.state==='missing')return 'İncelenmedi';if(t.state==='current')return 'Metin kaydedildi';return t.reason==='region_changed'?'Alan değişti':'Metin eskidi';}
 function storedText(id){const row=(state.decisions.transcriptions||[]).find(item=>item.callout_id===id);return row?row.raw_text||'':'';}
 function calloutAt(p){const hits=calloutList().filter(row=>{const box=regionBox(row.region);
@@ -181,10 +189,12 @@ function renderCallouts(){const list=$('callout-list');if(!list)return;const row
   li.append(name,note);
   li.onclick=()=>{if(selectMode){selectedForBulk.has(row.id)?selectedForBulk.delete(row.id):selectedForBulk.add(row.id);renderCallouts();return;}selectedCallout=row.id;render();};list.append(li);}
  const all=state.effective_callouts||[];
- const ignored=all.filter(row=>row.ignored).length;
+ // G12.1b: "modele ait değil" sayısı yalnız ADI KONMUŞ kararı sayar — eski çıplak bayrak bu sayıya
+ // girmez, çünkü o satır hâlâ kontrol bekliyor demektir (PLAN-25 §14).
+ const claimed=all.filter(row=>row.disposition==='not_model_input').length;
  const reviewed=all.filter(row=>{const t=(states[row.id]||{}).transcription;return t&&t.state!=='missing';}).length;
  const open=unresolvedRows().length;
- text('callout-summary',all.length?`${(state.callout_candidates||[]).length} makine adayı · ${all.length} etkin alan · ${reviewed} incelendi · ${ignored} modele ait değil · ${open} kontrol bekliyor`
+ text('callout-summary',all.length?`${(state.callout_candidates||[]).length} makine adayı · ${all.length} etkin alan · ${reviewed} incelendi · ${claimed} modele ait değil · ${open} kontrol bekliyor`
   :'Bu okumada ölçü/not alanı yok.');
  text('callout-detection',detectionNotice(all.length));
  // UX-01 A (§6): "Sonraki eksik" sayacı — hiçbir tıklama karar yazmaz.
@@ -212,6 +222,7 @@ function renderCallouts(){const list=$('callout-list');if(!list)return;const row
   +`${row.region_override?' · alan düzeltildi':''} · geometri: ${row.geometry_version||'—'}`);drawCrop(row);}
 const CALLOUT_NOTE={add_region:'Yeni alan kaydedildi.',edit_region:'Alan düzeltmesi kaydedildi.',set_ignored:'Karar kaydedildi.',
  bulk_set_ignored:'Seçilen alanlar tek adımda "modele ait değil" olarak işaretlendi.',
+ set_disposition:'Kapsam kararı kaydedildi.',
  transcribe:'Metin kaydedildi; onaylanan hedefle birlikte derlemeye girer.'};
 async function refreshState(){try{const response=await fetch('/api/guided/'+state.token);const data=await response.json();if(response.ok)state=data;}catch(e){/* durum alınamadı: mevcut state olduğu gibi kalır */}}
 async function command(action,payload,after){busy(true);const known=new Set((state.effective_callouts||[]).map(row=>row.id));
@@ -222,7 +233,9 @@ async function command(action,payload,after){busy(true);const known=new Set((sta
   status(CALLOUT_NOTE[action]||'Karar kaydedildi.');
   if(after)after();
   // UX-01 §6.4: oto-ilerleme yalnız başarılı karardan sonra kurulur; hata/çakışma/iptal kurmaz.
-  if(['transcribe','set_ignored','set_unbindable'].includes(action))advance={id:previous,order:previousOrder};}
+  // PLAN-25 §17: liste YALNIZ satırı gerçekten çözebilen komutları taşır — legacy set_unbindable
+  // (artık build_relevant_unsupported yazar) burada değildir; kapsam kararı da kapıdan geçer.
+  if(['transcribe','set_ignored','set_disposition'].includes(action))advance={id:previous,order:previousOrder};}
  catch(e){status(e.message,true);
   // §7.3: çakışmada sessiz last-write-wins yok — hata görünür, yazılan taslak durur, güncel durum alınır.
   if(/oturum değişti/.test(e.message)){await refreshState();status(`${e.message} — yazdığınız metin duruyor; güncel durum alındı, kararı tekrar kaydedebilirsiniz.`,true);}}
@@ -343,19 +356,21 @@ $('callout-ignore').onclick=()=>{const row=calloutRow(selectedCallout);if(!row)r
 $('callout-restore').onclick=()=>{const row=calloutRow(selectedCallout);if(!row)return status('Önce bir ölçü/not seçin.',true);command('set_ignored',{callout_id:row.id,ignored:false});};
 $('callout-edit').onclick=()=>{if(!calloutRow(selectedCallout))return status('Önce düzeltilecek ölçü/not alanını seçin.',true);setMode('callout-edit');};
 // --- UX-01 A/B: "Sonraki eksik" akışı + tek atomik toplu kapsam kararı (UX_PLAN §6–§7) ---------------
-// Çözülmüş tanımı plandan birebir (§6.2): kapsam dışı/kapsam kararı VEYA (metin güncel + okuma güncel
-// ve 'parsed' + hedef güncel). Navigasyon hiçbir karar yazmaz; oto-ilerleme yalnız başarılı ve satırı
-// çözen karardan sonra kurulur. Hiçbir satır kendiliğinden kapsam dışı olmaz: toplu karar yalnız
-// kullanıcının kendi seçtiği satırlarla, tek atomik `bulk_set_ignored` isteğiyle yazılır.
+// Çözülmüş tanımı G12.1b'den sonra SUNUCUDAN gelir (PLAN-25 §14/§15): satırın kapsam kovası
+// çözüyorsa çözülmüş sayılır. Navigasyon hiçbir karar yazmaz; oto-ilerleme yalnız başarılı ve
+// satırı çözen karardan sonra kurulur. Hiçbir satır kendiliğinden kapsam dışı olmaz: toplu karar
+// yalnız kullanıcının kendi seçtiği satırlarla, tek atomik `bulk_set_ignored` isteğiyle yazılır.
+// --- G12.1b (PLAN-25 §14/§15): çözülmüşlük BACKEND kapsam kovasından okunur ------------------------
+// Tarayıcı ikinci bir kapsam motoru kurmaz: hangi satırın hangi kovada olduğuna sunucu karar verir.
+// Çözen kovalar: not_model_input, geçerli redundant, build_applied. Bloklayan kovalar
+// (build_relevant_unsupported, legacy_unclassified, invalid_duplicate, stale, compile_blocked,
+// unclassified) satırı çözülmüş SAYMAZ — "Sonraki eksik" bu satırlara uğrar, oto-ilerleme kurmaz.
+const RESOLVED_BUCKETS=['not_model_input','redundant','build_applied'];
+function coverageBucket(id){const coverage=state&&state.coverage;if(!coverage)return null;
+ for(const name of Object.keys(coverage)){const ids=coverage[name];if(Array.isArray(ids)&&ids.includes(id))return name;}return null;}
 function rowResolved(id){const row=(state.effective_callouts||[]).find(item=>item.id===id)||null;if(!row)return true;
- if(row.ignored||row.unbindable)return true;
- const s=calloutStates()[id]||{};const t=s.transcription||{state:'missing'};if(t.state!=='current')return false;
- const parse=s.parse||null;if(!parse||parse.state!=='current')return false;
- // §6.2 "parse.status == parsed": durum satırı yalnız `state` taşır; okuma durumu otoriter
- // `callout_parses` satırından okunur (status orada yaşar).
- const parseRow=(state.callout_parses||[]).find(item=>item.callout_id===id)||null;
- const status=parse.status||(parseRow&&parseRow.status)||null;if(status!=='parsed')return false;
- const target=s.target||{state:'missing'};return target.state==='current';}
+ const bucket=coverageBucket(id);if(bucket)return RESOLVED_BUCKETS.includes(bucket);
+ return false;}   // kapsam bilgisi yoksa satır çözülmüş sayılmaz: sessiz varsayım yok.
 function unresolvedRows(){return calloutList().filter(row=>!rowResolved(row.id));}
 function goToCallout(id){selectedCallout=id;render();
  const li=[...document.querySelectorAll('#callout-list li')].find(item=>item.classList.contains('selected'));
@@ -449,9 +464,14 @@ function renderTarget(){const panel=$('target-panel');if(!panel)return;const row
  if(targetKey===key&&!targetInfo&&targetLoading!==key){targetLoading=key;loadTarget(key);}
  const stored=(targetInfo&&targetInfo.target)||null,stateRow=calloutStateRow(row.id)||{};
  const target=stateRow.target||{state:'missing',reason:null};
- text('target-state',row.unbindable?'bağlanamaz ilan edildi':(TARGET_STATE_LABEL[target.state]||target.state));
+ const unsupported=row.disposition==='build_relevant_unsupported'||row.unbindable;
+ const redundant=row.disposition==='redundant';
+ text('target-state',unsupported?'gerçek ölçü/not: bu sürüm uygulayamıyor'
+  :redundant?'zaten başka bir bilgiyle temsil ediliyor':(TARGET_STATE_LABEL[target.state]||target.state));
  const summary=$('target-summary');
- summary.textContent=row.unbindable?'Bu ölçü/not modele uygulanmayacak: gösterdiği yer onayı beklenmiyor ve üretimi engellemiyor.'
+ // PLAN-25 §16: desteklenmeyen satıra gelindiğinde panel ne olduğunu ve ne gerektiğini söyler.
+ summary.textContent=unsupported?`Bu gerçek bilgi şu an modele uygulanamıyor. Model oluşturmak için bu capability çözülmeli veya karar düzeltilmeli.${row.disposition_reason?` (Gerekçe: ${row.disposition_reason})`:''}`
+  :redundant?`Zaten başka bir bilgiyle temsil ediliyor (dayanak: ${row.duplicate_of||'—'}).${coverageBucket(row.id)==='invalid_duplicate'?' Dayanak şu an geçerli değil: dayanağı yeniden bağlayın.':''}`
   :(targetInfo===null?'Öneriler alınıyor…':(target.state==='stale'?`Gösterdiği yer eskidi (${target.reason||'—'}); yeniden onaylayın — onay eski geometriye bağlanmaz.`
    :(stored?`Onaylı: ${targetDescription(stored)} · ${evidenceText(stored)}`:'Gösterdiği yer henüz onaylanmadı.')));
  const box=$('target-proposals');box.replaceChildren();
@@ -472,7 +492,11 @@ function renderTarget(){const panel=$('target-panel');if(!panel)return;const row
  $('target-confirm').disabled=pending||row.ignored||!active;
  $('target-confirm').textContent=active?`Doğru · ${proposals.indexOf(active)+1}. öneri`:'Doğru';
  $('target-other').disabled=pending||row.ignored;$('target-group').disabled=pending||row.ignored;
- $('target-unbindable').disabled=pending;$('target-unbindable').textContent=row.unbindable?'Bu kararı geri al':'Modele uygulanmayacak';
+ $('target-unbindable').disabled=pending;
+ $('target-unbindable').textContent=unsupported?'Bu kararı geri al':'Gerçek ölçü/not ama şu an modele uygulanamıyor';
+ $('target-redundant').disabled=pending;
+ $('target-redundant').textContent=redundant?'Bu kararı geri al':'Zaten başka bir bilgiyle temsil ediliyor';
+ renderRedundantOptions();
  $('target-kind').disabled=pending||row.ignored;
  const picked=$('target-picked');
  picked.textContent=targetPick.length?`Seçilen ${targetPick.length} yer: ${targetPick.map(humanRef).join(', ')} — tür: ${TARGET_KIND_LABEL[targetKind]}.`:'';
@@ -534,7 +558,18 @@ const READINESS_TASK={missing_transcription:'Ölçü/not kontrolü',parse_error:
  missing_calibration:'Ölçeği tamamla',missing_view:'Görüş yönünü onayla',
  unsupported_semantic:'Modele uygulanıp uygulanmayacağına karar ver',
  unsupported_cad_feature:'Modele uygulanıp uygulanmayacağına karar ver',callout_conflict:'Çelişkiyi düzelt',
- geometry_conflict:'Çizim/geometri sorununu düzelt'};
+ geometry_conflict:'Çizim/geometri sorununu düzelt',
+ // G12.1b (PLAN-25 §18): üç kapsam kategorisi kullanıcının yapacağı işe çevrilir.
+ unsupported_build_relevant:'Desteklenmeyen gerçek bilgiyi gözden geçir',
+ legacy_unclassified:'Eski kapsam kararını yeniden ver',
+ stale_duplicate_reference:'Dayanağı yeniden bağla'};
+// PLAN-25 §19: kapsam özeti yalnız backend counts'undan çizilir; teknik kova adları görünmez.
+const COVERAGE_WORDING={not_model_input:'modele ait değil',build_applied:'modele uygulandı',
+ redundant:'zaten temsil ediliyor',build_relevant_unsupported:'desteklenmiyor'};
+function coverageLine(coverage){const counts=(coverage&&coverage.counts)||{};const parts=[];
+ for(const name of Object.keys(COVERAGE_WORDING)){const count=counts[name]||0;if(count)parts.push(`${count} ${COVERAGE_WORDING[name]}`);}
+ const waiting=Object.keys(counts).filter(name=>!(name in COVERAGE_WORDING)).reduce((n,name)=>n+(counts[name]||0),0);
+ if(waiting)parts.push(`${waiting} kontrol bekliyor`);return parts.join(' · ');}
 // G9 UX turu: hazırlık bir eylem listesidir — her madde *sunucunun kendi satırındaki* `action`/`reason`
 // ile ilgili denetime götürür (eylem DOM'dan geri okunmaz; karar sunucunun satırından gelir).
 function readinessGo(q){const row=q&&q.callout_id?calloutRow(q.callout_id):null;
@@ -551,7 +586,8 @@ function readinessGo(q){const row=q&&q.callout_id?calloutRow(q.callout_id):null;
   view_mismatch:$('view-confirm')};
  go(byReason[q&&q.reason]||$('readiness-box'));}
 function renderReadiness(){const list=$('readiness-questions');if(!list)return;const r=readiness,summary=$('readiness-summary');
- if(!r){summary.textContent='Eksikler okunuyor…';list.replaceChildren();return;}
+ if(!r){summary.textContent='Eksikler okunuyor…';text('coverage-summary','');list.replaceChildren();return;}
+ text('coverage-summary',r.coverage?coverageLine(r.coverage):'');
  summary.textContent=r.ready?'✓ Tüm gerekli bilgiler tamamlandı':`Model henüz hazır değil · ${r.questions.length} şey kaldı`;
  list.replaceChildren();
  // Sayılar backend satırlarından gruplanır (§9.2): aynı görev birden çok satırsa tek sayıyla yazılır.
@@ -597,7 +633,47 @@ $('target-apply').onclick=()=>{if(!targetPick.length)return status('Önce çizim
  $('target-kind-box').hidden=true;
  saveTarget(targetKind,targetPick,[{kind:'user_click',ref:`${targetKind} · ${targetPick.map(humanRef).join(', ')}`}],isStaleTarget());};
 $('target-cancel').onclick=()=>{targetPick=[];proposalHighlight=null;$('target-kind-box').hidden=true;setMode('callout');renderTarget();draw();};
+// --- G12.1b (PLAN-25 §10–§13): üç kapsam kararı; gerekçe ve dayanak kullanıcıdan -------------------
+// Legacy `set_unbindable` arayüzden kaldırıldı: aynı düğme artık doğrudan set_disposition çağırır,
+// gerekçe zorunludur ve frontend varsayılan bir gerekçe UYDURMAZ. Dayanak seçimi backend'in
+// `decision:<ad>` sözlüğünü kullanır; sunucu reddederse taslak/seçim korunur ve hata görünür kalır.
+const DECISION_REF_LABEL={calibration:'kalibrasyon',profile:'dış profil kararı',thickness:'kalınlık kararı',
+ holes:'delik kararları',bindings:'bağlanan ölçüler',contour:'kontur kararı',view:'görüş yönü',trace:'izleme onayı'};
+function decisionRefPresent(name){const d=(state&&state.decisions)||{};
+ if(name==='calibration')return d.calibration!=null;if(name==='profile')return Boolean(d.profile_id);
+ if(name==='thickness')return d.thickness!=null;if(name==='holes')return Boolean((d.holes||[]).length);
+ if(name==='bindings')return Boolean((d.bindings||[]).length);
+ if(name==='contour')return Boolean((d.contour||{}).drop||(d.contour||{}).approve_join);
+ if(name==='view')return d.view!=null;if(name==='trace')return Boolean(d.trace_acknowledged);return false;}
+function renderRedundantOptions(){const select=$('redundant-reference');if(!select||!state)return;
+ const previous=select.value;select.replaceChildren();
+ for(const row of calloutList()){if(row.id===selectedCallout)continue;const option=document.createElement('option');
+  option.value=row.id;option.textContent=`${row.label} · ${row.source_kind==='manual'?'elle çizilen alan':'makine adayı'}`;select.append(option);}
+ for(const name of Object.keys(DECISION_REF_LABEL))if(decisionRefPresent(name)){
+  const option=document.createElement('option');option.value=`decision:${name}`;option.textContent=DECISION_REF_LABEL[name];select.append(option);}
+ if(previous&&[...select.children].some(option=>option.value===previous))select.value=previous;
+ if(!select.children.length){const option=document.createElement('option');option.value='';
+  option.textContent='Dayanak yok: önce başka bir satırı ya da kararı tamamlayın';select.append(option);}}
+function closeDispositionBoxes(){$('unsupported-box').hidden=true;$('unsupported-actions').hidden=true;
+ $('redundant-box').hidden=true;$('redundant-actions').hidden=true;}
 $('target-unbindable').onclick=()=>{const row=calloutRow(selectedCallout);if(!row)return status('Önce bir ölçü/not seçin.',true);
- command('set_unbindable',{callout_id:row.id,unbindable:!row.unbindable});};
+ if(row.disposition==='build_relevant_unsupported'||row.unbindable){command('set_disposition',{callout_id:row.id,disposition:null},closeDispositionBoxes);return;}
+ closeDispositionBoxes();$('unsupported-box').hidden=false;$('unsupported-actions').hidden=false;
+ $('unsupported-reason').value='';$('unsupported-reason').focus();
+ status('Gerçek ölçü/not ama şu an uygulanamıyor: nedenini yazın — gerekçe kaydın parçası olur.');};
+$('unsupported-cancel').onclick=()=>{closeDispositionBoxes();};
+$('unsupported-save').onclick=()=>{const row=calloutRow(selectedCallout);if(!row)return status('Önce bir ölçü/not seçin.',true);
+ const reason=$('unsupported-reason').value.trim();
+ if(!reason)return status('Gerekçe boş olamaz: bu bilgi neden uygulanamıyor?',true);
+ command('set_disposition',{callout_id:row.id,disposition:'build_relevant_unsupported',disposition_reason:reason},closeDispositionBoxes);};
+$('target-redundant').onclick=()=>{const row=calloutRow(selectedCallout);if(!row)return status('Önce bir ölçü/not seçin.',true);
+ if(row.disposition==='redundant'){command('set_disposition',{callout_id:row.id,disposition:null},closeDispositionBoxes);return;}
+ closeDispositionBoxes();renderRedundantOptions();$('redundant-box').hidden=false;$('redundant-actions').hidden=false;
+ status('Dayanak seçin: bu bilgiyi zaten temsil eden satır ya da karar hangisi?');};
+$('redundant-cancel').onclick=()=>{closeDispositionBoxes();};
+$('redundant-save').onclick=()=>{const row=calloutRow(selectedCallout);if(!row)return status('Önce bir ölçü/not seçin.',true);
+ const reference=$('redundant-reference').value;
+ if(!reference)return status('Dayanak seçin: hangi karar bu bilgiyi zaten temsil ediyor?',true);
+ command('set_disposition',{callout_id:row.id,disposition:'redundant',duplicate_of:reference},closeDispositionBoxes);};
 // render() sarmalayıcısı: her yeniden çizimde hedef paneli ve hazırlık tazelenir (okuma, karar değil).
 render=(base=>function(){base();renderTarget();loadReadiness();})(render);

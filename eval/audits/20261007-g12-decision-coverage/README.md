@@ -34,3 +34,34 @@ Kapsam: **PLAN-24 §69 sırasının ilk ürün düzeltmesi** — false-readiness
 - `eval/guided_10_manifest.json`, `eval/guided_10_report.json` ve G9/G11 audit klasörleri **değiştirilmedi**
   (bayt pinleri `eval/audits/20261007-g12-baseline/run-01/frozen-evidence-sha256.txt`).
 - Ana metrik paydası değişmedi: **GUIDED_CORRECT_STEP_RATE = 1/9**; bu tur bir ürün düzeltmesidir, koşu değil.
+
+---
+
+# G12.1b — UI kapsam sözleşmesi + koşucu v2
+
+Bu bölüm G12.1a backend sözleşmesini **ürün yüzeyine** bağlar (PLAN-25 §8–§29): arayüz artık kendi
+ikinci kapsam motorunu kurmaz, backend kovasından okur; üç kapsam kararı adıyla vardır; desteklenmeyen
+satır çözülmüş sayılmaz ve build'i kapatır; G12 koşucusu blanket-ignore yapamaz.
+
+## Kanıt
+
+- `browser/README.md` + `browser/browser-acceptance.log` + `browser/g12-disposition-steps.json` —
+  gerçek Chrome kabulü **10/10 PASS** (senaryo A–E; kararlar gerçek fare/klavye olayları).
+- `pytest-g12.1b-focused.log` — §28 odak kümesi **78 passed / 6.52 s**.
+- `pytest-broad.log` — `pytest -q tests -k "not semread"` (komut + sayılar + süre + exit kodu logun içinde).
+- Yeni testler: `tests/test_guided_disposition_ui.py` (§20'nin sekiz davranışı, gerçek `guided.js`
+  saplama DOM'da), `tests/test_g12_recipe_v2.py` (şema + blanket yasağı + ID disiplini + referans koruması).
+- Ürün: `guided.py` (public state'te `coverage`), `callout_readiness.py` (§18 kopyası), `guided.html`
+  (üç karar düğmesi, gerekçe kutusu, dayanak seçimi, `coverage-summary`), `guided.js`
+  (`rowResolved`+`calloutList` kovadan; oto-ilerleme listesi; kapsam özeti), `eval/g12_runner/`
+  (`recipe_v2.py` + `g12_runner.py`).
+
+## Kasıtlı ürün değişiklikleri
+
+1. “Modele uygulanmayacak” belirsizliği kalktı → üç adı konmuş karar (PLAN-25 §9/§10).
+2. Legacy `set_unbindable` arayüzden **çağrılmıyor** (gerekçe kutusu + gerekçe zorunlu); backend
+   uyumluluğu durur ama artık build'i açan bir yol değil (§10/§17).
+3. Eski çıplak “yok sayıldı” bayrağı satırı **gizlemez ve çözmez** — `legacy_unclassified` olarak
+   listede kalır ve kullanıcıdan yeni karar ister (§14).
+4. Koşucu v2 reçetesi blanket alanları (`ignore_rest`, `bulk_remaining`, `ignore_all_unhandled`)
+   **reddeder**; toplu karar yalnız açık ID listesiyle; reçetede vaka/dosya/hash sabiti taşınamaz (§24–§26).

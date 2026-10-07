@@ -205,8 +205,13 @@ def test_ux01_next_missing_flow_selects_from_unresolved_and_navigation_writes_no
     assert "function advanceAfterDecision(" in script
     assert "advance={id:previous,order:previousOrder}" in script, \
         "oto-ilerleme yalnız komut başarısında ve sırasıyla kurulur"
-    assert "['transcribe','set_ignored','set_unbindable'].includes(action)" in script
-    assert "state.callout_parses" in script, "parse durumu otoriter okuma satırından okunur"
+    # G12.1b (PLAN-25 §17): oto-ilerleme listesi çözen komutlardır — legacy set_unbindable artık
+    # build_relevant_unsupported yazar ve listede DEĞİLDİR.
+    assert "['transcribe','set_ignored','set_disposition'].includes(action)" in script
+    # G12.1b (PLAN-25 §14/§15): satır çözülmüşlüğü artık tarayıcıda parse/hedef durumundan
+    # türetilmez — backend kapsam kovası otoritedir.
+    assert "state.coverage" in script and "coverageBucket" in script
+    assert "callout_parses" not in script, "okuma durumu tarayıcıda yeniden yorumlanmaz"
     assert "if(!rowResolved(previousId))return;" in script, "oto-ilerleme yalnız çözülen satırdan sonra"
     assert "if(selectedCallout&&selectedCallout!==previousId)return;" in script, \
         "G11R-03: seçim filtreyle temizlendiyse ilerleme sürer, kullanıcı taşındıysa durur"
@@ -268,8 +273,11 @@ def test_ux01_user_language_has_no_internal_jargon_in_the_main_flow():
     for gone in ("Callout inceleme", "Bu callout değil", "Hedef</strong>", "target-circle ·", "Sıradaki kararsız"):
         assert gone not in html, gone
     for present in ("Ölçü / not inceleme", "Bu ölçü/not nereyi gösteriyor?", "Programın önerdiği yer:",
-                    "Modele uygulanmayacak", "Eksik kalanlar"):
+                    "Gerçek ölçü/not ama şu an modele uygulanamıyor",
+                    "Zaten başka bir bilgiyle temsil ediliyor", "Eksik kalanlar"):
         assert present in html, present
+    assert "Modele uygulanmayacak" not in html, \
+        "G12.1b (PLAN-25 §9): eski belirsiz copy kalktı — üç claim kendi adıyla yazılır"
     script = (ROOT / "guided.js").read_text(encoding="utf-8")
     assert "Çizimde şu mu yazıyor?" in script, "ipucu bir soru olarak sorulur"
     for gone in ("Önce bir callout seçin.", "Bu callout'ta makine ipucu yok", "Hedef türü", "hedef onayı güncel"):

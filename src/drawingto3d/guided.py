@@ -2805,6 +2805,11 @@ class GuidedStore:
                 "callout_detection":r.get("callout_detection"),
                 "callout_parses":r.get("callout_parses") or [],
                 "callouts":callout_models.callout_states(r),
+                # PLAN-25 §15 (G12.1b): the decision-coverage picture rides in the public state — the
+                # panel's navigation reads *these* buckets instead of re-deriving resolved-ness from
+                # parse/target flags, so "unsupported" can never be shown as resolved in the UI while
+                # the backend blocks the build on it.
+                "coverage":callout_readiness.callout_coverage(r),
                 # PLAN-21 §6.2: the one effective list — base detections plus the user's own regions,
                 # with the reviewed region/ignore state applied. Derived, never a decision itself.
                 "effective_callouts":callout_models.effective_callouts(r),

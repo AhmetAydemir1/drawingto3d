@@ -1,67 +1,124 @@
 {
-  "plan": "PLAN-24-G12-CORRECTNESS",
-  "root_plan": "PLAN.md (docs/PLAN-24-G12-CORRECTNESS.md byte kopya)",
-  "updated_at": "2026-10-07",
-  "baseline_head": "cc36f8de62548299761a5b9c8d9a1b97320635f1",
-  "metric": {
-    "correct_full_step": 1,
-    "denominator": 9,
-    "guided_correct_step_rate": 0.1111111111111111,
-    "note": "G11 baseline; G12 boyunca aynı payda — düşürülmez (§75)"
+ "plan": "PLAN-24-G12-CORRECTNESS",
+ "root_plan": "PLAN.md (docs/PLAN-24-G12-CORRECTNESS.md byte kopya)",
+ "updated_at": "2026-10-07",
+ "baseline_head": "cc36f8de62548299761a5b9c8d9a1b97320635f1",
+ "metric": {
+  "correct_full_step": 1,
+  "denominator": 9,
+  "guided_correct_step_rate": 0.1111111111111111,
+  "note": "G11 baseline; G12 boyunca aynı payda — düşürülmez (§75)"
+ },
+ "frozen": {
+  "manifest_sha256": "f4a850c344e61a90623b2f9525ff34129fe392abf0cd96a66e5d525604e248d8",
+  "report_json_sha256": "423350ded42e8e98ac426c8bedacf739d4d94fbb6709f5afd0cceef6ee097587",
+  "report_md_sha256": "ff1828dd8d34e95e1b62ea6d042726ef232e3e34ede445b1d0abe2caf514ce54",
+  "evidence_digests": "eval/audits/20261007-g12-baseline/run-01/frozen-evidence-sha256.txt"
+ },
+ "phases": [
+  {
+   "id": "G12.0",
+   "title": "truth lock / baseline",
+   "status": "done",
+   "head": "cc36f8de62548299761a5b9c8d9a1b97320635f1",
+   "tests": {
+    "contract_pins": "tests/test_g12_baseline_contract.py (3 passed)",
+    "leakage_boundary": "tests/test_g12_runner_boundary.py (6 passed)",
+    "relevant_suite": "540 passed in 189.20s — eval/audits/20261007-g12-baseline/run-01/pytest-relevant.log"
+   },
+   "cad_synthetic": null,
+   "browser": null,
+   "affected_real_cases": [
+    "plate-pocket-vector (guard)"
+   ],
+   "plate_guard": "PASS 9/9 — run-01/plate-regression-verdict.json",
+   "before_verdict": "G11: 1/9 correct, 5 CAD_WRONG, 3 unproduced, 1 scope-only",
+   "after_verdict": "aynı (baseline)",
+   "root_cause_changes": [
+    "—"
+   ],
+   "evidence": "eval/audits/20261007-g12-baseline/run-01/README.md"
   },
-  "frozen": {
-    "manifest_sha256": "f4a850c344e61a90623b2f9525ff34129fe392abf0cd96a66e5d525604e248d8",
-    "report_json_sha256": "423350ded42e8e98ac426c8bedacf739d4d94fbb6709f5afd0cceef6ee097587",
-    "report_md_sha256": "ff1828dd8d34e95e1b62ea6d042726ef232e3e34ede445b1d0abe2caf514ce54",
-    "evidence_digests": "eval/audits/20261007-g12-baseline/run-01/frozen-evidence-sha256.txt"
+  {
+   "id": "G12.1",
+   "sub": "G12.1a (backend)",
+   "title": "false readiness / decision coverage",
+   "status": "done",
+   "head": "b5e11c8 (G12.0) + bu commit",
+   "tests": {
+    "pure_coverage": "tests/test_callout_coverage.py (12 passed) — §17 matrisi",
+    "store_commands": "tests/test_guided_disposition.py (19 passed) — set_disposition/unbindable/ignored/bulk/undo/revision/import",
+    "http_boundary": "tests/test_guided_callout_http.py (+1: disposition uçtan uca, build reddi)",
+    "relevant_suite": "630 passed in 151.89s (callout/guided/plate/g11/g12/baseline/view)"
+   },
+   "deliverables": [
+    "callout disposition sözleşmesi (not_model_input / redundant / build_relevant_unsupported) — CALLOUT_SCHEMA_VERSION 4",
+    "legacy ignored/unbindable → legacy_unclassified (fresh koşuda bloklar; otomatik terfi yok)",
+    "callout_coverage(record) + coverage_issues → build_readiness (§15/§16)",
+    "set_disposition komutu (dayanak doğrulaması) + eski düğmelerin yeni anlamı + bulk yalnız not_model_input",
+    "export/import: disposition taşınır, aynı doğrulama (set_disposition import aksiyonu)"
+   ],
+   "open": []
   },
-  "phases": [
-    {
-      "id": "G12.0",
-      "title": "truth lock / baseline",
-      "status": "done",
-      "head": "cc36f8de62548299761a5b9c8d9a1b97320635f1",
-      "tests": {
-        "contract_pins": "tests/test_g12_baseline_contract.py (3 passed)",
-        "leakage_boundary": "tests/test_g12_runner_boundary.py (6 passed)",
-        "relevant_suite": "540 passed in 189.20s — eval/audits/20261007-g12-baseline/run-01/pytest-relevant.log"
-      },
-      "cad_synthetic": null,
-      "browser": null,
-      "affected_real_cases": ["plate-pocket-vector (guard)"],
-      "plate_guard": "PASS 9/9 — run-01/plate-regression-verdict.json",
-      "before_verdict": "G11: 1/9 correct, 5 CAD_WRONG, 3 unproduced, 1 scope-only",
-      "after_verdict": "aynı (baseline)",
-      "root_cause_changes": ["—"],
-      "evidence": "eval/audits/20261007-g12-baseline/run-01/README.md"
-    },
-    {
-      "id": "G12.1",
-      "sub": "G12.1a (backend)",
-      "title": "false readiness / decision coverage",
-      "status": "done",
-      "head": "b5e11c8 (G12.0) + bu commit",
-      "tests": {
-        "pure_coverage": "tests/test_callout_coverage.py (12 passed) — §17 matrisi",
-        "store_commands": "tests/test_guided_disposition.py (19 passed) — set_disposition/unbindable/ignored/bulk/undo/revision/import",
-        "http_boundary": "tests/test_guided_callout_http.py (+1: disposition uçtan uca, build reddi)",
-        "relevant_suite": "630 passed in 151.89s (callout/guided/plate/g11/g12/baseline/view)"
-      },
-      "deliverables": [
-        "callout disposition sözleşmesi (not_model_input / redundant / build_relevant_unsupported) — CALLOUT_SCHEMA_VERSION 4",
-        "legacy ignored/unbindable → legacy_unclassified (fresh koşuda bloklar; otomatik terfi yok)",
-        "callout_coverage(record) + coverage_issues → build_readiness (§15/§16)",
-        "set_disposition komutu (dayanak doğrulaması) + eski düğmelerin yeni anlamı + bulk yalnız not_model_input",
-        "export/import: disposition taşınır, aynı doğrulama (set_disposition import aksiyonu)"
-      ],
-      "open": ["G12.1b: UI copy + coverage paneli", "G12.1b: runner policy v2 (blanket ignore yasak)", "G12.1b: tarayıcı kabulü + Plate yeniden koşusu"]
-    },
-    {"id": "G12.2", "title": "build strategy contract", "status": "pending"},
-    {"id": "G12.3", "title": "raster contour + extrude correctness", "status": "pending"},
-    {"id": "G12.4", "title": "axisymmetric / revolve path", "status": "pending"},
-    {"id": "G12.5", "title": "multi-view composite v1", "status": "pending"},
-    {"id": "G12.6", "title": "advanced operation capability audit", "status": "pending"},
-    {"id": "G12.F", "title": "frozen manifest rerun 9/9 + 1/1", "status": "pending"}
-  ],
-  "counts": {"correct": 1, "wrong": 5, "blocked": 3, "unsupported": 1}
+  {
+   "id": "G12.1b",
+   "sub": "UI + runner v2",
+   "title": "coverage UI authority + recipe v2 (blanket ignore yasak)",
+   "status": "done",
+   "head": "5605cb5 (G12.0+G12.1a) + bu commit",
+   "tests": {
+    "ui_contract": "tests/test_guided_disposition_ui.py — §20'nin sekiz davranışı, gerçek guided.js saplama DOM'da",
+    "runner_v2": "tests/test_g12_recipe_v2.py — şema, blanket reddi, açık-ID disiplini, referans koruması, kalanları kapatmama",
+    "focused": "78 passed / 6.57s (§28 kümesi); genişletilmiş küme 198 passed / 8.07s — ikisi EXIT=0",
+    "browser": "gerçek Chrome 10/10 adım PASS (senaryo A–E) — eval/audits/20261007-g12-decision-coverage/browser/",
+    "broad": "pytest -q tests -k \"not semread\" → 1527 passed, 0 failed, 339 deselected, 1504.78s (25:04), EXIT=0 — eval/audits/20261007-g12-decision-coverage/pytest-broad.log"
+   },
+   "deliverables": [
+    "public state'e coverage kovası (guided.py) — UI çözülmüşlüğü backend'den okur (PLAN-25 §14/§15)",
+    "üç adı konmuş kapsam kararı + gerekçe (desteklenmeyen) + dayanak (temsil ediliyor, decision:<ad> sözlüğü) — §9–§13",
+    "desteklenmeyen satır çözülmez, oto-ilerleme kurmaz, build'i kapatır, 'Sonraki eksik' ona uğrar — §16/§17",
+    "kapsam özeti backend counts'undan; teknik kova adları görünmez — §19",
+    "legacy çıplak 'yok sayıldı' bayrağı satırı gizlemez/çözmez (legacy_unclassified) — §14",
+    "eval/g12_runner/{recipe_v2,g12_runner}.py — blanket alanlar reddedilir, toplu karar açık ID listesiyle, referans/STEP yolu yasak — §22–§26",
+    "§18 kategori kopyaları birebir + kontrol listesi maddesi ilgili callout'u seçer"
+   ],
+   "open": []
+  },
+  {
+   "id": "G12.2",
+   "title": "build strategy contract",
+   "status": "pending"
+  },
+  {
+   "id": "G12.3",
+   "title": "raster contour + extrude correctness",
+   "status": "pending"
+  },
+  {
+   "id": "G12.4",
+   "title": "axisymmetric / revolve path",
+   "status": "pending"
+  },
+  {
+   "id": "G12.5",
+   "title": "multi-view composite v1",
+   "status": "pending"
+  },
+  {
+   "id": "G12.6",
+   "title": "advanced operation capability audit",
+   "status": "pending"
+  },
+  {
+   "id": "G12.F",
+   "title": "frozen manifest rerun 9/9 + 1/1",
+   "status": "pending"
+  }
+ ],
+ "counts": {
+  "correct": 1,
+  "wrong": 5,
+  "blocked": 3,
+  "unsupported": 1
+ }
 }

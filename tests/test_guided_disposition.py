@@ -318,6 +318,21 @@ def test_import_refuses_a_bad_disposition_whole(store):
     assert _review(store) is None
 
 
+# --- genel durum kapsamı taşır (PLAN-25 §15): tarayıcı kendi kapsam motorunu kurmaz ----------
+
+def test_the_public_state_carries_the_coverage_audit(store):
+    _transcribed(store)
+    public = store.public(store.load(TOKEN))
+    assert public["coverage"]["unclassified"] == ["k1"]
+    assert public["coverage"]["counts"]["unclassified"] == 1
+    _command(store, "set_disposition", {"callout_id": "k1", "disposition": "redundant",
+                                        "duplicate_of": "decision:calibration"})
+    public = store.public(store.load(TOKEN))
+    assert public["coverage"]["redundant"] == ["k1"]
+    assert public["coverage"]["counts"]["unclassified"] == 0
+    assert public["coverage"]["counts"]["redundant"] == 1
+
+
 # --- legacy kayıt: kanıtsız, bloklar (PLAN-24 §12) -------------------------------------------
 
 def test_a_legacy_ignored_record_blocks_until_the_user_reviews_it_again(store):

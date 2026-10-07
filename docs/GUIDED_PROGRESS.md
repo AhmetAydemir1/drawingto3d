@@ -6,9 +6,11 @@
 - G2 initial HEAD: `316518eb8d67c7a4ad81eed59c09e6c59ef4df37`
 - G3 initial HEAD: `ff97295065260ba8d46bf6fcd2c6e864e63dfcef` (`ff97295` = G2)
 - G3R initial HEAD: `2cdb4d0424b17e4299d625066c24e6a0eab4de6d` (`2cdb4d0` = G3 + G1R3-01 kabul commit'i; eski “G3 commit edilmedi” ifadesi artık geçerli değil)
-- Current HEAD: `93194fa` (G11 altyapısı + 4 vaka kaydı; bu bölümün commit'i izler)
+- Current HEAD: `5605cb5` (G12.0 truth lock + G12.1a backend false-readiness; bu bölümün commit'i **G12.1b**'yi izler)
+- Active plan (güncel): `PLAN-24-G12-CORRECTNESS` (kök `PLAN.md`, commit `5605cb5`) + devam planı `PLAN-25-G12-CONTINUATION` (kullanıcı girdisi `PLAN-21.md`: G12.1b → dondurulmuş manifest kabulü)
+- G11 baseline: **1/9** (`plate-pocket-vector`; payda sabit — PLAN-24 §75) — bu bir ölçümdür, kabul değil
 - Initial worktree changes: `?? PLAN-17-HERMES.md` (kullanıcının verdiği plan kaynağı; **korunur, stage edilmez**)
-- Current task: **G11 koşusu sürüyor** — dondurulmuş manifest ile 10-pafta koşusu; 4/10 kayıtlı (aşağıdaki "G11" bölümü)
+- Current task: **G12.1b tamamlandı — sıradaki G12.2** (explicit build strategy sözleşmesi + implicit extrude'un kaldırılması; aşağıdaki "G12" bölümü)
 
 | İş | Durum | Kanıt | Kalan |
 |---|---|---|---|
@@ -658,7 +660,7 @@ Kök `PLAN.md` artık PLAN-24-G12-CORRECTNESS; eski kök plan byte-kopya olarak
 `docs/PLAN_ROOT_BEFORE_G12_20261007.md`, yeni plan `docs/PLAN-24-G12-CORRECTNESS.md`
 (SHA256'lar: `eval/audits/20261007-g12-baseline/run-01/plan-handoff-sha256.txt`).
 Durum satırları (§100): G9 PASS · G10 frozen · UX-01 PASS · **G11 baseline 1/9** (kabul edilmiş ürün
-DEĞİL — ölçüm) · G11R-01–05 PASS · **G12 current: G12.1b (coverage UI + runner policy v2)**.
+DEĞİL — ölçüm) · G11R-01–05 PASS · **G12 current: G12.2 (explicit build strategy + implicit extrude'un kaldırılması)**.
 
 G12.0 (truth lock) tamam: donmuş manifest 10/9/1 ve rapor 1/9 testle çivilendi
 (`tests/test_g12_baseline_contract.py`); G9 Plate dondurulmuş evaluator **PASS** (9/9,
@@ -672,3 +674,14 @@ bir kapsam kararı** taşır (`not_model_input` / `redundant + dayanak` / `build
 ölçtüğü sahte hazırlık). `callout_coverage` + kapsam soruları readiness'e girdi; toplu karar yalnız
 `not_model_input` yazar. Kanıt: 276 passed + 630 passed regresyon, `eval/audits/20261007-g12-decision-coverage/`.
 Ayrıntı: `eval/g12_progress.md` / `eval/g12_progress.json`.
+
+G12.1b (coverage UI + runner v2) tamam: arayüz kendi ikinci kapsam motorunu kurmayı bıraktı —
+`rowResolved` ve liste süzgeci backend kovasından (`state.coverage`) okur; “Sonraki eksik” desteklenmeyen,
+eski kayıt ve geçersiz dayanak satırlarını **atlamaz**; oto-ilerleme yalnız satırı gerçekten çözen
+komuttan sonra kurulur (legacy `set_unbindable` arayüzden kalktı, yerine gerekçe isteyen
+`set_disposition` geldi). Üç karar adıyla var: “Bu bir ölçü/not değil”, “Zaten başka bir bilgiyle temsil
+ediliyor” (+ dayanak seçimi, backend `decision:<ad>` sözlüğü), “Gerçek ölçü/not ama şu an modele
+uygulanamıyor” (gerekçe zorunlu). Kapsam özeti backend sayılarından çizilir. Yeni koşucu
+`eval/g12_runner/{recipe_v2,g12_runner}.py` blanket alanları reddeder; kalan satırlar kendiliğinden
+kapatılmaz. Kanıt: gerçek Chrome **10/10** (`eval/audits/20261007-g12-decision-coverage/browser/`),
+odak **78 passed**, geniş `pytest -q tests -k "not semread"` yeşil.

@@ -206,14 +206,13 @@ _QUESTION = {
     "missing_calibration": "Bilinen ölçünün iki noktasını ve uzunluğunu belirtin.",
     "missing_view": "{reason}",
     "geometry_conflict": "{reason}",
-    # G12.1 kapsam kategorileri (PLAN-24 §13/§16): üç disposition adı insan dilinde anılır.
-    "legacy_unclassified": "«{id}» eski sürümde kapsam dışı işaretliydi; yeni sözleşmede "
-                           "sınıflandırılmadı. Yeniden değerlendirin: modele ait değil / zaten başka bir "
-                           "ölçüyle temsil ediliyor / gerçek ölçü ama bu sürüm uygulayamıyor.",
-    "unsupported_build_relevant": "«{id}» gerçek ölçü/not olarak işaretli ve bu sürüm modele "
-                                  "uygulayamıyor: {reason} — bu bilgi olmadan 3B model açılmaz.",
-    "stale_duplicate_reference": "«{id}» başka bir kararla temsil edildiğini bildiriyor ama dayanak "
-                                 "(«{reason}») yok ya da güncel değil; dayanağı yeniden bağlayın.",
+    # G12.1 kapsam kategorileri (PLAN-24 §13/§16; PLAN-25 §18 copy'si birebir).
+    "legacy_unclassified": "«{id}» bu alan eski oturumda kapsam dışı bırakılmış; nedenini yeniden seçin "
+                           "(modele ait değil / zaten başka bir ölçüyle temsil ediliyor / gerçek ölçü "
+                           "ama bu sürüm uygulayamıyor).",
+    "unsupported_build_relevant": "«{id}» bu gerçek ölçü/not mevcut modelleme yetenekleriyle "
+                                  "uygulanamıyor ({reason}).",
+    "stale_duplicate_reference": "«{id}» bu bilgi için seçilen dayanak («{reason}») artık güncel değil.",
 }
 
 

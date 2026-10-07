@@ -7,7 +7,7 @@ Sayaçlar (§75/§76): correct 1 · wrong 5 · blocked 3 (üretilmedi) · scope-
 |---|---|---|
 | G12.0 truth lock / baseline | **DONE** | pinler + G9 guard PASS + 540 passed + süreç sınırı |
 | G12.1a false readiness (backend) | **DONE** | disposition sözleşmesi (şema 4) + `callout_coverage` + `set_disposition` + 631 passed |
-| G12.1b coverage UI + runner v2 | bekliyor | panel kopyası + blanket-ignore yasağı + tarayıcı kabulü |
+| G12.1b coverage UI + runner v2 | **DONE** | üç adı konmuş karar + gerekçe/dayanak akışı + kapsam otoritesi backend'de; gerçek Chrome 10/10; koşucu v2 blanket-ignore'suz |
 | G12.2 build strategy contract | bekliyor | implicit extrude yasak |
 | G12.3 raster contour/extrude | bekliyor | view-scoped profil + ölçü kısıtları |
 | G12.4 axisymmetric/revolve | bekliyor | mevcut GeneralPlan Revolve/Repeat/Cut |
@@ -37,6 +37,26 @@ Sayaçlar (§75/§76): correct 1 · wrong 5 · blocked 3 (üretilmedi) · scope-
 - Ürün: `callout_models` (şema 4 + disposition alanları), `callout_compile` (adı konmuş dışlama),
   `callout_readiness` (`callout_coverage` + `coverage_issues`), `guided` (`set_disposition` + toplu kurallar),
   `callout_review` (paket + import aksiyonu).
+
+## G12.1b kanıt demeti (UI kapsam sözleşmesi + koşucu v2)
+
+- `eval/audits/20261007-g12-decision-coverage/browser/README.md` — gerçek Chrome kabulü, senaryo A–E;
+  `browser-acceptance.log` + `g12-disposition-steps.json` **10/10 PASS** (kararlar gerçek fare/klavye).
+- `…/pytest-g12.1b-focused.log` — §28 odak kümesi **78 passed / 6.57 s**; genişletilmiş küme (yeni
+  dosyalar dahil) **198 passed / 8.07 s**; ikisi de EXIT=0.
+- `…/pytest-broad.log` — §98 geniş regresyon `pytest -q tests -k "not semread"`: **1527 passed · 0 failed ·
+  339 deselected · 1504.78 s (25:04) · EXIT=0** (07.10.2026 18:34→18:59; §5: tek yetkili sayı).
+- `tests/test_guided_disposition_ui.py` — §20'nin sekiz davranışı gerçek `guided.js` üzerinde (saplama DOM):
+  desteklenmeyen çözülmez/zıplanmaz, `not_model_input` ve geçerli `redundant` çözer, geçersiz dayanak
+  ve eski kayıt çözülmez, “Sonraki eksik” bloklara uğrar, özet backend sayılarından, checklist seçer.
+- `tests/test_g12_recipe_v2.py` — koşucu v2: şema doğrulaması, blanket alanların reddi (`ignore_rest`,
+  `bulk_remaining`, `ignore_all_unhandled`), toplu kararın açık ID listesi şartı, gerekçe/dayanak
+  zorunluluğu, referans/STEP yolu yasağı, “kalanları kendiliğinden kapatmama” koşum kanıtı.
+- Ürün: `guided.py` (public state `coverage`), `callout_readiness.py` (§18 kategorı kopyası),
+  `guided.html`/`guided.js` (üç karar, gerekçe, dayanak, özet; `rowResolved` + liste kovadan),
+  `eval/g12_runner/recipe_v2.py`, `eval/g12_runner/g12_runner.py`.
+- Tarihsel kanıt değişmedi: G9/G11 klasörleri ve `eval/guided_10_*` dosyalarına dokunulmadı; ana metrik
+  paydası hâlâ **1/9** (bu tur karar değil, sözleşme turu).
 
 ## Kural hatırlatması (her faz sonu, §96)
 

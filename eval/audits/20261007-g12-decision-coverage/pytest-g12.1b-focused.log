@@ -1,0 +1,15 @@
+command: .venv/bin/python -m pytest -q tests/test_callout_coverage.py tests/test_guided_disposition.py tests/test_guided_callout_http.py tests/test_guided_html.py tests/test_guided_callout_ux_advance.py tests/test_callout_review.py   # PLAN-25 §28 odak kümesi
+started: 2026-10-07 18:35:29 +0300
+........................................................................ [ 92%]
+......                                                                   [100%]
+78 passed in 6.57s
+EXIT=0
+finished: 2026-10-07 18:35:36 +0300
+
+extended set (yeni dosyalar dahil):
+command: .venv/bin/python -m pytest -q <§28 altı dosya> tests/test_guided_disposition_ui.py tests/test_g12_recipe_v2.py tests/test_g12_runner_boundary.py tests/test_guided_callouts.py tests/test_callout_models.py
+........................................................................ [ 36%]
+........................................................................ [ 72%]
+......................................................                   [100%]
+198 passed in 8.07s
+EXIT=0

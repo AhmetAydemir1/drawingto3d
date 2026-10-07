@@ -1,0 +1,640 @@
+{
+  "case_source": "examples/pdf with steps/1/Exercise_51.PNG",
+  "token": "b8e7ed7ccb9f492aaa657354ef889a1b",
+  "candidates": [
+    {
+      "id": "9efda6a6c10a0c78e56babe2ac0ca697e6eb25409d0ea0b18b3e18a6b28e66bf",
+      "hint": "40",
+      "region": [
+        0.0724,
+        0.0957,
+        0.1118,
+        0.1333
+      ]
+    },
+    {
+      "id": "f21a1936dc912f2a18444837f310290e0d4d82efc53983bd6a915705bafb30d3",
+      "hint": "D",
+      "region": [
+        0.9861,
+        0.1169,
+        0.9961,
+        0.1325
+      ]
+    },
+    {
+      "id": "5bc00d4a5e8e329d0f952a2a056c2bcafd84b373b6b174f2d3fd1a1e20dda3e5",
+      "hint": "32.00",
+      "region": [
+        0.2285,
+        0.162,
+        0.2691,
+        0.1784
+      ]
+    },
+    {
+      "id": "45ef7b333d952ea13c9019e23ca9391c8fe2da514b65e15c52574e6a0ceaae07",
+      "hint": "SY",
+      "region": [
+        0.3303,
+        0.1655,
+        0.3479,
+        0.1886
+      ]
+    },
+    {
+      "id": "bbc85c7bf92cb5db58acc669e90e443adc0d43a1425b317b928de323d716424e",
+      "hint": "S",
+      "region": [
+        0.3136,
+        0.1867,
+        0.3312,
+        0.2098
+      ]
+    },
+    {
+      "id": "b633beb2ddfdc1e23e62d7bd267987ff61ed1a6a7b53591442021fee4f8516c6",
+      "hint": "oo",
+      "region": [
+        0.3727,
+        0.1953,
+        0.3909,
+        0.2173
+      ]
+    },
+    {
+      "id": "45f6f918416661c11ef56df62c123c52dbe8ac8bffc6fa8a86fb6ef86dd88335",
+      "hint": "gb",
+      "region": [
+        0.3433,
+        0.2165,
+        0.363,
+        0.2396
+      ]
+    },
+    {
+      "id": "30e5ad9e4eb97f642aed993b0b5c5f20cbc5cb4705700922306126877240800a",
+      "hint": "80.00",
+      "region": [
+        0.0382,
+        0.2173,
+        0.0788,
+        0.2337
+      ]
+    },
+    {
+      "id": "142d062f2a81e5545b20aecd20a53958ba3e9403d6e1b8d7e4d1f73aa7918824",
+      "hint": "we)",
+      "region": [
+        0.4652,
+        0.2212,
+        0.4827,
+        0.2443
+      ]
+    },
+    {
+      "id": "645afb6dbbae53f672b5e00f6460df2cadf181844a61e7a7176b7b117e9bb763",
+      "hint": "D 18.00",
+      "region": [
+        0.5058,
+        0.311,
+        0.5615,
+        0.3318
+      ]
+    },
+    {
+      "id": "63423c4efbd97bcd3f4e7b8503d74d137e298eb198ef8bb7b932179db13054ae",
+      "hint": "vA",
+      "region": [
+        0.4506,
+        0.4016,
+        0.4764,
+        0.4345
+      ]
+    },
+    {
+      "id": "3974ef388912f1d5eb3aa2a555231e9787d519b19bcdd798c4831f9b0d98b6c6",
+      "hint": "Sa)",
+      "region": [
+        0.4752,
+        0.4329,
+        0.4927,
+        0.4561
+      ]
+    },
+    {
+      "id": "766fcd3952f1fb871f10ad315c88605a037610adcf869b7618076e0ea2343662",
+      "hint": "S",
+      "region": [
+        0.0924,
+        0.4443,
+        0.1094,
+        0.4671
+      ]
+    },
+    {
+      "id": "48d89a9a0dc7263a338a365cd562853f9a950cecad90fffbf2aedf67d32d8f77",
+      "hint": "we)",
+      "region": [
+        0.077,
+        0.4655,
+        0.0945,
+        0.4882
+      ]
+    },
+    {
+      "id": "53fd93b6f6fde0c9cdfbf19d2cfc8d7601f1d49beed087f3fbc425894e4eb6b8",
+      "hint": "150.00",
+      "region": [
+        0.2894,
+        0.5478,
+        0.3379,
+        0.5643
+      ]
+    },
+    {
+      "id": "ee606daffad513d765cf764b350a6bb7f3899a19505365bc680a8bea6552c06a",
+      "hint": "P,",
+      "region": [
+        0.0806,
+        0.5984,
+        0.0988,
+        0.6216
+      ]
+    },
+    {
+      "id": "cef98884034bb539222c31db2537774bf69aa48eda0804c744f81485a9cedd2e",
+      "hint": "Sa)",
+      "region": [
+        0.1048,
+        0.6298,
+        0.1227,
+        0.6525
+      ]
+    },
+    {
+      "id": "2c4c332fc0a589bfe6d707a4381da583e233b5c36194b620677305a65b5676c2",
+      "hint": "G Chittagong TITLE:",
+      "region": [
+        0.667,
+        0.8502,
+        0.7673,
+        0.9024
+      ]
+    },
+    {
+      "id": "825ece63fefcd60432dac9b6dfaa7fc51691bc422891f50eb45d59289d9b3eb8",
+      "hint": "Exercise University 51",
+      "region": [
+        0.7509,
+        0.8576,
+        0.8218,
+        0.8945
+      ]
+    },
+    {
+      "id": "587c8011e2fac487cabde6d60334ae796de778a41493980434c3670b9677c9d7",
+      "hint": "of Engineering A3",
+      "region": [
+        0.8255,
+        0.8576,
+        0.8985,
+        0.8949
+      ]
+    },
+    {
+      "id": "378e79e90d6afc1e9ba1392dc25ed10fbb03e375756a4bf48e22116027609496",
+      "hint": "Technology A",
+      "region": [
+        0.9145,
+        0.8576,
+        0.9961,
+        0.8824
+      ]
+    },
+    {
+      "id": "5c6afe02297e1862d81bfe2737baab28dd2bc1b59ace969bac6104ecbac4a611",
+      "hint": "m cq",
+      "region": [
+        0.9421,
+        0.8855,
+        0.9724,
+        0.9463
+      ]
+    },
+    {
+      "id": "a5b585509e307858496dfbdc4298343b8db2c451239cd7a4d89bb8d00211cbe6",
+      "hint": "SCALE: NAME: Fahad 1:5 Elahi Khan MAT: Alloy Steel",
+      "region": [
+        0.6715,
+        0.9118,
+        0.8339,
+        0.9451
+      ]
+    },
+    {
+      "id": "e68c3c9a7b1196b2984623d39f8563a195f0689e5152572ecccf49ce488276d3",
+      "hint": "SHEET 1 of 1",
+      "region": [
+        0.8476,
+        0.9369,
+        0.9024,
+        0.9451
+      ]
+    },
+    {
+      "id": "c1c95917dae660628e7a352da8fa14618f3fb417a60957a9b326ddfef40e3b0c",
+      "hint": "DEPT: Mechanical Engineering ID: 2103017",
+      "region": [
+        0.6718,
+        0.9584,
+        0.8655,
+        0.9686
+      ]
+    },
+    {
+      "id": "3e8b3896096cd971a4a810d75850815f8957bc5d7a4a2ca338cf382242669c75",
+      "hint": "DATE: 03-Sep-24",
+      "region": [
+        0.8994,
+        0.9588,
+        0.9718,
+        0.9694
+      ]
+    }
+  ],
+  "profiles": [
+    {
+      "id": "outline_3",
+      "points": 50,
+      "bbox": [
+        2763,
+        57,
+        3373,
+        783
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "line",
+        "arc",
+        "arc"
+      ]
+    },
+    {
+      "id": "outline_7",
+      "points": 26,
+      "bbox": [
+        2587,
+        308,
+        3010,
+        992
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "arc",
+        "line"
+      ]
+    },
+    {
+      "id": "outline_36",
+      "points": 27,
+      "bbox": [
+        2300,
+        513,
+        2509,
+        719
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "arc",
+        "line",
+        "line"
+      ]
+    },
+    {
+      "id": "circle_g340",
+      "points": 60,
+      "bbox": [
+        675,
+        753,
+        871,
+        949
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "outline_20",
+      "points": 28,
+      "bbox": [
+        476,
+        656,
+        640,
+        809
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "line",
+        "arc",
+        "line",
+        "line"
+      ]
+    },
+    {
+      "id": "circle_g341",
+      "points": 60,
+      "bbox": [
+        506,
+        959,
+        564,
+        1017
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "circle_g343",
+      "points": 60,
+      "bbox": [
+        3052,
+        2283,
+        3090,
+        2321
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "circle_g342",
+      "points": 60,
+      "bbox": [
+        631,
+        1108,
+        666,
+        1143
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "outline_4",
+      "points": 99,
+      "bbox": [
+        2355,
+        127,
+        3078,
+        845
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "arc",
+        "line",
+        "line",
+        "arc",
+        "arc",
+        "arc"
+      ]
+    },
+    {
+      "id": "outline_26",
+      "points": 27,
+      "bbox": [
+        2500,
+        322,
+        3033,
+        827
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "arc",
+        "line",
+        "line"
+      ]
+    },
+    {
+      "id": "outline_41",
+      "points": 4,
+      "bbox": [
+        2644,
+        311,
+        3073,
+        733
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "line",
+        "line",
+        "line"
+      ]
+    },
+    {
+      "id": "outline_2",
+      "points": 52,
+      "bbox": [
+        818,
+        1830,
+        1779,
+        1947
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "arc",
+        "line",
+        "arc",
+        "line",
+        "line"
+      ]
+    },
+    {
+      "id": "outline_47",
+      "points": 4,
+      "bbox": [
+        2398,
+        489,
+        2636,
+        732
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "line",
+        "line",
+        "line"
+      ]
+    },
+    {
+      "id": "outline_34",
+      "points": 72,
+      "bbox": [
+        2064,
+        2179,
+        2255,
+        2359
+      ],
+      "closed": null,
+      "edges": [
+        "arc",
+        "arc",
+        "arc"
+      ]
+    },
+    {
+      "id": "outline_30",
+      "points": 72,
+      "bbox": [
+        1286,
+        791,
+        1381,
+        931
+      ],
+      "closed": null,
+      "edges": [
+        "arc",
+        "arc",
+        "arc"
+      ]
+    },
+    {
+      "id": "outline_37",
+      "points": 49,
+      "bbox": [
+        709,
+        895,
+        748,
+        944
+      ],
+      "closed": null,
+      "edges": [
+        "arc",
+        "line",
+        "arc"
+      ]
+    }
+  ],
+  "circles": [
+    {
+      "id": "g340",
+      "radius": 98.1,
+      "center": [
+        773.2,
+        851.2
+      ]
+    },
+    {
+      "id": "g341",
+      "radius": 29.15,
+      "center": [
+        534.8,
+        987.8
+      ]
+    },
+    {
+      "id": "g342",
+      "radius": 17.5,
+      "center": [
+        648.8,
+        1125.8
+      ]
+    },
+    {
+      "id": "g343",
+      "radius": 18.8,
+      "center": [
+        3071.2,
+        2301.8
+      ]
+    }
+  ],
+  "measurements": [
+    {
+      "id": "t0",
+      "text": "40",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t2",
+      "text": "32.00",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t7",
+      "text": "80.00",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t14",
+      "text": "150.00",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    }
+  ],
+  "sketch_keys": [
+    "bindings",
+    "conflicts",
+    "consistent",
+    "fit",
+    "join_gap_max_px",
+    "px_per_mm",
+    "rows",
+    "source",
+    "unbound_circles",
+    "unbound_edges"
+  ],
+  "proposals": [],
+  "detection": {
+    "detector_version": "callout-detector/1",
+    "diagnostics": []
+  },
+  "summary": "16 kontur · 4 daire · 4 ölçü adayı · sınıf: flat-part · kayıt 0"
+}

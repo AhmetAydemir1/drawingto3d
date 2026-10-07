@@ -1,0 +1,18 @@
+{
+  "case_id": "exercise-51-raster",
+  "source_path": "examples/pdf with steps/1/Exercise_51.PNG",
+  "session_token": "b8e7ed7ccb9f492aaa657354ef889a1b",
+  "contour": {"profile_id": "circle_g340"},
+  "calibration": {"measurement_text": "40", "circles": ["g340", "g341"]},
+  "thickness_mm": 15,
+  "acknowledge_trace": true,
+  "decisions": [],
+  "notes": [
+    "Raster pafta (bell-crank levyesi): okuma öneri üretmedi (0 öneri); OCR metinleri başlık bloğu artığı (\"Sa)\", \"oo\", \"P,\" vb.) — yalnız 150.00/32.00/80.00/40 okunabilir kaldı.",
+    "Ana görünümün dış konturu tespitte parçalı: en büyük tutarlı kapalı kontur ana göbek dairesi (circle_g340, Ø30 bölgesi). Parçanın kendisi tek konturla ifade edilemiyor.",
+    "Kalibrasyon belirsiz: öneri yok; 40 (t0) ve g340–g341 çapası denendi; kayıt bunu 'denenen' olarak taşır (bağımsız ölçek tahmini ~6.4 px/mm, denenen çapa 6.87 px/mm).",
+    "Kalınlık: yan görünümdeki 15.00 (C7/C-) — belirsizlik kayıtta.",
+    "Ingest maliyeti olağanüstü: bu oturum ~20 CPU-dk / ~25 dk duvar süresi (istemci kopmalarına rağmen sunucu bitirdi; token ile devam edildi).",
+    "26 adayın tamamı kapsam dışı: uydurma metin yok."
+  ]
+}

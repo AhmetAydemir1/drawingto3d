@@ -67,6 +67,7 @@ def main() -> int:
         "measurements": [{"id": row["id"], "text": row.get("text"),
                           "keys": sorted(row)} for row in options.get("measurements") or []],
         "sketch_keys": sorted(data.get("sketch") or {}),
+        "proposals": data.get("proposals") or [],
         "detection": data.get("callout_detection"),
         "summary": page.ev("return $('summary').textContent;"),
     }

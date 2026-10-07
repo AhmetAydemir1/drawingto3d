@@ -1,8 +1,8 @@
 {
   "case_id": "exercise-51-raster",
-  "run_id": "20261007-052035",
-  "at": "2026-10-07T05:20:35+0300",
-  "git_head": "9d624fcc742d09d4d88df827b243dfecdf03b5ea",
+  "run_id": "20261007-052416",
+  "at": "2026-10-07T05:24:16+0300",
+  "git_head": "f1261ea766addaf59fa84c70f1da73d131c11c7b",
   "source_path": "examples/pdf with steps/1/Exercise_51.PNG",
   "source_sha256": "b19423550cd579ec24a2ef0630babd8af7bbe50a0ce7b2b9532f9bcec476abe8",
   "source_sha256_checked": true,
@@ -19,14 +19,62 @@
   "proposal_accept_count": 0,
   "manual_target_correction_count": 0,
   "review_import_used": false,
-  "build_blockers": [
-    "Çizimden izlenen konturu taslak olarak kullanmayı onaylayın."
+  "build_blockers": [],
+  "build_success": true,
+  "step_reopen": true,
+  "bbox": [
+    15.0,
+    28.559,
+    28.559
   ],
-  "build_success": false,
-  "step_reopen": null,
-  "bbox": null,
-  "features": null,
-  "final_geometry_verdict": null,
+  "features": {
+    "plan_lists": {
+      "operations": 1,
+      "assumptions": 3
+    },
+    "solids": 1,
+    "valid": true,
+    "faces": 3,
+    "cylinders": [
+      14.28
+    ],
+    "face_types": {
+      "PLANE": 2,
+      "CYLINDER": 1
+    }
+  },
+  "final_geometry_verdict": {
+    "checks": {
+      "solids": {
+        "ok": true,
+        "got": "1 katı",
+        "want": "1 katı"
+      },
+      "valid": {
+        "ok": true,
+        "got": "True",
+        "want": "True"
+      },
+      "vector": {
+        "ok": false,
+        "got": "[15, 28.559, 28.559]",
+        "want": "[60, 100, 245] (fark [45, 71.44, 216.44])"
+      },
+      "volume": {
+        "ok": false,
+        "got": "9.6 cm3",
+        "want": "471.9 cm3 (%98 fark)"
+      },
+      "cylinders": {
+        "ok": false,
+        "got": "[14.28]",
+        "want": "[6, 7.5, 9, 10, 15, 16, 25, 50, 60]; eksik [6, 7.5, 9, 10, 15, 16, 25, 50, 60], fazla [14.28]"
+      }
+    },
+    "pass": false,
+    "shape_ok": false,
+    "detail_ok": false
+  },
   "user_interventions": {
     "typed_texts": 0,
     "hint_clicks": 0,
@@ -41,21 +89,46 @@
   },
   "failures": [
     {
-      "code": "TRANSCRIPTION",
+      "code": "CAD_WRONG",
       "detail": {
-        "what": "trace acknowledgement"
-      }
-    },
-    {
-      "code": "CONSTRAINT_UNSUPPORTED",
-      "detail": {
-        "what": "build never ran",
-        "blockers": 1
+        "checks": {
+          "solids": {
+            "ok": true,
+            "got": "1 katı",
+            "want": "1 katı"
+          },
+          "valid": {
+            "ok": true,
+            "got": "True",
+            "want": "True"
+          },
+          "vector": {
+            "ok": false,
+            "got": "[15, 28.559, 28.559]",
+            "want": "[60, 100, 245] (fark [45, 71.44, 216.44])"
+          },
+          "volume": {
+            "ok": false,
+            "got": "9.6 cm3",
+            "want": "471.9 cm3 (%98 fark)"
+          },
+          "cylinders": {
+            "ok": false,
+            "got": "[14.28]",
+            "want": "[6, 7.5, 9, 10, 15, 16, 25, 50, 60]; eksik [6, 7.5, 9, 10, 15, 16, 25, 50, 60], fazla [14.28]"
+          }
+        }
       }
     }
   ],
   "notes": [],
-  "artifacts": {},
+  "artifacts": {
+    "part.step": "eval/audits/20261007-guided-g11/cases/exercise-51-raster/part.step",
+    "plan.json": "eval/audits/20261007-guided-g11/cases/exercise-51-raster/plan.json",
+    "plan-audit.json": "eval/audits/20261007-guided-g11/cases/exercise-51-raster/plan-audit.json",
+    "session-public.json": "eval/audits/20261007-guided-g11/cases/exercise-51-raster/session-public.json",
+    "review-bundle.json": "eval/audits/20261007-guided-g11/cases/exercise-51-raster/review-bundle.json"
+  },
   "console_errors": [],
   "rejected_requests": []
 }

@@ -1,22 +1,177 @@
-"""G8 — build readiness + per-callout audit (kök `PLAN.md` §14).
+"""G8 — build readiness + per-callout audit (kök `PLAN.md` §14); G12.1 — disposition coverage.
 
 The backend's `questions()` stays the authority: this does not replace it, it names *why* a build
 waits, in the plan's own categories, per callout — and it carries the audit chain of every callout
 (callout → raw text → parser version → semantic fields → target → geometry key → compiled decision,
 and, once a build has run, the feature it produced).
 
+G12.1 (PLAN-24 §10–§16) adds the *coverage* question the G11 run measured the absence of: a callout
+whose candidate was blanket-ignored by the old bulk path must not quietly count as decided. Every
+effective callout lands in exactly one bucket (`callout_coverage`), and three buckets block the
+build on their own even though the compiler excludes those rows:
+
+* `legacy_unclassified` — a pre-G12.1 `ignored`/`unbindable` row: never auto-promoted to a claim;
+* `build_relevant_unsupported` — a real fact this version cannot apply; the honest stop;
+* `invalid_duplicate` — a `redundant` claim whose citation is missing or stale.
+
 Pure: it reads the session record and returns a picture. It never creates a confirmation, never
-re-pins geometry and never drops a callout silently: a callout the user excluded (ignored or
-declared unbindable) is reported as a declared exclusion, not as an issue.
+re-pins geometry and never drops a callout silently: a callout the user excluded (with an explicit
+disposition) is reported as a declared exclusion, not as an issue.
 """
 from __future__ import annotations
 
-from drawingto3d import callout_bind, callout_compile
+from drawingto3d import callout_bind, callout_compile, callout_models
 
 CATEGORIES = ("missing_transcription", "parse_error", "parse_ambiguous", "missing_unit", "missing_target",
               "ambiguous_target", "stale_target", "unsupported_semantic", "callout_conflict",
               "missing_profile", "missing_view", "missing_calibration", "geometry_conflict",
-              "unsupported_cad_feature")
+              "unsupported_cad_feature",
+              # G12.1 coverage categories (PLAN-24 §15/§16)
+              "legacy_unclassified", "unsupported_build_relevant", "stale_duplicate_reference")
+
+# --- G12.1 disposition coverage --------------------------------------------------------------
+
+COVERAGE_BUCKETS = ("not_model_input", "redundant", "build_applied", "build_relevant_unsupported",
+                    "unclassified", "legacy_unclassified", "stale", "compile_blocked", "invalid_duplicate")
+"""Every effective callout lands in exactly one bucket (PLAN-24 §15).
+
+`build_applied` = current transcription + current parse + current target + compiled decision, or a
+decision the user already holds (`manual_decision_matches`). `unclassified`/`stale`/`compile_blocked`
+are the machine-side waiting states the compiler already names; the other three are the new
+disposition verdicts and are the ones that gate the build by themselves.
+"""
+
+COVERAGE_BLOCKING = ("unclassified", "legacy_unclassified", "stale", "compile_blocked",
+                     "invalid_duplicate", "build_relevant_unsupported")
+"""Buckets that keep `coverage_complete` false — each is either undecided or unapplied (never a claim)."""
+
+# The decision vocab a `redundant` citation may name (`decision:<name>`): the fact already lives in
+# one of the user's *own* decisions — this is what "represented by another explicit decision" means
+# mechanically (PLAN-24 §15). Values are plain presence checks on the raw decisions dict.
+DECISION_REFS = {
+    "calibration": lambda decisions: decisions.get("calibration") is not None,
+    "profile": lambda decisions: bool(decisions.get("profile_id")),
+    "thickness": lambda decisions: decisions.get("thickness") is not None,
+    "holes": lambda decisions: bool(decisions.get("holes")),
+    "bindings": lambda decisions: bool(decisions.get("bindings")),
+    "contour": lambda decisions: bool((decisions.get("contour") or {}).get("drop")
+                                      or (decisions.get("contour") or {}).get("approve_join")),
+    "view": lambda decisions: decisions.get("view") is not None,
+    "trace": lambda decisions: bool(decisions.get("trace_acknowledged")),
+}
+
+_COMPILE_BLOCKED = ("missing_unit", "parse_ambiguous", "parse_unsupported", "unsupported_semantic",
+                    "unsupported_cad_feature", "conflict", "view_not_confirmed", "stale_parse",
+                    "stale_target", "missing_parse")
+
+
+def decision_ref_present(decisions: dict, name: str) -> bool:
+    """Is the decision a `decision:<name>` citation names actually present in this session?"""
+    check = DECISION_REFS.get(str(name))
+    return bool(check and check(decisions or {}))
+
+
+def _state_stale(state: dict) -> bool:
+    return any((state.get(layer) or {}).get("state") == "stale"
+               for layer in ("transcription", "parse", "target"))
+
+
+def callout_coverage(record: dict, *, compilation: dict | None = None) -> dict:
+    """The per-callout decision-coverage picture of one session (pure — reads, writes nothing).
+
+    Returns one list of callout ids per bucket plus `counts`, `coverage_complete` and the
+    `unclassified`/`legacy_unclassified` bookkeeping the UI panel shows (PLAN-24 §15).
+    """
+    decisions = record.get("decisions") or {}
+    effective = callout_models.effective_callouts(record)
+    by_id = {row["id"]: row for row in effective}
+    compilation = compilation if compilation is not None else callout_compile.compile_callouts(record)
+    compile_rows = {row.get("callout_id"): row for row in compilation.get("rows") or []}
+    states = {row["id"]: row for row in callout_models.callout_states(record)}
+
+    buckets: dict[str, list[str]] = {name: [] for name in COVERAGE_BUCKETS}
+
+    def state_for(callout_id: str) -> dict:
+        return states.get(callout_id) or {}
+
+    def covered_for_citation(callout_id: str, stack: frozenset) -> bool:
+        """Can this callout be cited as 'the fact is already represented here'?"""
+        if callout_id in stack:
+            return False                                   # döngü: dayanak kendine kapanamaz
+        row = by_id.get(callout_id)
+        if row is None or _state_stale(state_for(callout_id)):
+            return False
+        disposition = row.get("disposition")
+        if disposition == "not_model_input":
+            return True
+        if disposition == "redundant":
+            return citation_ok(row, stack | {callout_id})
+        if disposition == "build_relevant_unsupported":
+            return False
+        if row.get("ignored") or row.get("unbindable"):
+            return False                                   # legacy: kanıtsız, dayanak olamaz
+        return (compile_rows.get(callout_id) or {}).get("status") == "compiled"
+
+    def citation_ok(row: dict, stack: frozenset) -> bool:
+        reference = str(row.get("duplicate_of") or "")
+        if reference.startswith(callout_models.DISPOSITION_DECISION_PREFIX):
+            name = reference[len(callout_models.DISPOSITION_DECISION_PREFIX):]
+            return decision_ref_present(decisions, name)
+        return covered_for_citation(reference, stack | {row["id"]})
+
+    for row in effective:
+        callout_id = row["id"]
+        disposition = row.get("disposition")
+        if disposition == "build_relevant_unsupported":
+            buckets["build_relevant_unsupported"].append(callout_id)
+            continue
+        if disposition == "not_model_input":
+            buckets["not_model_input"].append(callout_id)
+            continue
+        if disposition == "redundant":
+            (buckets["redundant"] if citation_ok(row, frozenset()) else buckets["invalid_duplicate"]
+             ).append(callout_id)
+            continue
+        if row.get("ignored") or row.get("unbindable"):
+            # Pre-G12.1 rows: the flag is real, the *claim* was never made.
+            buckets["legacy_unclassified"].append(callout_id)
+            continue
+        if _state_stale(state_for(callout_id)):
+            buckets["stale"].append(callout_id)
+            continue
+        status = (compile_rows.get(callout_id) or {}).get("status")
+        if status == "compiled":
+            buckets["build_applied"].append(callout_id)
+        elif status in _COMPILE_BLOCKED:
+            buckets["compile_blocked"].append(callout_id)
+        else:
+            buckets["unclassified"].append(callout_id)
+
+    counts = {name: len(rows) for name, rows in buckets.items()}
+    return {"total": len(effective), **buckets, "counts": counts,
+            "coverage_complete": all(counts[name] == 0 for name in COVERAGE_BLOCKING)}
+
+
+def coverage_issues(coverage: dict, record: dict) -> list[dict]:
+    """The coverage buckets the compiler cannot see, as readiness issues (PLAN-24 §16)."""
+    by_id = {row["id"]: row for row in callout_models.effective_callouts(record)}
+    issues: list[dict] = []
+    for callout_id in coverage.get("legacy_unclassified") or []:
+        issues.append({"category": "legacy_unclassified", "callout_id": callout_id,
+                       "action": "review_callout", "reason": "legacy_unclassified",
+                       "detail": "Eski 'yok sayıldı/bağlanamaz' kaydı yeni sözleşmede kanıtsız."})
+    for callout_id in coverage.get("build_relevant_unsupported") or []:
+        reason = (by_id.get(callout_id) or {}).get("disposition_reason")
+        issues.append({"category": "unsupported_build_relevant", "callout_id": callout_id,
+                       "action": "review_callout", "reason": "build_relevant_unsupported",
+                       "detail": reason or "gerçek ölçü/not bu sürümde uygulanamıyor"})
+    for callout_id in coverage.get("invalid_duplicate") or []:
+        reference = (by_id.get(callout_id) or {}).get("duplicate_of")
+        issues.append({"category": "stale_duplicate_reference", "callout_id": callout_id,
+                       "action": "review_callout", "reason": "invalid_duplicate",
+                       "detail": str(reference or "")})
+    return issues
+
 
 # status (compiler row) → (category, action) — the interface's button, in machine form
 _STATUS = {
@@ -51,6 +206,14 @@ _QUESTION = {
     "missing_calibration": "Bilinen ölçünün iki noktasını ve uzunluğunu belirtin.",
     "missing_view": "{reason}",
     "geometry_conflict": "{reason}",
+    # G12.1 kapsam kategorileri (PLAN-24 §13/§16): üç disposition adı insan dilinde anılır.
+    "legacy_unclassified": "«{id}» eski sürümde kapsam dışı işaretliydi; yeni sözleşmede "
+                           "sınıflandırılmadı. Yeniden değerlendirin: modele ait değil / zaten başka bir "
+                           "ölçüyle temsil ediliyor / gerçek ölçü ama bu sürüm uygulayamıyor.",
+    "unsupported_build_relevant": "«{id}» gerçek ölçü/not olarak işaretli ve bu sürüm modele "
+                                  "uygulayamıyor: {reason} — bu bilgi olmadan 3B model açılmaz.",
+    "stale_duplicate_reference": "«{id}» başka bir kararla temsil edildiğini bildiriyor ama dayanak "
+                                 "(«{reason}») yok ya da güncel değil; dayanağı yeniden bağlayın.",
 }
 
 
@@ -89,6 +252,12 @@ def build_readiness(record: dict, *, sheet_issues: list[dict] | None = None,
                        "action": issue.get("action", "sheet_question"),
                        "reason": issue.get("reason"), "detail": issue.get("detail")})
 
+    # G12.1 (PLAN-24 §16): the coverage audit is part of readiness — a legacy bulk ignore, a real
+    # fact this version cannot apply, or a redundant claim whose dayanak is gone all block the
+    # build here, even though the compiler excludes those rows from its own chain.
+    coverage = callout_coverage(record, compilation=compilation)
+    issues.extend(coverage_issues(coverage, record))
+
     excluded = [{"callout_id": row.get("callout_id"), "reason": row.get("reason")}
                 for row in compilation.get("excluded") or []]
     questions = []
@@ -106,6 +275,7 @@ def build_readiness(record: dict, *, sheet_issues: list[dict] | None = None,
             "issues": issues,
             "categories": counts,
             "excluded": excluded,
+            "coverage": coverage,
             "compiled": callout_compile.compiled_summary(compilation),
             "rows": callout_compile.compile_provenance(compilation, feature_ids),
             "geometry_key": compilation.get("geometry_key"),
@@ -117,4 +287,6 @@ def readiness_questions(readiness: dict) -> list[str]:
     return [row["text"] for row in readiness.get("questions") or []]
 
 
-__all__ = ["CATEGORIES", "build_readiness", "readiness_questions"]
+__all__ = ["CATEGORIES", "COVERAGE_BUCKETS", "COVERAGE_BLOCKING", "DECISION_REFS",
+           "build_readiness", "callout_coverage", "coverage_issues", "decision_ref_present",
+           "readiness_questions"]

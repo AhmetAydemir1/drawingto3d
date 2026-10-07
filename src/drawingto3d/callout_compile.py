@@ -149,15 +149,24 @@ def compile_callouts(record: dict) -> dict:
                "unit_source": None}
         rows.append(row)
 
-        if callout.get("ignored"):
-            row.update(status="excluded", reason="ignored")
-            excluded.append({"callout_id": callout_id, "reason": "ignored"})
+        if callout.get("disposition") is not None:
+            # G12.1 (PLAN-24 §11): an explicit disposition decides the exclusion and names itself.
+            # `not_model_input` / `redundant` are settled scope claims; `build_relevant_unsupported`
+            # is a real, unapplied fact — the coverage audit blocks the build on it (never here: the
+            # compiler reports, `callout_readiness` gates).
+            disposition = callout.get("disposition")
+            row.update(status="excluded", reason=disposition)
+            excluded.append({"callout_id": callout_id, "reason": disposition, "disposition": disposition,
+                             "duplicate_of": callout.get("duplicate_of"),
+                             "detail": callout.get("disposition_reason")})
             continue
-        if callout.get("unbindable"):
-            # The user's own declaration (G6): this callout is not to be bound. Out of scope by
-            # decision, visible in the chain — never a silent drop and never a guess.
-            row.update(status="excluded", reason="unbindable_declared")
-            excluded.append({"callout_id": callout_id, "reason": "unbindable_declared"})
+        if callout.get("ignored") or callout.get("unbindable"):
+            # Legacy (pre-G12.1) spelling: still an explicit exclusion on the chain, but the
+            # coverage audit reads it as `legacy_unclassified` — an old bulk ignore is never
+            # promoted to a claim it never made (PLAN-24 §12).
+            reason = "ignored" if callout.get("ignored") else "unbindable_declared"
+            row.update(status="excluded", reason=reason)
+            excluded.append({"callout_id": callout_id, "reason": reason})
             continue
 
         transcription = state.get("transcription") or {}

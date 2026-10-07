@@ -25,7 +25,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-CALLOUT_SCHEMA_VERSION = 3
+CALLOUT_SCHEMA_VERSION = 4
 """Version of the callout layer itself (PLAN-20 §6.1) — *not* `guided.GEOMETRY_VERSION`.
 
 Adding the callout fields must never bump the geometry contract; a change to these records bumps
@@ -41,7 +41,33 @@ binding chain needs and move it to 3:
 * `TranscriptionDecision.entered_by` may be `external_review` — GX import provenance on the row
   itself, so an imported text never looks like something the user typed here.
 
+G12.1 moves it to 4 (PLAN-24 §11/§12): `CalloutReviewDecision` gains the *disposition* contract —
+
+* `disposition` ∈ `not_model_input` / `redundant` / `build_relevant_unsupported`, the explicit claim
+  a review makes about why a callout is out of the build;
+* `redundant` must cite what already represents the fact (`duplicate_of`: another callout's id or
+  `decision:<name>`), and `build_relevant_unsupported` must say why in `disposition_reason`.
+
+Records written before this version keep their bare `ignored`/`unbindable` flags: they are **not**
+auto-promoted to a disposition — they read as `legacy_unclassified` (PLAN-24 §12) until the user
+reviews them again under the new contract.
+
 A record that is merely *loaded* is never rewritten because of it (PLAN-21 §6.1)."""
+
+CALLOUT_DISPOSITIONS = ("not_model_input", "redundant", "build_relevant_unsupported")
+"""The three claims a review may make about an out-of-build callout (PLAN-24 §11).
+
+* `not_model_input` — the text is not geometry: title block, drawing number, material note,
+  duplicated detector fragment, obvious detector false positive;
+* `redundant` — a real geometry fact the session already represents elsewhere (must cite it);
+* `build_relevant_unsupported` — a real geometry/dimension fact this version cannot bind or apply.
+  This one *blocks the build*: it is the honest stop that replaces the old silent "unbindable"."""
+
+DispositionName = Literal["not_model_input", "redundant", "build_relevant_unsupported"]
+"""The same vocabulary as a typing alias, so store commands are checked against it too."""
+
+DISPOSITION_DECISION_PREFIX = "decision:"
+"""A `duplicate_of` citation that names another decision instead of another callout (`decision:thickness`)."""
 
 MANUAL_ID_PREFIX = "manual:"
 """The user-created callout's own namespace (PLAN-21 §6.1).
@@ -175,11 +201,21 @@ class ManualCalloutDecision(BaseModel):
 
 
 class CalloutReviewDecision(BaseModel):
-    """The user's own review of one callout: a corrected region and/or "not a callout" (PLAN-21 §6.1).
+    """The user's own review of one callout: a corrected region and/or an explicit disposition (PLAN-21 §6.1).
 
     At most one record per callout. A region override never deletes the detected region or its
-    provenance — it only changes which region is *effective*; an ignored callout keeps its text and
-    its history. A record that carries neither decision is meaningless and is not stored.
+    provenance — it only changes which region is *effective*; a reviewed callout keeps its text and
+    its history. A record that carries no decision at all is meaningless and is not stored.
+
+    G12.1 (PLAN-24 §11) adds the disposition contract on top of the two legacy flags:
+
+    * `not_model_input` / `redundant` / `build_relevant_unsupported` — the user's explicit claim
+      about why this callout is out of the build. `redundant` must cite what already represents the
+      fact (`duplicate_of`, another callout id or `decision:<name>`); `build_relevant_unsupported`
+      must say why (`disposition_reason`) and it blocks the build until the fact is applied.
+    * `ignored`/`unbindable` stay as the legacy spelling of the same idea. A record that carries
+      only those flags reads as `legacy_unclassified` in a fresh correctness run (PLAN-24 §12): the
+      old bulk ignores were never verified, so they are not promoted to a claim.
     """
 
     model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
@@ -187,13 +223,24 @@ class CalloutReviewDecision(BaseModel):
     callout_id: str = Field(min_length=1, max_length=120)
     region_override: list[float] | None = None
     ignored: bool = False
-    unbindable: bool = False     # "bağlanamaz": kullanıcının kapsam kararı (G6 panelindeki dördüncü düğme)
+    unbindable: bool = False     # "bağlanamaz": eski sözlük (G6 panelinin dördüncü düğmesi); G12.1'de
+                                 # yeni komut bunu build_relevant_unsupported olarak yazar
+    disposition: DispositionName | None = None
+    duplicate_of: str | None = Field(default=None, min_length=1, max_length=120)
+    disposition_reason: str | None = Field(default=None, min_length=1, max_length=500)
     revision: int = Field(default=0, ge=0)
 
     @field_validator("region_override")
     @classmethod
     def _region(cls, value):
         return None if value is None else _check_region(value)
+
+    @field_validator("disposition_reason")
+    @classmethod
+    def _reason_not_blank(cls, value):
+        if value is not None and not str(value).strip():
+            raise ValueError("gerekçe boş olamaz")
+        return value
 
     @field_validator("revision", mode="before")
     @classmethod
@@ -202,9 +249,23 @@ class CalloutReviewDecision(BaseModel):
 
     @model_validator(mode="after")
     def _carries_a_decision(self):
-        if self.region_override is None and not self.ignored and not self.unbindable:
-            raise ValueError("gözden geçirme kaydı bir bölge düzeltmesi, yok sayma ya da "
-                             "'bağlanamaz' kararı taşımalı")
+        if (self.region_override is None and not self.ignored and not self.unbindable
+                and self.disposition is None):
+            raise ValueError("gözden geçirme kaydı bir bölge düzeltmesi, yok sayma, disposition "
+                             "ya da 'bağlanamaz' kararı taşımalı")
+        return self
+
+    @model_validator(mode="after")
+    def _disposition_shape(self):
+        """The citation contract: redundant ⇔ duplicate_of, and an unsupported claim says why."""
+        if self.duplicate_of is not None and self.disposition != "redundant":
+            raise ValueError("duplicate_of yalnız 'redundant' kararında kullanılır")
+        if self.disposition == "redundant" and not (self.duplicate_of or "").strip():
+            raise ValueError("'redundant' kararı dayanağını yazmak zorunda (duplicate_of): "
+                             "başka bir callout kimliği ya da decision:<ad>")
+        if self.disposition == "build_relevant_unsupported" and not (self.disposition_reason or "").strip():
+            raise ValueError("'build_relevant_unsupported' kararı gerekçesiz olamaz "
+                             "(disposition_reason): gerçek bilgi neden uygulanamıyor?")
         return self
 
 
@@ -464,6 +525,11 @@ def effective_callouts(record: dict) -> list[dict]:
             "machine_text_hint": candidate.get("machine_text_hint"),
             "ignored": bool(review.get("ignored")),
             "unbindable": bool(review.get("unbindable")),
+            # G12.1: the disposition claim rides in the effective list so the compiler, the coverage
+            # audit and the panel all read the one row (PLAN-24 §11).
+            "disposition": review.get("disposition"),
+            "duplicate_of": review.get("duplicate_of"),
+            "disposition_reason": review.get("disposition_reason"),
             "provenance": {"kind": "detected", "observation_ids": list(candidate.get("observation_ids") or []),
                            "detector_version": candidate.get("detector_version"),
                            "geometry_version": candidate.get("geometry_version")},
@@ -489,6 +555,9 @@ def effective_callouts(record: dict) -> list[dict]:
             "machine_text_hint": None,
             "ignored": bool(review.get("ignored")),
             "unbindable": bool(review.get("unbindable")),
+            "disposition": review.get("disposition"),
+            "duplicate_of": review.get("duplicate_of"),
+            "disposition_reason": review.get("disposition_reason"),
             "provenance": {"kind": "manual", "observation_ids": [], "detector_version": None,
                            "geometry_version": None},
         })
@@ -605,6 +674,12 @@ def callout_states(record: dict, expected_parser_version: str | None = None) -> 
             "manual": callout.get("manual"),
             "ignored": callout.get("ignored"),
             "unbindable": callout.get("unbindable"),
+            # G12.1: the panel shows *why* a callout is out of the build, with its dayanak
+            # (PLAN-24 §13). A legacy row reads as `None` here — and the coverage audit is what
+            # says it is not a claim yet.
+            "disposition": callout.get("disposition"),
+            "duplicate_of": callout.get("duplicate_of"),
+            "disposition_reason": callout.get("disposition_reason"),
             "transcription": _transcription_state(transcription, callout.get("region")),
             "parse": _parse_state(callout_id, transcription, parses, expected, record, region_changed),
             "target": _target_state(callout_id, transcription, targets.get(callout_id), parses,

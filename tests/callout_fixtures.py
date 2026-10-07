@@ -43,12 +43,18 @@ def record(text, region, *, circles=None, count=None, leader=None, arcs=(), clai
            unbindable=False, manual_holes=(), manual_bindings=(), region_override=None,
            token=TOKEN, revision=1, sheet_unit: "str | None" = None, geometry_version=3, parses=None,
            source_sha256=SOURCE, candidates=True, callout_id="k1", second_text=None, calibration=True,
-           sheet_frame=True, view=None):
+           sheet_frame=True, view=None, disposition=None, duplicate_of=None, disposition_reason=None):
     """One synthetic session record: geometry, one detected callout, its text and its real parse."""
     circles = circles if circles is not None else [{"id": "c0", "center": [45.0, 45.0], "radius": 6.0}]
     review = {"callout_id": callout_id, "ignored": bool(ignored), "revision": 1}
     if unbindable:
         review["unbindable"] = True
+    if disposition:
+        review["disposition"] = disposition
+    if duplicate_of:
+        review["duplicate_of"] = duplicate_of
+    if disposition_reason:
+        review["disposition_reason"] = disposition_reason
     if region_override:
         review["region_override"] = [float(value) for value in region_override]
     row = {
@@ -82,7 +88,8 @@ def record(text, region, *, circles=None, count=None, leader=None, arcs=(), clai
                                           "normalized_text": text, "entered_by": "user",
                                           "source_region": list(region), "revision": 1}],
                       "callout_targets": [], "callout_reviews": [review] if (ignored or unbindable
-                                                                            or region_override) else [],
+                                                                            or region_override or disposition)
+                      else [],
                       "holes": [dict(item) for item in manual_holes],
                       "bindings": [copy.deepcopy(dict(item)) for item in manual_bindings],
                       "profile_id": profile_id,

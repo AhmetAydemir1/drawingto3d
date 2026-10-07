@@ -36,7 +36,7 @@ def test_the_bundle_carries_every_required_field_and_the_chain_per_callout():
     bundle = callout_review.export_bundle(row)
     for key in ("schema_version", "session", "base_revision", "source_digest", "page", "callouts"):
         assert key in bundle, key
-    assert bundle["schema_version"] == CALLOUT_SCHEMA_VERSION == 3
+    assert bundle["schema_version"] == CALLOUT_SCHEMA_VERSION == 4
     assert bundle["session"] == row["token"] and bundle["base_revision"] == row["revision"] == 1
     assert bundle["source_digest"] == row["source_sha256"]
     callout = bundle["callouts"][0]

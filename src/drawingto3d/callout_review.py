@@ -17,12 +17,13 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
-from drawingto3d import callout_bind
-from drawingto3d.callout_models import (CALLOUT_PARSER_VERSION, CALLOUT_SCHEMA_VERSION, callout_state,
-                                        effective_callouts, geometry_key)
+from drawingto3d import callout_bind, callout_readiness
+from drawingto3d.callout_models import (CALLOUT_DISPOSITIONS, CALLOUT_PARSER_VERSION, CALLOUT_SCHEMA_VERSION,
+                                        DISPOSITION_DECISION_PREFIX, callout_state, effective_callouts,
+                                        geometry_key)
 
 BUNDLE_VERSION = 1
-IMPORT_ACTIONS = ("transcribe", "ignore", "restore", "confirm_target", "select_target")
+IMPORT_ACTIONS = ("transcribe", "ignore", "restore", "confirm_target", "select_target", "set_disposition")
 TARGET_KINDS = ("circle", "circle_group", "arc", "profile", "vertex_pair")
 TEXT_LIMIT = 200
 EVIDENCE_LIMIT = 50
@@ -77,6 +78,11 @@ def export_bundle(record: dict, *, artifacts: dict | None = None, proposals_limi
             "machine_text_hint": callout.get("machine_text_hint"),
             "ignored": bool(review.get("ignored")),
             "unbindable": bool(review.get("unbindable")),
+            # G12.1: the reviewer sees every scope claim the session holds, with its dayanak — an
+            # imported disposition is judged against the same contract the interface uses (§12/§17).
+            "disposition": review.get("disposition"),
+            "duplicate_of": review.get("duplicate_of"),
+            "disposition_reason": review.get("disposition_reason"),
             "freshness": {"transcription": state.get("transcription"), "parse": state.get("parse"),
                           "target": state.get("target")},
             "raw_text": transcription.get("raw_text"),
@@ -106,7 +112,9 @@ def export_bundle(record: dict, *, artifacts: dict | None = None, proposals_limi
         "geometry_key": geometry_key(record),
         "callouts": rows,
         "instructions": ("Her callout için: `transcribe` (metni yaz), `ignore`/`restore` (callout değil), "
-                         "`confirm_target` (öneriyi onayla), `select_target` (kendi seçimin). "
+                         "`confirm_target` (öneriyi onayla), `select_target` (kendi seçimin), "
+                         "`set_disposition` (not_model_input / redundant + duplicate_of / "
+                         "build_relevant_unsupported + disposition_reason). "
                          "`base_revision` değiştiyse içe aktarma reddedilir."),
     }
 
@@ -249,6 +257,48 @@ def validate_import(record: dict, bundle: dict, *, session_token: str | None = N
                 payload["region"] = [float(value) for value in region]
         elif name in ("ignore", "restore"):
             pass
+        elif name == "set_disposition":
+            # G12.1 (§17): the same contract as the interface's command — vocabulary, a resolvable
+            # dayanak for `redundant`, a reason for `build_relevant_unsupported`. All-or-nothing:
+            # one bad row refuses the whole import (PLAN §24 — untrusted input).
+            disposition = item.get("disposition")
+            if disposition not in CALLOUT_DISPOSITIONS:
+                errors.append({"index": index, "callout_id": callout_id, "reason": "unknown_disposition",
+                               "detail": str(disposition)})
+                continue
+            duplicate_of = item.get("duplicate_of")
+            reason = item.get("disposition_reason")
+            if disposition == "redundant":
+                if not isinstance(duplicate_of, str) or not duplicate_of.strip():
+                    errors.append({"index": index, "callout_id": callout_id,
+                                   "reason": "missing_duplicate_reference"})
+                    continue
+                duplicate_of = duplicate_of.strip()
+                if duplicate_of.startswith(DISPOSITION_DECISION_PREFIX):
+                    if not callout_readiness.decision_ref_present(decisions, duplicate_of[len(DISPOSITION_DECISION_PREFIX):]):
+                        errors.append({"index": index, "callout_id": callout_id,
+                                       "reason": "unknown_decision_reference", "detail": duplicate_of})
+                        continue
+                elif duplicate_of == callout_id:
+                    errors.append({"index": index, "callout_id": callout_id,
+                                   "reason": "self_duplicate_reference"})
+                    continue
+                elif duplicate_of not in callouts:
+                    errors.append({"index": index, "callout_id": callout_id,
+                                   "reason": "unknown_duplicate_reference", "detail": duplicate_of})
+                    continue
+            else:
+                duplicate_of = None
+            if disposition == "build_relevant_unsupported":
+                if not isinstance(reason, str) or not reason.strip():
+                    errors.append({"index": index, "callout_id": callout_id,
+                                   "reason": "missing_disposition_reason"})
+                    continue
+                reason = reason.strip()[:500]
+            else:
+                reason = None
+            payload.update({"disposition": disposition, "duplicate_of": duplicate_of,
+                            "disposition_reason": reason})
         else:
             target = _validate_target(record, callout_id, item, errors)
             if target is None:

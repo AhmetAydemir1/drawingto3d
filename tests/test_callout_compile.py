@@ -150,7 +150,37 @@ def test_an_ignored_or_unbindable_callout_is_a_declared_exclusion():
         compiled = callout_compile.compile_callouts(row)
         assert compiled["excluded"] == [{"callout_id": "k1", "reason": reason}]
         assert compiled["rows"][0]["status"] == "excluded"
-        assert callout_readiness.build_readiness(row)["ready"] is True, "kapsam dışı engel değil"
+        # G12.1 (PLAN-24 §12): eski kayıt derlemeden dışlanır AMA kanıtsızdır — kapsam denetimi onu
+        # `legacy_unclassified` sayar ve build'i AÇMAZ. (Eski "kapsam dışı engel değil" yorumu, G11
+        # koşusunun sahte hazırlığını üreten yorumdu.)
+        readiness = callout_readiness.build_readiness(row)
+        assert readiness["ready"] is False
+        assert readiness["coverage"]["legacy_unclassified"] == ["k1"]
+        assert [q["category"] for q in readiness["questions"]] == ["legacy_unclassified"]
+
+
+def test_a_named_disposition_replaces_the_legacy_flags_in_the_compiler_chain():
+    """G12.1 (PLAN-24 §11): adı konmuş kapsam claim'i derlemede kendini söyler.
+
+    `not_model_input` engel değildir; `build_relevant_unsupported` gerçek bilgidir ve engeldir —
+    exclusions listesi hangi claim'in ne olduğunu kayıtta taşır (denetim izi).
+    """
+    claim = record("Ø8 THRU", [0.10, 0.20, 0.20, 0.32], stored_target=THRU,
+                   disposition="not_model_input")
+    assert callout_compile.compile_callouts(claim)["excluded"] == [
+        {"callout_id": "k1", "reason": "not_model_input", "disposition": "not_model_input",
+         "duplicate_of": None, "detail": None}]
+    assert callout_readiness.build_readiness(claim)["ready"] is True
+
+    real = record("80,00", [0.10, 0.20, 0.20, 0.32], disposition="build_relevant_unsupported",
+                  disposition_reason="yazılı daralma ölçüsü; hedefi yok")
+    excluded = callout_compile.compile_callouts(real)["excluded"]
+    assert excluded[0]["reason"] == "build_relevant_unsupported"
+    assert excluded[0]["disposition"] == "build_relevant_unsupported"
+    assert excluded[0]["detail"] == "yazılı daralma ölçüsü; hedefi yok"
+    readiness = callout_readiness.build_readiness(real)
+    assert readiness["ready"] is False
+    assert readiness["coverage"]["build_relevant_unsupported"] == ["k1"]
 
 
 def test_apply_compiled_adds_without_duplicating():

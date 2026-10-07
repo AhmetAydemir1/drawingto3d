@@ -37,16 +37,24 @@
     },
     {
       "id": "G12.1",
+      "sub": "G12.1a (backend)",
       "title": "false readiness / decision coverage",
-      "status": "in_progress",
+      "status": "done",
+      "head": "b5e11c8 (G12.0) + bu commit",
+      "tests": {
+        "pure_coverage": "tests/test_callout_coverage.py (12 passed) — §17 matrisi",
+        "store_commands": "tests/test_guided_disposition.py (19 passed) — set_disposition/unbindable/ignored/bulk/undo/revision/import",
+        "http_boundary": "tests/test_guided_callout_http.py (+1: disposition uçtan uca, build reddi)",
+        "relevant_suite": "630 passed in 151.89s (callout/guided/plate/g11/g12/baseline/view)"
+      },
       "deliverables": [
-        "callout disposition sözleşmesi (not_model_input / redundant / build_relevant_unsupported)",
-        "legacy ignored/unbindable → legacy_unclassified (fresh koşuda bloklar)",
-        "callout_coverage(record) + readiness kuralı",
-        "bulk yalnız not_model_input",
-        "UI copy + coverage paneli",
-        "runner policy v2 (blanket ignore yasak)"
-      ]
+        "callout disposition sözleşmesi (not_model_input / redundant / build_relevant_unsupported) — CALLOUT_SCHEMA_VERSION 4",
+        "legacy ignored/unbindable → legacy_unclassified (fresh koşuda bloklar; otomatik terfi yok)",
+        "callout_coverage(record) + coverage_issues → build_readiness (§15/§16)",
+        "set_disposition komutu (dayanak doğrulaması) + eski düğmelerin yeni anlamı + bulk yalnız not_model_input",
+        "export/import: disposition taşınır, aynı doğrulama (set_disposition import aksiyonu)"
+      ],
+      "open": ["G12.1b: UI copy + coverage paneli", "G12.1b: runner policy v2 (blanket ignore yasak)", "G12.1b: tarayıcı kabulü + Plate yeniden koşusu"]
     },
     {"id": "G12.2", "title": "build strategy contract", "status": "pending"},
     {"id": "G12.3", "title": "raster contour + extrude correctness", "status": "pending"},

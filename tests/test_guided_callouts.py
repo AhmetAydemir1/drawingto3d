@@ -184,10 +184,10 @@ def test_save_persists_a_transcription_and_reopen_keeps_raw_text(store):
     reopened = GuidedStore(store.root)                   # fresh instance, same folder
     public = reopened.public(reopened.load(TOKEN))
     assert public["decisions"]["transcriptions"][0]["raw_text"] == "  4 × Ø8 THRU  "
-    assert public["callout_schema_version"] == 3                   # G3: alan/yok sayma; G5-GX: arc/profile + bağlanamaz + external_review
+    assert public["callout_schema_version"] == 4                   # G3: alan/yok sayma; G5-GX: arc/profile + bağlanamaz + external_review; G12.1: disposition
     assert public["callouts"] == [{
         "id": "k1", "page_index": 0, "source_kind": "vector_text", "manual": False, "ignored": False,
-        "unbindable": False,
+        "unbindable": False, "disposition": None, "duplicate_of": None, "disposition_reason": None,
         "transcription": {"state": "current", "revision": 1, "reason": None},
         "parse": {"state": "current", "reason": None},
         "target": {"state": "missing", "reason": "needs_target"}}]
@@ -658,10 +658,12 @@ def test_a_target_edit_also_makes_the_old_step_historical(store):
 
 def test_a_build_that_finishes_late_never_attaches_to_newer_decisions(store, monkeypatch):
     _transcribed(store)
-    # G8: kapsam kararı verilmeden üretim başlamaz — bu callout "bağlanamaz" ilan edilir ve testin
+    # G8: kapsam kararı verilmeden üretim başlamaz — bu callout kapsam dışı ilan edilir ve testin
     # konusu (geç biten üretimin yeni kararlara bağlanmaması) aynen korunur.
-    store.edit_callout(TOKEN, store.load(TOKEN)["revision"], "set_unbindable",
-                       {"callout_id": "k1", "unbindable": True})
+    # G12.1 (PLAN-24 §11): kapsamı kapatan komut artık `set_disposition`'dır; "bağlanamaz" bu sürümde
+    # *engel* demektir, kapsam kararı değil.
+    store.edit_callout(TOKEN, store.load(TOKEN)["revision"], "set_disposition",
+                       {"callout_id": "k1", "disposition": "not_model_input"})
     entered, release = threading.Event(), threading.Event()
 
     def slow(plan, source, folder):

@@ -127,19 +127,34 @@ def test_readiness_is_ready_once_the_chain_and_the_sheet_are_decided(store):
     assert readiness["rows"][0]["reason"] == "manual_decision_matches"
 
 
-# --- G6: "cannot bind" is a user decision that unblocks the build -------------
+# --- G6 → G12.1: "cannot bind" is a real fact, and naming it no longer opens the build ----------
 
-def test_cannot_bind_is_a_review_decision_that_unblocks_the_callout(store):
+def test_cannot_bind_now_blocks_the_build_instead_of_unblocking_it(store):
+    """G12.1 (PLAN-24 §11): eski 'bağlanamaz' düğmesi artık `build_relevant_unsupported` yazar.
+
+    Kullanıcının kararı görünür kalır (panel + log + gerekçe), ama gerçek bir ölçü/nottur ve bu
+    sürüm onu uygulayamıyorsa build *açılmaz*. G11 koşusunun 'hazır' saydığı altı satırın dersi
+    buydu: uydurma yok, sessiz düşürme yok — ama kaydı görünür tutmak da kapsamı kapatmaz.
+    """
     helpers._transcribed(store)
     store.edit_callout(TOKEN, _revision(store), "set_unbindable",
                        {"callout_id": "k1", "unbindable": True})
     record = _record(store)
     review = next(row for row in record["decisions"]["callout_reviews"] if row["callout_id"] == "k1")
     assert review["unbindable"] is True and review["ignored"] is False
+    assert review["disposition"] == "build_relevant_unsupported", "bayrak + adı konmuş claim"
+    assert review["disposition_reason"], "gerçek bilgi gerekçesiz kalamaz"
     event = next(item for item in record["log"] if item["action"] == "unbindable_callout")
-    assert event["actor"] == "user" and "bağlanamadı" in event["note"]
+    assert event["actor"] == "user" and "uygulayamadığını" in event["note"]
     assert _states(store.public(record))["k1"]["unbindable"] is True, "panel kararı göstermeli"
-    assert store.readiness(TOKEN)["ready"] is True
+    readiness = store.readiness(TOKEN)
+    assert readiness["ready"] is False
+    assert [q["category"] for q in readiness["questions"]] == ["unsupported_build_relevant"]
+    assert readiness["coverage"]["build_relevant_unsupported"] == ["k1"]
+    with pytest.raises(ValueError) as error:
+        store.build(TOKEN, _revision(store))
+    assert "k1" in str(error.value), "ret, bekleyen satırı adıyla söylemeli"
+    assert _record(store)["build"] is None
 
 
 def test_cannot_bind_and_not_a_callout_are_mutually_exclusive(store):

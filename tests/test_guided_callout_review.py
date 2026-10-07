@@ -393,7 +393,7 @@ def test_the_base_candidates_and_the_reading_never_move_from_a_review(store):
     # sunucunun kendi türetmesidir — gerçek parser'ın kaydedilen metin için ürettiği tek satır.
     stored = after["decisions"]["transcriptions"][0]
     assert after["callout_parses"] == [callout_parse.semantic_parse(stored, sheet_unit="mm").model_dump(mode="json")]
-    assert after["callout_schema_version"] == 3                    # G3/G5-GX yazımı yeni sürümü damgalar
+    assert after["callout_schema_version"] == 4                    # G3/G5-GX/G12.1 yazımı yeni sürümü damgalar
 
 
 # --- düzeltme turu 4 (PLAN-22 §4, G3R-01): eski /save yeni komut kurallarını atlayamaz ----------
@@ -628,8 +628,8 @@ def test_a_v1_session_is_stamped_by_its_first_real_write_and_reads_stay_read_onl
     noop = store.save(TOKEN, 0, helpers.current_payload(store))
     assert noop["callout_schema_version"] == 1 and bytes_of(store) == before   # no-op yazmaz
     state = command(store, "add_region", {"region": [0.2, 0.2, 0.3, 0.3]})
-    assert state["callout_schema_version"] == callout_models.CALLOUT_SCHEMA_VERSION == 3
-    assert store.load(TOKEN)["callout_schema_version"] == 3
+    assert state["callout_schema_version"] == callout_models.CALLOUT_SCHEMA_VERSION == 4
+    assert store.load(TOKEN)["callout_schema_version"] == 4
 
 
 def test_a_versionless_legacy_session_is_stamped_on_a_real_write_only(store):
@@ -641,7 +641,7 @@ def test_a_versionless_legacy_session_is_stamped_on_a_real_write_only(store):
     _atomic(helpers._session_path(store), record)
     assert store.public(store.load(TOKEN))["callout_schema_version"] is None
     state = store.save(TOKEN, 0, helpers.current_payload(store, with_callouts=False, thickness=12.0))
-    assert state["revision"] == 1 and state["callout_schema_version"] == 3
+    assert state["revision"] == 1 and state["callout_schema_version"] == 4
 
 
 def test_a_future_unknown_schema_version_is_never_downgraded(store):
@@ -662,7 +662,7 @@ def test_undo_never_lowers_the_callout_schema_version(store):
     _atomic(helpers._session_path(store), record)
     state = store.save(TOKEN, 1, undo=True)
     assert state["revision"] == 2
-    assert state["callout_schema_version"] == 3                      # history'de sürüm alanı yok: geriye düşmez
+    assert state["callout_schema_version"] == 4                      # history'de sürüm alanı yok: geriye düşmez
 
 
 # --- düzeltme turu 4 (PLAN-22 §7, G3R-04): tespit metadata'sı public'te -----------------------

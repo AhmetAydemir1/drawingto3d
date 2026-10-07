@@ -49,6 +49,41 @@ def live(store, monkeypatch):
         thread.join(timeout=2)
 
 
+def test_http_disposition_command_and_readiness_agree_over_the_boundary(live, store):
+    """G12.1 (PLAN-24 §13/§17): panelin gönderdiği karar HTTP'den geçer ve kapıyı kapatır/açar.
+
+    Aynı uç, `/save` gibi bir baypas değildir: bilinmeyen sözlük 400 döner, `redundant` dayanaksız
+    kabul edilmez; kabul edilen karar readiness'te görünür ve `build_relevant_unsupported` build'i
+    kapatır.
+    """
+    helpers.seed_callouts(store)
+    code, body = live("/api/guided/callout", {"token": TOKEN, "revision": 0, "action": "transcribe",
+                                              "payload": {"callout_id": "k1", "raw_text": "80,00"}})
+    assert code == 200, body
+    revision = body["revision"]
+    code, readiness = live("/api/guided/readiness", {"token": TOKEN})
+    assert code == 200 and readiness["ready"] is False and readiness["coverage"]["unclassified"] == ["k1"]
+
+    code, body = live("/api/guided/callout", {"token": TOKEN, "revision": revision, "action": "set_disposition",
+                                              "payload": {"callout_id": "k1", "disposition": "anlamsiz"}})
+    assert code == 400 and "olmalı" in body["error"]
+    code, body = live("/api/guided/callout", {"token": TOKEN, "revision": revision, "action": "set_disposition",
+                                              "payload": {"callout_id": "k1", "disposition": "redundant"}})
+    assert code == 400 and "dayanağını" in body["error"]
+
+    code, body = live("/api/guided/callout", {"token": TOKEN, "revision": revision, "action": "set_disposition",
+                                              "payload": {"callout_id": "k1",
+                                                          "disposition": "build_relevant_unsupported",
+                                                          "disposition_reason": "yazılı daralma ölçüsü"}})
+    assert code == 200, body
+    code, readiness = live("/api/guided/readiness", {"token": TOKEN})
+    assert readiness["ready"] is False
+    assert [q["category"] for q in readiness["questions"]] == ["unsupported_build_relevant"]
+    assert readiness["coverage"]["build_relevant_unsupported"] == ["k1"]
+    code, body = live("/api/guided/build", {"token": TOKEN, "revision": body["revision"]})
+    assert code == 400 and "k1" in body["error"], body
+
+
 def test_http_save_cannot_bypass_the_callout_rules(live, store):
     helpers.seed_callouts(store)
     code, body = live("/api/guided/callout", {"token": TOKEN, "revision": 0, "action": "set_ignored",

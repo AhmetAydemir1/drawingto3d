@@ -1629,7 +1629,8 @@ def _validate_callouts(record: dict, decisions: Decisions, produced=None) -> Non
     the user's own regions, with the pending region overrides and ignore decisions applied — never
     merely against the stored record. Rows the payload carries along untouched are not re-judged, which
     is what keeps a stale record inspectable and an unrelated edit unblocked. New or changed G3 rows are
-    judged, and each row-owning command (`add_region`, `edit_region`, `set_ignored`, `transcribe`) is
+    judged, and each row-owning command (`add_region`, `edit_region`, `set_ignored`, `set_disposition`,
+    `transcribe`) is
     the only writer of its own list: what `/save` did not merely carry, it may not invent (G3R-01).
     A new confirmation is judged on the freshness of the text and parse it binds to, in the same terms
     the public state shows — a moved region or an ignored callout is an explicit refusal (G3R-02).
@@ -1661,8 +1662,8 @@ def _validate_callouts(record: dict, decisions: Decisions, produced=None) -> Non
             continue
         if not _same_stored_decision(callout_models.CalloutReviewDecision,
                                      _carried_row(stored.get("callout_reviews"), "callout_id", callout_id), row):
-            raise ValueError("gözden geçirme kararı yalnız 'set_ignored'/'edit_region' komutlarıyla "
-                             f"değişir: {callout_id}")
+            raise ValueError("gözden geçirme kararı yalnız 'set_ignored'/'set_unbindable'/'set_disposition'/"
+                             f"'bulk_set_ignored'/'edit_region' komutlarıyla değişir: {callout_id}")
 
     for row in payload.get("transcriptions") or []:
         callout_id = row.get("callout_id")
@@ -1890,8 +1891,8 @@ def _log_callout_changes(record: dict, before: dict, payload: dict, produced=Non
 
 # --- G3 user commands (PLAN-21 §6.4): one command, one history step, one revision ---------------
 
-_CALLOUT_COMMANDS = ("add_region", "edit_region", "set_ignored", "set_unbindable", "set_ignored_many",
-                     "bulk_set_ignored", "transcribe")
+_CALLOUT_COMMANDS = ("add_region", "edit_region", "set_ignored", "set_unbindable", "set_disposition",
+                     "set_ignored_many", "bulk_set_ignored", "transcribe")
 
 # G9 UX turu: one bulk decision may close many callouts at once, but never an unbounded number —
 # the same order of magnitude the review import already accepts.
@@ -1925,26 +1926,51 @@ def _effective_row(record: dict, decisions: dict, callout_id: str) -> dict:
     return row
 
 
+def _review_passthrough(current: dict, **changes) -> dict:
+    """The review fields a command must carry over because it did not touch them (G12.1).
+
+    Every scope verdict — ignored, unbindable, disposition + its citation — survives a command that
+    only corrects the region or the text. A command that *does* decide one of them says so
+    explicitly; nothing is ever silently dropped by a neighbouring edit.
+    """
+    carried = {key: current.get(key) for key in ("ignored", "unbindable", "disposition",
+                                                 "duplicate_of", "disposition_reason")}
+    carried.update(changes)
+    return carried
+
+
 def _set_review(record: dict, decisions: dict, callout_id: str, *,
-                region_override: list[float] | None, ignored: bool, unbindable: bool = False) -> None:
+                region_override: list[float] | None, ignored: bool, unbindable: bool = False,
+                disposition: "callout_models.DispositionName | None" = None, duplicate_of: str | None = None,
+                disposition_reason: str | None = None) -> None:
     """Write the one review row for a callout — or remove it when every decision is taken back.
 
     An unchanged decision keeps its stored revision, so repeating a command is a true no-op rather
     than a rewrite that would inflate history (PLAN-21 §6.4). `unbindable` is the G6 verdict "this
-    callout cannot be bound": a declared scope decision, so it is written like any other review — it
-    simply means the build is not blocked by a callout the user has already looked at.
+    callout cannot be bound"; `disposition` is the G12.1 contract built on the same idea:
+
+    * `not_model_input` / `redundant` — settled scope claims (`redundant` cites its dayanak);
+    * `build_relevant_unsupported` — a real fact this version cannot apply. It is written *and*
+      carried into readiness, where it blocks the build: naming the gap is not closing it
+      (PLAN-24 §11 — this is the bug the G11 run measured).
     """
     stored = list(decisions.get("callout_reviews") or [])
     prior = next((item for item in stored if item.get("callout_id") == callout_id), None)
-    if region_override is None and not ignored and not unbindable:
+    if (region_override is None and not ignored and not unbindable
+            and disposition is None and duplicate_of is None and disposition_reason is None):
         decisions["callout_reviews"] = [item for item in stored if item.get("callout_id") != callout_id]
         return
     same = (prior is not None and prior.get("region_override") == region_override
             and bool(prior.get("ignored")) == bool(ignored)
-            and bool(prior.get("unbindable")) == bool(unbindable))
+            and bool(prior.get("unbindable")) == bool(unbindable)
+            and prior.get("disposition") == disposition
+            and (prior.get("duplicate_of") or None) == (duplicate_of or None)
+            and (prior.get("disposition_reason") or None) == (disposition_reason or None))
     revision = (prior or {}).get("revision", 0) if same else _next_callout_revision(record)
     row = callout_models.CalloutReviewDecision(callout_id=callout_id, region_override=region_override,
                                                ignored=bool(ignored), unbindable=bool(unbindable),
+                                               disposition=disposition, duplicate_of=duplicate_of,
+                                               disposition_reason=disposition_reason,
                                                revision=revision)
     decisions["callout_reviews"] = _upsert(stored, "callout_id", row.model_dump(mode="json"))
 
@@ -1993,7 +2019,7 @@ def _apply_callout_command(record: dict, decisions: dict, action: str, payload: 
             raise ValueError(f"toplu kapsam kararı tek adımda en çok {BULK_IGNORE_LIMIT} callout kapatır")
         for callout_id in ids:
             row = _effective_row(record, decisions, callout_id)
-            decided = bool(row["ignored"]) or bool(row.get("unbindable")) or any(
+            decided = bool(row["ignored"]) or bool(row.get("unbindable")) or row.get("disposition") is not None or any(
                 item.get("callout_id") == callout_id for item in decisions.get("transcriptions") or [])
             if decided:
                 raise ValueError(f"toplu kapsam kararı yalnız henüz karara bağlanmamış callout'lara "
@@ -2002,10 +2028,12 @@ def _apply_callout_command(record: dict, decisions: dict, action: str, payload: 
         for callout_id in ids:
             row = _effective_row(record, decisions, callout_id)
             _set_review(record, decisions, callout_id, region_override=row["region_override"],
-                        ignored=True, unbindable=False)
+                        **_review_passthrough(row, ignored=True, unbindable=False,
+                                              disposition="not_model_input", duplicate_of=None,
+                                              disposition_reason=None))
             events.append(("ignore_callout", f"callout:{callout_id}", None,
-                           {"callout_id": callout_id, "bulk": True},
-                           "Kullanıcı bu callout'u 'callout değil' olarak işaretledi "
+                           {"callout_id": callout_id, "bulk": True, "disposition": "not_model_input"},
+                           "Kullanıcı bu callout'u 'modele ait değil' olarak sınıflandırdı "
                            "(toplu kapsam kararı)."))
         return events, [("callout_reviews", callout_id) for callout_id in ids]
 
@@ -2032,11 +2060,24 @@ def _apply_callout_command(record: dict, decisions: dict, action: str, payload: 
         changed = []
         for callout_id in ids:
             row = _effective_row(record, decisions, callout_id)
-            if bool(row["ignored"]) == ignored:
-                continue                                     # aynı kararı taşıyan satır: içeride no-op
-            _set_review(record, decisions, callout_id, region_override=row["region_override"],
-                        ignored=ignored,
-                        unbindable=False if ignored else bool(row.get("unbindable")))
+            prior_disposition = row.get("disposition")
+            if ignored:
+                if bool(row["ignored"]) and prior_disposition == "not_model_input":
+                    continue                                 # aynı kararı taşıyan satır: içeride no-op
+                changes = _review_passthrough(row, ignored=True, unbindable=False,
+                                              disposition="not_model_input", duplicate_of=None,
+                                              disposition_reason=None)
+            else:
+                if not bool(row["ignored"]):
+                    continue
+                # Geri alma yalnız „modele ait değil“ claim'ini kaldırır; başka bir disposition
+                # (ör. build_relevant_unsupported) kazara silinmez (PLAN-24 §11).
+                keep = None if prior_disposition == "not_model_input" else prior_disposition
+                changes = _review_passthrough(row, ignored=False, disposition=keep,
+                                              duplicate_of=row.get("duplicate_of") if keep else None,
+                                              disposition_reason=(row.get("disposition_reason")
+                                                                  if keep else None))
+            _set_review(record, decisions, callout_id, region_override=row["region_override"], **changes)
             changed.append(callout_id)
         if not changed:
             return [], []                                    # bayt düzeyinde no-op: revizyon ve olay yok
@@ -2053,7 +2094,9 @@ def _apply_callout_command(record: dict, decisions: dict, action: str, payload: 
     current = _effective_row(record, decisions, callout_id)
     if action == "edit_region":
         region = callout_models.check_region(payload.get("region"))
-        _set_review(record, decisions, callout_id, region_override=region, ignored=current["ignored"])
+        # G12.1: bölge düzeltmesi hiçbir kapsam kararını taşımaz — hepsi aynen korunur.
+        _set_review(record, decisions, callout_id, region_override=region,
+                    **_review_passthrough(current))
         return ([("edit_callout_region", f"callout:{callout_id}", region,
                   {"callout_id": callout_id, "region": region},
                   "Kullanıcı callout alanını düzeltti; alanın kendisi (makine tespiti) değişmedi.")],
@@ -2064,12 +2107,18 @@ def _apply_callout_command(record: dict, decisions: dict, action: str, payload: 
         if not isinstance(ignored, bool):
             raise ValueError("yok sayma kararı true/false olmalı")
         # "callout değil" ve "bağlanamaz" birbirini dışlar: biri seçildiğinde öteki bırakılır.
-        _set_review(record, decisions, callout_id, region_override=current["region_override"],
-                    ignored=ignored,
-                    unbindable=False if ignored else bool(current.get("unbindable")))
+        # G12.1: „callout değil“ artık *adı konmuş* bir sınıflandırmadır — not_model_input
+        # (eski bayrak geriye dönük uyum için kalır; kapsam denetimi claim'i bu alandan okur).
+        _set_review(record, decisions, callout_id,
+                    region_override=current["region_override"],
+                    **(_review_passthrough(current, ignored=True, unbindable=False,
+                                           disposition="not_model_input", duplicate_of=None,
+                                           disposition_reason=None) if ignored else
+                       _review_passthrough(current, ignored=False, disposition=None,
+                                           duplicate_of=None, disposition_reason=None)))
         return ([("ignore_callout" if ignored else "restore_callout", f"callout:{callout_id}", None,
-                  {"callout_id": callout_id},
-                  "Kullanıcı bu callout'u 'callout değil' olarak işaretledi." if ignored
+                  {"callout_id": callout_id, "disposition": "not_model_input" if ignored else None},
+                  "Kullanıcı bu callout'u 'modele ait değil' olarak sınıflandırdı." if ignored
                   else "Kullanıcı bu callout'u yeniden değerlendirmeye aldı; metni silinmedi.")],
                 [("callout_reviews", callout_id)])
 
@@ -2077,16 +2126,95 @@ def _apply_callout_command(record: dict, decisions: dict, action: str, payload: 
         unbindable = payload.get("unbindable")
         if not isinstance(unbindable, bool):
             raise ValueError("'bağlanamaz' kararı true/false olmalı")
-        # G6 panelinin dördüncü düğmesi: kullanıcı bu callout'u inceledi ve bağlanamayacağını söyledi.
-        # Bu bir kapsam kararıdır — uydurma değil, sessiz düşürme de değil: kayıtta görünür.
-        _set_review(record, decisions, callout_id, region_override=current["region_override"],
-                    ignored=False if unbindable else bool(current.get("ignored")),
-                    unbindable=unbindable)
+        # G6 panelinin dördüncü düğmesi; G12.1'de bu *build_relevant_unsupported* demektir: gerçek
+        # bir bilgi ve bu sürüm uygulayamıyor. Kayıt görünür kalır AMA build'i artık açar değil,
+        # kapatır (PLAN-24 §11 — G11 koşusunun ölçtüğü sahte hazırlık tam buydu).
+        reason = None
+        if unbindable:
+            reason = payload.get("disposition_reason") or (
+                "Kullanıcı: bu callout bağlanamıyor — gerçek ölçü/not bu sürümde modele uygulanamıyor.")
+            if not isinstance(reason, str) or not reason.strip():
+                raise ValueError("gerekçe boş olamaz")
+        _set_review(record, decisions, callout_id,
+                    region_override=current["region_override"],
+                    **(_review_passthrough(current, ignored=False, unbindable=True,
+                                           disposition="build_relevant_unsupported",
+                                           duplicate_of=None, disposition_reason=reason) if unbindable else
+                       _review_passthrough(current, unbindable=False, disposition=None,
+                                           duplicate_of=None, disposition_reason=None)))
         return ([("unbindable_callout" if unbindable else "rebind_callout", f"callout:{callout_id}", None,
-                  {"callout_id": callout_id},
-                  "Kullanıcı bu callout'un bağlanamadığını bildirdi; kapsam dışı sayılıyor." if unbindable
+                  {"callout_id": callout_id, "disposition": "build_relevant_unsupported" if unbindable else None},
+                  "Kullanıcı bu callout'un gerçek bir bilgi olduğunu ama bu sürümün uygulayamadığını "
+                  "bildirdi; build bu kapanana kadar açılmaz." if unbindable
                   else "Kullanıcı 'bağlanamaz' kararını geri aldı; callout yeniden bağlanabilir.")],
                 [("callout_reviews", callout_id)])
+
+    if action == "set_disposition":
+        # G12.1'in tek kapısı: üç kapsam claim'i ve geri alma. Dayanak (redundant → duplicate_of)
+        # burada *çözülebilir olmak* zorundadır: bilinmeyen kimlik / tanınmayan decision adı
+        # tümden reddedilir (yazım hatası kayda geçmez). Çözülen ama henüz kapsanmamış bir dayanak
+        # kabul edilir — kapsam denetimi onu stale_duplicate_reference olarak gösterir ve dayanak
+        # karara bağlanınca blok kendiliğinden kalkar (PLAN-24 §15).
+        disposition = payload.get("disposition")
+        if disposition is None:
+            _set_review(record, decisions, callout_id, region_override=current["region_override"],
+                        **_review_passthrough(current, ignored=False, unbindable=False,
+                                              disposition=None, duplicate_of=None,
+                                              disposition_reason=None))
+            return ([("clear_callout_disposition", f"callout:{callout_id}", None,
+                      {"callout_id": callout_id},
+                      "Kullanıcı callout'un kapsam kararını kaldırdı; yeniden değerlendirilecek.")],
+                    [("callout_reviews", callout_id)])
+        if disposition not in callout_models.CALLOUT_DISPOSITIONS:
+            raise ValueError("kapsam kararı 'not_model_input', 'redundant' ya da "
+                             "'build_relevant_unsupported' olmalı")
+        duplicate_of = payload.get("duplicate_of")
+        reason = payload.get("disposition_reason")
+        if disposition == "redundant":
+            if not isinstance(duplicate_of, str) or not duplicate_of.strip():
+                raise ValueError("'redundant' kararı dayanağını yazmak zorunda (duplicate_of): "
+                                 "başka bir callout kimliği ya da decision:<ad>")
+            duplicate_of = duplicate_of.strip()
+            if duplicate_of.startswith(callout_models.DISPOSITION_DECISION_PREFIX):
+                name = duplicate_of[len(callout_models.DISPOSITION_DECISION_PREFIX):]
+                if not callout_readiness.decision_ref_present(decisions, name):
+                    raise ValueError(f"bu oturumda böyle bir karar yok: {duplicate_of} "
+                                     f"(bilinen adlar: {', '.join(sorted(callout_readiness.DECISION_REFS))})")
+            elif duplicate_of != callout_id:
+                _effective_row(record, decisions, duplicate_of)   # var olmalı; kapsanması şart değil
+            else:
+                raise ValueError("bir callout kendini dayanak gösteremez")
+        else:
+            duplicate_of = None
+        if disposition == "build_relevant_unsupported":
+            if not isinstance(reason, str) or not reason.strip():
+                raise ValueError("'build_relevant_unsupported' kararı gerekçesiz olamaz "
+                                 "(disposition_reason): gerçek bilgi neden uygulanamıyor?")
+        elif reason is not None and not isinstance(reason, str):
+            raise ValueError("gerekçe metin olmalı")
+        events = {"not_model_input": (
+                      "set_callout_disposition", f"callout:{callout_id}", None,
+                      {"callout_id": callout_id, "disposition": disposition},
+                      "Kullanıcı bu callout'u 'modele ait değil' olarak sınıflandırdı."),
+                  "redundant": (
+                      "set_callout_disposition", f"callout:{callout_id}", None,
+                      {"callout_id": callout_id, "disposition": disposition,
+                       "duplicate_of": duplicate_of},
+                      f"Kullanıcı bu callout'un başka bir kararla zaten temsil edildiğini bildirdi "
+                      f"(dayanak: {duplicate_of})."),
+                  "build_relevant_unsupported": (
+                      "set_callout_disposition", f"callout:{callout_id}", None,
+                      {"callout_id": callout_id, "disposition": disposition,
+                       "disposition_reason": reason},
+                      f"Kullanıcı bu callout'un gerçek bir ölçü/not olduğunu ama bu sürümün "
+                      f"uygulayamadığını bildirdi; kapsam tamamlanana kadar build açılmaz.")}[disposition]
+        _set_review(record, decisions, callout_id, region_override=current["region_override"],
+                    **_review_passthrough(current, ignored=False,
+                                          unbindable=disposition == "build_relevant_unsupported",
+                                          disposition=disposition, duplicate_of=duplicate_of,
+                                          disposition_reason=reason if disposition == "build_relevant_unsupported"
+                                          else None))
+        return ([events], [("callout_reviews", callout_id)])
 
     subject = "Dış inceleme" if actor == "external_review" else "Kullanıcı"
 
@@ -2528,6 +2656,10 @@ class GuidedStore:
                     extra, rows = _apply_callout_command(r, decisions, "set_ignored",
                                                          {"callout_id": callout_id,
                                                           "ignored": action == "ignore"},
+                                                         actor="external_review")
+                elif action == "set_disposition":
+                    # G12.1: dış inceleme de aynı komuttan geçer — aynı doğrulama, aynı kayıt izi.
+                    extra, rows = _apply_callout_command(r, decisions, "set_disposition", payload,
                                                          actor="external_review")
                 else:
                     extra, rows = _review_target(r, decisions, callout_id, action, payload)

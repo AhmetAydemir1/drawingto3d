@@ -6,9 +6,10 @@
 - G2 initial HEAD: `316518eb8d67c7a4ad81eed59c09e6c59ef4df37`
 - G3 initial HEAD: `ff97295065260ba8d46bf6fcd2c6e864e63dfcef` (`ff97295` = G2)
 - G3R initial HEAD: `2cdb4d0424b17e4299d625066c24e6a0eab4de6d` (`2cdb4d0` = G3 + G1R3-01 kabul commit'i; eski “G3 commit edilmedi” ifadesi artık geçerli değil)
-- Current HEAD: `5605cb5` (G12.0 truth lock + G12.1a backend false-readiness; bu bölümün commit'i **G12.1b**'yi izler)
+- Current HEAD: `4592275` (G12.1b kapanışı + G12.2 ara kaydı; bu bölümün commit'i **G12.2 kapanışı**nı izler)
 - Active plan (güncel): `PLAN-24-G12-CORRECTNESS` (kök `PLAN.md`, commit `5605cb5`) + devam planı `PLAN-25-G12-CONTINUATION` (kullanıcı girdisi `PLAN-21.md`: G12.1b → dondurulmuş manifest kabulü)
 - G11 baseline: **1/9** (`plate-pocket-vector`; payda sabit — PLAN-24 §75) — bu bir ölçümdür, kabul değil
+- Current task: **G12.2 tamamlandı (açık üretim biçimi + taze Plate kabulü 10/10); sıradaki G12.3** — view-scoped geometry foundation (PLAN-25 §45–§54)
 - Initial worktree changes: `?? PLAN-17-HERMES.md` (kullanıcının verdiği plan kaynağı; **korunur, stage edilmez**)
 - Current task: **G12.1b tamamlandı — sıradaki G12.2** (explicit build strategy sözleşmesi + implicit extrude'un kaldırılması; aşağıdaki "G12" bölümü)
 
@@ -660,12 +661,24 @@ Kök `PLAN.md` artık PLAN-24-G12-CORRECTNESS; eski kök plan byte-kopya olarak
 `docs/PLAN_ROOT_BEFORE_G12_20261007.md`, yeni plan `docs/PLAN-24-G12-CORRECTNESS.md`
 (SHA256'lar: `eval/audits/20261007-g12-baseline/run-01/plan-handoff-sha256.txt`).
 Durum satırları (§100): G9 PASS · G10 frozen · UX-01 PASS · **G11 baseline 1/9** (kabul edilmiş ürün
-DEĞİL — ölçüm) · G11R-01–05 PASS · **G12 current: G12.2 (explicit build strategy + implicit extrude'un kaldırılması)**.
+DEĞİL — ölçüm) · G11R-01–05 PASS · **G12 current: G12.3 (view-scoped geometry foundation, PLAN-25 §45+)**.
 
 G12.0 (truth lock) tamam: donmuş manifest 10/9/1 ve rapor 1/9 testle çivilendi
 (`tests/test_g12_baseline_contract.py`); G9 Plate dondurulmuş evaluator **PASS** (9/9,
 `eval/audits/20261007-g12-baseline/run-01/plate-regression-verdict.json`); ilgili süit **540 passed**
 (189 s); referans sızma **süreç sınırı** kuruldu (`eval/g12_runner/` + `tests/test_g12_runner_boundary.py`).
+
+G12.2 (açık üretim biçimi) tamam: seçili profil artık **hiçbir şey ima etmez**. Kullanıcı parçanın ana
+oluşturma biçimini açıkça söyler (`extrude_profile` / `revolve_profile` / `multi_view_composite` /
+`unsupported`); `make_plan` ortak bağlam + **explicit dispatch**'tir (`compile_extrude_plan` /
+`compile_revolve_plan` / `compile_multiview_plan`) — **örtük extrude yok**, daire profili açık onayla
+ekstrüde edilir, geometri-sınıfı kara listesi de yoktur. Anahtarı ve geometri sürümünü **sunucu** sabitler
+(`set_strategy`, tek revizyon, geri alınabilir; `/save` sahte strateji yazar). Profil/kontur/görüş/okuma
+değişince karar **bayatlar** ve üretim yeniden onay ister. Kanıt: yeni `tests/test_build_strategy.py` (11)
+ve `tests/test_guided_strategy_ui.py` (5) + ilgili süit **401 passed**; taze Plate kabulü
+`eval/audits/20261007-g12-strategy-plate/` — callout incelemesi (reçete dışı 36 satır tek tek adıyla),
+stratejisiz üretimin reddi, açık onay, üretim, STEP reopen ve **dondurulmuş evaluator 9/9 PASS**
+(120 × 80 × 15, 4 delik, 1 cep). Ayrıntı: `eval/g12_progress.md` / `eval/g12_progress.json`.
 
 G12.1a (false readiness / decision coverage — backend) tamam: callout gözden geçirmesi artık **adı konmuş
 bir kapsam kararı** taşır (`not_model_input` / `redundant + dayanak` / `build_relevant_unsupported + gerekçe`;

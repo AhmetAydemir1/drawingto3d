@@ -36,27 +36,30 @@ REFERENCE_STEP = ROOT / "examples/pdf with steps/5/plate with a pocket.STEP"
 EVALUATOR = ROOT / "eval/audits/20261007-guided-g9-plate/plate_regression.py"
 CAD_PYTHON = ROOT / ".venv-cad/bin/python"
 
-# G11 resmî plate reçetesi, satır satır (hint → eylem → gerekçe). Hiçbir satır örtük kapanmaz.
+# G11 resmî plate reçetesi, satır satır; G12 sözlüğüyle (PLAN-25 §9–§13). Her satır kendi gerekçesini
+# taşır, hiçbir satır örtük kapanmaz. "Gerçek ölçü ama uygulanamıyor" YALNIZ gerçekten uygulanamayan
+# satıra ayrılır ve üretimi bloklar; zaten başka bir kararla temsil edilen satır bunu SÖYLER (dayanak).
 CALL_RECIPE = [
     {"hint": "4 x", "action": "not_model_input",
-     "why": "the count fragment of the hole note; its text travelled with the '6,80 THRU ALL' box"},
+     "why": "sayı parçası: metni '6,80 THRU ALL' kutusuyla birlikte okundu, kendi başına ölçü değil"},
     {"hint": "6,80 THRU ALL", "action": "transcribe", "text": "4 x Ø6,80 THRU ALL",
      "target": {"kind": "circle_group", "circles": ["g9", "g11", "g10", "g12"]},
-     "why": "composite text: '4 x' is printed with the drawn Ø; the four drawn circles are the targets"},
+     "why": "bileşik metin: '4 x' çizimde çapın yanında basılı; hedef dört daire"},
     {"hint": "50,00", "action": "transcribe", "text": "Ø50 8 DEEP",
      "target": {"kind": "circle", "circles": ["g8"]},
-     "why": "composite: Ø50 from the view, depth 8 from the section"},
-    {"hint": "M8 - 6H THRU ALL", "action": "build_relevant_unsupported",
-     "why": "threaded hole: outside this grammar by design; declared out of scope"},
-    {"hint": "80,00", "action": "build_relevant_unsupported",
-     "why": "printed linear dimension on an arc-contoured part: arcs tie centres only in this version"},
-    {"hint": "60,00", "action": "build_relevant_unsupported", "why": "same as 80,00"},
-    {"hint": "8,00", "action": "build_relevant_unsupported", "why": "same as 80,00"},
-    {"hint": "1 00,00", "action": "transcribe", "text": "100,00",
-     "target": {"unbindable": True},
-     "why": "printed spacing '1 00,00' is ambiguous to the parser; the user corrects it to 100,00"},
-    {"hint": "1 5,00", "action": "transcribe", "text": "15,00", "target": {"unbindable": True},
-     "why": "printed spacing '1 5,00' corrected to 15,00"},
+     "why": "bileşik: Ø50 görünüşten, derinlik 8 kesitten"},
+    {"hint": "M8 - 6H THRU ALL", "action": "redundant", "cite_hint": "6,80 THRU ALL",
+     "why": "aynı dört delik: M8 dişin pilot çapı 6,8 mm — bu satır Ø6,80 kararıyla zaten temsil ediliyor"},
+    {"hint": "80,00", "action": "redundant", "cite": "decision:trace",
+     "why": "izlenen merkezler bu basılı aralığı zaten gerçekliyor (80,002 mm); yeni karar getirmiyor"},
+    {"hint": "60,00", "action": "redundant", "cite": "decision:trace",
+     "why": "aynı: izlenen merkezler 60,00 mm aralığı zaten sağlıyor"},
+    {"hint": "8,00", "action": "redundant", "cite": "decision:trace",
+     "why": "kesitteki basılı kalınlık okuması; izleme ve kalınlık kararı zaten temsil ediyor"},
+    {"hint": "1 00,00", "action": "redundant", "cite": "decision:calibration",
+     "why": "kalibrasyon bu aralıktan 100,00 olarak girildi (yazım boşluğu düzeltilerek)"},
+    {"hint": "1 5,00", "action": "redundant", "cite": "decision:thickness",
+     "why": "kalınlık bu ölçüden 15,00 olarak girildi (yazım boşluğu düzeltilerek)"},
 ]
 
 STEPS: list[dict] = []
@@ -106,13 +109,26 @@ def _sha256(path: pathlib.Path) -> str:
 
 
 def main() -> int:
-    landing = pathlib.Path(__file__).resolve().parent
-    out = landing / "out"
-    if out.exists():
-        shutil.rmtree(out)
-    out.mkdir(parents=True)
+    """İki kip: tam kabul (varsayılan) ve `--prepare-only` (gerçek tarayıcı koşusu için oturum hazırlar).
 
-    store = GuidedStore(out / "store")
+    `--prepare-only --store-root <dizin>`: kararlar uygulamanın KENDİ deposuna yazılır, kapsam kapanır
+    ve komut `{"token": …, "revision": …}` basıp çıkar — üretim biçimi ve üretim TARAYICIDA kalır
+    (PLAN-25 §97/8: UX değiştiyse gerçek Chrome koşusu).
+    """
+    argv = sys.argv[1:]
+    prepare_only = "--prepare-only" in argv
+    landing = pathlib.Path(__file__).resolve().parent
+    if prepare_only:
+        out = pathlib.Path(argv[argv.index("--store-root") + 1]) if "--store-root" in argv \
+            else landing / "out" / "store"
+        out.mkdir(parents=True, exist_ok=True)
+        store = GuidedStore(out)
+    else:
+        out = landing / "out"
+        if out.exists():
+            shutil.rmtree(out)
+        out.mkdir(parents=True)
+        store = GuidedStore(out / "store")
     opened = store.create(PLATE.read_bytes())
     token = opened["token"]
     options = opened["options"]
@@ -140,7 +156,7 @@ def main() -> int:
         return _finish(landing, out, passed=False)
 
     def decide(callout_id: str, action: str, reason: str, text: str | None = None,
-               target: dict | None = None) -> None:
+               target: dict | None = None, duplicate_of: str | None = None) -> None:
         revision = store.load(token)["revision"]
         if text is not None:
             store.edit_callout(token, revision, "transcribe", {"callout_id": callout_id, "raw_text": text})
@@ -171,13 +187,24 @@ def main() -> int:
                 "reconfirm": False})
             store.save(token, revision, payload)
             return
-        store.edit_callout(token, revision, "set_disposition",
-                           {"callout_id": callout_id, "disposition": action, "disposition_reason": reason})
+        payload = {"callout_id": callout_id, "disposition": action, "disposition_reason": reason}
+        if action == "redundant":
+            payload["duplicate_of"] = duplicate_of
+        store.edit_callout(token, revision, "set_disposition", payload)
+
+    def citation(item: dict) -> str | None:
+        """Dayanak: başka bir callout'un kimliği ya da kullanıcının kendi kararı (`decision:<ad>`)."""
+        if item.get("cite_hint"):
+            cited = rows.get(item["cite_hint"]) or []
+            assert cited, f"dayanak satırı bulunamadı: {item['cite_hint']}"
+            return cited[0]
+        return item.get("cite")
 
     for item in CALL_RECIPE:
         for callout_id in rows[item["hint"]]:
             decide(callout_id, item["action"], item["why"], text=item.get("text"),
-                   target=item.get("target") if item["action"] == "transcribe" else None)
+                   target=item.get("target") if item["action"] == "transcribe" else None,
+                   duplicate_of=citation(item))
 
     # --- 1b. reçetenin dışında kalan satırlar: kullanıcı onları da ADIYLA karara bağlar -----------
     decided = {row["callout_id"] for row in store.load(token)["decisions"]["callout_reviews"]}
@@ -197,12 +224,21 @@ def main() -> int:
     record("2: kapsam kapandı — kalan tek madde ÜRETİM BİÇİMİ, hiçbir callout sorusu yok",
            categories == {"missing_build_strategy": 1} and not [q for q in readiness["questions"] if q["callout_id"]],
            {"categories": categories, "questions": len(readiness["questions"])})
+    if prepare_only:
+        # Tarayıcı koşusu buradan devam eder: ölçülen oturum, app'in kendi deposunda, tam bu hâlde.
+        print(json.dumps({"token": token, "revision": store.load(token)["revision"],
+                          "store": str(out), "categories": categories}, ensure_ascii=False))
+        return 0
     record("3: strateji yokken üretim BAŞLAMAZ (örtük extrude yok)",
            not readiness["ready"], {"ready": readiness["ready"]})
-    blocked = store.build(token, store.load(token)["revision"])
-    record("4: build çağrısı strateji yokken reddedildi",
-           blocked.get("build_status") == "failed" and "oluşturma biçimini seçin" in (blocked.get("error") or ""),
-           {"build_status": blocked.get("build_status"), "error": (blocked.get("error") or "")[:160]})
+    try:
+        store.build(token, store.load(token)["revision"])
+        refusal = None
+    except ValueError as error:
+        refusal = str(error)
+    record("4: build çağrısı strateji yokken reddedildi (adı konmuş soruyla)",
+           refusal is not None and "oluşturma biçimini seçin" in refusal,
+           {"refusal": (refusal or "")[:180]})
 
     # --- 2. AÇIK strateji kararı ----------------------------------------------------------------
     store.set_strategy(token, store.load(token)["revision"], {"kind": "extrude_profile"})
@@ -237,13 +273,16 @@ def main() -> int:
            proc.returncode == 0 and verdict.get("pass") is True and not failed_checks,
            {"exit": proc.returncode, "checks": len(checks), "failed": failed_checks,
             "stdout": (proc.stdout or "").strip()[-300:]})
+    # §44: 120 × 80 × 15, DÖRT delik (Ø6,8) ve BİR cep (Ø50). Köşe yuvarlatmaları da silindir olarak
+    # raporlanır (izlemeden gelir, r≈10); onları ayrı sayarız, delik/cep sayısı iddiası değişmez.
+    cylinder_radii = [round(row["radius"], 3) for row in produced.get("cylinders") or []]
+    holes = [value for value in cylinder_radii if abs(value - 3.4) < 0.05]
+    pockets = [value for value in cylinder_radii if abs(value - 25.0) < 0.1]
     record("8: parça dondurulmuş toleranslarda 120 × 80 × 15, 4 delik, 1 cep",
            [round(value, 3) for value in (produced.get("lengths") or [])] == [120.011, 80.002, 15.0]
-           and sorted(round(row["radius"], 3) for row in produced.get("cylinders") or []) ==
-               [3.4, 3.4, 3.4, 3.4, 25.0],
-           {"lengths": produced.get("lengths"), "radii": radii,
-            "cylinders": len(produced.get("cylinders") or []),
-            "step_sha256": _sha256(out / "part.step")})
+           and len(holes) == 4 and len(pockets) == 1,
+           {"lengths": produced.get("lengths"), "radii": cylinder_radii, "holes": len(holes),
+            "pockets": len(pockets), "step_sha256": _sha256(out / "part.step")})
 
     passed = all(step["passed"] for step in STEPS)
     return _finish(landing, out, passed=passed)

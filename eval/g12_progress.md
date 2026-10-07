@@ -8,12 +8,17 @@ Sayaçlar (§75/§76): correct 1 · wrong 5 · blocked 3 (üretilmedi) · scope-
 | G12.0 truth lock / baseline | **DONE** | pinler + G9 guard PASS + 540 passed + süreç sınırı |
 | G12.1a false readiness (backend) | **DONE** | disposition sözleşmesi (şema 4) + `callout_coverage` + `set_disposition` + 631 passed |
 | G12.1b coverage UI + runner v2 | **DONE** | üç adı konmuş karar + gerekçe/dayanak akışı + kapsam otoritesi backend'de; gerçek Chrome 10/10; koşucu v2 blanket-ignore'suz |
-| G12.2 build strategy contract | bekliyor | implicit extrude yasak |
-| G12.3 raster contour/extrude | bekliyor | view-scoped profil + ölçü kısıtları |
-| G12.4 axisymmetric/revolve | bekliyor | mevcut GeneralPlan Revolve/Repeat/Cut |
-| G12.5 multi-view composite v1 | bekliyor | view graph + feature link |
-| G12.6 advanced op audit | bekliyor | capability-gap.json |
-| G12.F frozen manifest rerun | bekliyor | 9/9 + 1/1 scope-only |
+| G12.2 build strategy contract | **DONE** | örtük extrude kaldırıldı; açık strateji kararı + panel + kategoriler; taze Plate kabulü 10/10 |
+| G12.3 view-scoped geometry foundation | bekliyor | view sahipliği + `GEOMETRY_VERSION 3→4` (PLAN-25 §45–§54) |
+| G12.4 exact supported 2D constraints | bekliyor | desteklenen kısıtların tam uygulanması (PLAN-25 §55+) |
+| G12.5 raster extrude recovery | bekliyor | raster yoldan profil + ölçü kurtarma |
+| G12.6 axisymmetric / revolve | bekliyor | `compile_revolve_plan` gerçek geometri |
+| G12.7 multi-view composite v1 | bekliyor | görünüş grafiği + özellik bağlama |
+| G12.8 advanced bounded operation audit | bekliyor | capability-gap.json |
+| G12.9 frozen manifest rerun | bekliyor | 9/9 + 1/1 scope-only |
+
+> Not: PLAN-24'ün kalan faz adları PLAN-25 (kullanıcı girdisi `PLAN-21.md`, §45+) ile yeniden
+> sıralandı; yukarıdaki satırlar artık YÜRÜRLÜKTEKİ planın numaralandırmasıdır.
 
 ## G12.0 kanıt demeti
 
@@ -57,6 +62,26 @@ Sayaçlar (§75/§76): correct 1 · wrong 5 · blocked 3 (üretilmedi) · scope-
   `eval/g12_runner/recipe_v2.py`, `eval/g12_runner/g12_runner.py`.
 - Tarihsel kanıt değişmedi: G9/G11 klasörleri ve `eval/guided_10_*` dosyalarına dokunulmadı; ana metrik
   paydası hâlâ **1/9** (bu tur karar değil, sözleşme turu).
+
+## G12.2 kanıt demeti (açık üretim biçimi)
+
+- `eval/audits/20261007-g12-strategy-plate/README.md` — taze Plate kabulü **10/10 PASS**:
+  callout incelemesi (reçete 9 satır + reçete dışı 36 satır tek tek adıyla) → kapsam kapanır →
+  strateji yokken üretim reddedilir → `extrude_profile` onayı (sunucu anahtarı/sürümü sabitler) →
+  üretim → STEP reopen → **dondurulmuş evaluator 9/9 PASS**; parça 120 × 80 × 15, 4 delik, 1 cep.
+- `src/drawingto3d/build_strategy.py` — öneri + tazeleme + soru cümlesi (saf modül, referanssız).
+- `guided.py` — `Decisions.build_strategy`, `set_strategy` komutu, `/save` sahte strateji reddi,
+  `make_plan` = ortak bağlam + explicit dispatch (`compile_extrude_plan` / `compile_revolve_plan` /
+  `compile_multiview_plan`); **örtük extrude yok**, daire profili açık onayla ekstrüde edilir.
+- Readiness kategorileri: `missing_build_strategy`, `stale_build_strategy`, `unsupported_build_strategy`;
+  panel + kontrol listesi maddesi (§41/§42).
+- Gerçek Chrome (UX değişti, §97/8): `browser/` — hazırlık listesi strateji maddesi, dört seçenek
+  (döndürme/çok görünüş seçilemez), karar yokken üretim kapalı, kaydetme gövdesi yalnız
+  `{token, revision, kind}`, karar sonrası tıklamayla üretim → **7/7 PASS**.
+- Testler: `tests/test_build_strategy.py` (11) · `tests/test_guided_strategy_ui.py` (5) · ilgili süit
+  **401 passed (129,80 s)**; geniş `pytest -q tests -k "not semread"` → **1543 passed, 339 deselected,
+  1637,22 s (27:17), EXIT=0** — `eval/audits/20261007-g12-strategy-plate/pytest-broad.log`
+  (1527 → 1543: +11 build_strategy, +5 strateji UI).
 
 ## Kural hatırlatması (her faz sonu, §96)
 

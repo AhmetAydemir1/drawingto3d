@@ -1,0 +1,100 @@
+{
+ "token": "4e6f74949e0b4f1b9bf07011e26ab8fa",
+ "steps": [
+  {
+   "step": "A: hazırlık listesi 'Parçanın ana oluşturma biçimini seç' maddesini taşır",
+   "passed": true,
+   "detail": {
+    "categories": {
+     "missing_build_strategy": 1
+    },
+    "tasks": "○ Parçanın ana oluşturma biçimini seç | ✓ Dış şekil seçildi | ✓ Kalınlık girildi | ✓ Ölçek girildi"
+   }
+  },
+  {
+   "step": "B: panel dört seçeneği sunar; döndürme bu sürümde kapalı, uzatma önerilir",
+   "passed": true,
+   "detail": {
+    "choices": [
+     {
+      "kind": "extrude_profile",
+      "label": "Sabit kalınlıklı profili uzat (önerilir)",
+      "disabled": false
+     },
+     {
+      "kind": "revolve_profile",
+      "label": "Bir kesiti eksen etrafında döndür (bu sürümde yok)",
+      "disabled": true
+     },
+     {
+      "kind": "multi_view_composite",
+      "label": "Birden fazla görünüşü birlikte kullan (bu sürümde yok)",
+      "disabled": true
+     },
+     {
+      "kind": "unsupported",
+      "label": "Bu sürümde desteklenmiyor",
+      "disabled": false
+     }
+    ],
+    "status": "Henüz seçilmedi — üretim bu kararı bekler."
+   }
+  },
+  {
+   "step": "C: üretim biçimi seçilmeden üretim düğmesi KAPALI (örtük extrude yok)",
+   "passed": true,
+   "detail": {
+    "build_disabled": true
+   }
+  },
+  {
+   "step": "D: kaydetme isteği sunucuya gider ve gövde YALNIZ {token, revision, kind} taşır",
+   "passed": true,
+   "detail": {
+    "request": {
+     "url": "/api/guided/strategy",
+     "method": "POST",
+     "body": "{\"token\":\"4e6f74949e0b4f1b9bf07011e26ab8fa\",\"revision\":48,\"kind\":\"extrude_profile\"}"
+    },
+    "body_keys": [
+     "kind",
+     "revision",
+     "token"
+    ]
+   }
+  },
+  {
+   "step": "D: sunucu kararı anahtarıyla ve geometri sürümüyle sabitledi (istemci uydurmadı)",
+   "passed": true,
+   "detail": {
+    "kind": "extrude_profile",
+    "key": "680ee23d8803…",
+    "geometry_version": 3,
+    "served_version": 3
+   }
+  },
+  {
+   "step": "E: karar sonrası durum yazısı seçili biçimi söyler ve üretim düğmesi açılır",
+   "passed": true,
+   "detail": {
+    "status": "Seçili: Sabit kalınlıklı profili uzat",
+    "build_disabled": false
+   }
+  },
+  {
+   "step": "E: gerçek tıklamayla üretim tamamlandı; STEP artefaktı servis ediliyor",
+   "passed": true,
+   "detail": {
+    "status": "complete",
+    "artifact": {
+     "status": 200,
+     "bytes": 52008,
+     "head": "ISO-10303-21;\nHEADER;\nFI",
+     "url": "/guided-session/4e6f74949e0b4f1b9bf07011e26ab8fa/part.step"
+    },
+    "step": "/guided-session/4e6f74949e0b4f1b9bf07011e26ab8fa/part.step",
+    "links": "Taslak STEPCAD planıGeometri kontrolü"
+   }
+  }
+ ]
+}

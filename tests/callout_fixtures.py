@@ -98,6 +98,13 @@ def record(text, region, *, circles=None, count=None, leader=None, arcs=(), clai
                       **({"view": view} if view is not None else {})},
         "history": [], "build": None, "log": [],
     }
+    # G12.2 (PLAN-25 §31): the fixture's user has already said HOW the part is made. This record is the
+    # shape the store hands the pure layers, and a buildable session always carries that decision; the
+    # key comes from the server's own rule (nothing here invents one).
+    from drawingto3d import build_strategy
+
+    row["decisions"]["build_strategy"] = build_strategy.decision_for(
+        row, row["decisions"], "extrude_profile")
     parse = callout_parse.semantic_parse(row["decisions"]["transcriptions"][0], sheet_unit=sheet_unit)
     row["callout_parses"] = list(parses) if parses is not None else [parse.model_dump(mode="json")]
     if second_text is not None:

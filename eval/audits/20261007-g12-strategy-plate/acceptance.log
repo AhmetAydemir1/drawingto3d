@@ -1,15 +1,12 @@
 PASS 0: kontur + ölçek (100,00) + kalınlık (15) + izleme onayı kaydedildi  {"revision": 1, "profile_id": "outline_1", "span_id": "t0"}
 PASS 1: reçetedeki her ipucu bu paftanın callout'larından biriyle eşleşti  {"hints": 33, "missing": [], "rows": {"6": ["b1aea745ec1f819dfc763387c51e067d1368623fa3041d511f6ecb365b7a1139", "da1baf44138661f81299d1215f6b7bb6602d4ac3aafa7f1600ff92dc4cb12b00"], "4": ["0670ce69c0ee72e81790d00424114230
 PASS 1b: reçete dışındaki satırlar da tek tek adıyla karara bağlandı (örtük kapatma yok)  {"remaining_rows": 36, "groups": ["1", "2", "2026", "3", "4", "5", "6", "A", "A4", "ALLOY STEEL", "B", "C", "D", "DRAFTCRAFT", "MATERIAL:", "NAME:", "PRO", "Plate With A Pocket", "SCALE1:1", "SECTION B-B", "SHEET 1 OF 1"
-FAIL 2: kapsam kapandı — kalan tek madde ÜRETİM BİÇİMİ, hiçbir callout sorusu yok  {"categories": {"unsupported_build_relevant": 6, "missing_build_strategy": 1}, "questions": 7}
+PASS 2: kapsam kapandı — kalan tek madde ÜRETİM BİÇİMİ, hiçbir callout sorusu yok  {"categories": {"missing_build_strategy": 1}, "questions": 1}
 PASS 3: strateji yokken üretim BAŞLAMAZ (örtük extrude yok)  {"ready": false}
-Traceback (most recent call last):
-  File "/Users/aydemir/Desktop/drawingto3d/eval/audits/20261007-g12-strategy-plate/g12_strategy_plate_acceptance.py", line 262, in <module>
-    raise SystemExit(main())
-                     ^^^^^^
-  File "/Users/aydemir/Desktop/drawingto3d/eval/audits/20261007-g12-strategy-plate/g12_strategy_plate_acceptance.py", line 202, in main
-    blocked = store.build(token, store.load(token)["revision"])
-              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/Users/aydemir/Desktop/drawingto3d/src/drawingto3d/guided.py", line 2847, in build
-    raise ValueError("üretim için eksik/uyumsuz girdiler var: "
-ValueError: üretim için eksik/uyumsuz girdiler var: «11b4bc4edc5e9d92bce358fa5b5cb5c08c4851d922d683f30450ee80815d884c» bu gerçek ölçü/not mevcut modelleme yetenekleriyle uygulanamıyor (same as 80,00). «34ad8443dfc6b49b1ba10cd992961a03dd41badcb2e0d290cc3abcbcb67d2533» bu gerçek ölçü/not mevcut modelleme yetenekleriyle uygulanamıyor (printed spacing '1 5,00' corrected to 15,00). «3135f80a24cbcbbe62457dd7d7691a69ab58a0ad9292fe5363ac1ab64b46cdb6» bu gerçek ölçü/not mevcut modelleme yetenekleriyle uygulanamıyor (printed spacing '1 00,00' is ambiguous to the parser; the user corrects it to 100,00).
+PASS 4: build çağrısı strateji yokken reddedildi (adı konmuş soruyla)  {"refusal": "üretim için eksik/uyumsuz girdiler var: Parçanın ana oluşturma biçimini seçin (profil uzatma / döndürme / çok görünüş) — üretim kendiliğinden bir biçim varsaymaz."}
+PASS 5: kullanıcı üretim biçimini onayladı — sunucu anahtarı ve geometri sürümünü sabitledi  {"kind": "extrude_profile", "strategy_key": "680ee23d8803…", "geometry_version": 3}
+PASS 6: üretim tamamlandı — STEP yazıldı  {"status": "complete", "solids": 1, "size": [120.01092441415202, 80.00178236964202, 15.0]}
+PASS 7: STEP yeniden açıldı ve dondurulmuş evaluator PASS (9/9 kontrol)  {"exit": 0, "checks": 9, "failed": [], "stdout": ".01])\"}, \"volume\": {\"ok\": true, \"got\": \"124.8 cm3\", \"want\":\n[PASS] step_reopened: {\"ok\": true, \"detail\": \"cadquery importStep reopen (twice: features + d
+PASS 8: parça dondurulmuş toleranslarda 120 × 80 × 15, 4 delik, 1 cep  {"lengths": [120.011, 80.002, 15.0], "radii": [3.4, 3.4, 3.4, 3.4, 9.974, 9.974, 9.979, 9.991, 25.0], "holes": 4, "pockets": 1, "step_sha256": "c32db885e145e061fc2792656b22010ca60e027732efbadb8fcf625adf2cdc6f"}
+TÜMÜ GEÇTİ 10/10
+EXIT=0

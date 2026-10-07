@@ -1,5 +1,5 @@
 {
- "plan": "PLAN-24-G12-CORRECTNESS",
+ "plan": "PLAN-24-G12-CORRECTNESS + PLAN-25-G12-CONTINUATION (kullanıcı girdisi PLAN-21.md; §45+ fazlarını G12.3–G12.9 olarak yeniden numaralandırdı)",
  "root_plan": "PLAN.md (docs/PLAN-24-G12-CORRECTNESS.md byte kopya)",
  "updated_at": "2026-10-07",
  "baseline_head": "cc36f8de62548299761a5b9c8d9a1b97320635f1",
@@ -86,32 +86,72 @@
   },
   {
    "id": "G12.2",
-   "title": "build strategy contract",
-   "status": "pending"
+   "title": "explicit build strategy / örtük extrude'un kaldırılması",
+   "status": "done",
+   "head": "bu commit",
+   "tests": {
+    "strategy_contract": "tests/test_build_strategy.py (11 passed) — §43 sekiz davranış + §33/§34 öneri sözleşmesi",
+    "ui_contract": "tests/test_guided_strategy_ui.py (5 passed) — panel; istemci anahtar/sürüm taşımaz (§36/§42)",
+    "relevant_suite": "401 passed in 129.80s — eval/audits/20261007-g12-strategy-plate/pytest-g12.2-relevant.log",
+    "broad": "pytest -q tests -k \"not semread\" → 1543 passed, 0 failed, 339 deselected, 1637.22s (27:17), EXIT=0 — eval/audits/20261007-g12-strategy-plate/pytest-broad.log",
+    "browser": "browser/strategy_panel_acceptance.py — 7/7 adım PASS (gerçek fare/klavye)"
+   },
+   "cad_acceptance": {
+    "case": "plate-pocket-vector",
+    "flow": "taze oturum: callout incelemesi (reçete 9 satır + reçete dışı 36 satır tek tek adıyla) → kapsam kapanır → stratejisiz üretim reddedilir → extrude_profile onayı → üretim → STEP reopen",
+    "result": "10/10 PASS, EXIT=0",
+    "frozen_evaluator": "9/9 PASS (step_reopened dahil) — out/plate-regression-verdict.json",
+    "part": "120,011 × 80,002 × 15 · 4 delik (Ø6,8) · 1 cep (Ø50) · STEP sha256 9629516aaa70f7e6…",
+    "evidence": "eval/audits/20261007-g12-strategy-plate/README.md"
+   },
+   "deliverables": [
+    "src/drawingto3d/build_strategy.py — öneri/tazeleme/soru cümlesi (saf modül; kanıt yalnız kullanıcının kendi kararlarından) §33–§35",
+    "Decisions.build_strategy + set_strategy (tek revizyon, geri alınabilir; anahtar ve geometri sürümü sunucuda) + /save sahte strateji reddi §31/§36",
+    "make_plan = ortak bağlam + explicit dispatch (compile_extrude_plan / compile_revolve_plan / compile_multiview_plan) — örtük extrude YOK; daire profili açık onayla ekstrüde edilir; geometri-sınıfı kara listesi yok §38–§40",
+    "readiness kategorileri missing/stale/unsupported_build_strategy §41 + dört seçenekli panel ve kontrol listesi maddesi §42"
+   ],
+   "browser": "gerçek Chrome 7/7 PASS — hazırlık listesi strateji maddesi, dört seçenek (döndürme/çok görünüş seçilemez), karar yokken üretim kapalı, kaydetme gövdesi yalnız {token, revision, kind}, karar sonrası tıklamayla üretim complete + STEP 200 — eval/audits/20261007-g12-strategy-plate/browser/",
+   "before_verdict": "G11: seçili profil → örtük extrude; kullanıcının biçim sözü yok",
+   "after_verdict": "plate yolu açık stratejiyle yeniden üretildi; geometri dondurulmuş kayıtla aynı (evaluator 9/9)",
+   "root_cause_changes": [
+    "ürün, kullanıcı biçim söylemeden üretmiyor; seçili profil artık hiçbir şey ima etmiyor"
+   ],
+   "evidence": "eval/audits/20261007-g12-strategy-plate/",
+   "open": []
   },
   {
    "id": "G12.3",
-   "title": "raster contour + extrude correctness",
+   "title": "view-scoped geometry foundation (§45–§54: görünüş sahipliği + GEOMETRY_VERSION 3→4)",
    "status": "pending"
   },
   {
    "id": "G12.4",
-   "title": "axisymmetric / revolve path",
+   "title": "desteklenen 2B kısıtların tam uygulanması",
    "status": "pending"
   },
   {
    "id": "G12.5",
-   "title": "multi-view composite v1",
+   "title": "raster yoldan profil + ölçü kurtarma",
    "status": "pending"
   },
   {
    "id": "G12.6",
-   "title": "advanced operation capability audit",
+   "title": "eksenel simetri / revolve gerçek geometri",
    "status": "pending"
   },
   {
-   "id": "G12.F",
-   "title": "frozen manifest rerun 9/9 + 1/1",
+   "id": "G12.7",
+   "title": "çok görünüşlü birleştirme v1",
+   "status": "pending"
+  },
+  {
+   "id": "G12.8",
+   "title": "sınırlı gelişmiş operasyon denetimi (capability-gap.json)",
+   "status": "pending"
+  },
+  {
+   "id": "G12.9",
+   "title": "dondurulmuş manifest yeniden koşusu 9/9 + 1/1",
    "status": "pending"
   }
  ],

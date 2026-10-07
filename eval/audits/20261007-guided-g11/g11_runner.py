@@ -65,12 +65,15 @@ def canvas_point(page: C.Chrome, px_point: list) -> dict:
                page_y: window.scrollY + y}};""")
 
 
-def click_image_point(page: C.Chrome, px_point: list) -> None:
-    found = canvas_point(page, px_point)
-    page.ev(f"window.scrollTo(0, Math.max(0, {found['page_y']} - window.innerHeight / 2));")
-    time.sleep(0.3)
+def click_image_point(page: C.Chrome, px_point: list) -> dict:
+    """Viewport point of an image-space coordinate; click directly when visible (proven path)."""
     target = canvas_point(page, px_point)
+    if not (20 <= target["y"] <= 700 and 30 <= target["x"] <= 1100):
+        page.ev("$('sheet').scrollIntoView({block:'start'});")
+        time.sleep(0.4)
+        target = canvas_point(page, px_point)
     page.click(target["x"], target["y"])
+    return target
 
 
 def click_element(page, selector: str) -> None:

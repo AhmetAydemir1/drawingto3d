@@ -201,6 +201,8 @@ def test_ux01_next_missing_flow_selects_from_unresolved_and_navigation_writes_no
     assert "function advanceAfterDecision(" in script
     assert "advance=previous" in script, "oto-ilerleme yalnız komut başarısında kurulur"
     assert "['transcribe','set_ignored','set_unbindable'].includes(action)" in script
+    assert "state.callout_parses" in script, "parse durumu otoriter okuma satırından okunur"
+    assert "if(!rowResolved(previousId))return;" in script, "oto-ilerleme yalnız çözülen satırdan sonra"
     assert "Tüm ölçü/not kontrolleri tamamlandı." in script
     next_handler = script[script.index("$('callout-next').onclick="):]
     next_handler = next_handler[:next_handler.index("};")]

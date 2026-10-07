@@ -337,15 +337,19 @@ def main() -> int:
 
     page.screenshot(str(shots / f"{case_id}-02-decided.png"))
 
-    # --- the remaining scope: one explicit bulk decision (UX round flow) -------------------------
+    # --- the remaining scope: one explicit bulk decision (UX-01 §7 flow) --------------------------
     bulk_rows = 0
     undecided = UX.undecided_ids(UX.server(page))
     if undecided:
-        page.click_selector("#callout-ignore-many")
-        page.wait_ev("$('status').textContent.includes('tekrar tıklayın')", timeout=30, label="bulk armed")
-        page.click_selector("#callout-ignore-many")
+        page.click_selector("#callout-multi")
+        page.wait_ev("$('callout-bulk-bar').hidden === false", timeout=30, label="select mode")
+        for callout_id in undecided:
+            box = UX.row_box(page, callout_id)
+            page.click(box["x"] + box["w"] / 2, box["y"] + box["h"] / 2)
+            time.sleep(0.12)
+        page.click_selector("#callout-bulk-apply")
         UX.wait_server(page, lambda d: all((UX.reviews_of(d).get(cid) or {}).get("ignored")
-                                           for cid in undecided), 90, "bulk ignored")
+                                           for cid in undecided), 120, "bulk ignored")
         bulk_rows = len(undecided)
     final = UX.server(page)
     record["ignored_count"] = sum(1 for row in final["effective_callouts"] if row["ignored"])

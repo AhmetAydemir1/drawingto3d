@@ -48,7 +48,7 @@ curl -s -o /dev/null -w "app=%{http_code}\n" http://127.0.0.1:8765/
   bitene kadar disabled kalır; pending yarışı yaşandı).
 - Kontur tıklaması: sunucu-doğrulamalı (`decisions.profile_id`); DOM geçici durumu yetmez.
 - Öneri kabulü: `#proposals .proposal:nth-child(N) button` — **kutudan** tıklanır (`click_element`).
-- Kalan kararsızlar: `#callout-ignore-many` iki adımlı toplu eylem (UX turu akışı).
+- Kalan kararsızlar: `#callout-multi` ile çoklu seçim → `#callout-bulk-apply` (tek atomik `bulk_set_ignored`; UX-01 akışı — kabul: `eval/audits/20261007-guided-ux01/`).
 - Üretim reddi kanıtı: build POST'u 400 dönebilir (eksik/geçersiz model) — kayıtta
   `console_errors`/`rejected_requests` altında görünür; kanıt indirmeleri artık yalnız gerçek build
   (step URL'i) varsa yapılır.

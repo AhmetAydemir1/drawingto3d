@@ -1,0 +1,17 @@
+{
+  "plate_candidate_count": 45,
+  "manual_transcription_count": 4,
+  "one_click_hint_acceptance_count": 4,
+  "bulk_ignored_count": 42,
+  "number_of_bulk_actions": 3,
+  "manual_target_corrections": 1,
+  "single_ignores": 1,
+  "total_explicit_user_actions": 18,
+  "g9_reference": {
+    "typed_texts": 4,
+    "hint_single_clicks": 4,
+    "single_ignores": 1,
+    "bulk_rows": 36,
+    "bulk_actions": 1
+  }
+}

@@ -1,0 +1,37 @@
+[PASS] S0 plate opens in a fresh session with 45 candidates: {"token": "4d1c43eaa5d1431baa4e40a9293eb087", "callouts": 45}
+[PASS] S0 the UX-01 controls are served with the plan's own words: {"chips": {"multi": "Çoklu seç", "hintYes": "Evet, doğru", "hintEdit": "Düzelt", "hintIgnore": "Bu bir ölçü/not değil", "prev": "Önceki", "next": "Sonraki eksik", "readiness": "Eksik kalanlar", "build": "3B Modeli Oluştur"}, "remaining": "45 kontrol kaldı"}
+[PASS] S5 selection, next/previous, panel open/close, ignored toggle and multi-select clicks write nothing: {"checks": [{"label": "callout select", "before": [0, 12], "after": [0, 12]}, {"label": "next unresolved", "before": [0, 12], "after": [0, 12]}, {"label": "previous", "before": [0, 12], "after": [0, 12]}, {"label": "open technical details", "before": [0, 12], "after": [0, 12]}, {"label": "close technical details", "before": [0, 12], "after": [0, 12]}, {"label": "toggle ignored visibility", "before
+[PASS] S1 the machine hint is visible as a question and selection alone writes nothing: {"hint": {"line": "Çizimde şu mu yazıyor? M8 - 6H THRU ALL", "field": "", "yesHidden": false, "yesText": "Evet, doğru"}}
+[PASS] S1 a real reload before any click leaves the session without a transcription: {"transcriptions": 0}
+[PASS] S1 one click writes the exact hint as the user's own transcription (server-validated): {"raw_text": "M8 - 6H THRU ALL", "log": {"at": "2026-10-07T04:14:47+00:00", "revision": 0, "actor": "user", "action": "transcribe", "field": "callout:845682b289fedf3398c22eca7b08d8b4b480c5df63443dd735b8e845faf6f723", "value": "M8 - 6H THRU ALL", "note": "Kullanıcı makine ipucunu doğrulayıp callout metnini yazdı.", "evidence": {"callout_id": "845682b289fedf3398c22eca7b08d8b4b480c5df63443dd735b8e845
+[PASS] S1 a hint click alone does not auto-advance while the row is not yet resolved (no target yet): {"title": "C28 · makine tespiti", "label": "C28", "m8_unresolved": true}
+[PASS] S1 when the row resolves (unbindable) the next unresolved is selected automatically: {"previous": "C28 · makine tespiti", "now": "C29 · makine tespiti", "expected": "C29", "remaining": "44 kontrol kaldı"}
+[PASS] S2 “Düzelt” puts the hint in the field as a draft only — no server write: {"draft": {"field": "1 00,00", "draftNote": "Kaydedilmemiş metin var: “Metni kaydet” demeden karar oluşmaz.", "active": "callout-text"}}
+[PASS] S2 editing the draft still writes nothing before “Kaydet”: {"field": "100,00"}
+[PASS] S2 the edited text is persisted exactly, and no auto-advance happens before the row resolves: {"raw_text": "100,00", "title": "C12 · makine tespiti"}
+[PASS] S2 after the scope decision resolves the row, the selection advances automatically: {"before": "C12 · makine tespiti", "after": "C13 · makine tespiti"}
+[PASS] S3 multi-select shows a checkbox per visible row and the bar counts the user's own clicks: {"boxes": 45, "selection": {"count": "6 alan seçildi", "checked": 6, "barHidden": false}}
+[PASS] S3 checkbox clicks alone write nothing: {"revision": 4}
+[PASS] S3 one explicit action closes six rows: one revision, one audit event, one request (one history step proven by the single undo below): {"revision": [4, 5], "can_undo": true, "events": 1, "fetches": 1, "cleared": {"bar": true, "multi": "Çoklu seç"}}
+[PASS] S3 one undo brings all six back together — the bulk action is exactly one history step: {"revision": 6, "restored": 6}
+[PASS] S3 after re-applying and a real reload the six rows stay ignored: {"revision": 7, "still_ignored": 6}
+[PASS] S4 the checklist counts match the backend readiness rows exactly: {"summary": "Model henüz hazır değil · 41 şey kaldı", "open": ["○ 37 Ölçü/not kontrolü", "○ Dış şekli seç", "○ Ölçeği tamamla", "○ 2 Çizim/geometri sorununu düzelt"], "done": [], "questions": 41}
+[PASS] S4 the “Ölçü/not” item opens the first unresolved callout and focuses its field: {"jumped": {"title": "C1 · makine tespiti", "active": "callout-text"}, "first_unresolved": "11b4bc4edc5e9d92bce358fa5b5cb5c08c4851d922d683f30450ee80815d884c"}
+[PASS] S4 the checklist read is stable and no decision was written by navigating: {}
+[PASS] S4 the “Dış şekli seç” item focuses the contour control: {"active": "profile"}
+[PASS] completion: the plate outline is selected by a real click: {"profile": "outline_1", "edges": 8}
+[PASS] completion: the hole note transcribes by hand and parses: {"text": "4 x Ø6,80 THRU ALL", "status": "parsed"}
+[PASS] S5 a proposal highlight writes nothing: {"proposals": 6, "label": "proposal highlight", "before": [12, 24], "after": [12, 24]}
+[PASS] completion: the four hole circles are confirmed by hand: {"circles": ["g9", "g11", "g10", "g12"]}
+[PASS] completion: the pocket target is confirmed: {"proposals": 2}
+[PASS] completion: the “4 x” fragment is declared not-a-callout with the single-row action: {"callout": "599ad74670dd5582e216b0e8c56c12bebc3b57a66a1c6f1457dbe32ff233bde4"}
+[PASS] completion: the four printed hints are one click each and the two corrected texts are typed exactly: {"hints": ["80,00", "60,00", "8,00"], "typed": ["100,00", "15,00"]}
+[PASS] the remaining undecided rows close in one explicit bulk action and nothing stays unresolved: {"closed": 30, "revision": 25}
+[PASS] S4 with every blocker resolved the checklist says so and the build is enabled: {"summary": "✓ Tüm gerekli bilgiler tamamlandı", "items": ["✓ Dış şekil seçildi", "✓ Kalınlık girildi", "✓ Ölçek girildi"]}
+[PASS] SMOKE the plate builds from the new UI: {"build_status": "complete", "step": "/guided-session/4d1c43eaa5d1431baa4e40a9293eb087/part.step"}
+[PASS] SMOKE the frozen evaluator returns the G9 plate verdict on the new build: {"verdict": {"checks": {"solids": {"ok": true, "got": "1 katı", "want": "1 katı"}, "valid": {"ok": true, "got": "True", "want": "True"}, "vector": {"ok": true, "got": "[15, 80.002, 120.011]", "want": "[15, 80, 120] (fark [0, 0, 0.01])"}, "volume": {"ok": true, "got": "124.8 cm3", "want": "124.8 cm3 (%0 fark)"}, "cylinders": {"ok": true, "got": "[3.4, 9.97, 9.98, 9.99, 25]", "want": "[3.4, 10, 25];
+[PASS] SMOKE the new build carries the G9/g11 plate geometry (bbox within 0.02 mm of the recorded case): {"new_bbox": [15.0, 80.002, 120.011], "g11_bbox": [15.0, 80.002, 120.011], "sha_identical": false, "features": {"solids": 1, "valid": true, "faces": 16, "cylinders": [3.4, 9.97, 9.98, 9.99, 25.0], "face_types": {"CYLINDER": 9, "PLANE": 7}}}
+[PASS] SMOKE the burden metrics are recorded against the G9 numbers: {"plate_candidate_count": 45, "manual_transcription_count": 4, "one_click_hint_acceptance_count": 4, "bulk_ignored_count": 42, "number_of_bulk_actions": 3, "manual_target_corrections": 1, "single_ignores": 1, "total_explicit_user_actions": 18, "g9_reference": {"typed_texts": 4, "hint_single_clicks": 4, "single_ignores": 1, "bulk_rows": 36, "bulk_actions": 1}}
+[PASS] no unexpected console errors and no rejected requests: {"unexpected": [], "failures": []}
+
+35/35 UX-01 browser steps passed

@@ -1,0 +1,32 @@
+[PASS] S0 plate opens in a fresh session with 45 candidates: {"token": "33b829b5a9584233b8c9ef1c7b0476cc", "callouts": 45}
+[PASS] S0 the UX-01 controls are served with the plan's own words: {"chips": {"multi": "Çoklu seç", "hintYes": "Evet, doğru", "hintEdit": "Düzelt", "hintIgnore": "Bu bir ölçü/not değil", "prev": "Önceki", "next": "Sonraki eksik", "readiness": "Eksik kalanlar", "build": "3B Modeli Oluştur"}, "remaining": "45 kontrol kaldı"}
+Traceback (most recent call last):
+  File "/Users/aydemir/Desktop/drawingto3d/eval/audits/20261006-guided-g3-review/cdp_client.py", line 181, in ev
+    return self.evaluate(expression)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/aydemir/Desktop/drawingto3d/eval/audits/20261006-guided-g3-review/cdp_client.py", line 168, in evaluate
+    raise RuntimeError(result["exceptionDetails"].get("text") + " " + json.dumps(
+RuntimeError: Uncaught "TypeError: Cannot read properties of null (reading 'scrollIntoView')\n    at <anonymous>:1:106\n    at <anonymous>:1:142"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/aydemir/Desktop/drawingto3d/eval/audits/20261007-guided-ux01/ux01_acceptance.py", line 597, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/Users/aydemir/Desktop/drawingto3d/eval/audits/20261007-guided-ux01/ux01_acceptance.py", line 174, in main
+    checks.append(expect_no_write(page, "open technical details",
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/aydemir/Desktop/drawingto3d/eval/audits/20261007-guided-ux01/ux01_acceptance.py", line 127, in expect_no_write
+    action()
+  File "/Users/aydemir/Desktop/drawingto3d/eval/audits/20261007-guided-ux01/ux01_acceptance.py", line 175, in <lambda>
+    lambda: page.click_selector("#technical-details summary")))
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/aydemir/Desktop/drawingto3d/eval/audits/20261006-guided-g3-review/cdp_client.py", line 244, in click_selector
+    self.ev(f"{self.field(selector)}.scrollIntoView({{block:'center'}});")
+  File "/Users/aydemir/Desktop/drawingto3d/eval/audits/20261006-guided-g3-review/cdp_client.py", line 186, in ev
+    return self.evaluate(expression)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/aydemir/Desktop/drawingto3d/eval/audits/20261006-guided-g3-review/cdp_client.py", line 168, in evaluate
+    raise RuntimeError(result["exceptionDetails"].get("text") + " " + json.dumps(
+RuntimeError: Uncaught "TypeError: Cannot read properties of null (reading 'scrollIntoView')\n    at <anonymous>:1:106\n    at <anonymous>:1:142"

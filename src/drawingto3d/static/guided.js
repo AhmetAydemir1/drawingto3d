@@ -350,13 +350,19 @@ $('callout-edit').onclick=()=>{if(!calloutRow(selectedCallout))return status('Ö
 function rowResolved(id){const row=(state.effective_callouts||[]).find(item=>item.id===id)||null;if(!row)return true;
  if(row.ignored||row.unbindable)return true;
  const s=calloutStates()[id]||{};const t=s.transcription||{state:'missing'};if(t.state!=='current')return false;
- const parse=s.parse||null;if(!parse||parse.state!=='parsed'||parse.status!=='parsed')return false;
+ const parse=s.parse||null;if(!parse||parse.state!=='current')return false;
+ // §6.2 "parse.status == parsed": durum satırı yalnız `state` taşır; okuma durumu otoriter
+ // `callout_parses` satırından okunur (status orada yaşar).
+ const parseRow=(state.callout_parses||[]).find(item=>item.callout_id===id)||null;
+ const status=parse.status||(parseRow&&parseRow.status)||null;if(status!=='parsed')return false;
  const target=s.target||{state:'missing'};return target.state==='current';}
 function unresolvedRows(){return calloutList().filter(row=>!rowResolved(row.id));}
 function goToCallout(id){selectedCallout=id;render();
  const li=[...document.querySelectorAll('#callout-list li')].find(item=>item.classList.contains('selected'));
  if(li)li.scrollIntoView({block:'center'});}
 function advanceAfterDecision(previousId){if(!previousId||selectedCallout!==previousId)return;
+ // §6.4: ilerleme yalnız satır gerçekten çözülmüş hale geldiyse — çözülmemiş satırdan zıplanmaz.
+ if(!rowResolved(previousId))return;
  const rows=unresolvedRows().filter(row=>row.id!==previousId);if(!rows.length)return;
  const list=calloutList(),start=list.findIndex(row=>row.id===previousId);
  const pick=[...list.slice(start+1),...list.slice(0,start+1)].find(row=>rows.some(item=>item.id===row.id));

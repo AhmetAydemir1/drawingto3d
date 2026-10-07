@@ -1,0 +1,431 @@
+{
+  "version": 1,
+  "unit": "mm",
+  "source": {
+    "kind": "drawing",
+    "ref": "/Users/aydemir/Desktop/drawingto3d/out/guided/8daf5730a7f947c5817a15ed73c47047/source.pdf",
+    "sha256": "cdf6285583f54f9a2350c45cf8061a0d74d5ec2077b30af33adef1bda9ed2114",
+    "page": 1
+  },
+  "parameters": {
+    "thickness": {
+      "unit": "mm",
+      "source": "user",
+      "value": 28.0,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcının kalınlık kararı."
+    },
+    "edge_0_start_x": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 73.71207290508734,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcının seçtiği kontur ve kalibrasyonla çizimden ölçüldü; basılı ölçü değildir."
+    },
+    "edge_0_start_y": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 81.90259999999999,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcının seçtiği kontur ve kalibrasyonla çizimden ölçüldü; basılı ölçü değildir."
+    },
+    "edge_0_end_x": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 43.28687290508735,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcının seçtiği kontur ve kalibrasyonla çizimden ölçüldü; basılı ölçü değildir."
+    },
+    "edge_0_end_y": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 81.90259999999999,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcının seçtiği kontur ve kalibrasyonla çizimden ölçüldü; basılı ölçü değildir."
+    },
+    "edge_1_start_x": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 43.28687290508735,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcının seçtiği kontur ve kalibrasyonla çizimden ölçüldü; basılı ölçü değildir."
+    },
+    "edge_1_start_y": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 81.90259999999999,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcının seçtiği kontur ve kalibrasyonla çizimden ölçüldü; basılı ölçü değildir."
+    },
+    "edge_1_end_x": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 20.362672905087358,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcının seçtiği kontur ve kalibrasyonla çizimden ölçüldü; basılı ölçü değildir."
+    },
+    "edge_1_end_y": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 81.90259999999999,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcının seçtiği kontur ve kalibrasyonla çizimden ölçüldü; basılı ölçü değildir."
+    },
+    "edge_2_center_x": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 20.362672905087358,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcının seçtiği kontur ve kalibrasyonla çizimden ölçüldü; basılı ölçü değildir."
+    },
+    "edge_2_center_y": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 61.492599999999996,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcının seçtiği kontur ve kalibrasyonla çizimden ölçüldü; basılı ölçü değildir."
+    },
+    "edge_2_radius": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 20.41,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcının seçtiği kontur ve kalibrasyonla çizimden ölçüldü; basılı ölçü değildir."
+    },
+    "edge_3_start_x": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 20.355548471225386,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcının seçtiği kontur ve kalibrasyonla çizimden ölçüldü; basılı ölçü değildir."
+    },
+    "edge_3_start_y": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 41.08260124344829,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcının seçtiği kontur ve kalibrasyonla çizimden ölçüldü; basılı ölçü değildir."
+    },
+    "edge_3_end_x": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 32.88687290508735,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcının seçtiği kontur ve kalibrasyonla çizimden ölçüldü; basılı ölçü değildir."
+    },
+    "edge_3_end_y": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 40.994199999999985,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcının seçtiği kontur ve kalibrasyonla çizimden ölçüldü; basılı ölçü değildir."
+    },
+    "edge_4_start_x": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 32.88687290508735,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcının seçtiği kontur ve kalibrasyonla çizimden ölçüldü; basılı ölçü değildir."
+    },
+    "edge_4_start_y": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 40.994199999999985,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcının seçtiği kontur ve kalibrasyonla çizimden ölçüldü; basılı ölçü değildir."
+    },
+    "edge_4_end_x": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 32.88687290508735,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcının seçtiği kontur ve kalibrasyonla çizimden ölçüldü; basılı ölçü değildir."
+    },
+    "edge_4_end_y": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 0.0,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcının seçtiği kontur ve kalibrasyonla çizimden ölçüldü; basılı ölçü değildir."
+    },
+    "edge_5_start_x": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 32.88687290508735,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcının seçtiği kontur ve kalibrasyonla çizimden ölçüldü; basılı ölçü değildir."
+    },
+    "edge_5_start_y": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 0.0,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcının seçtiği kontur ve kalibrasyonla çizimden ölçüldü; basılı ölçü değildir."
+    },
+    "edge_5_end_x": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 43.28687290508735,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcının seçtiği kontur ve kalibrasyonla çizimden ölçüldü; basılı ölçü değildir."
+    },
+    "edge_5_end_y": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 0.0,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcının seçtiği kontur ve kalibrasyonla çizimden ölçüldü; basılı ölçü değildir."
+    },
+    "edge_6_start_x": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 43.28687290508735,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcının seçtiği kontur ve kalibrasyonla çizimden ölçüldü; basılı ölçü değildir."
+    },
+    "edge_6_start_y": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 0.0,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcının seçtiği kontur ve kalibrasyonla çizimden ölçüldü; basılı ölçü değildir."
+    },
+    "edge_6_end_x": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 73.71207290508734,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcının seçtiği kontur ve kalibrasyonla çizimden ölçüldü; basılı ölçü değildir."
+    },
+    "edge_6_end_y": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 0.0,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcının seçtiği kontur ve kalibrasyonla çizimden ölçüldü; basılı ölçü değildir."
+    },
+    "edge_7_start_x": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 73.71207290508734,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcının seçtiği kontur ve kalibrasyonla çizimden ölçüldü; basılı ölçü değildir."
+    },
+    "edge_7_start_y": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 0.0,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcının seçtiği kontur ve kalibrasyonla çizimden ölçüldü; basılı ölçü değildir."
+    },
+    "edge_7_end_x": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 73.71207290508734,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcının seçtiği kontur ve kalibrasyonla çizimden ölçüldü; basılı ölçü değildir."
+    },
+    "edge_7_end_y": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 81.90259999999999,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcının seçtiği kontur ve kalibrasyonla çizimden ölçüldü; basılı ölçü değildir."
+    },
+    "hole_0_diameter": {
+      "unit": "mm",
+      "source": "user",
+      "value": 20.0,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcı ölçüsü."
+    },
+    "hole_0_x": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 20.43547290508735,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcının seçtiği kontur ve kalibrasyonla çizimden ölçüldü; basılı ölçü değildir."
+    },
+    "hole_0_y": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 61.43019999999999,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcının seçtiği kontur ve kalibrasyonla çizimden ölçüldü; basılı ölçü değildir."
+    }
+  },
+  "sketches": {
+    "outer": {
+      "plane": "XY",
+      "offset": "0",
+      "entities": [
+        {
+          "type": "line",
+          "start": [
+            "edge_0_start_x",
+            "edge_0_start_y"
+          ],
+          "end": [
+            "edge_0_end_x",
+            "edge_0_end_y"
+          ]
+        },
+        {
+          "type": "line",
+          "start": [
+            "edge_1_start_x",
+            "edge_1_start_y"
+          ],
+          "end": [
+            "edge_1_end_x",
+            "edge_1_end_y"
+          ]
+        },
+        {
+          "type": "arc",
+          "center": [
+            "edge_2_center_x",
+            "edge_2_center_y"
+          ],
+          "radius": "edge_2_radius",
+          "start_degrees": 90.0,
+          "end_degrees": 269.98
+        },
+        {
+          "type": "line",
+          "start": [
+            "edge_3_start_x",
+            "edge_3_start_y"
+          ],
+          "end": [
+            "edge_3_end_x",
+            "edge_3_end_y"
+          ]
+        },
+        {
+          "type": "line",
+          "start": [
+            "edge_4_start_x",
+            "edge_4_start_y"
+          ],
+          "end": [
+            "edge_4_end_x",
+            "edge_4_end_y"
+          ]
+        },
+        {
+          "type": "line",
+          "start": [
+            "edge_5_start_x",
+            "edge_5_start_y"
+          ],
+          "end": [
+            "edge_5_end_x",
+            "edge_5_end_y"
+          ]
+        },
+        {
+          "type": "line",
+          "start": [
+            "edge_6_start_x",
+            "edge_6_start_y"
+          ],
+          "end": [
+            "edge_6_end_x",
+            "edge_6_end_y"
+          ]
+        },
+        {
+          "type": "line",
+          "start": [
+            "edge_7_start_x",
+            "edge_7_start_y"
+          ],
+          "end": [
+            "edge_7_end_x",
+            "edge_7_end_y"
+          ]
+        }
+      ]
+    },
+    "hole_0": {
+      "plane": "XY",
+      "offset": "0",
+      "entities": [
+        {
+          "type": "circle",
+          "center": [
+            "hole_0_x",
+            "hole_0_y"
+          ],
+          "radius": "hole_0_diameter / 2"
+        }
+      ]
+    }
+  },
+  "operations": [
+    {
+      "op": "extrude",
+      "id": "base_extrusion",
+      "output": "base",
+      "sketch": "outer",
+      "distance": "thickness"
+    },
+    {
+      "op": "extrude",
+      "id": "hole_0_extrude",
+      "output": "hole_0_tool",
+      "sketch": "hole_0",
+      "distance": "thickness"
+    },
+    {
+      "op": "cut",
+      "id": "hole_0_cut",
+      "output": "hole_0_result",
+      "target": "base",
+      "tool": "hole_0_tool"
+    }
+  ],
+  "result": "hole_0_result",
+  "assumptions": [
+    "Ölçek 3.8462 px/mm — kullanıcının iki noktalı kalibrasyonundan. Kullanıcı ana konturu, ölçeği ve özellikleri seçti; kontur ve delik merkezleri çizimden izlenen taslaktır.",
+    "Birleştirme öncesi en büyük boşluk 0.388230 piksel. Basılı ölçülerle ortak ölçek uydurması yapılmadı.",
+    "Kör cepler üst yüzden açılır. Tek görünüşten sabit kalınlıkta gövde kullanıldı."
+  ],
+  "expect": null
+}

@@ -1,8 +1,13 @@
 # G11 — devam notu (kaldığı yerden sürdürme)
 
-**Durum:** 5/10 vaka kayıtlı (plate PASS; drawing-2, plastic-enclosure, exercise-12, exercise-51 →
-CAD_WRONG). Kalan: exercise-17, exercise-13, my-part, flange, flange-elbow-90-raster-noref.
-Ölçütler dondurulmuş: `DELIVERY-PLAN.md` (değişmez); manifest: `eval/guided_10_manifest.json` (değişmez).
+**Durum:** 6/10 vaka kayıtlı (plate PASS; drawing-2, plastic-enclosure, exercise-12, exercise-51 →
+CAD_WRONG; exercise-17 → CAD_UNSUPPORTED). Kalan: exercise-13, my-part, flange,
+flange-elbow-90-raster-noref. Ölçütler dondurulmuş: `DELIVERY-PLAN.md` (değişmez); manifest:
+`eval/guided_10_manifest.json` (değişmez).
+
+**ÖNEMLİ — sabır:** vaka koşusu raster paftada 5–10 dk sürer ve sürücü yalnız kontrol noktalarında
+satır basar; arada "takıldı" sanıp ÖLDÜRME (yaşandı: üç koşu yanlışlıkla kesildi, biri build
+ortasında). İlerleme kanıtı: `cases/<id>/` dosyaları + `shots/<id>-NN-*.png` mtime'ları.
 
 ## Vaka koşma sırası (her vaka için)
 
@@ -33,14 +38,20 @@ curl -s -o /dev/null -w "app=%{http_code}\n" http://127.0.0.1:8765/
 
 ## Sürücü davranışı (öğrenilen gates)
 
+- Koşudan önce tarayıcıyı temizle: `.venv/bin/python g11_clean.py` (34 sekme birikti → yeni sekme
+  starve olur; temizlik koşuyu hızlandırır).
 - Kararlar hep gerçek girdi olaylarıyla; `Runtime.evaluate` yalnız okuma/scroll/fetch.
 - Idempotent: kontur seçimi/ack yeniden koşuda atlanır — aynı token'da güvenle tekrar çalıştırılır.
 - Gate'ler: `#view-ack`+`#view-confirm` (çerçeve bulunamazsa zorunlu; recetede `confirm_view:true`),
-  `#contour-fix` içindeki onay kutusu (trace geçersizse; "açık kalan ucu kapatmayı onaylıyorum"),
-  `#ack` (taslak onayı; 409'da reload ile yeniden senkronize eder).
-- Öneri kabulü: `#proposals .proposal:nth-child(N) button` — **kutudan** tıklanır (`click_element`;
-  `click_selector` yalnız düz `#id` çözer).
+  `#contour-fix` (önce "… kenarını çıkar" düğmeleri, sonra birleşim onay kutusu), `#ack`,
+  ve **`#build` tıklamasından önce düğmenin etkinleşmesini bekle** (`state.questions` boş + pending
+  bitene kadar disabled kalır; pending yarışı yaşandı).
+- Kontur tıklaması: sunucu-doğrulamalı (`decisions.profile_id`); DOM geçici durumu yetmez.
+- Öneri kabulü: `#proposals .proposal:nth-child(N) button` — **kutudan** tıklanır (`click_element`).
 - Kalan kararsızlar: `#callout-ignore-many` iki adımlı toplu eylem (UX turu akışı).
+- Üretim reddi kanıtı: build POST'u 400 dönebilir (eksik/geçersiz model) — kayıtta
+  `console_errors`/`rejected_requests` altında görünür; kanıt indirmeleri artık yalnız gerçek build
+  (step URL'i) varsa yapılır.
 - Değerlendirici: `.venv-cad` altında `evaluate_case.py` (reopen + `metrics.compare`),
   referans yolu manifestteki `reference_identifier_evaluator_only`.
 

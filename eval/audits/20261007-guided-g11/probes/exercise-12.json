@@ -1,0 +1,2370 @@
+{
+  "case_source": "examples/pdf with steps/10/Exercise 12.pdf",
+  "token": "836256168e514963ba2e5b2abb1f5a76",
+  "candidates": [
+    {
+      "id": "a5cd8f49b8b96d1963c23896ab8c5c15a5a57701b629fee6f80b91e206ed203f",
+      "hint": "4",
+      "region": [
+        0.1208,
+        0.0032,
+        0.1292,
+        0.0193
+      ]
+    },
+    {
+      "id": "41be9da1eadb195893522219bfa55fc54b762c5531eff64fc5688fa739580743",
+      "hint": "3",
+      "region": [
+        0.371,
+        0.0032,
+        0.379,
+        0.0197
+      ]
+    },
+    {
+      "id": "634ef2ccaa690f2883f32883871488cb1cd277e6ee9ae087aa767c3d73283a78",
+      "hint": "2",
+      "region": [
+        0.6209,
+        0.0032,
+        0.629,
+        0.0193
+      ]
+    },
+    {
+      "id": "21c623a72274b2676be7c55288b62676303de7c8bb665dfe7fc3b9d4d4e81d76",
+      "hint": "1",
+      "region": [
+        0.8728,
+        0.0036,
+        0.8758,
+        0.0193
+      ]
+    },
+    {
+      "id": "191c98a7c49722d42dec5f62cb381985b78ce210aa12a155ea688a0bfc47ca1a",
+      "hint": "1 80.00",
+      "region": [
+        0.2004,
+        0.0311,
+        0.2484,
+        0.0476
+      ]
+    },
+    {
+      "id": "d8732721a171fe6091e66d1b34e24e5d1d541024ccb24c29d414648a6498eb13",
+      "hint": "D",
+      "region": [
+        0.0042,
+        0.117,
+        0.0143,
+        0.1328
+      ]
+    },
+    {
+      "id": "c0de86279256bea27fd0574a57376d1dd428115e732928897d3fec029440b6e6",
+      "hint": "D",
+      "region": [
+        0.9863,
+        0.117,
+        0.9964,
+        0.1328
+      ]
+    },
+    {
+      "id": "f45f65357bf9b025f768ef568a6e21a1d4fe0c72ebace50bb4c410b3b1941fb4",
+      "hint": "1 1 6.00",
+      "region": [
+        0.3204,
+        0.1798,
+        0.3332,
+        0.2419
+      ]
+    },
+    {
+      "id": "63b7bb550c502d24d0cc32c0cf0e2f3c0e4a4ba9d9035726429b65ff580c9cbb",
+      "hint": "88.00",
+      "region": [
+        0.358,
+        0.2379,
+        0.3708,
+        0.2903
+      ]
+    },
+    {
+      "id": "30650c88de46561556118e88536edcb6d3071b29e0c5c5cf58e3f6f814f2f51f",
+      "hint": "1 1 2.00",
+      "region": [
+        0.0227,
+        0.2406,
+        0.0355,
+        0.3027
+      ]
+    },
+    {
+      "id": "7d2242b5e520f09bede8030e12afa88cda2b43b5c38a75a6ce86786595fac0ae",
+      "hint": "18.00",
+      "region": [
+        0.5637,
+        0.3379,
+        0.6035,
+        0.3769
+      ]
+    },
+    {
+      "id": "0e9403c6899eaaa5741ec5d7f6cd7dbb20c77d4f090281d7d76243132193ff90",
+      "hint": "18.00",
+      "region": [
+        0.217,
+        0.3521,
+        0.2568,
+        0.3911
+      ]
+    },
+    {
+      "id": "061fa1bae57d6d302d5b574ef252a566c4409dbc56defe20cd99f1308258666b",
+      "hint": "C",
+      "region": [
+        0.0031,
+        0.3666,
+        0.0148,
+        0.3831
+      ]
+    },
+    {
+      "id": "135ef89166031ad4d5721b46e989d3911c01709787d5e69622e898e033f08378",
+      "hint": "C",
+      "region": [
+        0.9852,
+        0.3666,
+        0.9969,
+        0.3831
+      ]
+    },
+    {
+      "id": "5a9680689d2d5f32feda01175ee8df2dc2415cb57965a5d9446aaa929ea32cb0",
+      "hint": "20.00",
+      "region": [
+        0.3164,
+        0.4332,
+        0.357,
+        0.4497
+      ]
+    },
+    {
+      "id": "d698155badb90037ac1b5cef32717b1730b6dcb04f5b726b5982209b1d2893a9",
+      "hint": "1 58.00",
+      "region": [
+        0.4692,
+        0.4448,
+        0.5172,
+        0.4613
+      ]
+    },
+    {
+      "id": "30a541ec31ef6d80f8e156e1191149b6b1d3b3d365a2d6589e4bb3fad886914c",
+      "hint": "270.00",
+      "region": [
+        0.1476,
+        0.4599,
+        0.1975,
+        0.4764
+      ]
+    },
+    {
+      "id": "f6e12888812b6195a0422af7afb28a84d58e66f798be4f0f30b276a6b1d1f501",
+      "hint": "1 40.00",
+      "region": [
+        0.4692,
+        0.4726,
+        0.5172,
+        0.4891
+      ]
+    },
+    {
+      "id": "f79f6118b13ba451574baa1ad41517361d62937e8ffc72a77f623c615f17432d",
+      "hint": "20.00",
+      "region": [
+        0.2601,
+        0.4817,
+        0.2729,
+        0.5342
+      ]
+    },
+    {
+      "id": "01a247461fc7bbb92669428d9262e85abfaa64260659de33bc7c401e37b42d0e",
+      "hint": "6.00",
+      "region": [
+        0.5991,
+        0.4912,
+        0.6119,
+        0.5309
+      ]
+    },
+    {
+      "id": "f6ebfc95fa3243a16f675ac91ade2c4d6182bd65f1f9fc9e3d8289ff5a17dfd4",
+      "hint": "86.00",
+      "region": [
+        0.7494,
+        0.4952,
+        0.7621,
+        0.5477
+      ]
+    },
+    {
+      "id": "09cfa9179652c25a90530f4b2396a78a5011b45f08d31dfba7ac3e8d62d431cc",
+      "hint": "1 80.00",
+      "region": [
+        0.1394,
+        0.5004,
+        0.1874,
+        0.5169
+      ]
+    },
+    {
+      "id": "59ea8612d014cb7b64ae98998f5a91b3882a1a0ce8d8a7d6cd09cc71214d3582",
+      "hint": "1 20.00",
+      "region": [
+        0.4692,
+        0.5004,
+        0.5172,
+        0.5169
+      ]
+    },
+    {
+      "id": "67cb63df87504f8c52470148101d3692895613b25df35550a9d8c843d7bd52a4",
+      "hint": "A",
+      "region": [
+        0.1916,
+        0.5209,
+        0.2032,
+        0.5367
+      ]
+    },
+    {
+      "id": "372f0a16bd5d62868ea5105f3c7170b5f01b0df29c38b696bf10b71f30c998e4",
+      "hint": "1 70.00",
+      "region": [
+        0.4667,
+        0.6152,
+        0.4795,
+        0.6773
+      ]
+    },
+    {
+      "id": "04cf4dbea890c9f52f8df57f1cb27af7e5181cc36e4b1dfdf02098e98e896c71",
+      "hint": "B",
+      "region": [
+        0.0056,
+        0.617,
+        0.0128,
+        0.6328
+      ]
+    },
+    {
+      "id": "cfa5bdc5a726d10e2cf216e923c2093fa9809be98d653e9dd15195fc6400a13d",
+      "hint": "B",
+      "region": [
+        0.9877,
+        0.617,
+        0.9949,
+        0.6328
+      ]
+    },
+    {
+      "id": "0c2816ae280a3f86201b9b33af5988c462639609e8613c9af6d5d11d86a68e62",
+      "hint": "1 32.00",
+      "region": [
+        0.9517,
+        0.6247,
+        0.9644,
+        0.6868
+      ]
+    },
+    {
+      "id": "01658905c8b3a53aec2d7fd7768d04cd8d32fa966c77703afbcb2f775292486b",
+      "hint": "1 80.00",
+      "region": [
+        0.031,
+        0.6343,
+        0.0438,
+        0.6965
+      ]
+    },
+    {
+      "id": "86bed900d9cba93c6770725a51de9b3a47bd02bad2f304a2810cf4dfa3838ad8",
+      "hint": "76.00",
+      "region": [
+        0.6748,
+        0.6357,
+        0.7167,
+        0.6646
+      ]
+    },
+    {
+      "id": "4a293babee5c36e11f79fdcd1e4fad13c15e0871c071d0eb8109ca9e3de3619e",
+      "hint": "1 0.00",
+      "region": [
+        0.3429,
+        0.643,
+        0.3557,
+        0.6931
+      ]
+    },
+    {
+      "id": "1e56bc7f449cb3545c78eae7097f6ae953081de9294552bc4f2f1dc3ba5526b0",
+      "hint": "220.00",
+      "region": [
+        0.3089,
+        0.6564,
+        0.3217,
+        0.7209
+      ]
+    },
+    {
+      "id": "3bf6efa6bdd2947b65c0525d1de4722c23849f4d30f939be752ecf9595098b92",
+      "hint": "18.00",
+      "region": [
+        0.8947,
+        0.659,
+        0.9344,
+        0.6981
+      ]
+    },
+    {
+      "id": "29970a820095a03d922810975b8421c61dc5911b33a0143f8ee369b80f4a35d2",
+      "hint": "54.00",
+      "region": [
+        0.6076,
+        0.6757,
+        0.6204,
+        0.728
+      ]
+    },
+    {
+      "id": "98707503e3f88d64a82262656478686bfafdff14fcf0b98b8272c3203df474e2",
+      "hint": "R10.00",
+      "region": [
+        0.8812,
+        0.7135,
+        0.9305,
+        0.7597
+      ]
+    },
+    {
+      "id": "27474816e235b32b5c8c07ec45accb5eeda7b5d2a6ce910b677edd4bc382840e",
+      "hint": "R25.00",
+      "region": [
+        0.6653,
+        0.7429,
+        0.7147,
+        0.789
+      ]
+    },
+    {
+      "id": "bf7b5dc29c8d2ad5a6c26d2b0efefd9de729741515a9c4219ab0554ad2ab21d4",
+      "hint": "92.00",
+      "region": [
+        0.3819,
+        0.7576,
+        0.4222,
+        0.7741
+      ]
+    },
+    {
+      "id": "f256472cd3b31b456655383fc638a149be09bcf8f3e8c02a00652be91d42659c",
+      "hint": "R25.00",
+      "region": [
+        0.6655,
+        0.7764,
+        0.7148,
+        0.8226
+      ]
+    },
+    {
+      "id": "b3f6d134cda432df0f08bc03e2806e0356f307fb478408c8f23be6f2a8198fb7",
+      "hint": "1 9.00",
+      "region": [
+        0.0501,
+        0.7848,
+        0.0628,
+        0.835
+      ]
+    },
+    {
+      "id": "e8ae8c820c2b96af0656d40c6ca7163673b879527aaffe60afa90bacc9eef730",
+      "hint": "R8.00",
+      "region": [
+        0.593,
+        0.7987,
+        0.6296,
+        0.8482
+      ]
+    },
+    {
+      "id": "6a12ee18f6e506cec1883d6d06c0dbb421a70dde53b12561816b2bfe49a4f871",
+      "hint": "76.00",
+      "region": [
+        0.3489,
+        0.8107,
+        0.3888,
+        0.8272
+      ]
+    },
+    {
+      "id": "89fd19add0e3305a49f1d67237092dad9a14c36dc61f549de64b1ae2a12209ed",
+      "hint": "A",
+      "region": [
+        0.1916,
+        0.8519,
+        0.2032,
+        0.8676
+      ]
+    },
+    {
+      "id": "31ca4db09ae200b38ea1b6cc592ecb0b5be0429ebf3b9400842ed84a748335c3",
+      "hint": "20.00",
+      "region": [
+        0.2601,
+        0.8534,
+        0.2729,
+        0.9059
+      ]
+    },
+    {
+      "id": "8252a7aad7d73450e2c68339b596556c11a768aed27fc0521b7f5ef1bc77226d",
+      "hint": "SECTION A-A",
+      "region": [
+        0.4313,
+        0.8552,
+        0.5342,
+        0.8717
+      ]
+    },
+    {
+      "id": "a4220fcaf44bc9a49083ce0b1fce00918eb42b03264e166fdc1dd80fcb7e500e",
+      "hint": "Chittagong University ofEngineering & Technology",
+      "region": [
+        0.7124,
+        0.8567,
+        0.9712,
+        0.8703
+      ]
+    },
+    {
+      "id": "e2db74e44a3300faaa4a4cb6b264e45845b2169d9aa621334b473fee72fd212d",
+      "hint": "A",
+      "region": [
+        0.0032,
+        0.867,
+        0.0147,
+        0.8827
+      ]
+    },
+    {
+      "id": "71e6e8777e33806c0001dbc42dd7f62464d0a76396a0227f0d7f89421bc59dd7",
+      "hint": "A",
+      "region": [
+        0.9853,
+        0.867,
+        0.9968,
+        0.8827
+      ]
+    },
+    {
+      "id": "be1ddb7f4290b8ef1d3a6830c10697127c1308d8b8d1fb15cf1eaf926dff91f1",
+      "hint": "1 1 6.00",
+      "region": [
+        0.1441,
+        0.8746,
+        0.1921,
+        0.8912
+      ]
+    },
+    {
+      "id": "bac1f630b5a6406525ffed879fbfbfb799764222a68430383cddca11535bb4f7",
+      "hint": "A3",
+      "region": [
+        0.8822,
+        0.8835,
+        0.8986,
+        0.8952
+      ]
+    },
+    {
+      "id": "5c6919ea92f8654709193bbc71dd574112dd8f273ba6f35483d7f3c0f0932077",
+      "hint": "Exercise 12",
+      "region": [
+        0.7508,
+        0.8863,
+        0.7982,
+        0.8947
+      ]
+    },
+    {
+      "id": "e018cb3cc32b5462a4c94b79c0f97f2c97481f52afc03581662a819cfe97dbf8",
+      "hint": "TITLE:",
+      "region": [
+        0.7125,
+        0.8865,
+        0.7389,
+        0.8945
+      ]
+    },
+    {
+      "id": "1ee431b2f975658ddc751860fc0a79d2b42697673f524f7ae2d4cbe6796ffa20",
+      "hint": "SCALE:",
+      "region": [
+        0.6715,
+        0.9114,
+        0.7008,
+        0.9197
+      ]
+    },
+    {
+      "id": "0dfcd05456357ab665bbd8074aff99ffda501a23d952a4b2bd1d38911b5b04f6",
+      "hint": "Plain Ca rbon Steel",
+      "region": [
+        0.7904,
+        0.9119,
+        0.8665,
+        0.9204
+      ]
+    },
+    {
+      "id": "57068d1a09101f675d19d70f57bff25b0fa326dd1173b6f548bd6b354c46938e",
+      "hint": "1: 5",
+      "region": [
+        0.7203,
+        0.9122,
+        0.7331,
+        0.9204
+      ]
+    },
+    {
+      "id": "6d662c198764040807e43980fce854360b62c8bd303c557baad75491ddd0e8ac",
+      "hint": "MAT:",
+      "region": [
+        0.7647,
+        0.9122,
+        0.7843,
+        0.9203
+      ]
+    },
+    {
+      "id": "1e1c8f51791504c5d24b14b8788658c57ecb63cbd0b8fb7d06ef183af720d4ad",
+      "hint": "220.00",
+      "region": [
+        0.1423,
+        0.9193,
+        0.1921,
+        0.9358
+      ]
+    },
+    {
+      "id": "36d23624e75e70e05dba820f93ae90ce280d00e4a51358f35109ed45bb5b1b93",
+      "hint": "NAME:",
+      "region": [
+        0.6718,
+        0.9362,
+        0.6979,
+        0.9442
+      ]
+    },
+    {
+      "id": "8d5094d9f810cd1c0bacf03aaa2ffe7d628b2571b8cdaad5d7276e58f6779e3d",
+      "hint": "mm",
+      "region": [
+        0.9424,
+        0.9362,
+        0.9653,
+        0.9449
+      ]
+    },
+    {
+      "id": "7733255252a23a70e694b6f3cc2ffdfd6eafd7b4a7a8be04f8503303896ecc3f",
+      "hint": "SHEET 1 of 1",
+      "region": [
+        0.8477,
+        0.9364,
+        0.9019,
+        0.9451
+      ]
+    },
+    {
+      "id": "61ed8e275157563e105da5162132b07a1e48d199cdb88b6fa75f06463af4a2a1",
+      "hint": "Fahad Elahi Kha n",
+      "region": [
+        0.7054,
+        0.9365,
+        0.7772,
+        0.9451
+      ]
+    },
+    {
+      "id": "9019797f8cf630afcfc403bf74502f9188161a74a9fbbb747a0e05747df11528",
+      "hint": "Mecha nical Engineering",
+      "region": [
+        0.7004,
+        0.958,
+        0.7981,
+        0.9687
+      ]
+    },
+    {
+      "id": "bd8f1f5b93176ed2ce9ee782991da447993347723499d58ad2d07b76fd1fbd19",
+      "hint": "DEPT:",
+      "region": [
+        0.6718,
+        0.9584,
+        0.6955,
+        0.9664
+      ]
+    },
+    {
+      "id": "acd06b5294b832381f70b4ac9a0b63830b74b9347649f9f2cb237378c38491e2",
+      "hint": "ID:",
+      "region": [
+        0.8107,
+        0.9584,
+        0.8226,
+        0.9664
+      ]
+    },
+    {
+      "id": "d9eecf1f963daaa746cb05c2aaa8fec4aeee3b584b3ed64b6b6ce3352899288d",
+      "hint": "DATE:",
+      "region": [
+        0.8996,
+        0.9584,
+        0.924,
+        0.9664
+      ]
+    },
+    {
+      "id": "85a3944fae0edc92606bacef26fd72b76cd8ed5d1f18e7da0a57809be66d73c2",
+      "hint": "28-Aug-24",
+      "region": [
+        0.9274,
+        0.9589,
+        0.9718,
+        0.9694
+      ]
+    },
+    {
+      "id": "01e6970ff519a924d8db30078169a4b249bea86c850ac44f14637d47fafa3182",
+      "hint": "2103017",
+      "region": [
+        0.829,
+        0.9589,
+        0.8653,
+        0.9673
+      ]
+    },
+    {
+      "id": "9879b307efdb49aee63af0872a071497f9b5950e43f1d1a9132bf9ee532fd4ab",
+      "hint": "4",
+      "region": [
+        0.1208,
+        0.98,
+        0.1292,
+        0.9962
+      ]
+    },
+    {
+      "id": "1f7fdb1e66c597ee83ebf6d175dca2a8f358995397b967d2da76ed5e41dfb6c9",
+      "hint": "3",
+      "region": [
+        0.371,
+        0.98,
+        0.379,
+        0.9965
+      ]
+    },
+    {
+      "id": "dba6e9ee30cd4ed429c4986baed5a16d84db9e6f5d8bb6472588336a1804a6b5",
+      "hint": "2",
+      "region": [
+        0.6209,
+        0.98,
+        0.629,
+        0.9962
+      ]
+    },
+    {
+      "id": "47f1d20f1fee85f464b7dcff86b2953d1c3c76c88ab2674aa6aabbbe7115adce",
+      "hint": "1",
+      "region": [
+        0.8728,
+        0.9804,
+        0.8758,
+        0.9962
+      ]
+    }
+  ],
+  "profiles": [
+    {
+      "id": "circle_g50",
+      "points": 60,
+      "bbox": [
+        135,
+        167,
+        560,
+        592
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "circle_g178",
+      "points": 60,
+      "bbox": [
+        913,
+        207,
+        1259,
+        553
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "circle_g79",
+      "points": 60,
+      "bbox": [
+        1587,
+        1016,
+        1933,
+        1362
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "circle_g43",
+      "points": 60,
+      "bbox": [
+        223,
+        255,
+        471,
+        504
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "circle_g51",
+      "points": 60,
+      "bbox": [
+        237,
+        270,
+        457,
+        490
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "circle_g59",
+      "points": 60,
+      "bbox": [
+        275,
+        307,
+        419,
+        452
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "outline_4",
+      "points": 52,
+      "bbox": [
+        968,
+        1208,
+        1342,
+        1260
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "line",
+        "arc",
+        "line",
+        "line",
+        "arc"
+      ]
+    },
+    {
+      "id": "circle_g185",
+      "points": 60,
+      "bbox": [
+        1026,
+        320,
+        1146,
+        440
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "circle_g72",
+      "points": 60,
+      "bbox": [
+        1700,
+        1129,
+        1820,
+        1249
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "circle_g60",
+      "points": 60,
+      "bbox": [
+        287,
+        320,
+        407,
+        440
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "circle_g179",
+      "points": 60,
+      "bbox": [
+        1072,
+        504,
+        1100,
+        533
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "circle_g182",
+      "points": 60,
+      "bbox": [
+        1072,
+        227,
+        1100,
+        255
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "circle_g46",
+      "points": 60,
+      "bbox": [
+        180,
+        277,
+        208,
+        306
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "circle_g181",
+      "points": 60,
+      "bbox": [
+        1192,
+        296,
+        1220,
+        325
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "circle_g74",
+      "points": 60,
+      "bbox": [
+        1863,
+        1243,
+        1891,
+        1271
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "circle_g77",
+      "points": 60,
+      "bbox": [
+        1628,
+        1107,
+        1657,
+        1135
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "circle_g180",
+      "points": 60,
+      "bbox": [
+        1192,
+        435,
+        1220,
+        463
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "circle_g45",
+      "points": 60,
+      "bbox": [
+        180,
+        454,
+        208,
+        482
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "circle_g47",
+      "points": 60,
+      "bbox": [
+        333,
+        189,
+        361,
+        218
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "circle_g183",
+      "points": 60,
+      "bbox": [
+        952,
+        296,
+        980,
+        325
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "circle_g75",
+      "points": 60,
+      "bbox": [
+        1863,
+        1107,
+        1891,
+        1135
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "circle_g78",
+      "points": 60,
+      "bbox": [
+        1628,
+        1243,
+        1657,
+        1271
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "circle_g44",
+      "points": 60,
+      "bbox": [
+        333,
+        542,
+        361,
+        570
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "circle_g48",
+      "points": 60,
+      "bbox": [
+        486,
+        277,
+        514,
+        306
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "circle_g49",
+      "points": 60,
+      "bbox": [
+        486,
+        454,
+        514,
+        482
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "circle_g184",
+      "points": 60,
+      "bbox": [
+        952,
+        435,
+        980,
+        463
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "circle_g76",
+      "points": 60,
+      "bbox": [
+        1746,
+        1039,
+        1774,
+        1068
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "circle_g73",
+      "points": 60,
+      "bbox": [
+        1746,
+        1310,
+        1774,
+        1339
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "outline_5",
+      "points": 4,
+      "bbox": [
+        1252,
+        965,
+        1275,
+        997
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "line",
+        "line",
+        "line"
+      ]
+    },
+    {
+      "id": "outline_6",
+      "points": 4,
+      "bbox": [
+        849,
+        965,
+        871,
+        997
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "line",
+        "line",
+        "line"
+      ]
+    },
+    {
+      "id": "outline_7",
+      "points": 4,
+      "bbox": [
+        1215,
+        1365,
+        1235,
+        1397
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "line",
+        "line",
+        "line"
+      ]
+    },
+    {
+      "id": "outline_8",
+      "points": 4,
+      "bbox": [
+        889,
+        1365,
+        909,
+        1397
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "line",
+        "line",
+        "line"
+      ]
+    },
+    {
+      "id": "circle_g217",
+      "points": 60,
+      "bbox": [
+        994,
+        805,
+        1019,
+        830
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "circle_g221",
+      "points": 60,
+      "bbox": [
+        994,
+        758,
+        1019,
+        783
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "circle_g219",
+      "points": 60,
+      "bbox": [
+        994,
+        852,
+        1019,
+        877
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "circle_g201",
+      "points": 60,
+      "bbox": [
+        279,
+        1565,
+        304,
+        1589
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "circle_g207",
+      "points": 60,
+      "bbox": [
+        450,
+        585,
+        474,
+        610
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "circle_g199",
+      "points": 60,
+      "bbox": [
+        279,
+        1489,
+        304,
+        1513
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "circle_g213",
+      "points": 60,
+      "bbox": [
+        806,
+        1290,
+        830,
+        1314
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "circle_g215",
+      "points": 60,
+      "bbox": [
+        732,
+        1380,
+        757,
+        1404
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "circle_g223",
+      "points": 60,
+      "bbox": [
+        1213,
+        561,
+        1237,
+        586
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "circle_g197",
+      "points": 60,
+      "bbox": [
+        269,
+        853,
+        293,
+        877
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "circle_g205",
+      "points": 60,
+      "bbox": [
+        707,
+        425,
+        731,
+        449
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "circle_g195",
+      "points": 60,
+      "bbox": [
+        291,
+        784,
+        316,
+        808
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "circle_g203",
+      "points": 60,
+      "bbox": [
+        681,
+        1235,
+        706,
+        1259
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "circle_g209",
+      "points": 60,
+      "bbox": [
+        1454,
+        1075,
+        1478,
+        1100
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "circle_g211",
+      "points": 60,
+      "bbox": [
+        1941,
+        1176,
+        1965,
+        1200
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "outline_2",
+      "points": 212,
+      "bbox": [
+        900,
+        928,
+        1388,
+        1398
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "line",
+        "line",
+        "line",
+        "arc",
+        "line",
+        "line",
+        "line",
+        "line",
+        "line",
+        "line",
+        "arc",
+        "arc",
+        "line",
+        "arc",
+        "line",
+        "line",
+        "line",
+        "arc",
+        "line",
+        "line",
+        "line",
+        "arc",
+        "line",
+        "arc",
+        "arc",
+        "line",
+        "line"
+      ]
+    },
+    {
+      "id": "outline_3",
+      "points": 50,
+      "bbox": [
+        250,
+        282,
+        445,
+        477
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "arc",
+        "line",
+        "arc"
+      ]
+    }
+  ],
+  "circles": [
+    {
+      "id": "g43",
+      "radius": 124.43,
+      "center": [
+        347.0,
+        379.7
+      ]
+    },
+    {
+      "id": "g44",
+      "radius": 14.17,
+      "center": [
+        346.9,
+        556.1
+      ]
+    },
+    {
+      "id": "g45",
+      "radius": 14.18,
+      "center": [
+        194.2,
+        467.9
+      ]
+    },
+    {
+      "id": "g46",
+      "radius": 14.19,
+      "center": [
+        194.2,
+        291.6
+      ]
+    },
+    {
+      "id": "g47",
+      "radius": 14.18,
+      "center": [
+        346.9,
+        203.4
+      ]
+    },
+    {
+      "id": "g48",
+      "radius": 14.17,
+      "center": [
+        499.7,
+        291.6
+      ]
+    },
+    {
+      "id": "g49",
+      "radius": 14.17,
+      "center": [
+        499.7,
+        467.9
+      ]
+    },
+    {
+      "id": "g50",
+      "radius": 212.59,
+      "center": [
+        346.9,
+        379.7
+      ]
+    },
+    {
+      "id": "g51",
+      "radius": 110.24,
+      "center": [
+        347.0,
+        379.8
+      ]
+    },
+    {
+      "id": "g59",
+      "radius": 72.46,
+      "center": [
+        346.9,
+        379.8
+      ]
+    },
+    {
+      "id": "g60",
+      "radius": 59.81,
+      "center": [
+        347.0,
+        379.8
+      ]
+    },
+    {
+      "id": "g72",
+      "radius": 59.85,
+      "center": [
+        1759.8,
+        1189.0
+      ]
+    },
+    {
+      "id": "g73",
+      "radius": 14.11,
+      "center": [
+        1759.8,
+        1324.4
+      ]
+    },
+    {
+      "id": "g74",
+      "radius": 14.18,
+      "center": [
+        1877.1,
+        1256.7
+      ]
+    },
+    {
+      "id": "g75",
+      "radius": 14.17,
+      "center": [
+        1877.1,
+        1121.3
+      ]
+    },
+    {
+      "id": "g76",
+      "radius": 14.16,
+      "center": [
+        1759.8,
+        1053.6
+      ]
+    },
+    {
+      "id": "g77",
+      "radius": 14.18,
+      "center": [
+        1642.6,
+        1121.3
+      ]
+    },
+    {
+      "id": "g78",
+      "radius": 14.17,
+      "center": [
+        1642.5,
+        1256.7
+      ]
+    },
+    {
+      "id": "g79",
+      "radius": 173.22,
+      "center": [
+        1759.8,
+        1189.0
+      ]
+    },
+    {
+      "id": "g178",
+      "radius": 173.22,
+      "center": [
+        1086.0,
+        379.8
+      ]
+    },
+    {
+      "id": "g179",
+      "radius": 14.2,
+      "center": [
+        1086,
+        518.3
+      ]
+    },
+    {
+      "id": "g180",
+      "radius": 14.18,
+      "center": [
+        1206.0,
+        449.0
+      ]
+    },
+    {
+      "id": "g181",
+      "radius": 14.19,
+      "center": [
+        1206.0,
+        310.5
+      ]
+    },
+    {
+      "id": "g182",
+      "radius": 14.2,
+      "center": [
+        1086,
+        241.1
+      ]
+    },
+    {
+      "id": "g183",
+      "radius": 14.18,
+      "center": [
+        966.0,
+        310.4
+      ]
+    },
+    {
+      "id": "g184",
+      "radius": 14.17,
+      "center": [
+        966,
+        449.1
+      ]
+    },
+    {
+      "id": "g185",
+      "radius": 59.86,
+      "center": [
+        1086.0,
+        379.8
+      ]
+    },
+    {
+      "id": "g195",
+      "radius": 12.24,
+      "center": [
+        303.4,
+        796.0
+      ]
+    },
+    {
+      "id": "g197",
+      "radius": 12.25,
+      "center": [
+        281.0,
+        864.8
+      ]
+    },
+    {
+      "id": "g199",
+      "radius": 12.25,
+      "center": [
+        291.5,
+        1501.0
+      ]
+    },
+    {
+      "id": "g201",
+      "radius": 12.26,
+      "center": [
+        291.5,
+        1576.9
+      ]
+    },
+    {
+      "id": "g203",
+      "radius": 12.24,
+      "center": [
+        693.4,
+        1247.1
+      ]
+    },
+    {
+      "id": "g205",
+      "radius": 12.24,
+      "center": [
+        718.8,
+        436.9
+      ]
+    },
+    {
+      "id": "g207",
+      "radius": 12.26,
+      "center": [
+        462.0,
+        597.5
+      ]
+    },
+    {
+      "id": "g209",
+      "radius": 12.24,
+      "center": [
+        1466.1,
+        1087.7
+      ]
+    },
+    {
+      "id": "g211",
+      "radius": 12.23,
+      "center": [
+        1952.8,
+        1187.9
+      ]
+    },
+    {
+      "id": "g213",
+      "radius": 12.25,
+      "center": [
+        818.1,
+        1302.0
+      ]
+    },
+    {
+      "id": "g215",
+      "radius": 12.25,
+      "center": [
+        744.5,
+        1392.2
+      ]
+    },
+    {
+      "id": "g217",
+      "radius": 12.28,
+      "center": [
+        1006.6,
+        817.5
+      ]
+    },
+    {
+      "id": "g219",
+      "radius": 12.27,
+      "center": [
+        1006.6,
+        864.8
+      ]
+    },
+    {
+      "id": "g221",
+      "radius": 12.28,
+      "center": [
+        1006.6,
+        770.3
+      ]
+    },
+    {
+      "id": "g223",
+      "radius": 12.25,
+      "center": [
+        1224.8,
+        573.4
+      ]
+    }
+  ],
+  "measurements": [
+    {
+      "id": "t0",
+      "text": "270.00",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t1",
+      "text": "20.00",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t2",
+      "text": "1 80.00",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t3",
+      "text": "1 80.00",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t4",
+      "text": "1 1 6.00",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t5",
+      "text": "220.00",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t6",
+      "text": "20.00",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t7",
+      "text": "1 9.00",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t8",
+      "text": "20.00",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t9",
+      "text": "220.00",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t12",
+      "text": "1 80.00",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t13",
+      "text": "1 1 6.00",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t14",
+      "text": "18.00",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t15",
+      "text": "1 1 2.00",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t16",
+      "text": "R25.00",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t17",
+      "text": "R25.00",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t18",
+      "text": "R10.00",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t19",
+      "text": "1 32.00",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t20",
+      "text": "76.00",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t21",
+      "text": "18.00",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t22",
+      "text": "86.00",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t23",
+      "text": "54.00",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t24",
+      "text": "92.00",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t25",
+      "text": "76.00",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t26",
+      "text": "R8.00",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t27",
+      "text": "1 0.00",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t28",
+      "text": "1 40.00",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t29",
+      "text": "1 20.00",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t30",
+      "text": "1 58.00",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t31",
+      "text": "6.00",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t32",
+      "text": "1 70.00",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t34",
+      "text": "18.00",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t35",
+      "text": "88.00",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t44",
+      "text": "4",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t45",
+      "text": "4",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t46",
+      "text": "3",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t47",
+      "text": "3",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t48",
+      "text": "2",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t49",
+      "text": "2",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t50",
+      "text": "1",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t51",
+      "text": "1",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    }
+  ],
+  "sketch_keys": [
+    "bindings",
+    "conflicts",
+    "consistent",
+    "fit",
+    "join_gap_max_px",
+    "px_per_mm",
+    "rows",
+    "source",
+    "unbound_circles",
+    "unbound_edges"
+  ],
+  "detection": {
+    "detector_version": "callout-detector/1",
+    "diagnostics": []
+  },
+  "summary": "49 kontur · 42 daire · 41 ölçü adayı · sınıf: rotational-flanged · kayıt 0"
+}

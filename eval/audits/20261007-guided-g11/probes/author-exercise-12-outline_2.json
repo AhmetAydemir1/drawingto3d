@@ -1,0 +1,165 @@
+{
+  "summary": "49 kontur · 42 daire · 41 ölçü adayı · sınıf: rotational-flanged · kayıt 1",
+  "profile": "outline_2",
+  "proposals": [
+    "{\"field\":\"profile_id\",\"value\":\"circle_g50\",\"confidence\":\"bound\",\"evidence\":{\"rule\":\"eş merkezli çap yığınının en büyük dairesi; flanş yüzünün dış kenarı\",\"stack_centre_px\":[346.95,379.73],\"measured_mm\":274.31,\"geometry_ids\":[\"g43\",\"g50\",\"g51\",\"g59\",\"g60\"],\"stack_circles\":5,\"join_max_px\":0,\"span_id\":\"pdf-0\",\"text\":\"270.00\",\"printed_mm\":270,\"drawn_mm\":274.31,\"anchor_mode\":\"dimension\",\"matched_geometry\":[\"g50\",\"g187\",\"g186\"]}}",
+    "{\"field\":\"thickness\",\"value\":20,\"confidence\":\"rule\",\"alternatives\":[{\"span_id\":\"pdf-29\",\"value\":6,\"text\":\"6.00\"}],\"evidence\":{\"rule\":\"flanş yüzünün dışında, eksene hizalı, iki ucu da çizgi ucu\",\"rows\":[\"pdf-1\",\"pdf-6\",\"pdf-8\"],\"span_id\":\"pdf-1\",\"text\":\"20.00\",\"drawn_mm\":20.43,\"anchors\":[[857.22,965.28],[861.11,996.94]]}}",
+    "{\"field\":\"calibration\",\"value\":{\"first\":[134.35999999999999,379.73],\"second\":[559.54,379.73],\"value\":270,\"unit\":\"mm\",\"span_id\":\"t0\"},\"confidence\":\"bound\",\"evidence\":{\"rule\":\"flanş yüzünün kendi çevresi: çizili çap ÷ basılı çap\",\"span_id\":\"pdf-0\",\"text\":\"270.00\",\"drawn_mm\":274.31,\"px\":425.18,\"px_per_mm\":1.5747,\"fitted_px_per_mm\":1.55,\"error_px\":6.68,\"circle_id\":\"g50\"}}",
+    "{\"field\":\"hole:g60\",\"value\":{\"circle_id\":\"g60\",\"kind\":\"through\",\"diameter\":76},\"confidence\":\"rule\",\"evidence\":{\"rule\":\"yığının en küçük dairesi; flanşın kendi deliği\",\"centre_px\":[346.96,379.75],\"drawn_mm\":77.23,\"stack_ids\":[\"g43\",\"g50\",\"g51\",\"g59\",\"g60\"],\"not_decided\":[\"g59\",\"g51\",\"g43\"],\"span_id\":\"pdf-18\",\"text\":\"76.00\",\"printed_mm\":76,\"anchor_mode\":\"leader\",\"matched_geometry\":[\"g60\",\"g185\",\"g72\"]}}",
+    "{\"field\":\"hole:g45\",\"value\":{\"circle_id\":\"g45\",\"kind\":\"through\",\"diameter\":18},\"confidence\":\"assumed\",\"evidence\":{\"span_id\":\"pdf-12\",\"text\":\"18.00\",\"printed_mm\":18,\"drawn_mm\":18.27,\"anchor_mode\":\"dimension\",\"matched_geometry\":[\"g45\",\"g46\",\"g44\",\"g47\",\"g48\",\"g49\",\"g189\",\"g190\",\"g184\",\"g183\",\"g179\",\"g182\",\"g188\",\"g191\",\"g192\",\"g181\",\"g180\",\"g193\",\"g194\",\"g78\",\"g77\",\"g76\",\"g73\",\"g74\",\"g75\"],\"kind_source\":\"THRU yazmıyor; geçişli önerildi, onay gerekir\",\"rule\":\"yüzün üstünde duran, basılı çapı okunmuş daire\",\"face_centre_px\":[346.95,379.73]}}",
+    "{\"field\":\"hole:g46\",\"value\":{\"circle_id\":\"g46\",\"kind\":\"through\",\"diameter\":18},\"confidence\":\"assumed\",\"evidence\":{\"span_id\":\"pdf-12\",\"text\":\"18.00\",\"printed_mm\":18,\"drawn_mm\":18.27,\"anchor_mode\":\"dimension\",\"matched_geometry\":[\"g45\",\"g46\",\"g44\",\"g47\",\"g48\",\"g49\",\"g189\",\"g190\",\"g184\",\"g183\",\"g179\",\"g182\",\"g188\",\"g191\",\"g192\",\"g181\",\"g180\",\"g193\",\"g194\",\"g78\",\"g77\",\"g76\",\"g73\",\"g74\",\"g75\"],\"kind_source\":\"THRU yazmıyor; geçişli önerildi, onay gerekir\",\"rule\":\"yüzün üstünde duran, basılı çapı okunmuş daire\",\"face_centre_px\":[346.95,379.73]}}",
+    "{\"field\":\"hole:g44\",\"value\":{\"circle_id\":\"g44\",\"kind\":\"through\",\"diameter\":18},\"confidence\":\"assumed\",\"evidence\":{\"span_id\":\"pdf-12\",\"text\":\"18.00\",\"printed_mm\":18,\"drawn_mm\":18.27,\"anchor_mode\":\"dimension\",\"matched_geometry\":[\"g45\",\"g46\",\"g44\",\"g47\",\"g48\",\"g49\",\"g189\",\"g190\",\"g184\",\"g183\",\"g179\",\"g182\",\"g188\",\"g191\",\"g192\",\"g181\",\"g180\",\"g193\",\"g194\",\"g78\",\"g77\",\"g76\",\"g73\",\"g74\",\"g75\"],\"kind_source\":\"THRU yazmıyor; geçişli önerildi, onay gerekir\",\"rule\":\"yüzün üstünde duran, basılı çapı okunmuş daire\",\"face_centre_px\":[346.95,379.73]}}",
+    "{\"field\":\"hole:g47\",\"value\":{\"circle_id\":\"g47\",\"kind\":\"through\",\"diameter\":18},\"confidence\":\"assumed\",\"evidence\":{\"span_id\":\"pdf-12\",\"text\":\"18.00\",\"printed_mm\":18,\"drawn_mm\":18.27,\"anchor_mode\":\"dimension\",\"matched_geometry\":[\"g45\",\"g46\",\"g44\",\"g47\",\"g48\",\"g49\",\"g189\",\"g190\",\"g184\",\"g183\",\"g179\",\"g182\",\"g188\",\"g191\",\"g192\",\"g181\",\"g180\",\"g193\",\"g194\",\"g78\",\"g77\",\"g76\",\"g73\",\"g74\",\"g75\"],\"kind_source\":\"THRU yazmıyor; geçişli önerildi, onay gerekir\",\"rule\":\"yüzün üstünde duran, basılı çapı okunmuş daire\",\"face_centre_px\":[346.95,379.73]}}",
+    "{\"field\":\"hole:g48\",\"value\":{\"circle_id\":\"g48\",\"kind\":\"through\",\"diameter\":18},\"confidence\":\"assumed\",\"evidence\":{\"span_id\":\"pdf-12\",\"text\":\"18.00\",\"printed_mm\":18,\"drawn_mm\":18.27,\"anchor_mode\":\"dimension\",\"matched_geometry\":[\"g45\",\"g46\",\"g44\",\"g47\",\"g48\",\"g49\",\"g189\",\"g190\",\"g184\",\"g183\",\"g179\",\"g182\",\"g188\",\"g191\",\"g192\",\"g181\",\"g180\",\"g193\",\"g194\",\"g78\",\"g77\",\"g76\",\"g73\",\"g74\",\"g75\"],\"kind_source\":\"THRU yazmıyor; geçişli önerildi, onay gerekir\",\"rule\":\"yüzün üstünde duran, basılı çapı okunmuş daire\",\"face_centre_px\":[346.95,379.73]}}",
+    "{\"field\":\"hole:g49\",\"value\":{\"circle_id\":\"g49\",\"kind\":\"through\",\"diameter\":18},\"confidence\":\"assumed\",\"evidence\":{\"span_id\":\"pdf-12\",\"text\":\"18.00\",\"printed_mm\":18,\"drawn_mm\":18.27,\"anchor_mode\":\"dimension\",\"matched_geometry\":[\"g45\",\"g46\",\"g44\",\"g47\",\"g48\",\"g49\",\"g189\",\"g190\",\"g184\",\"g183\",\"g179\",\"g182\",\"g188\",\"g191\",\"g192\",\"g181\",\"g180\",\"g193\",\"g194\",\"g78\",\"g77\",\"g76\",\"g73\",\"g74\",\"g75\"],\"kind_source\":\"THRU yazmıyor; geçişli önerildi, onay gerekir\",\"rule\":\"yüzün üstünde duran, basılı çapı okunmuş daire\",\"face_centre_px\":[346.95,379.73]}}"
+  ],
+  "proposal_rows": [
+    "Dış konturokumaya bağlıcircle_g50 · izlenen taslakbasılı \"270.00\" · okuma: pdf-0 · kural: eş merkezli çap yığınının en büyük dairesi; flanş yüzünün dış kenarı · çizilen 274.31 mmYalnız bunu onayla",
+    "Kalınlıkkural20 mmbasılı \"20.00\" · okuma: pdf-1 · kural: flanş yüzünün dışında, eksene hizalı, iki ucu da çizgi ucu · çizilen 20.43 mmÇizimdeki diğer basılı aday: 6.00 (6 mm)Yalnız bunu onayla",
+    "Ölçekokumaya bağlı270 mm · menü: t0basılı \"270.00\" · okuma: pdf-0 · kural: flanş yüzünün kendi çevresi: çizili çap ÷ basılı çap · 425.18 px · 1.5747 px/mm · 6.68 px sapma · çizilen 274.31 mmYalnız bunu onayla",
+    "hole:g60kuralgeçişli delik · Ø76 mm · g60basılı \"76.00\" · okuma: pdf-18 · kural: yığının en küçük dairesi; flanşın kendi deliği · çizilen 77.23 mmYalnız bunu onayla",
+    "hole:g45varsayımgeçişli delik · Ø18 mm · g45basılı \"18.00\" · okuma: pdf-12 · kural: yüzün üstünde duran, basılı çapı okunmuş daire · çizilen 18.27 mm · THRU yazmıyor; geçişli önerildi, onay gerekirYalnız bunu onayla",
+    "hole:g46varsayımgeçişli delik · Ø18 mm · g46basılı \"18.00\" · okuma: pdf-12 · kural: yüzün üstünde duran, basılı çapı okunmuş daire · çizilen 18.27 mm · THRU yazmıyor; geçişli önerildi, onay gerekirYalnız bunu onayla",
+    "hole:g44varsayımgeçişli delik · Ø18 mm · g44basılı \"18.00\" · okuma: pdf-12 · kural: yüzün üstünde duran, basılı çapı okunmuş daire · çizilen 18.27 mm · THRU yazmıyor; geçişli önerildi, onay gerekirYalnız bunu onayla",
+    "hole:g47varsayımgeçişli delik · Ø18 mm · g47basılı \"18.00\" · okuma: pdf-12 · kural: yüzün üstünde duran, basılı çapı okunmuş daire · çizilen 18.27 mm · THRU yazmıyor; geçişli önerildi, onay gerekirYalnız bunu onayla",
+    "hole:g48varsayımgeçişli delik · Ø18 mm · g48basılı \"18.00\" · okuma: pdf-12 · kural: yüzün üstünde duran, basılı çapı okunmuş daire · çizilen 18.27 mm · THRU yazmıyor; geçişli önerildi, onay gerekirYalnız bunu onayla",
+    "hole:g49varsayımgeçişli delik · Ø18 mm · g49basılı \"18.00\" · okuma: pdf-12 · kural: yüzün üstünde duran, basılı çapı okunmuş daire · çizilen 18.27 mm · THRU yazmıyor; geçişli önerildi, onay gerekirYalnız bunu onayla"
+  ],
+  "sketch": {
+    "px_per_mm": null,
+    "source": null,
+    "bindings": 0,
+    "consistent": false,
+    "rows": [],
+    "conflicts": [],
+    "unbound_circles": [
+      "g178",
+      "g179",
+      "g180",
+      "g181",
+      "g182",
+      "g183",
+      "g184",
+      "g185",
+      "g195",
+      "g197",
+      "g199",
+      "g201",
+      "g203",
+      "g205",
+      "g207",
+      "g209",
+      "g211",
+      "g213",
+      "g215",
+      "g217",
+      "g219",
+      "g221",
+      "g223",
+      "g43",
+      "g44",
+      "g45",
+      "g46",
+      "g47",
+      "g48",
+      "g49",
+      "g50",
+      "g51",
+      "g59",
+      "g60",
+      "g72",
+      "g73",
+      "g74",
+      "g75",
+      "g76",
+      "g77",
+      "g78",
+      "g79"
+    ],
+    "unbound_edges": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27
+    ],
+    "join_gap_max_px": 438.4955,
+    "fit": {
+      "px_per_mm": null,
+      "source": null,
+      "rows": [],
+      "conflicts": [],
+      "consistent": false
+    },
+    "contour": {
+      "ok": false,
+      "closure_px": 0,
+      "issues": [
+        {
+          "kind": "self_intersection",
+          "ids": [
+            "g114",
+            "g147"
+          ],
+          "kinds": [
+            "line",
+            "arc"
+          ],
+          "at": [
+            1224.17,
+            966.63
+          ],
+          "message": "g114 ile g147 birbirini kesiyor (line-arc)"
+        },
+        {
+          "kind": "self_intersection",
+          "ids": [
+            "g131",
+            "g147"
+          ],
+          "kinds": [
+            "line",
+            "arc"
+          ],
+          "at": [
+            1186.39,
+            971.75
+          ],
+          "message": "g131 ile g147 birbirini kesiyor (line-arc)"
+        }
+      ],
+      "edge_count": 28
+    },
+    "open_contour_px": 0,
+    "applied_move_px": 452.5877,
+    "solved_dimensions": null
+  },
+  "decisions": {
+    "profile_id": "outline_2",
+    "thickness": null,
+    "calibration": null
+  }
+}

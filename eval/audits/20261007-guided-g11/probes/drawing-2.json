@@ -1,0 +1,1343 @@
+{
+  "case_source": "examples/pdf with steps/2/Drawing.pdf",
+  "token": "3eedbec4476b4f499bf76670adc671fc",
+  "candidates": [
+    {
+      "id": "53c203b8becc9fa03202bd6fcc7c1dd04bcb221551ed1d994070deee5a58fa9d",
+      "hint": "4",
+      "region": [
+        0.1837,
+        0.0192,
+        0.1964,
+        0.0324
+      ]
+    },
+    {
+      "id": "88409417c9f33d8e9d6386b1b80ac636dd843d219a9f8e151a211f2ab45b46b7",
+      "hint": "3",
+      "region": [
+        0.3983,
+        0.0192,
+        0.4105,
+        0.0327
+      ]
+    },
+    {
+      "id": "70f7966590b55380c5d72e31ad0d89daab4d6488001a29792edd5452f5c41f61",
+      "hint": "2",
+      "region": [
+        0.6366,
+        0.0192,
+        0.6489,
+        0.0324
+      ]
+    },
+    {
+      "id": "54bc7561c1b9b6a53b2b995521f24f023910a4d45a34ede0bc4ffa11e8f8eb6f",
+      "hint": "1",
+      "region": [
+        0.8538,
+        0.0196,
+        0.8584,
+        0.0324
+      ]
+    },
+    {
+      "id": "9f7b39218ce5c8e20ccd990ab13f2b0de1261427c2caad9161f2897f977c4e15",
+      "hint": "F",
+      "region": [
+        0.079,
+        0.0927,
+        0.0881,
+        0.1055
+      ]
+    },
+    {
+      "id": "ebfae7605f15753f5cf7ec0970c6cb71e3fed2ed37e6ec72c2424bbb9682388e",
+      "hint": "F",
+      "region": [
+        0.9602,
+        0.0927,
+        0.9693,
+        0.1055
+      ]
+    },
+    {
+      "id": "42ae5b032bc229af832a27030df96fe1f9a0aa486535881782e77afc1eed4797",
+      "hint": "37",
+      "region": [
+        0.3551,
+        0.1145,
+        0.3782,
+        0.1262
+      ]
+    },
+    {
+      "id": "88def166ede4403b3627a53ca106c781810824234a7ef003c02c54fdffce77c1",
+      "hint": "20",
+      "region": [
+        0.4875,
+        0.1145,
+        0.5106,
+        0.1262
+      ]
+    },
+    {
+      "id": "53583d52ff644bddc98fe4332276d1b430c1a54322af2c4b295113bd30ca709a",
+      "hint": "R20",
+      "region": [
+        0.1818,
+        0.1273,
+        0.2205,
+        0.1496
+      ]
+    },
+    {
+      "id": "e7f904943ad9da0be82cea275030ca0269e456973b012009fa77c262ca25ca97",
+      "hint": "35",
+      "region": [
+        0.6797,
+        0.1983,
+        0.6963,
+        0.2144
+      ]
+    },
+    {
+      "id": "d60b3d6d34bebf92861689c0c17fe1775e14f2def83bfae80bd1354b05e15c3e",
+      "hint": "80",
+      "region": [
+        0.757,
+        0.224,
+        0.7735,
+        0.2403
+      ]
+    },
+    {
+      "id": "e6bc398437823aa2a62ef63d47bc2f3a176e4c4b0f13a00ca5bc7cb9d3b2d446",
+      "hint": "E",
+      "region": [
+        0.0784,
+        0.2417,
+        0.0888,
+        0.2545
+      ]
+    },
+    {
+      "id": "14437068aed9309d868e3bd65889353be3d4c576a72718354f85c072eb184e0a",
+      "hint": "E",
+      "region": [
+        0.9597,
+        0.2417,
+        0.97,
+        0.2545
+      ]
+    },
+    {
+      "id": "5d3f29e9d6e2c17712aeec2e4430a0b14ad7b50a18a1d003567846c6565f0ad4",
+      "hint": "60",
+      "region": [
+        0.1794,
+        0.2467,
+        0.196,
+        0.2625
+      ]
+    },
+    {
+      "id": "5003c872f8b474d44c4c916e9c6f5e67ba3705b59fe22a28e9fd5980adfdae4f",
+      "hint": "57",
+      "region": [
+        0.47,
+        0.3316,
+        0.4929,
+        0.343
+      ]
+    },
+    {
+      "id": "ff841fb52886e7a9010fe1a205997313a998890f432fb8594ebc31a16f7fdb30",
+      "hint": "D",
+      "region": [
+        0.0758,
+        0.41,
+        0.091,
+        0.4228
+      ]
+    },
+    {
+      "id": "599a22ab44b69a2f974c30c76b10cb2944417431481fec839a9ac9b1b020385b",
+      "hint": "D",
+      "region": [
+        0.957,
+        0.41,
+        0.9723,
+        0.4228
+      ]
+    },
+    {
+      "id": "3fcc8976c3ae58a863e204c83ae1e065d0d0fb8d8138522e8f0651d2ba751376",
+      "hint": "20",
+      "region": [
+        0.2523,
+        0.4108,
+        0.2754,
+        0.4225
+      ]
+    },
+    {
+      "id": "ed7dca5b417af09b2130ac881793aa16f9a9e76f11e9956886a971d0a4942796",
+      "hint": "25",
+      "region": [
+        0.6292,
+        0.4108,
+        0.6521,
+        0.4225
+      ]
+    },
+    {
+      "id": "ceba4aed33c0263fa12d5068034fca472ed67a0acd9f7a32f39eba7ba7b56fd6",
+      "hint": "1 0",
+      "region": [
+        0.4654,
+        0.4589,
+        0.4819,
+        0.4735
+      ]
+    },
+    {
+      "id": "0503537ff09960934bcd45c2b229d37d4340c7fc9b5a7f60be216da753074117",
+      "hint": "50",
+      "region": [
+        0.3371,
+        0.4624,
+        0.3652,
+        0.4819
+      ]
+    },
+    {
+      "id": "34f61ffeb9a875c0c2dd13896e0556f5081107251d53a30dd7e299e2ce941304",
+      "hint": "20",
+      "region": [
+        0.6884,
+        0.5235,
+        0.7049,
+        0.5398
+      ]
+    },
+    {
+      "id": "307f3c0921a7a151cf3ba323372cfead2fba397d9dda814ddf0391c0ea7e8945",
+      "hint": "40",
+      "region": [
+        0.7505,
+        0.5235,
+        0.7671,
+        0.5399
+      ]
+    },
+    {
+      "id": "581d8ca3a4f82aaf07a531914db29ba19b2d1cbe07dc1a9481f57f9a9f5c9833",
+      "hint": "26",
+      "region": [
+        0.1704,
+        0.5237,
+        0.1869,
+        0.5398
+      ]
+    },
+    {
+      "id": "ca3fcd84b59f0151bb3982d5762390f3c1338247a05874a1272eb804a23aaac8",
+      "hint": "6",
+      "region": [
+        0.2081,
+        0.5281,
+        0.2246,
+        0.5349
+      ]
+    },
+    {
+      "id": "3493e0096bb23c3c90f3695de0dafffda01320cb13b1bcff98b3403cbe375273",
+      "hint": "C",
+      "region": [
+        0.0742,
+        0.578,
+        0.0918,
+        0.5914
+      ]
+    },
+    {
+      "id": "11bfa2b6d8b6680b53764c4f90587584fa6d38d9fb3b729f67e282af773590ca",
+      "hint": "C",
+      "region": [
+        0.9554,
+        0.578,
+        0.9731,
+        0.5914
+      ]
+    },
+    {
+      "id": "5fe316a64ca2ae92bb4526a301512c4c22d1ae82da0884420dedb83c911636ea",
+      "hint": "30",
+      "region": [
+        0.2791,
+        0.5901,
+        0.307,
+        0.61
+      ]
+    },
+    {
+      "id": "63444bf232a680555d73686f7eab13e04a9ed09d388ddfac0644069f2371871f",
+      "hint": "40",
+      "region": [
+        0.5464,
+        0.616,
+        0.5696,
+        0.6277
+      ]
+    },
+    {
+      "id": "658fba963ede8980ae665391bcd16dff55428240666b6383a018e791ede1af4e",
+      "hint": "B",
+      "region": [
+        0.0781,
+        0.7467,
+        0.0889,
+        0.7594
+      ]
+    },
+    {
+      "id": "3406f7c78367c25531afb863d34e4bf02999d8a3455bc6381f6df549cb70375f",
+      "hint": "B",
+      "region": [
+        0.9593,
+        0.7467,
+        0.9702,
+        0.7594
+      ]
+    },
+    {
+      "id": "f7dc0f934e4f258fe1b95d2a2f1800c58a83c8730c980482e68b04496a90a029",
+      "hint": "DEBURR AND",
+      "region": [
+        0.483,
+        0.7848,
+        0.5397,
+        0.7898
+      ]
+    },
+    {
+      "id": "2f6558598c9d8e890b39286a560c90dac37c8cd646adf58c6485ec440c6046a9",
+      "hint": "UNLESS OTHERWISE SPECIFIED:",
+      "region": [
+        0.0987,
+        0.785,
+        0.2295,
+        0.7901
+      ]
+    },
+    {
+      "id": "ae0d59b57b3ec7b2ff161f4d918cf2b2d6cf20a0f52aa477b32a6fdacba2a35d",
+      "hint": "FINISH:",
+      "region": [
+        0.2595,
+        0.785,
+        0.2869,
+        0.7901
+      ]
+    },
+    {
+      "id": "eb785225000165daa00142c6b70784334e7039f835b8e77c96ab43890bbc54e8",
+      "hint": "DO NOT SCALE DRAWING",
+      "region": [
+        0.6322,
+        0.7896,
+        0.7471,
+        0.7946
+      ]
+    },
+    {
+      "id": "81bde1b521418e4e0b943c76561c9a98fe3bc26f039fe90720d759ed3c0d83d8",
+      "hint": "REVISION",
+      "region": [
+        0.8262,
+        0.7903,
+        0.8656,
+        0.7953
+      ]
+    },
+    {
+      "id": "a3de9e18ef9b0b220ccaeb038dd6557246edfb9d473c00282f4b9ae08072c844",
+      "hint": "BREAK SHARP",
+      "region": [
+        0.483,
+        0.7931,
+        0.5419,
+        0.7982
+      ]
+    },
+    {
+      "id": "e22f257856e6113bf9c0e3d829d384b6036102a88408137c6ad2404593857897",
+      "hint": "DIMENSIONS ARE IN MILLIMETERS",
+      "region": [
+        0.0986,
+        0.7934,
+        0.2417,
+        0.7985
+      ]
+    },
+    {
+      "id": "1ececccd5f5f86b00e1608ad43aab44e0c31cdcec0ca322fef1bfe50c6699d7e",
+      "hint": "EDGES",
+      "region": [
+        0.483,
+        0.8015,
+        0.5115,
+        0.8066
+      ]
+    },
+    {
+      "id": "bad0c46010702da004fdae6b7613cef2d88c1c14193fa5737933b12609fc9734",
+      "hint": "SURFACE FINISH:",
+      "region": [
+        0.0979,
+        0.8018,
+        0.1692,
+        0.8069
+      ]
+    },
+    {
+      "id": "7c96d075488f68750138ea0bc630c8a87b5293a810bb0c5c71bd8f9ef8bd9e1d",
+      "hint": "TOLERANCES:",
+      "region": [
+        0.098,
+        0.8102,
+        0.1581,
+        0.8153
+      ]
+    },
+    {
+      "id": "d32d9e40dbc414775a9a179c0bc65961a28525fc6688db6a87885bf15a4408a2",
+      "hint": "LINEAR:",
+      "region": [
+        0.1065,
+        0.8188,
+        0.1385,
+        0.8237
+      ]
+    },
+    {
+      "id": "237d5e7c69999d6ca6ef33d7ca2ebc0f33142571b7f7eebf655feae56ada1c9f",
+      "hint": "ANGULAR:",
+      "region": [
+        0.1059,
+        0.8271,
+        0.1528,
+        0.8321
+      ]
+    },
+    {
+      "id": "ab06f4703002b42e7c35238e01edd24905e268ac5405234fa9a07a25060aad40",
+      "hint": "DATE",
+      "region": [
+        0.3206,
+        0.8434,
+        0.3425,
+        0.8482
+      ]
+    },
+    {
+      "id": "b167e2d5442c21cad57f433413e46df49d7aaee3e501aebc3c30eb14e496afd3",
+      "hint": "TITLE:",
+      "region": [
+        0.5718,
+        0.8434,
+        0.593,
+        0.8483
+      ]
+    },
+    {
+      "id": "cc8b54f1f5083a8d0bdba67b0ea47a4d88c923fd183952c3d4fdbad5124e5a65",
+      "hint": "SIGNATURE",
+      "region": [
+        0.2381,
+        0.8434,
+        0.2873,
+        0.8485
+      ]
+    },
+    {
+      "id": "ab03c3b07bda26ccfc7d8393b97a7cbe358477a672c0a87c5c111db7a8637675",
+      "hint": "NAME",
+      "region": [
+        0.164,
+        0.8437,
+        0.1905,
+        0.8485
+      ]
+    },
+    {
+      "id": "2f74085d114ccdeb8499921bea0440259ed36897b2ca83adb9c8fb9d93877ea1",
+      "hint": "Exercise 1",
+      "region": [
+        0.6734,
+        0.8498,
+        0.8465,
+        0.8714
+      ]
+    },
+    {
+      "id": "78906029b9ff75b69cdeadff93089969da39135c60715d400659c5250b80c92a",
+      "hint": "DRAWN",
+      "region": [
+        0.0988,
+        0.8575,
+        0.1289,
+        0.8623
+      ]
+    },
+    {
+      "id": "fca59ce79e5b26f2265d53e9c2de54ca66c630a678cd55420d8c281f99a09799",
+      "hint": "CHK'D",
+      "region": [
+        0.0999,
+        0.8717,
+        0.1271,
+        0.8767
+      ]
+    },
+    {
+      "id": "6ac6dd2cd7449362d0a133c8232036fe6cfa7d6bb5a823a352cda92e1746987a",
+      "hint": "APPV'D",
+      "region": [
+        0.097,
+        0.8855,
+        0.1298,
+        0.8904
+      ]
+    },
+    {
+      "id": "256cb4ee9a821bc5c7628d86fee16e36fdc56b3af85c916c7e563d782f5af367",
+      "hint": "A",
+      "region": [
+        0.0742,
+        0.8956,
+        0.0916,
+        0.9084
+      ]
+    },
+    {
+      "id": "0d6ffadf2f3dd10801c87c66303e04630092245fd2af4e37d78fc5cc4214c5b9",
+      "hint": "A",
+      "region": [
+        0.9554,
+        0.8956,
+        0.9729,
+        0.9084
+      ]
+    },
+    {
+      "id": "4af21a36c42cfbd7681bf80df01548e481a20b1bff812f01c29c2f474fffc0d6",
+      "hint": "MFG",
+      "region": [
+        0.1007,
+        0.9002,
+        0.1211,
+        0.9052
+      ]
+    },
+    {
+      "id": "eb4e5bcb24dee119d2e50c37be0b7972869ba8cfd5965e981ffaf685202c2377",
+      "hint": "DWG NO.",
+      "region": [
+        0.5719,
+        0.9127,
+        0.6148,
+        0.9177
+      ]
+    },
+    {
+      "id": "deeaa7bc28b15b662345ff1886258ee4a26dcfffe43e157acd452996cb8847ab",
+      "hint": "MATERIAL:",
+      "region": [
+        0.3605,
+        0.9128,
+        0.4057,
+        0.9177
+      ]
+    },
+    {
+      "id": "52069e03df3ae0253e5b1c1b99c0833783e173b6906ea22932bef10f9719e668",
+      "hint": "Q.A",
+      "region": [
+        0.1026,
+        0.9143,
+        0.1193,
+        0.9196
+      ]
+    },
+    {
+      "id": "32435e9cd3b909fa680cbfe6eff6f3df366bd702638b41e9cba8eb4d810d9b19",
+      "hint": "A4",
+      "region": [
+        0.9093,
+        0.9181,
+        0.932,
+        0.9276
+      ]
+    },
+    {
+      "id": "87644f80937f1057aa4ef10961f7a1de6ee2a031f9b417c9851aec6780d39945",
+      "hint": "02.10.25",
+      "region": [
+        0.6619,
+        0.9208,
+        0.8101,
+        0.9422
+      ]
+    },
+    {
+      "id": "3a03836affa084ed0cca334c3d82fde91b510d942e2b04ef5b6756aa7a3c1e1c",
+      "hint": "WEIGHT:",
+      "region": [
+        0.3602,
+        0.9566,
+        0.3964,
+        0.9616
+      ]
+    },
+    {
+      "id": "1f6b0fa91cc080b70968e04688d70321e4deb15dcc2dd5cb3b19468564423135",
+      "hint": "SCALE:1:2",
+      "region": [
+        0.5718,
+        0.9567,
+        0.6149,
+        0.9618
+      ]
+    },
+    {
+      "id": "21a646f80dc6b2c5422a21fc4117d0dba47b6f3cae0e219fe0961b33a004712c",
+      "hint": "SHEET 1 OF 1",
+      "region": [
+        0.7831,
+        0.9567,
+        0.8363,
+        0.9618
+      ]
+    },
+    {
+      "id": "0b3f9cf25906d117e429ca05b816c9359198a711d974ddffcbe952b918f29504",
+      "hint": "4",
+      "region": [
+        0.1837,
+        0.9685,
+        0.1964,
+        0.9816
+      ]
+    },
+    {
+      "id": "7d1a223947031d398debb225b0095f90e74081d7f79cd0b43c17c39063de0652",
+      "hint": "3",
+      "region": [
+        0.3983,
+        0.9685,
+        0.4105,
+        0.9819
+      ]
+    },
+    {
+      "id": "cd27690a15883ee3206efd3b0a0000ab738de80062d72864475d66791ec3f917",
+      "hint": "2",
+      "region": [
+        0.6366,
+        0.9685,
+        0.6489,
+        0.9816
+      ]
+    },
+    {
+      "id": "4b9c753e2de2ddb627438c1aac5d25638b824a61c5a7d5e7cba8fd799b9630ce",
+      "hint": "1",
+      "region": [
+        0.8538,
+        0.9688,
+        0.8584,
+        0.9816
+      ]
+    }
+  ],
+  "profiles": [
+    {
+      "id": "outline_2",
+      "points": 31,
+      "bbox": [
+        458,
+        392,
+        742,
+        707
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "line",
+        "arc",
+        "line",
+        "line",
+        "line",
+        "line",
+        "line"
+      ]
+    },
+    {
+      "id": "circle_g122",
+      "points": 60,
+      "bbox": [
+        858,
+        579,
+        956,
+        677
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "circle_g133",
+      "points": 60,
+      "bbox": [
+        498,
+        431,
+        576,
+        510
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "outline_5",
+      "points": 4,
+      "bbox": [
+        956,
+        1163,
+        986,
+        1320
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "line",
+        "line",
+        "line"
+      ]
+    },
+    {
+      "id": "outline_6",
+      "points": 5,
+      "bbox": [
+        458,
+        1190,
+        497,
+        1230
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "line",
+        "line",
+        "line",
+        "line"
+      ]
+    },
+    {
+      "id": "circle_g244",
+      "points": 60,
+      "bbox": [
+        870,
+        1441,
+        895,
+        1466
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "circle_g218",
+      "points": 60,
+      "bbox": [
+        538,
+        1066,
+        562,
+        1090
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "circle_g214",
+      "points": 60,
+      "bbox": [
+        384,
+        961,
+        409,
+        986
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "circle_g227",
+      "points": 60,
+      "bbox": [
+        1007,
+        961,
+        1032,
+        986
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "circle_g224",
+      "points": 60,
+      "bbox": [
+        447,
+        1422,
+        471,
+        1447
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "outline_3",
+      "points": 58,
+      "bbox": [
+        458,
+        1144,
+        780,
+        1339
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "line",
+        "arc",
+        "line",
+        "line",
+        "line",
+        "line",
+        "line",
+        "line",
+        "line",
+        "arc",
+        "line"
+      ]
+    },
+    {
+      "id": "outline_4",
+      "points": 4,
+      "bbox": [
+        781,
+        412,
+        860,
+        549
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "line",
+        "line",
+        "line"
+      ]
+    }
+  ],
+  "circles": [
+    {
+      "id": "g122",
+      "radius": 49.22,
+      "center": [
+        907,
+        628.2
+      ]
+    },
+    {
+      "id": "g133",
+      "radius": 39.38,
+      "center": [
+        536.9,
+        470.8
+      ]
+    },
+    {
+      "id": "g214",
+      "radius": 12.25,
+      "center": [
+        396.5,
+        973.7
+      ]
+    },
+    {
+      "id": "g218",
+      "radius": 12.25,
+      "center": [
+        549.8,
+        1078.1
+      ]
+    },
+    {
+      "id": "g224",
+      "radius": 12.22,
+      "center": [
+        458.8,
+        1434.6
+      ]
+    },
+    {
+      "id": "g227",
+      "radius": 12.25,
+      "center": [
+        1019.6,
+        973.7
+      ]
+    },
+    {
+      "id": "g244",
+      "radius": 12.26,
+      "center": [
+        882.6,
+        1453.6
+      ]
+    }
+  ],
+  "measurements": [
+    {
+      "id": "t6",
+      "text": "02.10.25",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t19",
+      "text": "4",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t20",
+      "text": "4",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t21",
+      "text": "3",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t22",
+      "text": "3",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t23",
+      "text": "2",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t24",
+      "text": "2",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t25",
+      "text": "1",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t31",
+      "text": "1",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t49",
+      "text": "80",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t50",
+      "text": "60",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t51",
+      "text": "35",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t52",
+      "text": "57",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t53",
+      "text": "R20",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t54",
+      "text": "37",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t55",
+      "text": "20",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t56",
+      "text": "26",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t57",
+      "text": "20",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t58",
+      "text": "6",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t59",
+      "text": "30",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t60",
+      "text": "25",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t61",
+      "text": "50",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t62",
+      "text": "40",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t63",
+      "text": "20",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t64",
+      "text": "40",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t65",
+      "text": "1 0",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    }
+  ],
+  "sketch_keys": [
+    "bindings",
+    "conflicts",
+    "consistent",
+    "fit",
+    "join_gap_max_px",
+    "px_per_mm",
+    "rows",
+    "source",
+    "unbound_circles",
+    "unbound_edges"
+  ],
+  "detection": {
+    "detector_version": "callout-detector/1",
+    "diagnostics": []
+  },
+  "summary": "12 kontur · 7 daire · 26 ölçü adayı · sınıf: flat-part · kayıt 0"
+}

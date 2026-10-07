@@ -1,0 +1,63 @@
+{
+  "summary": "12 kontur · 7 daire · 26 ölçü adayı · sınıf: flat-part · kayıt 1",
+  "profile": "outline_2",
+  "proposals": [
+    "{\"field\":\"calibration\",\"value\":{\"first\":[458.06,1190.39],\"second\":[458.06,1290.39],\"value\":26,\"unit\":\"mm\",\"span_id\":\"t56\"},\"confidence\":\"bound\",\"evidence\":{\"span_id\":\"pdf-16\",\"text\":\"26\",\"measured_mm\":26,\"drawn_mm\":26.11,\"menu_id\":\"t56\",\"px\":100,\"px_per_mm\":3.83,\"axis\":\"distance\",\"error_px\":0.42,\"resolved_from\":\"search\",\"anchor_geometry_ids\":[\"g81\",\"g62\"]}}",
+    "{\"field\":\"hole:g133\",\"value\":{\"circle_id\":\"g133\",\"kind\":\"through\",\"diameter\":20},\"confidence\":\"assumed\",\"evidence\":{\"span_id\":\"pdf-17\",\"text\":\"20\",\"printed_mm\":20,\"drawn_mm\":20.56,\"anchor_mode\":\"dimension\",\"matched_geometry\":[\"g133\"],\"kind_source\":\"THRU yazmıyor; geçişli önerildi, onay gerekir\"}}",
+    "{\"field\":\"hole:g122\",\"value\":{\"circle_id\":\"g122\",\"kind\":\"through\",\"diameter\":25},\"confidence\":\"assumed\",\"evidence\":{\"span_id\":\"pdf-20\",\"text\":\"25\",\"printed_mm\":25,\"drawn_mm\":25.7,\"anchor_mode\":\"dimension\",\"matched_geometry\":[\"g122\"],\"kind_source\":\"THRU yazmıyor; geçişli önerildi, onay gerekir\"}}"
+  ],
+  "proposal_rows": [
+    "Ölçekokumaya bağlı26 mm · menü: t56basılı \"26\" · okuma: pdf-16 · 100 px · 3.83 px/mm · 0.42 px sapma · çizilen 26.11 mm · uzunluk kısıtıyla çözüldü · menü: t56Yalnız bunu onayla",
+    "hole:g133varsayımgeçişli delik · Ø20 mm · g133basılı \"20\" · okuma: pdf-17 · çizilen 20.56 mm · THRU yazmıyor; geçişli önerildi, onay gerekirYalnız bunu onayla",
+    "hole:g122varsayımgeçişli delik · Ø25 mm · g122basılı \"25\" · okuma: pdf-20 · çizilen 25.7 mm · THRU yazmıyor; geçişli önerildi, onay gerekirYalnız bunu onayla"
+  ],
+  "sketch": {
+    "px_per_mm": null,
+    "source": null,
+    "bindings": 0,
+    "consistent": false,
+    "rows": [],
+    "conflicts": [],
+    "unbound_circles": [
+      "g122",
+      "g133",
+      "g214",
+      "g218",
+      "g224",
+      "g227",
+      "g244"
+    ],
+    "unbound_edges": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "join_gap_max_px": 0.3882,
+    "fit": {
+      "px_per_mm": null,
+      "source": null,
+      "rows": [],
+      "conflicts": [],
+      "consistent": false
+    },
+    "contour": {
+      "ok": true,
+      "closure_px": 0,
+      "issues": [],
+      "edge_count": 8
+    },
+    "open_contour_px": 0,
+    "applied_move_px": 315.01,
+    "solved_dimensions": null
+  },
+  "decisions": {
+    "profile_id": "outline_2",
+    "thickness": null,
+    "calibration": null
+  }
+}

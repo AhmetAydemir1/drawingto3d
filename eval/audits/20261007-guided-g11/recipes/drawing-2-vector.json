@@ -1,0 +1,15 @@
+{
+  "case_id": "drawing-2-vector",
+  "source_path": "examples/pdf with steps/2/Drawing.pdf",
+  "contour": {"profile_id": "outline_2"},
+  "accept_proposals": ["Ölçek", "hole:g133"],
+  "thickness_mm": 28,
+  "acknowledge_trace": true,
+  "decisions": [],
+  "notes": [
+    "Üst görünümün dış hattı kesit taraması yüzünden tek kapalı kontur olarak algılanmıyor; en büyük tutarlı kontur (outline_2) gövdenin sol kısmı: R20 uç + çentik. İz ekranda gözle doğrulandı.",
+    "Önerilerden kalibrasyon (basılı \"26\", menü t56, 3.83 px/mm) ve Ø20 delik (g133, kontur içinde) onaylandı; Ø25 (g122) kontur dışında kaldığı için onaylanmadı ve not edildi.",
+    "Kalınlık belirsiz: ön görünümde sol gövde genişliği için 28 (C25) okunuyor, 40 (C23) sağ blok için; belirsizlik kayıtta durur, denenen: 28.",
+    "66 adayın tamamı kapsam dışı: bu paftada özellikler okumanın öneri yoluyla girildi; ölçü metinleri callout derlemesine girmiyor."
+  ]
+}

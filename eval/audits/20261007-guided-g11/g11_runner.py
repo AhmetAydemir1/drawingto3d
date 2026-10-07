@@ -118,6 +118,21 @@ def main() -> int:
     page.screenshot(str(shots / f"{case_id}-01-candidates.png"))
     print(f"[case {case_id}] candidates={record['candidate_count']}", flush=True)
 
+    # --- the reading's own proposals (calibration, holes): the user accepts them one by one ---------
+    if recipe.get("accept_proposals"):
+        for wanted in recipe["accept_proposals"]:
+            rows = page.ev("""return [...document.querySelectorAll('#proposals .proposal')].map(
+              row => row.textContent);""")
+            index = next((i for i, text in enumerate(rows or []) if wanted in text), None)
+            if index is None:
+                fail("DETECT_MISS", {"what": "proposal row", "wanted": wanted,
+                                     "visible": [text[:120] for text in rows or []]})
+                continue
+            selector = f"#proposals .proposal:nth-child({index + 1}) button"
+            page.click_selector(selector)
+            time.sleep(0.9)
+        page.screenshot(str(shots / f"{case_id}-00-proposals.png"))
+
     # --- contour ---------------------------------------------------------------------------------
     profile_id = recipe["contour"]["profile_id"]
     profile = next((row for row in data["options"]["profiles"] if row["id"] == profile_id), None)
@@ -135,37 +150,40 @@ def main() -> int:
             click_image_point(page, profile["points"][len(profile["points"]) // 2])
             page.wait_ev(f"$('profile').value === {json.dumps(profile_id)}", timeout=30, label="profile retry")
 
-    # --- calibration -----------------------------------------------------------------------------
-    calibration = recipe["calibration"]
-    measurement = next((row for row in data["options"]["measurements"]
-                        if row.get("text") == calibration["measurement_text"]), None)
-    if measurement is None:
-        fail("DETECT_MISS", {"what": "calibration measurement", "text": calibration["measurement_text"],
-                             "visible": [row.get("text") for row in data["options"]["measurements"]]})
-    else:
-        page.click_selector("#pick-calibration")
-        for circle_id in calibration["circles"]:
-            point = UX.circle_point(page, circle_id)
-            page.click(point["x"], point["y"])
-            time.sleep(0.2)
-        page.ev(f"""const select = $('measurement'); select.value = '{measurement['id']}';
-          select.dispatchEvent(new Event('change')); return true;""")
-        page.click_selector("#apply-calibration")
-        try:
-            UX.wait_server(page, lambda d: bool(d["decisions"].get("calibration")), 40, "calibration")
-        except TimeoutError:
-            fail("TRANSCRIPTION", {"what": "calibration", "measurement": measurement.get("text")})
+    # --- calibration (skipped when the reading's own calibration proposal was accepted) ----------
+    calibration = recipe.get("calibration")
+    measurement = None
+    if calibration:
+        measurement = next((row for row in data["options"]["measurements"]
+                            if row.get("text") == calibration["measurement_text"]), None)
+        if measurement is None:
+            fail("DETECT_MISS", {"what": "calibration measurement", "text": calibration["measurement_text"],
+                                 "visible": [row.get("text") for row in data["options"]["measurements"]]})
+        else:
+            page.click_selector("#pick-calibration")
+            for circle_id in calibration["circles"]:
+                point = UX.circle_point(page, circle_id)
+                page.click(point["x"], point["y"])
+                time.sleep(0.2)
+            page.ev(f"""const select = $('measurement'); select.value = '{measurement['id']}';
+              select.dispatchEvent(new Event('change')); return true;""")
+            page.click_selector("#apply-calibration")
+            try:
+                UX.wait_server(page, lambda d: bool(d["decisions"].get("calibration")), 40, "calibration")
+            except TimeoutError:
+                fail("TRANSCRIPTION", {"what": "calibration", "measurement": measurement.get("text")})
 
     # --- thickness -------------------------------------------------------------------------------
-    page.focus_selector("#thickness")
-    page.ev("$('thickness').value = '';")
-    page.type_text(str(recipe["thickness_mm"]))
-    page.click_selector("#apply-thickness")
-    try:
-        UX.wait_server(page, lambda d: d["decisions"].get("thickness") == float(recipe["thickness_mm"]),
-                       40, "thickness")
-    except TimeoutError:
-        fail("TRANSCRIPTION", {"what": "thickness", "value": recipe["thickness_mm"]})
+    if recipe.get("thickness_mm") is not None:
+        page.focus_selector("#thickness")
+        page.ev("$('thickness').value = '';")
+        page.type_text(str(recipe["thickness_mm"]))
+        page.click_selector("#apply-thickness")
+        try:
+            UX.wait_server(page, lambda d: d["decisions"].get("thickness") == float(recipe["thickness_mm"]),
+                           40, "thickness")
+        except TimeoutError:
+            fail("TRANSCRIPTION", {"what": "thickness", "value": recipe["thickness_mm"]})
 
     # --- the traced draft (a user decision, not a silent default) --------------------------------
     if recipe.get("acknowledge_trace"):
@@ -179,8 +197,16 @@ def main() -> int:
     typed_texts = hint_clicks = single_ignores = 0
     for step in recipe["decisions"]:
         hint = step["hint"]
-        row = next((item for item in data["effective_callouts"]
-                    if item.get("machine_text_hint") == hint), None)
+        matches = [item for item in data["effective_callouts"]
+                   if item.get("machine_text_hint") == hint]
+        if step.get("region") and len(matches) > 1:
+            # ambiguous printed text (e.g. two "20" boxes): the recipe's region centre picks the box
+            wanted = step["region"]
+            centre = lambda row: ((row["region"][0] + row["region"][2]) / 2,      # noqa: E731
+                                 (row["region"][1] + row["region"][3]) / 2)
+            want_x, want_y = (wanted[0] + wanted[2]) / 2, (wanted[1] + wanted[3]) / 2
+            matches.sort(key=lambda row: (centre(row)[0] - want_x) ** 2 + (centre(row)[1] - want_y) ** 2)
+        row = matches[0] if matches else None
         if row is None:
             fail("DETECT_MISS", {"what": "callout", "hint": hint})
             continue
@@ -256,8 +282,10 @@ def main() -> int:
     record["user_interventions"] = {
         "typed_texts": typed_texts, "hint_clicks": hint_clicks, "single_ignores": single_ignores,
         "bulk_rows": bulk_rows, "bulk_actions": 1 if bulk_rows else 0,
+        "proposal_accepts": len(recipe.get("accept_proposals") or []),
         "profile_selections": 1, "calibration_entries": 1 if measurement else 0,
-        "thickness_entries": 1, "trace_acknowledgements": 1 if recipe.get("acknowledge_trace") else 0,
+        "thickness_entries": 1 if recipe.get("thickness_mm") is not None else 0,
+        "trace_acknowledgements": 1 if recipe.get("acknowledge_trace") else 0,
     }
 
     # --- readiness (its blockers are recorded verbatim, never smoothed) --------------------------

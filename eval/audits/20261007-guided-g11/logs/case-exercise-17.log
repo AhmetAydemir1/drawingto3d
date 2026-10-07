@@ -1,0 +1,5 @@
+[case exercise-17-raster] candidates=20
+[FAIL:CAD_UNSUPPORTED] {"what": "build did not produce a STEP"}
+[FAIL:EVALUATOR] {"console_errors": [{"level": "error", "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)", "url": "http://127.0.0.1:8765/api/guided/build", "source": "network"}], "rejected_requests": [{"status": 400, "url": "http://127.0.0.1:8765/api/guided/build", "request":
+
+[exercise-17-raster] failures=2 build=False verdict=None -> eval/audits/20261007-guided-g11/cases/exercise-17-raster.json

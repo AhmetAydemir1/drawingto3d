@@ -1,8 +1,8 @@
 {
   "case_id": "exercise-17-raster",
-  "run_id": "20261007-055334",
-  "at": "2026-10-07T05:53:34+0300",
-  "git_head": "cb91d8fbf14cf8d17ed422571d1a7960a759ece5",
+  "run_id": "20261007-062711",
+  "at": "2026-10-07T06:27:11+0300",
+  "git_head": "b0a5e680a5f8ad6379ab0e92d66fba402c5c62e9",
   "source_path": "examples/pdf with steps/3/Exercise 17.PNG",
   "source_sha256": "5c926b6dc7e881204fbb60945eb435a0184250a907a32910166ea41cd4e0b2f5",
   "source_sha256_checked": true,
@@ -19,9 +19,7 @@
   "proposal_accept_count": 0,
   "manual_target_correction_count": 0,
   "review_import_used": false,
-  "build_blockers": [
-    "Ana görünüşte dış konturu seçin."
-  ],
+  "build_blockers": [],
   "build_success": false,
   "step_reopen": null,
   "bbox": null,
@@ -33,6 +31,7 @@
     "single_ignores": 0,
     "bulk_rows": 0,
     "bulk_actions": 0,
+    "edge_drops": 0,
     "proposal_accepts": 0,
     "profile_selections": 1,
     "calibration_entries": 1,
@@ -41,15 +40,47 @@
   },
   "failures": [
     {
-      "code": "CONSTRAINT_UNSUPPORTED",
+      "code": "CAD_UNSUPPORTED",
       "detail": {
-        "what": "build never ran",
-        "blockers": 1
+        "what": "build did not produce a STEP"
+      }
+    },
+    {
+      "code": "EVALUATOR",
+      "detail": {
+        "console_errors": [
+          {
+            "level": "error",
+            "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+            "url": "http://127.0.0.1:8765/api/guided/build",
+            "source": "network"
+          }
+        ],
+        "rejected_requests": [
+          {
+            "status": 400,
+            "url": "http://127.0.0.1:8765/api/guided/build",
+            "request": "POST http://127.0.0.1:8765/api/guided/build"
+          }
+        ]
       }
     }
   ],
   "notes": [],
   "artifacts": {},
-  "console_errors": [],
-  "rejected_requests": []
+  "console_errors": [
+    {
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "url": "http://127.0.0.1:8765/api/guided/build",
+      "source": "network"
+    }
+  ],
+  "rejected_requests": [
+    {
+      "status": 400,
+      "url": "http://127.0.0.1:8765/api/guided/build",
+      "request": "POST http://127.0.0.1:8765/api/guided/build"
+    }
+  ]
 }

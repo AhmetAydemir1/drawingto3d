@@ -1,0 +1,17 @@
+{
+  "case_id": "my-part-raster",
+  "source_path": "examples/pdf with steps/7/my_part.jpg",
+  "contour": {"profile_id": "outline_12"},
+  "thickness_mm": 20,
+  "acknowledge_trace": true,
+  "confirm_view": true,
+  "decisions": [],
+  "notes": [
+    "Raster pafta (Exercise 1: külbütör/rocker — R20 göbek + iki silindirik göbek (Ø20/Ø25 delikli), izometrik resimli): okuma öneri üretmedi (0 öneri); sınıf 'unknown'; OCR başlık bloğunu da aday yaptı.",
+    "Kalibrasyon ÖNERİLMEDİ: sunulan ölçü adayları yalnız OCR artığı (\"2\", \"02.10.25\", \"3\", \"2\"); paftada basılı gerçek ölçüler (37/20/57/60/35/80/26/40/6) ölçü adayı olarak SUNULMADI → çapa uydurulmadı, kalibrasyon blokajı kayda gider (DETECT_MISS sınıfı).",
+    "Kontur: 'en büyük tutarlı kontur' kuralıyla outline_12 (243 nokta; üst görünüşteki gövde: iki göbek + ara parça). Ön görünüşün kesit silueti tek tutarlı kontur olarak sunulmadı (bölünmüş).",
+    "Kalınlık 20 (ön görünüşteki duvar adayı) — belirsizlik kayıtta; tek kalınlık bu parçayı (çok seviyeli gövde) ifade etmez.",
+    "Kapsam: 49 aday (24 kontur + 6 daire + 4 ölçü artığı); hiçbirine uydurma metin yazılmadı; karara bağlanmayanlar tek toplu eylemle kapsam dışı.",
+    "Ingest ~20 dk duvar süresi (istemci 900 sn kapısında koptu; oturum token ile kurtarıldı: 54183758cbde4e5885383b09fe888ee8)."
+  ]
+}

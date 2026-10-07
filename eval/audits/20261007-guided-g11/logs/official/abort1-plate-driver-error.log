@@ -1,0 +1,28 @@
+# Abort kanıtı — resmî koşu 1, plate-pocket-vector (2026-10-07 ~08:30)
+
+NOT: Bu dosya, koşu çıktısının oturum içinde okunan kuyruğundan **yeniden oluşturulmuş bir alıntıdır**
+(özgün tee dosyası temizlik sırasında yanlışlıkla silindi; boşluk dürüstçe beyan edilir). Kök neden ve
+düzeltme commit `6e299b9` ile kalıcı.
+
+Belirti: duruş, `UX.accept_hint` çağrısında — sürücü UX-01 öncesi ipucu düğmesini (`#callout-hint-save`)
+tıklamaya çalıştı; UX-01 bu kimlikleri `#callout-hint-yes` / `-edit` / `-ignore` olarak yeniden adlandırdı.
+
+```text
+RuntimeError: Uncaught "TypeError: Cannot read properties of null (reading 'scrollIntoView')
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File ".../g11_runner.py", line 481, in <module>
+    sys.exit(main())
+  File ".../g11_runner.py", line 299, in main
+    accepted = UX.accept_hint(page, callout_id)
+  File ".../20261007-guided-ux-round/ux_acceptance.py", line 155, in accept_hint
+    page.click_selector("#callout-hint-save")          # the only input: one real click
+  File ".../20261006-guided-g3-review/cdp_client.py", line 244, in click_selector
+    self.ev(f"{self.field(selector)}.scrollIntoView({{block:'center'}});")
+RuntimeError: Uncaught "TypeError: Cannot read properties of null (reading 'scrollIntoView')
+```
+
+Düzeltme: `g11_runner.accept_hint_ux01` — satırı seç (gerçek tıklama), `#callout-hint-yes`'in görünmesini
+bekle, tek gerçek tıklama, sunucuda transcription'ı doğrula. Koşu, 10 vaka için aynı sürücü sürümüyle
+temiz baştan başlatıldı.

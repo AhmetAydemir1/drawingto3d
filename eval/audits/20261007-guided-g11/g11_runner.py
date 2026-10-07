@@ -84,6 +84,25 @@ def click_element(page, selector: str) -> None:
     page.click(box["x"] + box["w"] / 2, box["y"] + box["h"] / 2)
 
 
+def accept_hint_ux01(page: C.Chrome, callout_id: str) -> dict:
+    """UX-01 one-click acceptance: select the row, then click “Evet, doğru” — one real input.
+
+    (Replaces the UX-round helper whose single click targeted `#callout-hint-save`; UX-01 renamed the
+    controls to `#callout-hint-yes`/`-edit`/`-ignore`.)
+    """
+    box = UX.row_box(page, callout_id)
+    page.click(box["x"] + box["w"] / 2, box["y"] + box["h"] / 2)
+    page.wait_ev("!$('callout-hint-yes').hidden", timeout=30, label="hint row")
+    before = {"line": page.ev("return $('callout-hint-line').textContent;"),
+              "field": page.ev("return $('callout-text').value;"),
+              "clicks": 1}
+    page.click_selector("#callout-hint-yes")
+    data = UX.wait_server(page, lambda d: any(
+        row["callout_id"] == callout_id and row.get("raw_text")
+        for row in d["decisions"].get("transcriptions") or []), 60, f"hint accepted ({callout_id})")
+    return {"before": before, "data": data}
+
+
 def main() -> int:
     recipe = json.loads(pathlib.Path(sys.argv[1]).read_text(encoding="utf-8"))
     case_id, run_id = recipe["case_id"], time.strftime("%Y%m%d-%H%M%S")
@@ -296,7 +315,7 @@ def main() -> int:
             single_ignores += 1
             continue
         if action == "accept_hint":
-            accepted = UX.accept_hint(page, callout_id)
+            accepted = accept_hint_ux01(page, callout_id)
             hint_clicks += 1
             stored = next((item for item in accepted["data"]["decisions"]["transcriptions"]
                            if item["callout_id"] == callout_id), None)

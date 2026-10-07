@@ -6,9 +6,9 @@
 - G2 initial HEAD: `316518eb8d67c7a4ad81eed59c09e6c59ef4df37`
 - G3 initial HEAD: `ff97295065260ba8d46bf6fcd2c6e864e63dfcef` (`ff97295` = G2)
 - G3R initial HEAD: `2cdb4d0424b17e4299d625066c24e6a0eab4de6d` (`2cdb4d0` = G3 + G1R3-01 kabul commit'i; eski “G3 commit edilmedi” ifadesi artık geçerli değil)
-- Current HEAD: `3b92938` (G9 plate golden path PASS; `git push origin main` → `1a40d86..3b92938`)
+- Current HEAD: `c229113` (UX turu koşu/sürücü commit'leri; bu kaydın kendi commit'i izler)
 - Initial worktree changes: `?? PLAN-17-HERMES.md` (kullanıcının verdiği plan kaynağı; **korunur, stage edilmez**)
-- Current task: **G9 PASS kabul edildi; G10 manifesti sonuçlar görülmeden donduruldu** (`eval/guided_10_manifest.json`) — sıradaki iş dar UX turu; G11 bekliyor (aşağıdaki "G9 kabul + G10" bölümü)
+- Current task: **G9 UX turu PASS** (33/33 gerçek-tarayıcı adımı, 483 callout/guided regresyonu, dondurulmuş CAD regresyonu PASS) — sıradaki iş **G11**: dondurulmuş manifest (`eval/guided_10_manifest.json`) ile 10-pafta koşusu (aşağıdaki "G9 UX turu" bölümü)
 
 | İş | Durum | Kanıt | Kalan |
 |---|---|---|---|
@@ -527,3 +527,34 @@ dışı kullanıcı yükünü generic biçimde azaltan dar UX turu yürütülür
 (explicit) toplu ignore, makine ipucu için tek-tık kabul akışı ve hazırlığın eyleme dönük kontrol
 listesi. Sessiz başlık-bloğu filtreleme veya vakaya özel kural eklenmez. Browser kabulü ve mevcut
 callout regresyonları yeşil olduktan sonra dondurulmuş manifest değiştirilmeden G11'e geçilir.
+
+## G9 UX turu — PASS (2026-10-07)
+
+G9'daki 45 aday / 43 kapsam dışı kullanıcı yükünü generic biçimde azaltan dar tur tamamlandı.
+Kabul planı **ilk koşudan önce** donduruldu (`eval/audits/20261007-guided-ux-round/DELIVERY-PLAN.md`,
+commit `1192082`); teslim: `eval/audits/20261007-guided-ux-round/DELIVERY.md`.
+
+| Akış | Ürün değişikliği | Kanıt |
+|---|---|---|
+| next-unresolved | `#callout-next` (kararsızlar arasında sırayla; sayaç etiket + özet) | adım 6 |
+| explicit bulk ignore | `set_ignored_many` + iki adımlı `#callout-ignore-many`; kararlı satır dokunulmaz; tek revizyon; satır başına `bulk=true` log | adım 13, 23–27 |
+| ipucu tek-tık | `transcribe`+`accept_hint` (sunucu ipucuyla birebir doğrular) + `#callout-hint-save` | adım 16–20 |
+| readiness checklist | kategori rozetli + `Git` düğmeli; tıklama sunucunun `action`/`reason`'ına göre odağa gider | adım 3–5 |
+
+Ölçülen yük (aynı plate): kapsam kapatma G9'da 37 tek-satır akışı → burada **1 tek + 1 toplu (36
+satır, 2 tık, tek revizyon 21→22)**; elle yazılan metin 7 → **4**; tek tıkla kabul edilen ipucu 0 → **4**;
+45 aday / 43 kapsam dışı değişmedi, sessiz düşme yok (adım 2, 28, 32). Hazırlık özeti
+`45 callout derlendi · 5 delik · 0 ölçü bağı · 43 kapsam dışı`; STEP `build_status=complete`.
+
+Doğrulama: gerçek Chrome kabulü **33/33 PASS** (`ux-steps.json`, koşu 04; 15 ekran görüntüsü,
+`session-public.json`, `review-bundle.json`, `part.step`, `plan.json`, `plan-audit.json`); dondurulmuş
+G9 CAD regresyonu aynı STEP üzerinde **tüm kapılar PASS** (`verdict.json`, `logs/cad-regression.log`);
+callout/guided regresyon seti **483 passed / 144 s** (`logs/regression-callout.log`); yeni RED→GREEN
+testleri `tests/test_guided_callout_ux.py` (17 test) + `tests/test_guided_html.py` yapısal pinleri.
+
+Dürüstlük: koşu 01 ve 02 sürücü tarafında durdu (koşu 01: next-unresolved başlangıç konumu beklentisi
++ public payload'da `history` yok; koşu 02: log satırı taşıma anındaki revizyonu damgalar — tasarım).
+Ürün tarafında bulgu yok; loglar `logs/run-01-stopped.log`, `logs/run-02-stopped.log`. G10 manifesti
+(`eval/guided_10_manifest.json`) bu turda değişmedi.
+
+**Sıradaki: G11** — dondurulmuş manifest ile ilk 10-pafta koşusu (sürücü + vaka kayıtları + rapor).

@@ -1,0 +1,473 @@
+{
+  "app": "http://127.0.0.1:8765",
+  "drawing": "/Users/aydemir/Desktop/drawingto3d/examples/pdf with steps/5/Plate With A Pocket Drawing.PDF",
+  "token": "9750599cc08a4ec9a3abeb3024dc59a5",
+  "steps": [
+    {
+      "step": "the plate opens in a fresh session with 45 candidates",
+      "passed": true,
+      "detail": {
+        "token": "9750599cc08a4ec9a3abeb3024dc59a5",
+        "callouts": 45
+      }
+    },
+    {
+      "step": "45 candidates = 45 listed rows, 45 undecided, nothing hidden by default",
+      "passed": true,
+      "detail": {
+        "summary": "45 makine adayı · 45 etkin alan · 0 incelendi · 0 yok sayıldı · 45 kararsız",
+        "rows": 45,
+        "next": "Sıradaki kararsız (45)",
+        "nextDisabled": false,
+        "many": "Kalan kararsızları \"callout değil\" işaretle",
+        "manyDisabled": false
+      }
+    },
+    {
+      "step": "the readiness list is an actionable checklist: every item names its category and offers “Git”",
+      "passed": true,
+      "detail": {
+        "items": 49,
+        "questions": 49,
+        "badges": [
+          "geometri",
+          "kontur",
+          "metin",
+          "ölçek"
+        ],
+        "build_disabled": true
+      }
+    },
+    {
+      "step": "a transcribe item opens its own callout and puts the focus in the text field",
+      "passed": true,
+      "detail": {
+        "item": 0,
+        "want": "b1aea745ec1f819dfc763387c51e067d1368623fa3041d511f6ecb365b7a1139",
+        "label": "C1",
+        "title": "C1 · makine tespiti",
+        "active": "callout-text",
+        "hidden": false
+      }
+    },
+    {
+      "step": "the contour item opens the contour control",
+      "passed": true,
+      "detail": {
+        "item": 45,
+        "active": "profile"
+      }
+    },
+    {
+      "step": "next-unresolved walks the undecided list strictly forward and the counter follows",
+      "passed": true,
+      "detail": {
+        "before": {
+          "title": "C1 · makine tespiti",
+          "selected": 0
+        },
+        "after": [
+          {
+            "title": "C2 · makine tespiti",
+            "status": "Sıradaki kararsız seçildi: C2 · 45 kararsız kaldı.",
+            "selected": 1
+          },
+          {
+            "title": "C3 · makine tespiti",
+            "status": "Sıradaki kararsız seçildi: C3 · 45 kararsız kaldı.",
+            "selected": 2
+          }
+        ]
+      }
+    },
+    {
+      "step": "clicking the plate outline selects it as the contour",
+      "passed": true,
+      "detail": {
+        "profile": "outline_1",
+        "edges": 8
+      }
+    },
+    {
+      "step": "two hole centres are calibrated with the printed 100,00 span",
+      "passed": true,
+      "detail": {
+        "value": 100,
+        "unit": "mm",
+        "span_px": 787.57,
+        "px_per_mm": 7.8757
+      }
+    },
+    {
+      "step": "thickness 15 is entered and stored",
+      "passed": true,
+      "detail": {}
+    },
+    {
+      "step": "the traced draft is acknowledged",
+      "passed": true,
+      "detail": {}
+    },
+    {
+      "step": "the hole note transcribes and parses as written",
+      "passed": true,
+      "detail": {
+        "text": "4 x Ø6,80 THRU ALL",
+        "semantic": {
+          "form": "diameter",
+          "size": 6.8,
+          "count": 4,
+          "termination": "thru",
+          "unit": null
+        },
+        "warnings": [
+          "unit_unresolved"
+        ]
+      }
+    },
+    {
+      "step": "the four hole circles are confirmed by hand (user_click evidence)",
+      "passed": true,
+      "detail": {
+        "target": {
+          "callout_id": "0f5ccd0e2f4973b11d48712503677ae71fb9f1219f9c9c81ff152330d01d47e6",
+          "target_kind": "circle_group",
+          "target_ids": [
+            "g9",
+            "g11",
+            "g10",
+            "g12"
+          ],
+          "geometry_version": 3,
+          "geometry_key": "680ee23d8803a00390024098c1ac5ba17389759f656b5913855d60270ced2085",
+          "profile_id": "outline_1",
+          "transcription_revision": 5,
+          "parser_version": "callout-parser/2",
+          "evidence": [
+            {
+              "kind": "user_click",
+              "ref": "circle_group · g9, g11, g10, g12"
+            }
+          ],
+          "status": "confirmed",
+          "reconfirm": false
+        }
+      }
+    },
+    {
+      "step": "the “4 x” fragment is declared not-a-callout with the single-row action",
+      "passed": true,
+      "detail": {
+        "callout": "599ad74670dd5582e216b0e8c56c12bebc3b57a66a1c6f1457dbe32ff233bde4"
+      }
+    },
+    {
+      "step": "the pocket transcribes and parses (Ø50 blind, depth 8)",
+      "passed": true,
+      "detail": {
+        "text": "Ø50 8 DEEP",
+        "semantic": {
+          "form": "diameter",
+          "size": 50,
+          "termination": "blind",
+          "depth": 8
+        }
+      }
+    },
+    {
+      "step": "the pocket circle is confirmed for Ø50",
+      "passed": true,
+      "detail": {
+        "target": {
+          "callout_id": "2513f1a12341b145ae7d58b0f9da8375ad2408a8c9143a95c5f2ab303216cbdf",
+          "target_kind": "circle",
+          "target_ids": [
+            "g8"
+          ],
+          "geometry_version": 3,
+          "geometry_key": "680ee23d8803a00390024098c1ac5ba17389759f656b5913855d60270ced2085",
+          "profile_id": "outline_1",
+          "transcription_revision": 8,
+          "parser_version": "callout-parser/2",
+          "evidence": [
+            {
+              "kind": "proposal",
+              "ref": "T1 · g8"
+            }
+          ],
+          "status": "confirmed",
+          "reconfirm": false
+        },
+        "proposals": [
+          "Seç1. tek daire · g8 · T1 · g127→g8 · uç daireye temas ediyor",
+          "Seç2. tek daire · g63 · T5 · çizilen Ø3.106 mm ≠ yazılan Ø50.0 mm"
+        ]
+      }
+    },
+    {
+      "step": "the hint is written by one click, with no typing: the field was empty before it",
+      "passed": true,
+      "detail": {
+        "field_before": "",
+        "raw_text": "M8 - 6H THRU ALL",
+        "log": {
+          "at": "2026-10-07T01:22:38+00:00",
+          "revision": 9,
+          "actor": "user",
+          "action": "transcribe",
+          "field": "callout:845682b289fedf3398c22eca7b08d8b4b480c5df63443dd735b8e845faf6f723",
+          "value": "M8 - 6H THRU ALL",
+          "note": "Kullanıcı makine ipucunu doğrulayıp callout metnini yazdı.",
+          "evidence": {
+            "callout_id": "845682b289fedf3398c22eca7b08d8b4b480c5df63443dd735b8e845faf6f723",
+            "source_region": [
+              0.0700342,
+              0.80645707,
+              0.19735357,
+              0.82342805
+            ],
+            "accepted_hint": true,
+            "machine_text_hint": "M8 - 6H THRU ALL"
+          }
+        }
+      }
+    },
+    {
+      "step": "the thread note is read and stays outside the grammar (no invented feature)",
+      "passed": true,
+      "detail": {
+        "status": "unsupported",
+        "warnings": [
+          "unsupported_syntax",
+          "ambiguous_number",
+          "unknown_tokens"
+        ]
+      }
+    },
+    {
+      "step": "printed dimension '80,00' is accepted with one click and reads as itself",
+      "passed": true,
+      "detail": {
+        "callout": "86db004917d2d153fbc87cb4c3d6cccd578020c1aecb5c0363958a5023cb6424",
+        "raw_text": "80,00",
+        "status": "parsed"
+      }
+    },
+    {
+      "step": "printed dimension '60,00' is accepted with one click and reads as itself",
+      "passed": true,
+      "detail": {
+        "callout": "3a329c85e41583748a44d918a39d2b34892cbfb507871f9185a457aa14012a98",
+        "raw_text": "60,00",
+        "status": "parsed"
+      }
+    },
+    {
+      "step": "printed dimension '8,00' is accepted with one click and reads as itself",
+      "passed": true,
+      "detail": {
+        "callout": "11b4bc4edc5e9d92bce358fa5b5cb5c08c4851d922d683f30450ee80815d884c",
+        "raw_text": "8,00",
+        "status": "parsed"
+      }
+    },
+    {
+      "step": "printed dimension '1 00,00' is corrected to '100,00' by hand and parses",
+      "passed": true,
+      "detail": {
+        "callout": "3135f80a24cbcbbe62457dd7d7691a69ab58a0ad9292fe5363ac1ab64b46cdb6",
+        "status": "parsed"
+      }
+    },
+    {
+      "step": "printed dimension '1 5,00' is corrected to '15,00' by hand and parses",
+      "passed": true,
+      "detail": {
+        "callout": "34ad8443dfc6b49b1ba10cd992961a03dd41badcb2e0d290cc3abcbcb67d2533",
+        "status": "parsed"
+      }
+    },
+    {
+      "step": "the first click only asks for confirmation: nothing is written",
+      "passed": true,
+      "detail": {
+        "armed": {
+          "label": "Emin misiniz? 36 alanı \"callout değil\" işaretle",
+          "status": "Onaylamak için düğmeye tekrar tıklayın: 36 alan \"callout değil\" ilan edilecek."
+        },
+        "revision_same": true,
+        "undecided": 36
+      }
+    },
+    {
+      "step": "36 undecided candidates are closed in one explicit action: one history step, one revision",
+      "passed": true,
+      "detail": {
+        "undecided": 36,
+        "revision_before": 21,
+        "revision_after": 22,
+        "can_undo": true
+      }
+    },
+    {
+      "step": "every closed row keeps its own log line, bulk-flagged, all stamped at the one revision the batch came from",
+      "passed": true,
+      "detail": {
+        "log_rows": 36,
+        "stamp": [
+          21
+        ],
+        "sample": {
+          "at": "2026-10-07T01:22:48+00:00",
+          "revision": 21,
+          "actor": "user",
+          "action": "ignore_callout",
+          "field": "callout:b1aea745ec1f819dfc763387c51e067d1368623fa3041d511f6ecb365b7a1139",
+          "value": null,
+          "note": "Kullanıcı bu callout'u 'callout değil' olarak işaretledi (toplu kapsam kararı).",
+          "evidence": {
+            "callout_id": "b1aea745ec1f819dfc763387c51e067d1368623fa3041d511f6ecb365b7a1139",
+            "bulk": true
+          }
+        }
+      }
+    },
+    {
+      "step": "decided rows were not touched: hole, pocket, fragment, M8 and the five dimensions keep their decisions",
+      "passed": true,
+      "detail": {
+        "reviews": {
+          "599ad74670dd5582e216b0e8c56c12bebc3b57a66a1c6f1457dbe32ff233bde4": {
+            "ignored": true,
+            "unbindable": false
+          },
+          "845682b289fedf3398c22eca7b08d8b4b480c5df63443dd735b8e845faf6f723": {
+            "ignored": false,
+            "unbindable": true
+          },
+          "86db004917d2d153fbc87cb4c3d6cccd578020c1aecb5c0363958a5023cb6424": {
+            "ignored": false,
+            "unbindable": true
+          },
+          "3a329c85e41583748a44d918a39d2b34892cbfb507871f9185a457aa14012a98": {
+            "ignored": false,
+            "unbindable": true
+          },
+          "11b4bc4edc5e9d92bce358fa5b5cb5c08c4851d922d683f30450ee80815d884c": {
+            "ignored": false,
+            "unbindable": true
+          },
+          "3135f80a24cbcbbe62457dd7d7691a69ab58a0ad9292fe5363ac1ab64b46cdb6": {
+            "ignored": false,
+            "unbindable": true
+          },
+          "34ad8443dfc6b49b1ba10cd992961a03dd41badcb2e0d290cc3abcbcb67d2533": {
+            "ignored": false,
+            "unbindable": true
+          },
+          "b1aea745ec1f819dfc763387c51e067d1368623fa3041d511f6ecb365b7a1139": {
+            "ignored": true,
+            "unbindable": false
+          },
+          "0670ce69c0ee72e81790d00424114230846968a444d0a650072f03b59e8d7716": {
+            "ignored": true,
+            "unbindable": false
+          },
+          "0f05d4f95f0930bfcad90a774841151f09bb56be5dd0c40cd7139ea67b269415": {
+            "ignored": true,
+            "unbindable": false
+          },
+          "14efaeda88b299be50cf5692c997bc277ec7d786f7da362b95592e1a5232555d": {
+            "ignored": true,
+            "unbindable": false
+          },
+          "7dbbb717df56db137d1bf5e5480e5ae38f9c0fc986d23eaebd13791777f86f2f": {
+            "ignored": true,
+            "unbindable": false
+          }
+        }
+      }
+    },
+    {
+      "step": "the counter follows: 0 undecided and both burden controls go quiet",
+      "passed": true,
+      "detail": {
+        "summary": "45 makine adayı · 45 etkin alan · 8 incelendi · 37 yok sayıldı · 0 kararsız",
+        "nextDisabled": true,
+        "manyDisabled": true,
+        "label": "Kalan kararsızları \"callout değil\" işaretle"
+      }
+    },
+    {
+      "step": "with “Yok sayılanları göster” all 45 candidates are still listed, 37 of them ignored",
+      "passed": true,
+      "detail": {
+        "rows": 45,
+        "ignored": 37
+      }
+    },
+    {
+      "step": "the readiness checklist is clean (one ok line) and the build is enabled",
+      "passed": true,
+      "detail": {
+        "summary": "Hazır: 45 callout derlendi · 5 delik · 0 ölçü bağı · 43 kapsam dışı.",
+        "items": [
+          "✓ Tüm girdiler güncel/çözülmüş."
+        ],
+        "excluded": 43
+      }
+    },
+    {
+      "step": "the build runs and the session carries a fresh STEP",
+      "passed": true,
+      "detail": {
+        "build_status": "complete",
+        "step": "/guided-session/9750599cc08a4ec9a3abeb3024dc59a5/part.step",
+        "error": null
+      }
+    },
+    {
+      "step": "the review bundle carries the compiled chain for both feature callouts",
+      "passed": true,
+      "detail": {
+        "compiled": [
+          {
+            "callout_id": "2513f1a12341b145ae7d58b0f9da8375ad2408a8c9143a95c5f2ab303216cbdf",
+            "raw_text": "Ø50 8 DEEP",
+            "status": null
+          },
+          {
+            "callout_id": "0f5ccd0e2f4973b11d48712503677ae71fb9f1219f9c9c81ff152330d01d47e6",
+            "raw_text": "4 x Ø6,80 THRU ALL",
+            "status": null
+          }
+        ]
+      }
+    },
+    {
+      "step": "the burden numbers, against the G9 run (45 candidates / 43 out of scope)",
+      "passed": true,
+      "detail": {
+        "typed_texts": 4,
+        "hint_single_clicks": 4,
+        "single_ignores": 1,
+        "bulk_rows": 36,
+        "g9": {
+          "typed_texts": 7,
+          "hint_single_clicks": 0,
+          "single_ignores": 37
+        }
+      }
+    },
+    {
+      "step": "no unexpected console errors and no rejected requests",
+      "passed": true,
+      "detail": {
+        "unexpected": [],
+        "failures": []
+      }
+    }
+  ],
+  "console": [],
+  "rejected_requests": []
+}

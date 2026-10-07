@@ -1,0 +1,11 @@
+[PASS] one_valid_solid: {"ok": true, "got": {"solids": 1, "valid": true}, "want": {"solids": 1, "valid": true}}
+[PASS] bbox_120x80x15: {"ok": true, "got": [120.011, 80.002, 15.0], "want": [120.0, 80.0, 15.0], "tol_mm": 0.2}
+[PASS] volume_vs_reference: {"ok": true, "got_mm3": 124812.494, "reference_mm3": 124825.417, "delta_frac": 0.000104, "tol_frac": 0.005}
+[PASS] volume_vs_nominal: {"ok": true, "nominal_mm3": 124825.417, "delta_frac": 0.000104, "tol_frac": 0.005}
+[PASS] features_4_holes_1_pocket_4_rounds: {"ok": true, "matched": [{"kind": "hole", "matched": {"radius": 3.4, "u": 10.009, "v": 10.003, "parallel": 1.0, "z": [0.0, 15.0]}}, {"kind": "hole", "matched": {"radius": 3.4, "u": 110.009, "v": 10.003, "parallel": 1.0, "z": [0.0, 15.0]}}, {"kind": "hole", "matched": {"radius": 3.4, "u": 10.009, "v"
+[PASS] cylinder_inventory: {"ok": true, "produced": 9, "reference": 9}
+[PASS] symmetric_difference: {"ok": true, "raw_mm3": 194966.0441, "aligned_mm3": 30.3188, "centroid_shift_mm": [-60.0071, -40.0004, 0.0], "tol_frac": 0.005}
+[PASS] existing_evaluator: {"ok": true, "verdict": {"checks": {"solids": {"ok": true, "got": "1 katı", "want": "1 katı"}, "valid": {"ok": true, "got": "True", "want": "True"}, "vector": {"ok": true, "got": "[15, 80.002, 120.011]", "want": "[15, 80, 120] (fark [0, 0, 0.01])"}, "volume": {"ok": true, "got": "124.8 cm3", "want":
+[PASS] step_reopened: {"ok": true, "detail": "cadquery importStep reopen (twice: features + difference)"}
+
+plate regression PASS -> eval/audits/20261007-guided-ux-round/verdict.json

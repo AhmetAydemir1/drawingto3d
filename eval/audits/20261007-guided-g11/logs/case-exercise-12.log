@@ -1,0 +1,4 @@
+[case exercise-12-vector] candidates=70
+[FAIL:CAD_WRONG] {"checks": {"solids": {"ok": true, "got": "1 katı", "want": "1 katı"}, "valid": {"ok": true, "got": "True", "want": "True"}, "vector": {"ok": false, "got": "[20, 270, 270]", "want": "[270, 274, 335] (fark [250, 4, 65])"}, "volume": {"ok": false, "got": "1023.8 cm3", "want": "4791.7 cm3 (%79 fark)"},
+
+[exercise-12-vector] failures=1 build=True verdict=fail -> eval/audits/20261007-guided-g11/cases/exercise-12-vector.json

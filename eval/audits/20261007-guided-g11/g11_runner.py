@@ -41,7 +41,7 @@ def git_head() -> str:
     return subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT).decode().strip()
 
 
-def wait_ingest(page: C.Chrome, timeout: float = 300.0) -> dict:
+def wait_ingest(page: C.Chrome, timeout: float = 600.0) -> dict:
     """The session is ready when the trace has run (`callouts` derives) and options are listed."""
     deadline = time.time() + timeout
     data = None

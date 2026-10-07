@@ -1,0 +1,136 @@
+{
+  "case_id": "drawing-2-vector",
+  "run_id": "20261007-083336",
+  "at": "2026-10-07T08:33:36+0300",
+  "git_head": "7f432aebd03e51b3f817decef4aeb31228ce2476",
+  "source_path": "examples/pdf with steps/2/Drawing.pdf",
+  "source_sha256": "cdf6285583f54f9a2350c45cf8061a0d74d5ec2077b30af33adef1bda9ed2114",
+  "source_sha256_checked": true,
+  "scope_class": "full_step",
+  "prior_exposure": "previously_seen",
+  "recipe": "drawing-2-vector.json",
+  "candidate_count": 66,
+  "manual_region_count": 0,
+  "ignored_count": 66,
+  "transcription_count": 0,
+  "parse_success_count": 0,
+  "parse_edit_count": 0,
+  "proposal_count": 0,
+  "proposal_accept_count": 0,
+  "manual_target_correction_count": 0,
+  "review_import_used": false,
+  "build_blockers": [],
+  "build_success": true,
+  "step_reopen": true,
+  "bbox": [
+    28.0,
+    73.759,
+    81.903
+  ],
+  "features": {
+    "plan_lists": {
+      "operations": 3,
+      "assumptions": 3
+    },
+    "solids": 1,
+    "valid": true,
+    "faces": 9,
+    "cylinders": [
+      10.0,
+      20.41
+    ],
+    "face_types": {
+      "PLANE": 7,
+      "CYLINDER": 2
+    }
+  },
+  "final_geometry_verdict": {
+    "checks": {
+      "solids": {
+        "ok": true,
+        "got": "1 katı",
+        "want": "1 katı"
+      },
+      "valid": {
+        "ok": true,
+        "got": "True",
+        "want": "True"
+      },
+      "vector": {
+        "ok": false,
+        "got": "[28, 73.759, 81.903]",
+        "want": "[50, 80, 134] (fark [22, 6.24, 52.1])"
+      },
+      "volume": {
+        "ok": false,
+        "got": "117.5 cm3",
+        "want": "160.6 cm3 (%27 fark)"
+      },
+      "cylinders": {
+        "ok": false,
+        "got": "[10, 20.41]",
+        "want": "[10, 12.5, 15, 20, 25]; eksik [12.5, 15, 25], fazla []"
+      }
+    },
+    "pass": false,
+    "shape_ok": false,
+    "detail_ok": false
+  },
+  "user_interventions": {
+    "typed_texts": 0,
+    "hint_clicks": 0,
+    "single_ignores": 0,
+    "bulk_rows": 66,
+    "bulk_actions": 1,
+    "edge_drops": 0,
+    "proposal_accepts": 2,
+    "profile_selections": 1,
+    "calibration_entries": 1,
+    "thickness_entries": 1,
+    "trace_acknowledgements": 1
+  },
+  "failures": [
+    {
+      "code": "CAD_WRONG",
+      "detail": {
+        "checks": {
+          "solids": {
+            "ok": true,
+            "got": "1 katı",
+            "want": "1 katı"
+          },
+          "valid": {
+            "ok": true,
+            "got": "True",
+            "want": "True"
+          },
+          "vector": {
+            "ok": false,
+            "got": "[28, 73.759, 81.903]",
+            "want": "[50, 80, 134] (fark [22, 6.24, 52.1])"
+          },
+          "volume": {
+            "ok": false,
+            "got": "117.5 cm3",
+            "want": "160.6 cm3 (%27 fark)"
+          },
+          "cylinders": {
+            "ok": false,
+            "got": "[10, 20.41]",
+            "want": "[10, 12.5, 15, 20, 25]; eksik [12.5, 15, 25], fazla []"
+          }
+        }
+      }
+    }
+  ],
+  "notes": [],
+  "artifacts": {
+    "part.step": "eval/audits/20261007-guided-g11/cases/drawing-2-vector/part.step",
+    "plan.json": "eval/audits/20261007-guided-g11/cases/drawing-2-vector/plan.json",
+    "plan-audit.json": "eval/audits/20261007-guided-g11/cases/drawing-2-vector/plan-audit.json",
+    "session-public.json": "eval/audits/20261007-guided-g11/cases/drawing-2-vector/session-public.json",
+    "review-bundle.json": "eval/audits/20261007-guided-g11/cases/drawing-2-vector/review-bundle.json"
+  },
+  "console_errors": [],
+  "rejected_requests": []
+}

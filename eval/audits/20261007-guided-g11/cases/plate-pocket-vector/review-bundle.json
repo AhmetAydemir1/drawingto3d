@@ -1,0 +1,2764 @@
+{
+  "bundle_version": 1,
+  "schema_version": 3,
+  "parser_version": "callout-parser/2",
+  "session": "fa8b77b3b58849d0bae18703414bef27",
+  "base_revision": 22,
+  "source_digest": "9e34e6713de6ef8d95bad464e0c87330b515976abc7e5e2e0f9bb0fe701d96ef",
+  "source": "/Users/aydemir/Desktop/drawingto3d/out/guided/fa8b77b3b58849d0bae18703414bef27/source.pdf",
+  "page": 0,
+  "created_at": "2026-10-07T05:33:34+00:00",
+  "detector_version": "callout-detector/1",
+  "geometry_version": 3,
+  "geometry_key": "680ee23d8803a00390024098c1ac5ba17389759f656b5913855d60270ced2085",
+  "callouts": [
+    {
+      "callout_id": "b1aea745ec1f819dfc763387c51e067d1368623fa3041d511f6ecb365b7a1139",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.07588713,
+        0.00908706,
+        0.08801197,
+        0.03865175
+      ],
+      "base_region": [
+        0.07588713,
+        0.00908706,
+        0.08801197,
+        0.03865175
+      ],
+      "crop_region": [
+        0.07588713,
+        0.00908706,
+        0.08801197,
+        0.03865175
+      ],
+      "machine_text_hint": "6",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "0670ce69c0ee72e81790d00424114230846968a444d0a650072f03b59e8d7716",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.40885421,
+        0.00908706,
+        0.42259513,
+        0.03799274
+      ],
+      "base_region": [
+        0.40885421,
+        0.00908706,
+        0.42259513,
+        0.03799274
+      ],
+      "crop_region": [
+        0.40885421,
+        0.00908706,
+        0.42259513,
+        0.03799274
+      ],
+      "machine_text_hint": "4",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "0f05d4f95f0930bfcad90a774841151f09bb56be5dd0c40cd7139ea67b269415",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.57746045,
+        0.00908706,
+        0.5906242,
+        0.03865175
+      ],
+      "base_region": [
+        0.57746045,
+        0.00908706,
+        0.5906242,
+        0.03865175
+      ],
+      "crop_region": [
+        0.57746045,
+        0.00908706,
+        0.5906242,
+        0.03865175
+      ],
+      "machine_text_hint": "3",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "14efaeda88b299be50cf5692c997bc277ec7d786f7da362b95592e1a5232555d",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.74565626,
+        0.00908706,
+        0.7590124,
+        0.03799274
+      ],
+      "base_region": [
+        0.74565626,
+        0.00908706,
+        0.7590124,
+        0.03799274
+      ],
+      "crop_region": [
+        0.74565626,
+        0.00908706,
+        0.7590124,
+        0.03799274
+      ],
+      "machine_text_hint": "2",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "7dbbb717df56db137d1bf5e5480e5ae38f9c0fc986d23eaebd13791777f86f2f",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.24096195,
+        0.00978235,
+        0.25380077,
+        0.03864571
+      ],
+      "base_region": [
+        0.24096195,
+        0.00978235,
+        0.25380077,
+        0.03864571
+      ],
+      "crop_region": [
+        0.24096195,
+        0.00978235,
+        0.25380077,
+        0.03864571
+      ],
+      "machine_text_hint": "5",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "1e140aee429d35f2501f78d894790bf5472b5141bc58dccdc3e4d88b4a053cde",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.9145062,
+        0.00978235,
+        0.91954254,
+        0.03799274
+      ],
+      "base_region": [
+        0.9145062,
+        0.00978235,
+        0.91954254,
+        0.03799274
+      ],
+      "crop_region": [
+        0.9145062,
+        0.00978235,
+        0.91954254,
+        0.03799274
+      ],
+      "machine_text_hint": "1",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "11b4bc4edc5e9d92bce358fa5b5cb5c08c4851d922d683f30450ee80815d884c",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.57506627,
+        0.07267231,
+        0.58810603,
+        0.11429262
+      ],
+      "base_region": [
+        0.57506627,
+        0.07267231,
+        0.58810603,
+        0.11429262
+      ],
+      "crop_region": [
+        0.57506627,
+        0.07267231,
+        0.58810603,
+        0.11429262
+      ],
+      "machine_text_hint": "8,00",
+      "ignored": false,
+      "unbindable": true,
+      "freshness": {
+        "transcription": {
+          "state": "current",
+          "revision": 16,
+          "reason": null
+        },
+        "parse": {
+          "state": "current",
+          "reason": null
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": "8,00",
+      "transcription_revision": 16,
+      "semantic_parse": {
+        "callout_id": "11b4bc4edc5e9d92bce358fa5b5cb5c08c4851d922d683f30450ee80815d884c",
+        "parser_version": "callout-parser/2",
+        "transcription_revision": 16,
+        "status": "parsed",
+        "form": "linear",
+        "size": 8,
+        "count": null,
+        "termination": null,
+        "depth": null,
+        "unit": null,
+        "warnings": [
+          "unit_unresolved"
+        ]
+      },
+      "target_proposals": [
+        {
+          "callout_id": "11b4bc4edc5e9d92bce358fa5b5cb5c08c4851d922d683f30450ee80815d884c",
+          "target_kind": "vertex_pair",
+          "target_ids": [
+            "g55:start",
+            "g55:end"
+          ],
+          "geometry_version": 3,
+          "evidence_tier": "T3",
+          "evidence": [
+            {
+              "kind": "semantic_geometry",
+              "ref": "iki uç arası 63.07 px ≈ yazılan 8.0 mm"
+            },
+            {
+              "kind": "spatial_proximity",
+              "ref": "ölçünün ortası bölgeye yakın · 327.75 px"
+            }
+          ]
+        },
+        {
+          "callout_id": "11b4bc4edc5e9d92bce358fa5b5cb5c08c4851d922d683f30450ee80815d884c",
+          "target_kind": "vertex_pair",
+          "target_ids": [
+            "g53:start",
+            "g53:end"
+          ],
+          "geometry_version": 3,
+          "evidence_tier": "T3",
+          "evidence": [
+            {
+              "kind": "semantic_geometry",
+              "ref": "iki uç arası 63.07 px ≈ yazılan 8.0 mm"
+            },
+            {
+              "kind": "spatial_proximity",
+              "ref": "ölçünün ortası bölgeye yakın · 716.80 px"
+            }
+          ]
+        }
+      ],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "6ae0bfad2bc2fcce1faf77a9edb98fc2802ed3b984772d5e40b5a1142027a1ea",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.00903805,
+        0.11688634,
+        0.02558786,
+        0.14509674
+      ],
+      "base_region": [
+        0.00903805,
+        0.11688634,
+        0.02558786,
+        0.14509674
+      ],
+      "crop_region": [
+        0.00903805,
+        0.11688634,
+        0.02558786,
+        0.14509674
+      ],
+      "machine_text_hint": "D",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "a4916d6912026e20db43c8564ab7a7a11b26e183a25e447bd9d79cc1b0b20ba4",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.97519453,
+        0.11688634,
+        0.99174434,
+        0.14509674
+      ],
+      "base_region": [
+        0.97519453,
+        0.11688634,
+        0.99174434,
+        0.14509674
+      ],
+      "crop_region": [
+        0.97519453,
+        0.11688634,
+        0.99174434,
+        0.14509674
+      ],
+      "machine_text_hint": "D",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "34ad8443dfc6b49b1ba10cd992961a03dd41badcb2e0d290cc3abcbcb67d2533",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.11313382,
+        0.14498186,
+        0.12617358,
+        0.19651753
+      ],
+      "base_region": [
+        0.11313382,
+        0.14498186,
+        0.12617358,
+        0.19651753
+      ],
+      "crop_region": [
+        0.11313382,
+        0.14498186,
+        0.12617358,
+        0.19651753
+      ],
+      "machine_text_hint": "1 5,00",
+      "ignored": false,
+      "unbindable": true,
+      "freshness": {
+        "transcription": {
+          "state": "current",
+          "revision": 20,
+          "reason": null
+        },
+        "parse": {
+          "state": "current",
+          "reason": null
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": "15,00",
+      "transcription_revision": 20,
+      "semantic_parse": {
+        "callout_id": "34ad8443dfc6b49b1ba10cd992961a03dd41badcb2e0d290cc3abcbcb67d2533",
+        "parser_version": "callout-parser/2",
+        "transcription_revision": 20,
+        "status": "parsed",
+        "form": "linear",
+        "size": 15,
+        "count": null,
+        "termination": null,
+        "depth": null,
+        "unit": null,
+        "warnings": [
+          "unit_unresolved"
+        ]
+      },
+      "target_proposals": [
+        {
+          "callout_id": "34ad8443dfc6b49b1ba10cd992961a03dd41badcb2e0d290cc3abcbcb67d2533",
+          "target_kind": "vertex_pair",
+          "target_ids": [
+            "g59:start",
+            "g59:end"
+          ],
+          "geometry_version": 3,
+          "evidence_tier": "T3",
+          "evidence": [
+            {
+              "kind": "semantic_geometry",
+              "ref": "iki uç arası 118.09 px ≈ yazılan 15.0 mm"
+            },
+            {
+              "kind": "spatial_proximity",
+              "ref": "ölçünün ortası bölgeye yakın · 61.61 px"
+            }
+          ]
+        },
+        {
+          "callout_id": "34ad8443dfc6b49b1ba10cd992961a03dd41badcb2e0d290cc3abcbcb67d2533",
+          "target_kind": "vertex_pair",
+          "target_ids": [
+            "g4:start",
+            "g4:end"
+          ],
+          "geometry_version": 3,
+          "evidence_tier": "T3",
+          "evidence": [
+            {
+              "kind": "semantic_geometry",
+              "ref": "iki uç arası 111.30 px ≈ yazılan 15.0 mm"
+            },
+            {
+              "kind": "semantic_geometry",
+              "ref": "seçili konturun kendi kenarı"
+            },
+            {
+              "kind": "spatial_proximity",
+              "ref": "ölçünün ortası bölgeye yakın · 310.80 px"
+            }
+          ]
+        },
+        {
+          "callout_id": "34ad8443dfc6b49b1ba10cd992961a03dd41badcb2e0d290cc3abcbcb67d2533",
+          "target_kind": "vertex_pair",
+          "target_ids": [
+            "g2:start",
+            "g2:end"
+          ],
+          "geometry_version": 3,
+          "evidence_tier": "T3",
+          "evidence": [
+            {
+              "kind": "semantic_geometry",
+              "ref": "iki uç arası 111.47 px ≈ yazılan 15.0 mm"
+            },
+            {
+              "kind": "semantic_geometry",
+              "ref": "seçili konturun kendi kenarı"
+            },
+            {
+              "kind": "spatial_proximity",
+              "ref": "ölçünün ortası bölgeye yakın · 851.21 px"
+            }
+          ]
+        },
+        {
+          "callout_id": "34ad8443dfc6b49b1ba10cd992961a03dd41badcb2e0d290cc3abcbcb67d2533",
+          "target_kind": "vertex_pair",
+          "target_ids": [
+            "g58:start",
+            "g58:end"
+          ],
+          "geometry_version": 3,
+          "evidence_tier": "T3",
+          "evidence": [
+            {
+              "kind": "semantic_geometry",
+              "ref": "iki uç arası 118.09 px ≈ yazılan 15.0 mm"
+            },
+            {
+              "kind": "spatial_proximity",
+              "ref": "ölçünün ortası bölgeye yakın · 1006.78 px"
+            }
+          ]
+        }
+      ],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "2edfa84e9d7167e2cc876d6bdcfb5fdb88a0160860a60eba0643ae2d5610248a",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.30870885,
+        0.22811971,
+        0.39978623,
+        0.24509069
+      ],
+      "base_region": [
+        0.30870885,
+        0.22811971,
+        0.39978623,
+        0.24509069
+      ],
+      "crop_region": [
+        0.30870885,
+        0.22811971,
+        0.39978623,
+        0.24509069
+      ],
+      "machine_text_hint": "SECTION B-B",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "3135f80a24cbcbbe62457dd7d7691a69ab58a0ad9292fe5363ac1ab64b46cdb6",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.33365968,
+        0.28859734,
+        0.37880718,
+        0.30703748
+      ],
+      "base_region": [
+        0.33365968,
+        0.28859734,
+        0.37880718,
+        0.30703748
+      ],
+      "crop_region": [
+        0.33365968,
+        0.28859734,
+        0.37880718,
+        0.30703748
+      ],
+      "machine_text_hint": "1 00,00",
+      "ignored": false,
+      "unbindable": true,
+      "freshness": {
+        "transcription": {
+          "state": "current",
+          "revision": 18,
+          "reason": null
+        },
+        "parse": {
+          "state": "current",
+          "reason": null
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": "100,00",
+      "transcription_revision": 18,
+      "semantic_parse": {
+        "callout_id": "3135f80a24cbcbbe62457dd7d7691a69ab58a0ad9292fe5363ac1ab64b46cdb6",
+        "parser_version": "callout-parser/2",
+        "transcription_revision": 18,
+        "status": "parsed",
+        "form": "linear",
+        "size": 100,
+        "count": null,
+        "termination": null,
+        "depth": null,
+        "unit": null,
+        "warnings": [
+          "unit_unresolved"
+        ]
+      },
+      "target_proposals": [
+        {
+          "callout_id": "3135f80a24cbcbbe62457dd7d7691a69ab58a0ad9292fe5363ac1ab64b46cdb6",
+          "target_kind": "vertex_pair",
+          "target_ids": [
+            "g5:start",
+            "g5:end"
+          ],
+          "geometry_version": 3,
+          "evidence_tier": "T3",
+          "evidence": [
+            {
+              "kind": "semantic_geometry",
+              "ref": "iki uç arası 787.58 px ≈ yazılan 100.0 mm"
+            },
+            {
+              "kind": "semantic_geometry",
+              "ref": "seçili konturun kendi kenarı"
+            },
+            {
+              "kind": "spatial_proximity",
+              "ref": "ölçünün ortası bölgeye yakın · 71.66 px"
+            }
+          ]
+        },
+        {
+          "callout_id": "3135f80a24cbcbbe62457dd7d7691a69ab58a0ad9292fe5363ac1ab64b46cdb6",
+          "target_kind": "vertex_pair",
+          "target_ids": [
+            "g1:start",
+            "g1:end"
+          ],
+          "geometry_version": 3,
+          "evidence_tier": "T3",
+          "evidence": [
+            {
+              "kind": "semantic_geometry",
+              "ref": "iki uç arası 787.54 px ≈ yazılan 100.0 mm"
+            },
+            {
+              "kind": "semantic_geometry",
+              "ref": "seçili konturun kendi kenarı"
+            },
+            {
+              "kind": "spatial_proximity",
+              "ref": "ölçünün ortası bölgeye yakın · 701.64 px"
+            }
+          ]
+        }
+      ],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "18a4debcce60b437f4a04519685eb4c945875432adf1299c0b9070444e49dd22",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.00720393,
+        0.3661185,
+        0.02640017,
+        0.39568319
+      ],
+      "base_region": [
+        0.00720393,
+        0.3661185,
+        0.02640017,
+        0.39568319
+      ],
+      "crop_region": [
+        0.00720393,
+        0.3661185,
+        0.02640017,
+        0.39568319
+      ],
+      "machine_text_hint": "C",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "6bd58fea9c4f8e3af43a1e2ec4bc2e68c300cf2ca8b4dfb06712f2e8e2afdf17",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.97336041,
+        0.3661185,
+        0.99255665,
+        0.39568319
+      ],
+      "base_region": [
+        0.97336041,
+        0.3661185,
+        0.99255665,
+        0.39568319
+      ],
+      "crop_region": [
+        0.97336041,
+        0.3661185,
+        0.99255665,
+        0.39568319
+      ],
+      "machine_text_hint": "C",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "86db004917d2d153fbc87cb4c3d6cccd578020c1aecb5c0363958a5023cb6424",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.06337751,
+        0.50211004,
+        0.07641727,
+        0.55604595
+      ],
+      "base_region": [
+        0.06337751,
+        0.50211004,
+        0.07641727,
+        0.55604595
+      ],
+      "crop_region": [
+        0.06337751,
+        0.50211004,
+        0.07641727,
+        0.55604595
+      ],
+      "machine_text_hint": "80,00",
+      "ignored": false,
+      "unbindable": true,
+      "freshness": {
+        "transcription": {
+          "state": "current",
+          "revision": 12,
+          "reason": null
+        },
+        "parse": {
+          "state": "current",
+          "reason": null
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": "80,00",
+      "transcription_revision": 12,
+      "semantic_parse": {
+        "callout_id": "86db004917d2d153fbc87cb4c3d6cccd578020c1aecb5c0363958a5023cb6424",
+        "parser_version": "callout-parser/2",
+        "transcription_revision": 12,
+        "status": "parsed",
+        "form": "linear",
+        "size": 80,
+        "count": null,
+        "termination": null,
+        "depth": null,
+        "unit": null,
+        "warnings": [
+          "unit_unresolved"
+        ]
+      },
+      "target_proposals": [
+        {
+          "callout_id": "86db004917d2d153fbc87cb4c3d6cccd578020c1aecb5c0363958a5023cb6424",
+          "target_kind": "vertex_pair",
+          "target_ids": [
+            "g18:start",
+            "g18:end"
+          ],
+          "geometry_version": 3,
+          "evidence_tier": "T3",
+          "evidence": [
+            {
+              "kind": "semantic_geometry",
+              "ref": "iki uç arası 643.05 px ≈ yazılan 80.0 mm"
+            },
+            {
+              "kind": "spatial_proximity",
+              "ref": "ölçünün ortası bölgeye yakın · 1720.21 px"
+            }
+          ]
+        },
+        {
+          "callout_id": "86db004917d2d153fbc87cb4c3d6cccd578020c1aecb5c0363958a5023cb6424",
+          "target_kind": "vertex_pair",
+          "target_ids": [
+            "g27:start",
+            "g27:end"
+          ],
+          "geometry_version": 3,
+          "evidence_tier": "T3",
+          "evidence": [
+            {
+              "kind": "semantic_geometry",
+              "ref": "iki uç arası 642.92 px ≈ yazılan 80.0 mm"
+            },
+            {
+              "kind": "spatial_proximity",
+              "ref": "ölçünün ortası bölgeye yakın · 1814.67 px"
+            }
+          ]
+        },
+        {
+          "callout_id": "86db004917d2d153fbc87cb4c3d6cccd578020c1aecb5c0363958a5023cb6424",
+          "target_kind": "profile",
+          "target_ids": [
+            "outline_1"
+          ],
+          "geometry_version": 3,
+          "evidence_tier": "T3",
+          "evidence": [
+            {
+              "kind": "semantic_geometry",
+              "ref": "kontur ölçüsü 120.01×80.00 mm yazılan 80.0 mm ile uyuşuyor"
+            }
+          ]
+        }
+      ],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "3a329c85e41583748a44d918a39d2b34892cbfb507871f9185a457aa14012a98",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.08357845,
+        0.50211004,
+        0.09661821,
+        0.55530834
+      ],
+      "base_region": [
+        0.08357845,
+        0.50211004,
+        0.09661821,
+        0.55530834
+      ],
+      "crop_region": [
+        0.08357845,
+        0.50211004,
+        0.09661821,
+        0.55530834
+      ],
+      "machine_text_hint": "60,00",
+      "ignored": false,
+      "unbindable": true,
+      "freshness": {
+        "transcription": {
+          "state": "current",
+          "revision": 14,
+          "reason": null
+        },
+        "parse": {
+          "state": "current",
+          "reason": null
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": "60,00",
+      "transcription_revision": 14,
+      "semantic_parse": {
+        "callout_id": "3a329c85e41583748a44d918a39d2b34892cbfb507871f9185a457aa14012a98",
+        "parser_version": "callout-parser/2",
+        "transcription_revision": 14,
+        "status": "parsed",
+        "form": "linear",
+        "size": 60,
+        "count": null,
+        "termination": null,
+        "depth": null,
+        "unit": null,
+        "warnings": [
+          "unit_unresolved"
+        ]
+      },
+      "target_proposals": [
+        {
+          "callout_id": "3a329c85e41583748a44d918a39d2b34892cbfb507871f9185a457aa14012a98",
+          "target_kind": "vertex_pair",
+          "target_ids": [
+            "g3:start",
+            "g3:end"
+          ],
+          "geometry_version": 3,
+          "evidence_tier": "T3",
+          "evidence": [
+            {
+              "kind": "semantic_geometry",
+              "ref": "iki uç arası 472.52 px ≈ yazılan 60.0 mm"
+            },
+            {
+              "kind": "semantic_geometry",
+              "ref": "seçili konturun kendi kenarı"
+            },
+            {
+              "kind": "spatial_proximity",
+              "ref": "ölçünün ortası bölgeye yakın · 130.81 px"
+            }
+          ]
+        },
+        {
+          "callout_id": "3a329c85e41583748a44d918a39d2b34892cbfb507871f9185a457aa14012a98",
+          "target_kind": "vertex_pair",
+          "target_ids": [
+            "g7:start",
+            "g7:end"
+          ],
+          "geometry_version": 3,
+          "evidence_tier": "T3",
+          "evidence": [
+            {
+              "kind": "semantic_geometry",
+              "ref": "iki uç arası 472.34 px ≈ yazılan 60.0 mm"
+            },
+            {
+              "kind": "semantic_geometry",
+              "ref": "seçili konturun kendi kenarı"
+            },
+            {
+              "kind": "spatial_proximity",
+              "ref": "ölçünün ortası bölgeye yakın · 1075.88 px"
+            }
+          ]
+        }
+      ],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "ce36b5e6a8c8a6a9b89f450c846e7c3ee936666ed8dfa70868414a6aa02b291a",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.09954254,
+        0.57490931,
+        0.10631466,
+        0.59110641
+      ],
+      "base_region": [
+        0.09954254,
+        0.57490931,
+        0.10631466,
+        0.59110641
+      ],
+      "crop_region": [
+        0.09954254,
+        0.57490931,
+        0.10631466,
+        0.59110641
+      ],
+      "machine_text_hint": "B",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "305c29b3e80d1088aa3c6381330978cab1e1d5729d1c11f667f54bcd5408656d",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.60332621,
+        0.57490931,
+        0.61009833,
+        0.59110641
+      ],
+      "base_region": [
+        0.60332621,
+        0.57490931,
+        0.61009833,
+        0.59110641
+      ],
+      "crop_region": [
+        0.60332621,
+        0.57490931,
+        0.61009833,
+        0.59110641
+      ],
+      "machine_text_hint": "B",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "3377301d8c792bcc84a204fa5e45779bc857b59973d6f9bccfba260984472017",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.01141941,
+        0.60486094,
+        0.02321077,
+        0.63307134
+      ],
+      "base_region": [
+        0.01141941,
+        0.60486094,
+        0.02321077,
+        0.63307134
+      ],
+      "crop_region": [
+        0.01141941,
+        0.60486094,
+        0.02321077,
+        0.63307134
+      ],
+      "machine_text_hint": "B",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "bea73f57101ce8efd8c577c70188581a6ff31583432b1c2153e23806bbaf12d4",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.97757589,
+        0.60486094,
+        0.98936725,
+        0.63307134
+      ],
+      "base_region": [
+        0.97757589,
+        0.60486094,
+        0.98936725,
+        0.63307134
+      ],
+      "crop_region": [
+        0.97757589,
+        0.60486094,
+        0.98936725,
+        0.63307134
+      ],
+      "machine_text_hint": "B",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "2513f1a12341b145ae7d58b0f9da8375ad2408a8c9143a95c5f2ab303216cbdf",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.66235143,
+        0.63632406,
+        0.70219324,
+        0.66625151
+      ],
+      "base_region": [
+        0.66235143,
+        0.63632406,
+        0.70219324,
+        0.66625151
+      ],
+      "crop_region": [
+        0.66235143,
+        0.63632406,
+        0.70219324,
+        0.66625151
+      ],
+      "machine_text_hint": "50,00",
+      "ignored": false,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "current",
+          "revision": 8,
+          "reason": null
+        },
+        "parse": {
+          "state": "current",
+          "reason": null
+        },
+        "target": {
+          "state": "current",
+          "reason": null
+        }
+      },
+      "raw_text": "Ø50 8 DEEP",
+      "transcription_revision": 8,
+      "semantic_parse": {
+        "callout_id": "2513f1a12341b145ae7d58b0f9da8375ad2408a8c9143a95c5f2ab303216cbdf",
+        "parser_version": "callout-parser/2",
+        "transcription_revision": 8,
+        "status": "parsed",
+        "form": "diameter",
+        "size": 50,
+        "count": null,
+        "termination": "blind",
+        "depth": 8,
+        "unit": null,
+        "warnings": [
+          "unit_unresolved"
+        ]
+      },
+      "target_proposals": [
+        {
+          "callout_id": "2513f1a12341b145ae7d58b0f9da8375ad2408a8c9143a95c5f2ab303216cbdf",
+          "target_kind": "circle",
+          "target_ids": [
+            "g8"
+          ],
+          "geometry_version": 3,
+          "evidence_tier": "T0",
+          "evidence": [
+            {
+              "kind": "stored_confirmation",
+              "ref": "kullanıcı bu hedefi onaylamıştı · revizyon 8 · callout-parser/2"
+            }
+          ]
+        },
+        {
+          "callout_id": "2513f1a12341b145ae7d58b0f9da8375ad2408a8c9143a95c5f2ab303216cbdf",
+          "target_kind": "circle",
+          "target_ids": [
+            "g8"
+          ],
+          "geometry_version": 3,
+          "evidence_tier": "T1",
+          "evidence": [
+            {
+              "kind": "leader_connectivity",
+              "ref": "g127→g8 · uç daireye temas ediyor"
+            },
+            {
+              "kind": "printed_dimension",
+              "ref": "pdf-4 · basılı 50.0 mm"
+            },
+            {
+              "kind": "semantic_geometry",
+              "ref": "çizilen Ø50.002 mm ≈ yazılan Ø50.0 mm"
+            },
+            {
+              "kind": "spatial_proximity",
+              "ref": "merkez bölge dışında · 787.98 px"
+            }
+          ]
+        },
+        {
+          "callout_id": "2513f1a12341b145ae7d58b0f9da8375ad2408a8c9143a95c5f2ab303216cbdf",
+          "target_kind": "circle",
+          "target_ids": [
+            "g63"
+          ],
+          "geometry_version": 3,
+          "evidence_tier": "T5",
+          "evidence": [
+            {
+              "kind": "size_mismatch",
+              "ref": "çizilen Ø3.106 mm ≠ yazılan Ø50.0 mm"
+            },
+            {
+              "kind": "spatial_proximity",
+              "ref": "merkez bölge dışında · 66.04 px"
+            }
+          ]
+        }
+      ],
+      "confirmed_target": {
+        "callout_id": "2513f1a12341b145ae7d58b0f9da8375ad2408a8c9143a95c5f2ab303216cbdf",
+        "target_kind": "circle",
+        "target_ids": [
+          "g8"
+        ],
+        "geometry_version": 3,
+        "geometry_key": "680ee23d8803a00390024098c1ac5ba17389759f656b5913855d60270ced2085",
+        "profile_id": "outline_1",
+        "transcription_revision": 8,
+        "parser_version": "callout-parser/2",
+        "evidence": [
+          {
+            "kind": "proposal",
+            "ref": "T1 · g8"
+          }
+        ],
+        "status": "confirmed",
+        "reconfirm": false
+      },
+      "image": null
+    },
+    {
+      "callout_id": "2c5b2c4a77f6fc524ed514dbf97aa751263558753795ebd45594ec605950e1f3",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.59543822,
+        0.77510883,
+        0.61335614,
+        0.78276904
+      ],
+      "base_region": [
+        0.59543822,
+        0.77510883,
+        0.61335614,
+        0.78276904
+      ],
+      "crop_region": [
+        0.59543822,
+        0.77510883,
+        0.61335614,
+        0.78276904
+      ],
+      "machine_text_hint": "date:",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "9c5e66353d253b902f88cea4bdc90529b2e539f116ecd88752abb8f17f2c68fc",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.47837537,
+        0.77741233,
+        0.51000428,
+        0.78448005
+      ],
+      "base_region": [
+        0.47837537,
+        0.77741233,
+        0.51000428,
+        0.78448005
+      ],
+      "crop_region": [
+        0.47837537,
+        0.77741233,
+        0.51000428,
+        0.78448005
+      ],
+      "machine_text_hint": "MATERIAL:",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "aa3b2013f40ea2bc30c3f392e6e5e35b0adbb81a163b95a41970771753e1fd58",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.36246687,
+        0.77802902,
+        0.38256092,
+        0.78509674
+      ],
+      "base_region": [
+        0.36246687,
+        0.77802902,
+        0.38256092,
+        0.78509674
+      ],
+      "crop_region": [
+        0.36246687,
+        0.77802902,
+        0.38256092,
+        0.78509674
+      ],
+      "machine_text_hint": "NAME:",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "c63840bc4f504ed7a70978802f75dc84edcd96b84605a5c0265f7da65f72823d",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.69725096,
+        0.77819226,
+        0.71204361,
+        0.78525998
+      ],
+      "base_region": [
+        0.69725096,
+        0.77819226,
+        0.71204361,
+        0.78525998
+      ],
+      "crop_region": [
+        0.69725096,
+        0.77819226,
+        0.71204361,
+        0.78525998
+      ],
+      "machine_text_hint": "TITLE:",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "599ad74670dd5582e216b0e8c56c12bebc3b57a66a1c6f1457dbe32ff233bde4",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.05904233,
+        0.77975212,
+        0.07931595,
+        0.79634825
+      ],
+      "base_region": [
+        0.05904233,
+        0.77975212,
+        0.07931595,
+        0.79634825
+      ],
+      "crop_region": [
+        0.05904233,
+        0.77975212,
+        0.07931595,
+        0.79634825
+      ],
+      "machine_text_hint": "4 x",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "0f5ccd0e2f4973b11d48712503677ae71fb9f1219f9c9c81ff152330d01d47e6",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.10678068,
+        0.77975212,
+        0.20787516,
+        0.79819226
+      ],
+      "base_region": [
+        0.10678068,
+        0.77975212,
+        0.20787516,
+        0.79819226
+      ],
+      "crop_region": [
+        0.10678068,
+        0.77975212,
+        0.20787516,
+        0.79819226
+      ],
+      "machine_text_hint": "6,80 THRU ALL",
+      "ignored": false,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "current",
+          "revision": 6,
+          "reason": null
+        },
+        "parse": {
+          "state": "current",
+          "reason": null
+        },
+        "target": {
+          "state": "current",
+          "reason": null
+        }
+      },
+      "raw_text": "4 x Ø6,80 THRU ALL",
+      "transcription_revision": 6,
+      "semantic_parse": {
+        "callout_id": "0f5ccd0e2f4973b11d48712503677ae71fb9f1219f9c9c81ff152330d01d47e6",
+        "parser_version": "callout-parser/2",
+        "transcription_revision": 6,
+        "status": "parsed",
+        "form": "diameter",
+        "size": 6.8,
+        "count": 4,
+        "termination": "thru",
+        "depth": null,
+        "unit": null,
+        "warnings": [
+          "unit_unresolved"
+        ]
+      },
+      "target_proposals": [
+        {
+          "callout_id": "0f5ccd0e2f4973b11d48712503677ae71fb9f1219f9c9c81ff152330d01d47e6",
+          "target_kind": "circle_group",
+          "target_ids": [
+            "g9",
+            "g11",
+            "g10",
+            "g12"
+          ],
+          "geometry_version": 3,
+          "evidence_tier": "T0",
+          "evidence": [
+            {
+              "kind": "stored_confirmation",
+              "ref": "kullanıcı bu hedefi onaylamıştı · revizyon 6 · callout-parser/2"
+            }
+          ]
+        },
+        {
+          "callout_id": "0f5ccd0e2f4973b11d48712503677ae71fb9f1219f9c9c81ff152330d01d47e6",
+          "target_kind": "circle_group",
+          "target_ids": [
+            "g10",
+            "g11",
+            "g12",
+            "g9"
+          ],
+          "geometry_version": 3,
+          "evidence_tier": "T2",
+          "evidence": [
+            {
+              "kind": "printed_dimension",
+              "ref": "pdf-3 · basılı 6.8 mm"
+            },
+            {
+              "kind": "semantic_geometry",
+              "ref": "çizilen Ø6.801 mm ≈ yazılan Ø6.8 mm"
+            },
+            {
+              "kind": "spatial_proximity",
+              "ref": "merkez bölge dışında · 650.26 px"
+            },
+            {
+              "kind": "printed_dimension",
+              "ref": "pdf-3 · basılı 6.8 mm"
+            },
+            {
+              "kind": "semantic_geometry",
+              "ref": "çizilen Ø6.793 mm ≈ yazılan Ø6.8 mm"
+            },
+            {
+              "kind": "spatial_proximity",
+              "ref": "merkez bölge dışında · 872.70 px"
+            },
+            {
+              "kind": "printed_dimension",
+              "ref": "pdf-3 · basılı 6.8 mm"
+            },
+            {
+              "kind": "semantic_geometry",
+              "ref": "çizilen Ø6.793 mm ≈ yazılan Ø6.8 mm"
+            },
+            {
+              "kind": "spatial_proximity",
+              "ref": "merkez bölge dışında · 1072.16 px"
+            },
+            {
+              "kind": "printed_dimension",
+              "ref": "pdf-3 · basılı 6.8 mm"
+            },
+            {
+              "kind": "semantic_geometry",
+              "ref": "çizilen Ø6.801 mm ≈ yazılan Ø6.8 mm"
+            },
+            {
+              "kind": "spatial_proximity",
+              "ref": "merkez bölge dışında · 186.86 px"
+            },
+            {
+              "kind": "count_compatibility",
+              "ref": "yazılan adet 4 = uyumlu daire sayısı 4 (farklı çaplarda)"
+            }
+          ]
+        },
+        {
+          "callout_id": "0f5ccd0e2f4973b11d48712503677ae71fb9f1219f9c9c81ff152330d01d47e6",
+          "target_kind": "circle",
+          "target_ids": [
+            "g12"
+          ],
+          "geometry_version": 3,
+          "evidence_tier": "T2",
+          "evidence": [
+            {
+              "kind": "printed_dimension",
+              "ref": "pdf-3 · basılı 6.8 mm"
+            },
+            {
+              "kind": "semantic_geometry",
+              "ref": "çizilen Ø6.801 mm ≈ yazılan Ø6.8 mm"
+            },
+            {
+              "kind": "spatial_proximity",
+              "ref": "merkez bölge dışında · 186.86 px"
+            }
+          ]
+        },
+        {
+          "callout_id": "0f5ccd0e2f4973b11d48712503677ae71fb9f1219f9c9c81ff152330d01d47e6",
+          "target_kind": "circle",
+          "target_ids": [
+            "g9"
+          ],
+          "geometry_version": 3,
+          "evidence_tier": "T2",
+          "evidence": [
+            {
+              "kind": "printed_dimension",
+              "ref": "pdf-3 · basılı 6.8 mm"
+            },
+            {
+              "kind": "semantic_geometry",
+              "ref": "çizilen Ø6.801 mm ≈ yazılan Ø6.8 mm"
+            },
+            {
+              "kind": "spatial_proximity",
+              "ref": "merkez bölge dışında · 650.26 px"
+            }
+          ]
+        }
+      ],
+      "confirmed_target": {
+        "callout_id": "0f5ccd0e2f4973b11d48712503677ae71fb9f1219f9c9c81ff152330d01d47e6",
+        "target_kind": "circle_group",
+        "target_ids": [
+          "g9",
+          "g11",
+          "g10",
+          "g12"
+        ],
+        "geometry_version": 3,
+        "geometry_key": "680ee23d8803a00390024098c1ac5ba17389759f656b5913855d60270ced2085",
+        "profile_id": "outline_1",
+        "transcription_revision": 6,
+        "parser_version": "callout-parser/2",
+        "evidence": [
+          {
+            "kind": "user_click",
+            "ref": "circle_group · Daire 2, Daire 4, Daire 3, Daire 5"
+          }
+        ],
+        "status": "confirmed",
+        "reconfirm": false
+      },
+      "image": null
+    },
+    {
+      "callout_id": "845682b289fedf3398c22eca7b08d8b4b480c5df63443dd735b8e845faf6f723",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.0700342,
+        0.80645707,
+        0.19735357,
+        0.82342805
+      ],
+      "base_region": [
+        0.0700342,
+        0.80645707,
+        0.19735357,
+        0.82342805
+      ],
+      "crop_region": [
+        0.0700342,
+        0.80645707,
+        0.19735357,
+        0.82342805
+      ],
+      "machine_text_hint": "M8 - 6H THRU ALL",
+      "ignored": false,
+      "unbindable": true,
+      "freshness": {
+        "transcription": {
+          "state": "current",
+          "revision": 10,
+          "reason": null
+        },
+        "parse": {
+          "state": "current",
+          "reason": null
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": "M8 - 6H THRU ALL",
+      "transcription_revision": 10,
+      "semantic_parse": {
+        "callout_id": "845682b289fedf3398c22eca7b08d8b4b480c5df63443dd735b8e845faf6f723",
+        "parser_version": "callout-parser/2",
+        "transcription_revision": 10,
+        "status": "unsupported",
+        "form": null,
+        "size": null,
+        "count": null,
+        "termination": "thru",
+        "depth": null,
+        "unit": null,
+        "warnings": [
+          "unsupported_syntax",
+          "ambiguous_number",
+          "unknown_tokens"
+        ]
+      },
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "e3f6e9c5f69dcef240f6d9cdbe233587c2c06667681b376b438951fcdfbb233d",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.37222745,
+        0.80960097,
+        0.45524156,
+        0.825
+      ],
+      "base_region": [
+        0.37222745,
+        0.80960097,
+        0.45524156,
+        0.825
+      ],
+      "crop_region": [
+        0.37222745,
+        0.80960097,
+        0.45524156,
+        0.825
+      ],
+      "machine_text_hint": "DRAFTCRAFT",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "06b8eee2ab6ef389c8f1c685c93a56d4171e9b1f9f128698ac56c10e5671bdd8",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.78406584,
+        0.81048972,
+        0.91456605,
+        0.82536276
+      ],
+      "base_region": [
+        0.78406584,
+        0.81048972,
+        0.91456605,
+        0.82536276
+      ],
+      "crop_region": [
+        0.78406584,
+        0.81048972,
+        0.91456605,
+        0.82536276
+      ],
+      "machine_text_hint": "Plate With A Pocket",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "76741cc740c2c2b4e7ca49bcc64880e5c032d2dcc0f45fd20b5e4a63d68674b0",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.37221462,
+        0.83451028,
+        0.39860197,
+        0.84990931
+      ],
+      "base_region": [
+        0.37221462,
+        0.83451028,
+        0.39860197,
+        0.84990931
+      ],
+      "crop_region": [
+        0.37221462,
+        0.83451028,
+        0.39860197,
+        0.84990931
+      ],
+      "machine_text_hint": "PRO",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "1d073d347c215a298501e74d8db2da62fa90e3a8bc74744d6862b353aa3e0072",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.48057289,
+        0.84909311,
+        0.5864643,
+        0.86548972
+      ],
+      "base_region": [
+        0.48057289,
+        0.84909311,
+        0.5864643,
+        0.86548972
+      ],
+      "crop_region": [
+        0.48057289,
+        0.84909311,
+        0.5864643,
+        0.86548972
+      ],
+      "machine_text_hint": "ALLOY STEEL",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "40312043a77758b7a6d5676423de5f4de192510eb932d97624ac269db2f54cb2",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.6248012,
+        0.85048972,
+        0.65555366,
+        0.86588875
+      ],
+      "base_region": [
+        0.6248012,
+        0.85048972,
+        0.65555366,
+        0.86588875
+      ],
+      "crop_region": [
+        0.6248012,
+        0.85048972,
+        0.65555366,
+        0.86588875
+      ],
+      "machine_text_hint": "2026",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "9aef0955dd46dab5242189fb48398e6af3ecfd0125e3a66b56d698dbac8e4f40",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.00737067,
+        0.85478235,
+        0.02629329,
+        0.88299274
+      ],
+      "base_region": [
+        0.00737067,
+        0.85478235,
+        0.02629329,
+        0.88299274
+      ],
+      "crop_region": [
+        0.00737067,
+        0.85478235,
+        0.02629329,
+        0.88299274
+      ],
+      "machine_text_hint": "A",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "50a28c28eb8f13498b1f8b6254b4e6ad503c3b7c68554e15f157e3cc0f496a90",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.97352715,
+        0.85478235,
+        0.99244976,
+        0.88299274
+      ],
+      "base_region": [
+        0.97352715,
+        0.85478235,
+        0.99244976,
+        0.88299274
+      ],
+      "crop_region": [
+        0.97352715,
+        0.85478235,
+        0.99244976,
+        0.88299274
+      ],
+      "machine_text_hint": "A",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "7a15c5a29c3137bcca34007d5c80d9ea94934c7d58b3cd15cefbcd37e033da5c",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.7448183,
+        0.87625756,
+        0.7828431,
+        0.90887545
+      ],
+      "base_region": [
+        0.7448183,
+        0.87625756,
+        0.7828431,
+        0.90887545
+      ],
+      "crop_region": [
+        0.7448183,
+        0.87625756,
+        0.7828431,
+        0.90887545
+      ],
+      "machine_text_hint": "A4",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "f44b4e9f63d00ecbfa76876a36d943cb391c746af196f72bce6181feb03dfe96",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.5477469,
+        0.93810157,
+        0.57312527,
+        0.9453688
+      ],
+      "base_region": [
+        0.5477469,
+        0.93810157,
+        0.57312527,
+        0.9453688
+      ],
+      "crop_region": [
+        0.5477469,
+        0.93810157,
+        0.57312527,
+        0.9453688
+      ],
+      "machine_text_hint": "WEIGHT:",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "de54c16aa22ea92c6e946ccd57a23ff0b31be60c3d7cd16f2f3ef6289e66b382",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.7006242,
+        0.93810157,
+        0.72775973,
+        0.94537485
+      ],
+      "base_region": [
+        0.7006242,
+        0.93810157,
+        0.72775973,
+        0.94537485
+      ],
+      "crop_region": [
+        0.7006242,
+        0.93810157,
+        0.72775973,
+        0.94537485
+      ],
+      "machine_text_hint": "SCALE1:1",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "1768b221c0e3b6ec7b7ecd23d623021e263439db55e3b430217659a6c085579f",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.84666097,
+        0.93833736,
+        0.88403591,
+        0.94561064
+      ],
+      "base_region": [
+        0.84666097,
+        0.93833736,
+        0.88403591,
+        0.94561064
+      ],
+      "crop_region": [
+        0.84666097,
+        0.93833736,
+        0.88403591,
+        0.94561064
+      ],
+      "machine_text_hint": "SHEET 1 OF 1",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "da1baf44138661f81299d1215f6b7bb6602d4ac3aafa7f1600ff92dc4cb12b00",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.07588713,
+        0.96119105,
+        0.08801197,
+        0.99075574
+      ],
+      "base_region": [
+        0.07588713,
+        0.96119105,
+        0.08801197,
+        0.99075574
+      ],
+      "crop_region": [
+        0.07588713,
+        0.96119105,
+        0.08801197,
+        0.99075574
+      ],
+      "machine_text_hint": "6",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "14ae514eb4678f95423b59aa5643d43c503d79f4cbdd36d17043bdeb950dd1e3",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.40885421,
+        0.96119105,
+        0.42259513,
+        0.99009674
+      ],
+      "base_region": [
+        0.40885421,
+        0.96119105,
+        0.42259513,
+        0.99009674
+      ],
+      "crop_region": [
+        0.40885421,
+        0.96119105,
+        0.42259513,
+        0.99009674
+      ],
+      "machine_text_hint": "4",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "b179c6f53a8c59e805dc897e5bb82ddff7f4d500395527a7fc8dd50cd5c88970",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.57746045,
+        0.96119105,
+        0.5906242,
+        0.99075574
+      ],
+      "base_region": [
+        0.57746045,
+        0.96119105,
+        0.5906242,
+        0.99075574
+      ],
+      "crop_region": [
+        0.57746045,
+        0.96119105,
+        0.5906242,
+        0.99075574
+      ],
+      "machine_text_hint": "3",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "7856d2b280b54734f23aa31ad2ddd8056f3d895fc2d3a7900727ec102f2add69",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.74565626,
+        0.96119105,
+        0.7590124,
+        0.99009674
+      ],
+      "base_region": [
+        0.74565626,
+        0.96119105,
+        0.7590124,
+        0.99009674
+      ],
+      "crop_region": [
+        0.74565626,
+        0.96119105,
+        0.7590124,
+        0.99009674
+      ],
+      "machine_text_hint": "2",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "45030e023a2dbaaf159aea44da2433fa1ad42a6951819bca04ff5976ff79c6b4",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.24096195,
+        0.96189238,
+        0.25380077,
+        0.99075574
+      ],
+      "base_region": [
+        0.24096195,
+        0.96189238,
+        0.25380077,
+        0.99075574
+      ],
+      "crop_region": [
+        0.24096195,
+        0.96189238,
+        0.25380077,
+        0.99075574
+      ],
+      "machine_text_hint": "5",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "6a821e6ff26bb86ebf01dc53b30799e2e3c575999028676b5cacfde9f2a19b57",
+      "page_index": 0,
+      "source_kind": "vector_text",
+      "region": [
+        0.9145062,
+        0.96189238,
+        0.91954254,
+        0.99010278
+      ],
+      "base_region": [
+        0.9145062,
+        0.96189238,
+        0.91954254,
+        0.99010278
+      ],
+      "crop_region": [
+        0.9145062,
+        0.96189238,
+        0.91954254,
+        0.99010278
+      ],
+      "machine_text_hint": "1",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    }
+  ],
+  "instructions": "Her callout için: `transcribe` (metni yaz), `ignore`/`restore` (callout değil), `confirm_target` (öneriyi onayla), `select_target` (kendi seçimin). `base_revision` değiştiyse içe aktarma reddedilir."
+}

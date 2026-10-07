@@ -1,0 +1,10 @@
+$ /Users/aydemir/.hermes/cache/scratch/cdp-venv/bin/python /Users/aydemir/Desktop/drawingto3d/eval/audits/20261007-guided-g11/g11_clean.py
+pages before: 0
+kept=0 closed=0
+pages after: 0
+$ /Users/aydemir/.hermes/cache/scratch/cdp-venv/bin/python /Users/aydemir/Desktop/drawingto3d/eval/audits/20261007-guided-g11/g11_runner.py /Users/aydemir/Desktop/drawingto3d/eval/audits/20261007-guided-g11/recipes-resume/exercise-17-raster.json
+[case exercise-17-raster] candidates=20
+[FAIL:CAD_UNSUPPORTED] {"what": "build did not produce a STEP"}
+[FAIL:EVALUATOR] {"console_errors": [{"level": "error", "text": "Failed to load resource: the server responded with a status of 404 (Not Found)", "url": "http://127.0.0.1:8765/favicon.ico", "source": "network"}, {"level": "error", "text": "Failed to load resource: the server responded with a status of 400 (Bad Reque
+
+[exercise-17-raster] failures=2 build=False verdict=None -> eval/audits/20261007-guided-g11/cases/exercise-17-raster.json

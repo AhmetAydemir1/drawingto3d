@@ -1,0 +1,10 @@
+$ /Users/aydemir/.hermes/cache/scratch/cdp-venv/bin/python /Users/aydemir/Desktop/drawingto3d/eval/audits/20261007-guided-g11/g11_clean.py
+pages before: 1
+kept=0 closed=1
+pages after: 0
+$ /Users/aydemir/.hermes/cache/scratch/cdp-venv/bin/python /Users/aydemir/Desktop/drawingto3d/eval/audits/20261007-guided-g11/g11_runner.py /Users/aydemir/Desktop/drawingto3d/eval/audits/20261007-guided-g11/recipes-resume/flange-raster.json
+[case flange-raster] candidates=29
+[FAIL:EVALUATOR] {"console_errors": [{"level": "error", "text": "Failed to load resource: the server responded with a status of 404 (Not Found)", "url": "http://127.0.0.1:8765/favicon.ico", "source": "network"}], "rejected_requests": [{"status": 404, "url": "http://127.0.0.1:8765/favicon.ico", "request": "request no
+[FAIL:CAD_WRONG] {"checks": {"solids": {"ok": true, "got": "1 katı", "want": "1 katı"}, "valid": {"ok": true, "got": "True", "want": "True"}, "vector": {"ok": false, "got": "[20, 79.475, 79.475]", "want": "[50, 100, 100] (fark [30, 20.53, 20.53])"}, "volume": {"ok": false, "got": "99.2 cm3", "want": "202.1 cm3 (%51 
+
+[flange-raster] failures=2 build=True verdict=fail -> eval/audits/20261007-guided-g11/cases/flange-raster.json

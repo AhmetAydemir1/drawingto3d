@@ -1,0 +1,108 @@
+{
+  "case_id": "exercise-17-raster",
+  "run_id": "20261007-130023",
+  "at": "2026-10-07T13:00:23+0300",
+  "git_head": "7559fbb7b0ab4d080979f6c4f96701ca3ff80ead",
+  "source_path": "examples/pdf with steps/3/Exercise 17.PNG",
+  "source_sha256": "5c926b6dc7e881204fbb60945eb435a0184250a907a32910166ea41cd4e0b2f5",
+  "source_sha256_checked": true,
+  "scope_class": "full_step",
+  "prior_exposure": "previously_seen",
+  "recipe": "exercise-17-raster.json",
+  "candidate_count": 20,
+  "manual_region_count": 0,
+  "ignored_count": 20,
+  "transcription_count": 0,
+  "parse_success_count": 0,
+  "parse_edit_count": 0,
+  "proposal_count": 0,
+  "proposal_accept_count": 0,
+  "manual_target_correction_count": 0,
+  "review_import_used": false,
+  "build_blockers": [],
+  "build_success": false,
+  "step_reopen": null,
+  "bbox": null,
+  "features": null,
+  "final_geometry_verdict": null,
+  "user_interventions": {
+    "typed_texts": 0,
+    "hint_clicks": 0,
+    "single_ignores": 0,
+    "bulk_rows": 20,
+    "bulk_actions": 1,
+    "edge_drops": 0,
+    "proposal_accepts": 0,
+    "profile_selections": 1,
+    "calibration_entries": 1,
+    "thickness_entries": 1,
+    "trace_acknowledgements": 1
+  },
+  "failures": [
+    {
+      "code": "CAD_UNSUPPORTED",
+      "detail": {
+        "what": "build did not produce a STEP"
+      }
+    },
+    {
+      "code": "EVALUATOR",
+      "detail": {
+        "console_errors": [
+          {
+            "level": "error",
+            "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+            "url": "http://127.0.0.1:8765/favicon.ico",
+            "source": "network"
+          },
+          {
+            "level": "error",
+            "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+            "url": "http://127.0.0.1:8765/api/guided/build",
+            "source": "network"
+          }
+        ],
+        "rejected_requests": [
+          {
+            "status": 404,
+            "url": "http://127.0.0.1:8765/favicon.ico",
+            "request": "request not seen"
+          },
+          {
+            "status": 400,
+            "url": "http://127.0.0.1:8765/api/guided/build",
+            "request": "POST http://127.0.0.1:8765/api/guided/build"
+          }
+        ]
+      }
+    }
+  ],
+  "notes": [],
+  "artifacts": {},
+  "console_errors": [
+    {
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "url": "http://127.0.0.1:8765/favicon.ico",
+      "source": "network"
+    },
+    {
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "url": "http://127.0.0.1:8765/api/guided/build",
+      "source": "network"
+    }
+  ],
+  "rejected_requests": [
+    {
+      "status": 404,
+      "url": "http://127.0.0.1:8765/favicon.ico",
+      "request": "request not seen"
+    },
+    {
+      "status": 400,
+      "url": "http://127.0.0.1:8765/api/guided/build",
+      "request": "POST http://127.0.0.1:8765/api/guided/build"
+    }
+  ]
+}

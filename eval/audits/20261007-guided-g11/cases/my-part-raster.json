@@ -1,0 +1,89 @@
+{
+  "case_id": "my-part-raster",
+  "run_id": "20261007-131507",
+  "at": "2026-10-07T13:15:07+0300",
+  "git_head": "7559fbb7b0ab4d080979f6c4f96701ca3ff80ead",
+  "source_path": "examples/pdf with steps/7/my_part.jpg",
+  "source_sha256": "54adde53e376b5df4a330eaff4cc26ca37f2698160d5656d12745af4f144b7d8",
+  "source_sha256_checked": true,
+  "scope_class": "full_step",
+  "prior_exposure": "previously_seen",
+  "recipe": "my-part-raster.json",
+  "candidate_count": 49,
+  "manual_region_count": 0,
+  "ignored_count": 49,
+  "transcription_count": 0,
+  "parse_success_count": 0,
+  "parse_edit_count": 0,
+  "proposal_count": 0,
+  "proposal_accept_count": 0,
+  "manual_target_correction_count": 0,
+  "review_import_used": false,
+  "build_blockers": [
+    "Bilinen ölçünün iki noktasını ve uzunluğunu belirtin."
+  ],
+  "build_success": false,
+  "step_reopen": null,
+  "bbox": null,
+  "features": null,
+  "final_geometry_verdict": null,
+  "user_interventions": {
+    "typed_texts": 0,
+    "hint_clicks": 0,
+    "single_ignores": 0,
+    "bulk_rows": 49,
+    "bulk_actions": 1,
+    "edge_drops": 0,
+    "proposal_accepts": 0,
+    "profile_selections": 1,
+    "calibration_entries": 0,
+    "thickness_entries": 1,
+    "trace_acknowledgements": 1
+  },
+  "failures": [
+    {
+      "code": "EVALUATOR",
+      "detail": {
+        "console_errors": [
+          {
+            "level": "error",
+            "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+            "url": "http://127.0.0.1:8765/favicon.ico",
+            "source": "network"
+          }
+        ],
+        "rejected_requests": [
+          {
+            "status": 404,
+            "url": "http://127.0.0.1:8765/favicon.ico",
+            "request": "request not seen"
+          }
+        ]
+      }
+    },
+    {
+      "code": "CONSTRAINT_UNSUPPORTED",
+      "detail": {
+        "what": "build never ran",
+        "blockers": 1
+      }
+    }
+  ],
+  "notes": [],
+  "artifacts": {},
+  "console_errors": [
+    {
+      "level": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "url": "http://127.0.0.1:8765/favicon.ico",
+      "source": "network"
+    }
+  ],
+  "rejected_requests": [
+    {
+      "status": 404,
+      "url": "http://127.0.0.1:8765/favicon.ico",
+      "request": "request not seen"
+    }
+  ]
+}

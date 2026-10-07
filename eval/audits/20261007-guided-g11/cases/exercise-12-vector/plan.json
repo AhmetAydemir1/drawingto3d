@@ -1,0 +1,440 @@
+{
+  "version": 1,
+  "unit": "mm",
+  "source": {
+    "kind": "drawing",
+    "ref": "/Users/aydemir/Desktop/drawingto3d/out/guided/7d645c04075544b09d27949c61b21522/source.pdf",
+    "sha256": "0a03e53e950f464fde9a14846d8350635b80c72ba9aaeaf8439fbe9477436f1a",
+    "page": 1
+  },
+  "parameters": {
+    "thickness": {
+      "unit": "mm",
+      "source": "user",
+      "value": 20.0,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcının kalınlık kararı."
+    },
+    "outer_x": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 134.8086639163629,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcının seçtiği kontur ve kalibrasyonla çizimden ölçüldü; basılı ölçü değildir."
+    },
+    "outer_y": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 134.95215750166608,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcının seçtiği kontur ve kalibrasyonla çizimden ölçüldü; basılı ölçü değildir."
+    },
+    "outer_radius": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 135.00000000000003,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcının seçtiği kontur ve kalibrasyonla çizimden ölçüldü; basılı ölçü değildir."
+    },
+    "hole_0_diameter": {
+      "unit": "mm",
+      "source": "user",
+      "value": 76.0,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcı ölçüsü."
+    },
+    "hole_0_x": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 134.815014168021,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcının seçtiği kontur ve kalibrasyonla çizimden ölçüldü; basılı ölçü değildir."
+    },
+    "hole_0_y": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 134.93945699834987,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcının seçtiği kontur ve kalibrasyonla çizimden ölçüldü; basılı ölçü değildir."
+    },
+    "hole_1_diameter": {
+      "unit": "mm",
+      "source": "user",
+      "value": 18.0,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcı ölçüsü."
+    },
+    "hole_1_x": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 134.80231366470477,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcının seçtiği kontur ve kalibrasyonla çizimden ölçüldü; basılı ölçü değildir."
+    },
+    "hole_1_y": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 22.959119259039415,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcının seçtiği kontur ve kalibrasyonla çizimden ölçüldü; basılı ölçü değildir."
+    },
+    "hole_2_diameter": {
+      "unit": "mm",
+      "source": "user",
+      "value": 18.0,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcı ölçüsü."
+    },
+    "hole_2_x": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 37.80856983856053,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcının seçtiği kontur ve kalibrasyonla çizimden ölçüldü; basılı ölçü değildir."
+    },
+    "hole_2_y": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 78.94293787703653,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcının seçtiği kontur ve kalibrasyonla çizimden ölçüldü; basılı ölçü değildir."
+    },
+    "hole_3_diameter": {
+      "unit": "mm",
+      "source": "user",
+      "value": 18.0,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcı ölçüsü."
+    },
+    "hole_3_x": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 37.81492009021866,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcının seçtiği kontur ve kalibrasyonla çizimden ölçüldü; basılı ölçü değildir."
+    },
+    "hole_3_y": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 190.94232637132131,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcının seçtiği kontur ve kalibrasyonla çizimden ölçüldü; basılı ölçü değildir."
+    },
+    "hole_4_diameter": {
+      "unit": "mm",
+      "source": "user",
+      "value": 18.0,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcı ölçüsü."
+    },
+    "hole_4_x": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 134.80231366470477,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcının seçtiği kontur ve kalibrasyonla çizimden ölçüldü; basılı ölçü değildir."
+    },
+    "hole_4_y": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 246.95154599595088,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcının seçtiği kontur ve kalibrasyonla çizimden ölçüldü; basılı ölçü değildir."
+    },
+    "hole_5_diameter": {
+      "unit": "mm",
+      "source": "user",
+      "value": 18.0,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcı ölçüsü."
+    },
+    "hole_5_x": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 231.80875799416523,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcının seçtiği kontur ve kalibrasyonla çizimden ölçüldü; basılı ölçü değildir."
+    },
+    "hole_5_y": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 190.94232637132131,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcının seçtiği kontur ve kalibrasyonla çizimden ölçüldü; basılı ölçü değildir."
+    },
+    "hole_6_diameter": {
+      "unit": "mm",
+      "source": "user",
+      "value": 18.0,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcı ölçüsü."
+    },
+    "hole_6_x": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 231.81510824582335,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcının seçtiği kontur ve kalibrasyonla çizimden ölçüldü; basılı ölçü değildir."
+    },
+    "hole_6_y": {
+      "unit": "mm",
+      "source": "assumed",
+      "value": 78.94293787703653,
+      "expr": null,
+      "span_ids": [],
+      "explanation": "Kullanıcının seçtiği kontur ve kalibrasyonla çizimden ölçüldü; basılı ölçü değildir."
+    }
+  },
+  "sketches": {
+    "outer": {
+      "plane": "XY",
+      "offset": "0",
+      "entities": [
+        {
+          "type": "circle",
+          "center": [
+            "outer_x",
+            "outer_y"
+          ],
+          "radius": "outer_radius"
+        }
+      ]
+    },
+    "hole_0": {
+      "plane": "XY",
+      "offset": "0",
+      "entities": [
+        {
+          "type": "circle",
+          "center": [
+            "hole_0_x",
+            "hole_0_y"
+          ],
+          "radius": "hole_0_diameter / 2"
+        }
+      ]
+    },
+    "hole_1": {
+      "plane": "XY",
+      "offset": "0",
+      "entities": [
+        {
+          "type": "circle",
+          "center": [
+            "hole_1_x",
+            "hole_1_y"
+          ],
+          "radius": "hole_1_diameter / 2"
+        }
+      ]
+    },
+    "hole_2": {
+      "plane": "XY",
+      "offset": "0",
+      "entities": [
+        {
+          "type": "circle",
+          "center": [
+            "hole_2_x",
+            "hole_2_y"
+          ],
+          "radius": "hole_2_diameter / 2"
+        }
+      ]
+    },
+    "hole_3": {
+      "plane": "XY",
+      "offset": "0",
+      "entities": [
+        {
+          "type": "circle",
+          "center": [
+            "hole_3_x",
+            "hole_3_y"
+          ],
+          "radius": "hole_3_diameter / 2"
+        }
+      ]
+    },
+    "hole_4": {
+      "plane": "XY",
+      "offset": "0",
+      "entities": [
+        {
+          "type": "circle",
+          "center": [
+            "hole_4_x",
+            "hole_4_y"
+          ],
+          "radius": "hole_4_diameter / 2"
+        }
+      ]
+    },
+    "hole_5": {
+      "plane": "XY",
+      "offset": "0",
+      "entities": [
+        {
+          "type": "circle",
+          "center": [
+            "hole_5_x",
+            "hole_5_y"
+          ],
+          "radius": "hole_5_diameter / 2"
+        }
+      ]
+    },
+    "hole_6": {
+      "plane": "XY",
+      "offset": "0",
+      "entities": [
+        {
+          "type": "circle",
+          "center": [
+            "hole_6_x",
+            "hole_6_y"
+          ],
+          "radius": "hole_6_diameter / 2"
+        }
+      ]
+    }
+  },
+  "operations": [
+    {
+      "op": "extrude",
+      "id": "base_extrusion",
+      "output": "base",
+      "sketch": "outer",
+      "distance": "thickness"
+    },
+    {
+      "op": "extrude",
+      "id": "hole_0_extrude",
+      "output": "hole_0_tool",
+      "sketch": "hole_0",
+      "distance": "thickness"
+    },
+    {
+      "op": "cut",
+      "id": "hole_0_cut",
+      "output": "hole_0_result",
+      "target": "base",
+      "tool": "hole_0_tool"
+    },
+    {
+      "op": "extrude",
+      "id": "hole_1_extrude",
+      "output": "hole_1_tool",
+      "sketch": "hole_1",
+      "distance": "thickness"
+    },
+    {
+      "op": "cut",
+      "id": "hole_1_cut",
+      "output": "hole_1_result",
+      "target": "hole_0_result",
+      "tool": "hole_1_tool"
+    },
+    {
+      "op": "extrude",
+      "id": "hole_2_extrude",
+      "output": "hole_2_tool",
+      "sketch": "hole_2",
+      "distance": "thickness"
+    },
+    {
+      "op": "cut",
+      "id": "hole_2_cut",
+      "output": "hole_2_result",
+      "target": "hole_1_result",
+      "tool": "hole_2_tool"
+    },
+    {
+      "op": "extrude",
+      "id": "hole_3_extrude",
+      "output": "hole_3_tool",
+      "sketch": "hole_3",
+      "distance": "thickness"
+    },
+    {
+      "op": "cut",
+      "id": "hole_3_cut",
+      "output": "hole_3_result",
+      "target": "hole_2_result",
+      "tool": "hole_3_tool"
+    },
+    {
+      "op": "extrude",
+      "id": "hole_4_extrude",
+      "output": "hole_4_tool",
+      "sketch": "hole_4",
+      "distance": "thickness"
+    },
+    {
+      "op": "cut",
+      "id": "hole_4_cut",
+      "output": "hole_4_result",
+      "target": "hole_3_result",
+      "tool": "hole_4_tool"
+    },
+    {
+      "op": "extrude",
+      "id": "hole_5_extrude",
+      "output": "hole_5_tool",
+      "sketch": "hole_5",
+      "distance": "thickness"
+    },
+    {
+      "op": "cut",
+      "id": "hole_5_cut",
+      "output": "hole_5_result",
+      "target": "hole_4_result",
+      "tool": "hole_5_tool"
+    },
+    {
+      "op": "extrude",
+      "id": "hole_6_extrude",
+      "output": "hole_6_tool",
+      "sketch": "hole_6",
+      "distance": "thickness"
+    },
+    {
+      "op": "cut",
+      "id": "hole_6_cut",
+      "output": "hole_6_result",
+      "target": "hole_5_result",
+      "tool": "hole_6_tool"
+    }
+  ],
+  "result": "hole_6_result",
+  "assumptions": [
+    "Ölçek 1.5747 px/mm — kullanıcının iki noktalı kalibrasyonundan. Kullanıcı ana konturu, ölçeği ve özellikleri seçti; kontur ve delik merkezleri çizimden izlenen taslaktır.",
+    "Birleştirme öncesi en büyük boşluk 0.000000 piksel. Basılı ölçülerle ortak ölçek uydurması yapılmadı.",
+    "Dış kontur çizimdeki bir dairedir (döner yüz); gövde ve ikinci flanş bu planın kapsamı dışındadır."
+  ],
+  "expect": null
+}

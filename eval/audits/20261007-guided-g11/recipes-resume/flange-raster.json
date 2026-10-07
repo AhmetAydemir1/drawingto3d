@@ -1,0 +1,28 @@
+{
+  "case_id": "flange-raster",
+  "source_path": "examples/pdf with steps/8/Flange.PNG",
+  "contour": {
+    "profile_id": "circle_g385"
+  },
+  "calibration": {
+    "measurement_text": "90.00",
+    "circles": [
+      "g385",
+      "g386"
+    ]
+  },
+  "thickness_mm": 20,
+  "acknowledge_trace": true,
+  "confirm_view": true,
+  "decisions": [],
+  "notes": [
+    "Oturum, resmî koşudaki 900 sn kapısında istemci düşerken sunucuda açılmıştı; bu reçete oturuma token ile yeniden bağlanarak kaldığı yerden sürdürür (pilot usulü kurtarma). Oturum taze: revizyon 0, hiçbir karar yok.",
+    "Raster pafta (Flange; Chittagong Univ.; ön görünüş = dairesel flanş + SECTION A-A + izometrik): okuma sınıfı 'flat-part'; 0 öneri.",
+    "Kontur: circle_g385 (ön görünüşün büyük dairesel dış hattı; 60 nokta) — uygulamanın kendi sınıfı (flat-part) disk okumasını destekliyor; göbek (hub) tek disk + kalınlıkla ifade edilemez.",
+    "Kalibrasyon: sunulanlar arasında en uzun basılı açıklık 90.00; çapa olarak iki daire merkezi (g385 r=91.55 px, g386 r=32.05 px) denendi — karar 'denenen' belirsizlik taşır (paftada Ø100/Ø60/Ø30 çapları var; OCR '90.00' okudu).",
+    "Kalınlık 20.00 (SECTION A-A'daki flanş plakası ölçüsü; ölçü adayı olarak da sunuldu) — belirsizlik kayıtta.",
+    "Kapsam: 29 aday (21 kontur + 2 daire + 9 ölçü adayı; GD&T sembolleri OCR artığı olarak aday); karara bağlanmayanlar tek toplu eylemle kapsam dışı; uydurma metin yok.",
+    "Ingest uzun sürdü (istemci 900 sn kapısında koptu; oturum token ile kurtarıldı: a9ca4c26c29542c6a5e3fe338e0d7210)."
+  ],
+  "session_token": "66ac258338bb4d42815b94d8224649e4"
+}

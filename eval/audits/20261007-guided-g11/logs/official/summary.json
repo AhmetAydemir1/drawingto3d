@@ -1,0 +1,77 @@
+[
+  {
+    "case_id": "exercise-17-raster",
+    "status": "recorded",
+    "exit": 1,
+    "verdict": null,
+    "failures": [
+      "CAD_UNSUPPORTED",
+      "EVALUATOR"
+    ],
+    "log": "/Users/aydemir/Desktop/drawingto3d/eval/audits/20261007-guided-g11/logs/official/exercise-17-raster.log"
+  },
+  {
+    "case_id": "exercise-13-raster",
+    "status": "recorded",
+    "exit": 1,
+    "verdict": null,
+    "failures": [
+      "CAD_UNSUPPORTED",
+      "EVALUATOR"
+    ],
+    "log": "/Users/aydemir/Desktop/drawingto3d/eval/audits/20261007-guided-g11/logs/official/exercise-13-raster.log"
+  },
+  {
+    "case_id": "my-part-raster",
+    "status": "recorded",
+    "exit": 1,
+    "verdict": null,
+    "failures": [
+      "EVALUATOR",
+      "CONSTRAINT_UNSUPPORTED"
+    ],
+    "log": "/Users/aydemir/Desktop/drawingto3d/eval/audits/20261007-guided-g11/logs/official/my-part-raster.log"
+  },
+  {
+    "case_id": "flange-raster",
+    "status": "recorded",
+    "exit": 1,
+    "verdict": {
+      "checks": {
+        "solids": {
+          "ok": true,
+          "got": "1 katı",
+          "want": "1 katı"
+        },
+        "valid": {
+          "ok": true,
+          "got": "True",
+          "want": "True"
+        },
+        "vector": {
+          "ok": false,
+          "got": "[20, 79.475, 79.475]",
+          "want": "[50, 100, 100] (fark [30, 20.53, 20.53])"
+        },
+        "volume": {
+          "ok": false,
+          "got": "99.2 cm3",
+          "want": "202.1 cm3 (%51 fark)"
+        },
+        "cylinders": {
+          "ok": false,
+          "got": "[39.74]",
+          "want": "[3.2, 5.5, 15, 30, 50]; eksik [3.2, 5.5, 15, 30, 50], fazla [39.74]"
+        }
+      },
+      "pass": false,
+      "shape_ok": false,
+      "detail_ok": false
+    },
+    "failures": [
+      "EVALUATOR",
+      "CAD_WRONG"
+    ],
+    "log": "/Users/aydemir/Desktop/drawingto3d/eval/audits/20261007-guided-g11/logs/official/flange-raster.log"
+  }
+]

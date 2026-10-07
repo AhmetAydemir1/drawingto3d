@@ -1,0 +1,29 @@
+{
+  "case_id": "exercise-13-raster",
+  "source_path": "examples/pdf with steps/4/Exercise 13.PNG",
+  "contour": {
+    "profile_id": "outline_9"
+  },
+  "calibration": {
+    "measurement_text": "240.00",
+    "circles": [
+      "g249",
+      "g250"
+    ]
+  },
+  "thickness_mm": 20,
+  "acknowledge_trace": true,
+  "confirm_view": true,
+  "decisions": [],
+  "notes": [
+    "Oturum, resmî koşudaki 900 sn kapısında istemci düşerken sunucuda açılmıştı; bu reçete oturuma token ile yeniden bağlanarak kaldığı yerden sürdürür (pilot usulü kurtarma). Oturum taze: revizyon 0, hiçbir karar yok.",
+    "Raster pafta (yatak/ayna bloğu: taban + Ø40 göbek, izometrik): okuma öneri üretmedi (0 öneri); sınıf 'unknown'.",
+    "OCR başlık bloğunu da aday yaptı (Chittagong University / NAME-satırları) — hepsi kapsam dışı, uydurma metin yok.",
+    "Kontur: ana (ön) görünüşün büyük dış hattı outline_9; parça çok-görünüşlü, tek kontur + kalınlık akışının ifade sınırında.",
+    "Kalibrasyon: menüdeki en uzun basılı açıklık 240.00, g249–g250 (yan görünüşteki iki delik merkezi) çapasıyla denendi — karar kaydı 'denenen' taşır, belirsizlik not edildi. Çelişki: bu çapa 2.83 px/mm verirken Ø40 göbek çemberi (g252) 1.85 px/mm ima ediyor; rasterda tutarlı bir ölçek çapası yok.",
+    "Kalınlık 20.00 (basılı; taban kalınlığı) — belirsizlik kayıtta.",
+    "Ingest ~25 dk duvar süresi (istemci koptu, token ile kurtarıldı).",
+    "32 adayın tamamı kapsam dışı."
+  ],
+  "session_token": "b7b3e25f8ae3455ab5b49c15716b5404"
+}

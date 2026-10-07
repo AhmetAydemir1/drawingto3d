@@ -1,0 +1,1380 @@
+{
+  "bundle_version": 1,
+  "schema_version": 3,
+  "parser_version": "callout-parser/2",
+  "session": "66ac258338bb4d42815b94d8224649e4",
+  "base_revision": 6,
+  "source_digest": "9c0a91e21bf7265d13074adad10ba36171e802cc0e70895cfd4c24656933282a",
+  "source": "/Users/aydemir/Desktop/drawingto3d/out/guided/66ac258338bb4d42815b94d8224649e4/source.png",
+  "page": 0,
+  "created_at": "2026-10-07T10:16:08+00:00",
+  "detector_version": "callout-detector/1",
+  "geometry_version": 3,
+  "geometry_key": "008a0002b97337ac4fd23f5232be2b6fb1cf2047273efa4ca8d05f13d27f6101",
+  "callouts": [
+    {
+      "callout_id": "656aa7f5dfb7b289a605059838ff7a575bd46196c996d89d41943730a9eb588e",
+      "page_index": 0,
+      "source_kind": "raster_region",
+      "region": [
+        0.53878788,
+        0.15764706,
+        0.58787879,
+        0.1745098
+      ],
+      "base_region": [
+        0.53878788,
+        0.15764706,
+        0.58787879,
+        0.1745098
+      ],
+      "crop_region": [
+        0.53878788,
+        0.15764706,
+        0.58787879,
+        0.1745098
+      ],
+      "machine_text_hint": "£/\\0.2",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "4e57ebfb0c7460ffa3d720ff35f62e3ce7df594f42aceb5ca0cc76eabfae4b37",
+      "page_index": 0,
+      "source_kind": "raster_region",
+      "region": [
+        0.62909091,
+        0.19647059,
+        0.67818182,
+        0.21372549
+      ],
+      "base_region": [
+        0.62909091,
+        0.19647059,
+        0.67818182,
+        0.21372549
+      ],
+      "crop_region": [
+        0.62909091,
+        0.19647059,
+        0.67818182,
+        0.21372549
+      ],
+      "machine_text_hint": "£/|0.2",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "5c1a3f194f7a5cf5826d1ba7c6fe2d632784e554444cec6fdb07b6803b64958f",
+      "page_index": 0,
+      "source_kind": "raster_region",
+      "region": [
+        0.63121212,
+        0.22627451,
+        0.67818182,
+        0.24941176
+      ],
+      "base_region": [
+        0.63121212,
+        0.22627451,
+        0.67818182,
+        0.24941176
+      ],
+      "crop_region": [
+        0.63121212,
+        0.22627451,
+        0.67818182,
+        0.24941176
+      ],
+      "machine_text_hint": "//\\0.2",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "5d714ce8032dba6b9a26953595eb7ab3bb70b581f012ad675996ca1bf7ba1e0d",
+      "page_index": 0,
+      "source_kind": "raster_region",
+      "region": [
+        0.0730303,
+        0.28039216,
+        0.22272727,
+        0.30156863
+      ],
+      "base_region": [
+        0.0730303,
+        0.28039216,
+        0.22272727,
+        0.30156863
+      ],
+      "crop_region": [
+        0.0730303,
+        0.28039216,
+        0.22272727,
+        0.30156863
+      ],
+      "machine_text_hint": "6x D 6.40 V 15.00",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "0c6b4a471caf13f8f59d0ce5fc04bc59fe2294ba8d181b7d7fd72a086e6b6f05",
+      "page_index": 0,
+      "source_kind": "raster_region",
+      "region": [
+        0.56,
+        0.28666667,
+        0.60060606,
+        0.30313725
+      ],
+      "base_region": [
+        0.56,
+        0.28666667,
+        0.60060606,
+        0.30313725
+      ],
+      "crop_region": [
+        0.56,
+        0.28666667,
+        0.60060606,
+        0.30313725
+      ],
+      "machine_text_hint": "90.00",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "24800430bbe0db502619d3297ef5fd3084d368fe2bf43d0ba65219a73e066ee8",
+      "page_index": 0,
+      "source_kind": "raster_region",
+      "region": [
+        0.10606061,
+        0.30470588,
+        0.22606061,
+        0.33215686
+      ],
+      "base_region": [
+        0.10606061,
+        0.30470588,
+        0.22606061,
+        0.33215686
+      ],
+      "crop_region": [
+        0.10606061,
+        0.30470588,
+        0.22606061,
+        0.33215686
+      ],
+      "machine_text_hint": "2 11.00 V 3.90",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "e3a2b5b443d4cd10381fc8df61a22d253cdcfc77c13ba1cf1a2bd23a6e3bcc83",
+      "page_index": 0,
+      "source_kind": "raster_region",
+      "region": [
+        0.10151515,
+        0.33764706,
+        0.13606061,
+        0.35607843
+      ],
+      "base_region": [
+        0.10151515,
+        0.33764706,
+        0.13606061,
+        0.35607843
+      ],
+      "crop_region": [
+        0.10151515,
+        0.33764706,
+        0.13606061,
+        0.35607843
+      ],
+      "machine_text_hint": "60.2",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "b81549b2148d3c729a54c04e044a7d914170ac0df6959016aabeb2f50f471db1",
+      "page_index": 0,
+      "source_kind": "raster_region",
+      "region": [
+        0.43666667,
+        0.34196078,
+        0.47727273,
+        0.35843137
+      ],
+      "base_region": [
+        0.43666667,
+        0.34196078,
+        0.47727273,
+        0.35843137
+      ],
+      "crop_region": [
+        0.43666667,
+        0.34196078,
+        0.47727273,
+        0.35843137
+      ],
+      "machine_text_hint": "20.00",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "f1a19dbe79acb9479d405167dd67f147f7e287bae37e54cd83870fe573c0c5ce",
+      "page_index": 0,
+      "source_kind": "raster_region",
+      "region": [
+        0.15,
+        0.4,
+        0.17333333,
+        0.43137255
+      ],
+      "base_region": [
+        0.15,
+        0.4,
+        0.17333333,
+        0.43137255
+      ],
+      "crop_region": [
+        0.15,
+        0.4,
+        0.17333333,
+        0.43137255
+      ],
+      "machine_text_hint": "Q",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "f5f7b7b6653966a823ede876a32bd6dd7ec176b72d3de733ba4b6f6df679cb9a",
+      "page_index": 0,
+      "source_kind": "raster_region",
+      "region": [
+        0.35363636,
+        0.42941176,
+        0.37242424,
+        0.45411765
+      ],
+      "base_region": [
+        0.35363636,
+        0.42941176,
+        0.37242424,
+        0.45411765
+      ],
+      "crop_region": [
+        0.35363636,
+        0.42941176,
+        0.37242424,
+        0.45411765
+      ],
+      "machine_text_hint": "Pts",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "d985ab44efc3a4e7604e51aa2bfd9792784df3e2b6437232ae05cba6c5691305",
+      "page_index": 0,
+      "source_kind": "raster_region",
+      "region": [
+        0.17181818,
+        0.42980392,
+        0.18969697,
+        0.45254902
+      ],
+      "base_region": [
+        0.17181818,
+        0.42980392,
+        0.18969697,
+        0.45254902
+      ],
+      "crop_region": [
+        0.17181818,
+        0.42980392,
+        0.18969697,
+        0.45254902
+      ],
+      "machine_text_hint": "Sa)",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "f85b8a2df272b9ace9155c253e4caa08abaecbb8b5a750d1700b89a0f19091cc",
+      "page_index": 0,
+      "source_kind": "raster_region",
+      "region": [
+        0.23878788,
+        0.48666667,
+        0.27818182,
+        0.51254902
+      ],
+      "base_region": [
+        0.23878788,
+        0.48666667,
+        0.27818182,
+        0.51254902
+      ],
+      "crop_region": [
+        0.23878788,
+        0.48666667,
+        0.27818182,
+        0.51254902
+      ],
+      "machine_text_hint": "_—G",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "ef9e04c62b4eea7db2d01ac68f803ab2fd87bbf258abd0f01c80fd2c30f770ab",
+      "page_index": 0,
+      "source_kind": "raster_region",
+      "region": [
+        0.82242424,
+        0.57647059,
+        0.86242424,
+        0.59294118
+      ],
+      "base_region": [
+        0.82242424,
+        0.57647059,
+        0.86242424,
+        0.59294118
+      ],
+      "crop_region": [
+        0.82242424,
+        0.57647059,
+        0.86242424,
+        0.59294118
+      ],
+      "machine_text_hint": "60.00",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "877ac7ebe765500b37f0d67b8d02cb74e78aa3b92dc85a14ae71075453271ae3",
+      "page_index": 0,
+      "source_kind": "raster_region",
+      "region": [
+        0.78757576,
+        0.59803922,
+        0.85272727,
+        0.62666667
+      ],
+      "base_region": [
+        0.78757576,
+        0.59803922,
+        0.85272727,
+        0.62666667
+      ],
+      "crop_region": [
+        0.78757576,
+        0.59803922,
+        0.85272727,
+        0.62666667
+      ],
+      "machine_text_hint": "YQ} 0.1",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "5f4f451c319a7f0c369d7de818f0cce2be0d659105b11b1169dc805d76c3b770",
+      "page_index": 0,
+      "source_kind": "raster_region",
+      "region": [
+        0.53575758,
+        0.61764706,
+        0.57121212,
+        0.67490196
+      ],
+      "base_region": [
+        0.53575758,
+        0.61764706,
+        0.57121212,
+        0.67490196
+      ],
+      "crop_region": [
+        0.53575758,
+        0.61764706,
+        0.57121212,
+        0.67490196
+      ],
+      "machine_text_hint": "6",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "b0399815abcab2b26b2057f02cf390f9777ba2db119d409f370634dd9d5fff0e",
+      "page_index": 0,
+      "source_kind": "raster_region",
+      "region": [
+        0.43363636,
+        0.64705882,
+        0.46575758,
+        0.68117647
+      ],
+      "base_region": [
+        0.43363636,
+        0.64705882,
+        0.46575758,
+        0.68117647
+      ],
+      "crop_region": [
+        0.43363636,
+        0.64705882,
+        0.46575758,
+        0.68117647
+      ],
+      "machine_text_hint": "4b",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "7e856fa28fb9f4935a31771c0199033c0935c3f394d1f2a0d5efb101c44412f2",
+      "page_index": 0,
+      "source_kind": "raster_region",
+      "region": [
+        0.24666667,
+        0.64862745,
+        0.30545455,
+        0.67490196
+      ],
+      "base_region": [
+        0.24666667,
+        0.64862745,
+        0.30545455,
+        0.67490196
+      ],
+      "crop_region": [
+        0.24666667,
+        0.64862745,
+        0.30545455,
+        0.67490196
+      ],
+      "machine_text_hint": "“Or",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "c171674ab26ed11ba3f8637ec1a51f262c500efed1752f72ab6a8a1c308cc974",
+      "page_index": 0,
+      "source_kind": "raster_region",
+      "region": [
+        0.68181818,
+        0.70235294,
+        0.69939394,
+        0.7254902
+      ],
+      "base_region": [
+        0.68181818,
+        0.70235294,
+        0.69939394,
+        0.7254902
+      ],
+      "crop_region": [
+        0.68181818,
+        0.70235294,
+        0.69939394,
+        0.7254902
+      ],
+      "machine_text_hint": "Sa)",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "4d0aa81657cbe3172fcd35f5bb0e517b49e259063ab754bd46035d99fb4db311",
+      "page_index": 0,
+      "source_kind": "raster_region",
+      "region": [
+        0.52878788,
+        0.72784314,
+        0.63060606,
+        0.74431373
+      ],
+      "base_region": [
+        0.52878788,
+        0.72784314,
+        0.63060606,
+        0.74431373
+      ],
+      "crop_region": [
+        0.52878788,
+        0.72784314,
+        0.63060606,
+        0.74431373
+      ],
+      "machine_text_hint": "SECTION A-A",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "955995480a875f15cf9465ebb9bd53db8d036264f8fed93c2d6230fbedd03c24",
+      "page_index": 0,
+      "source_kind": "raster_region",
+      "region": [
+        0.6669697,
+        0.85019608,
+        0.76727273,
+        0.90235294
+      ],
+      "base_region": [
+        0.6669697,
+        0.85019608,
+        0.76727273,
+        0.90235294
+      ],
+      "crop_region": [
+        0.6669697,
+        0.85019608,
+        0.76727273,
+        0.90235294
+      ],
+      "machine_text_hint": "G Chittagong TITLE:",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "392ec145e3a13f33c8f89e8f93da14436f6dbe7fe9915c209daddc52fa9f6b24",
+      "page_index": 0,
+      "source_kind": "raster_region",
+      "region": [
+        0.75090909,
+        0.85764706,
+        0.89848485,
+        0.89647059
+      ],
+      "base_region": [
+        0.75090909,
+        0.85764706,
+        0.89848485,
+        0.89647059
+      ],
+      "crop_region": [
+        0.75090909,
+        0.85764706,
+        0.89848485,
+        0.89647059
+      ],
+      "machine_text_hint": "Flange University of Engineering A3",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "4ee5a2722875e225fb97c6a79a762c72c37c1e5c3e4a6b2f90df755f868bda42",
+      "page_index": 0,
+      "source_kind": "raster_region",
+      "region": [
+        0.91454545,
+        0.85764706,
+        0.99606061,
+        0.92078431
+      ],
+      "base_region": [
+        0.91454545,
+        0.85764706,
+        0.99606061,
+        0.92078431
+      ],
+      "crop_region": [
+        0.91454545,
+        0.85764706,
+        0.99606061,
+        0.92078431
+      ],
+      "machine_text_hint": "Technology Oc A",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "9d5b4296c4d2b9368f813c70f4fc706fa84eeddc1c69b858738811ed7c2a1f74",
+      "page_index": 0,
+      "source_kind": "raster_region",
+      "region": [
+        0.67151515,
+        0.91176471,
+        0.70060606,
+        0.91960784
+      ],
+      "base_region": [
+        0.67151515,
+        0.91176471,
+        0.70060606,
+        0.91960784
+      ],
+      "crop_region": [
+        0.67151515,
+        0.91176471,
+        0.70060606,
+        0.91960784
+      ],
+      "machine_text_hint": "SCALE:",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "3df38de445780693b45182f4ac061af58035a9aae01ec46abbd29a527697e512",
+      "page_index": 0,
+      "source_kind": "raster_region",
+      "region": [
+        0.76454545,
+        0.91176471,
+        0.86787879,
+        0.92039216
+      ],
+      "base_region": [
+        0.76454545,
+        0.91176471,
+        0.86787879,
+        0.92039216
+      ],
+      "crop_region": [
+        0.76454545,
+        0.91176471,
+        0.86787879,
+        0.92039216
+      ],
+      "machine_text_hint": "MAT: Plain Carbon Steel",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "d1b14989df27c950f5e355a2248b9a21fa45102c009730a0fce083a02c2d3f62",
+      "page_index": 0,
+      "source_kind": "raster_region",
+      "region": [
+        0.72030303,
+        0.91254902,
+        0.7330303,
+        0.92039216
+      ],
+      "base_region": [
+        0.72030303,
+        0.91254902,
+        0.7330303,
+        0.92039216
+      ],
+      "crop_region": [
+        0.72030303,
+        0.91254902,
+        0.7330303,
+        0.92039216
+      ],
+      "machine_text_hint": "1:2",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "835f22dc63ca19e81d9a979b546712de1032dceffeeab07073edcc6c7da6846e",
+      "page_index": 0,
+      "source_kind": "raster_region",
+      "region": [
+        0.67181818,
+        0.93647059,
+        0.77818182,
+        0.94509804
+      ],
+      "base_region": [
+        0.67181818,
+        0.93647059,
+        0.77818182,
+        0.94509804
+      ],
+      "crop_region": [
+        0.67181818,
+        0.93647059,
+        0.77818182,
+        0.94509804
+      ],
+      "machine_text_hint": "NAME: Fahad Elahi Khan",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "33a454eb4ccb215881da53459f912520ca9c8eea8688a03b08fde481c3c426ff",
+      "page_index": 0,
+      "source_kind": "raster_region",
+      "region": [
+        0.84757576,
+        0.93686275,
+        0.90242424,
+        0.94509804
+      ],
+      "base_region": [
+        0.84757576,
+        0.93686275,
+        0.90242424,
+        0.94509804
+      ],
+      "crop_region": [
+        0.84757576,
+        0.93686275,
+        0.90242424,
+        0.94509804
+      ],
+      "machine_text_hint": "SHEET 1 of 1",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "b58711b253199a1dabb6b4a1795980f68802e2ef8bf2c83071222bef6417794a",
+      "page_index": 0,
+      "source_kind": "raster_region",
+      "region": [
+        0.67181818,
+        0.95843137,
+        0.86545455,
+        0.96862745
+      ],
+      "base_region": [
+        0.67181818,
+        0.95843137,
+        0.86545455,
+        0.96862745
+      ],
+      "crop_region": [
+        0.67181818,
+        0.95843137,
+        0.86545455,
+        0.96862745
+      ],
+      "machine_text_hint": "DEPT: Mechanical Engineering ID: 2103017",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    },
+    {
+      "callout_id": "b0b3fb74f1e30161a66263bf9752a838768627790be3369e88e0d879c8cbf316",
+      "page_index": 0,
+      "source_kind": "raster_region",
+      "region": [
+        0.89939394,
+        0.95882353,
+        0.97,
+        0.96941176
+      ],
+      "base_region": [
+        0.89939394,
+        0.95882353,
+        0.97,
+        0.96941176
+      ],
+      "crop_region": [
+        0.89939394,
+        0.95882353,
+        0.97,
+        0.96941176
+      ],
+      "machine_text_hint": "DATE: 11-Apr-25",
+      "ignored": true,
+      "unbindable": false,
+      "freshness": {
+        "transcription": {
+          "state": "missing",
+          "revision": null,
+          "reason": "needs_transcription"
+        },
+        "parse": {
+          "state": "missing",
+          "reason": "needs_parse"
+        },
+        "target": {
+          "state": "missing",
+          "reason": "needs_target"
+        }
+      },
+      "raw_text": null,
+      "transcription_revision": null,
+      "semantic_parse": null,
+      "target_proposals": [],
+      "confirmed_target": null,
+      "image": null
+    }
+  ],
+  "instructions": "Her callout için: `transcribe` (metni yaz), `ignore`/`restore` (callout değil), `confirm_target` (öneriyi onayla), `select_target` (kendi seçimin). `base_revision` değiştiyse içe aktarma reddedilir."
+}

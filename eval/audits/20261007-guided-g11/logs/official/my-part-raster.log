@@ -1,0 +1,11 @@
+$ /Users/aydemir/.hermes/cache/scratch/cdp-venv/bin/python /Users/aydemir/Desktop/drawingto3d/eval/audits/20261007-guided-g11/g11_clean.py
+pages before: 1
+kept=0 closed=1
+pages after: 0
+$ /Users/aydemir/.hermes/cache/scratch/cdp-venv/bin/python /Users/aydemir/Desktop/drawingto3d/eval/audits/20261007-guided-g11/g11_runner.py /Users/aydemir/Desktop/drawingto3d/eval/audits/20261007-guided-g11/recipes-resume/my-part-raster.json
+[case my-part-raster] candidates=49
+[blocker] missing_calibration: Bilinen ölçünün iki noktasını ve uzunluğunu belirtin.
+[FAIL:EVALUATOR] {"console_errors": [{"level": "error", "text": "Failed to load resource: the server responded with a status of 404 (Not Found)", "url": "http://127.0.0.1:8765/favicon.ico", "source": "network"}], "rejected_requests": [{"status": 404, "url": "http://127.0.0.1:8765/favicon.ico", "request": "request no
+[FAIL:CONSTRAINT_UNSUPPORTED] {"what": "build never ran", "blockers": 1}
+
+[my-part-raster] failures=2 build=False verdict=None -> eval/audits/20261007-guided-g11/cases/my-part-raster.json

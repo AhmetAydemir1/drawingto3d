@@ -36,13 +36,18 @@ def run(cmd: list[str], log_path: pathlib.Path, append: bool = False) -> int:
 
 
 def main() -> int:
-    wanted = sys.argv[1:] or case_ids()
+    argv = sys.argv[1:]
+    recipes = HERE / "recipes-official"
+    if argv and argv[0] == "--recipes":
+        recipes = HERE / argv[1]
+        argv = argv[2:]
+    wanted = argv or case_ids()
     order = [cid for cid in case_ids() if cid in wanted]
     logs = HERE / "logs/official"
     logs.mkdir(parents=True, exist_ok=True)
     summary = []
     for index, case_id in enumerate(order, 1):
-        recipe = HERE / "recipes-official" / f"{case_id}.json"
+        recipe = recipes / f"{case_id}.json"
         log_path = logs / f"{case_id}.log"
         started = time.strftime("%H:%M:%S")
         print(f"[{index}/{len(order)}] {case_id} … ({started})", flush=True)

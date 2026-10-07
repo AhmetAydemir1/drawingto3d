@@ -1,0 +1,23 @@
+{
+  "status": "draft",
+  "passed": true,
+  "checks": {
+    "valid_solid": true,
+    "export_round_trip": true
+  },
+  "tool_checks": [
+    {
+      "operation": "hole_0_cut",
+      "ok": true,
+      "unverified": false,
+      "cylinders": 1
+    },
+    {
+      "operation": "hole_1_cut",
+      "ok": true,
+      "unverified": false,
+      "cylinders": 1
+    }
+  ],
+  "scope": "CAD geometry matches the proposed plan; the drawing reading is not part of this check."
+}

@@ -559,7 +559,7 @@ Dürüstlük: koşu 01 ve 02 sürücü tarafında durdu (koşu 01: next-unresolv
 
 **Sıradaki: G11** — dondurulmuş manifest ile ilk 10-pafta koşusu (sürücü + vaka kayıtları + rapor).
 
-## G11 — pilot turu (7/10 kayıtlı) — 2026-10-07
+## G11 — resmî 10-pafta koşusu **TAMAM: 10/10 kayıtlı** — 2026-10-07
 
 Bu turdaki kayıtlar **pilot** doğrulama kayıtlarıdır (UX-01 öncesi kod; sürücü/akış doğrulaması).
 Kullanıcı sırası gereği **resmî G11 koşusu UX-01 PASS'ten sonra** başlar (UX_PLAN §29); resmî koşu 10
@@ -591,8 +591,33 @@ Dürüstlük: drawing-2 ilk denemesi sürücü hatasıyla durdu (kutu-tabanlı t
 düştü (raster gözlem + saatlerce açık kalmış uygulama; yeniden başlatma + 900 s). Sürücü verdict
 fail'de exit≠0 verir (verdict farkı bilinçli; kanıt log/taksonomide).
 
-Kalan adımlar (sıra: UX_PLAN §29): **resmî G11 koşusu** — 10 paftanın tamamı UX-01 sonrası kodla →
-`g11_report.py` ile iki teslim → commit/push. Ayrıntılı loglar: `eval/audits/20261007-guided-g11/logs/`.
+### Resmî koşu sonucu (UX-01 sonrası kodla; dondurulmuş manifest sırası)
+
+Teslimler: `eval/guided_10_report.json` + `eval/guided_10_report.md` (`g11_report.py`).
+**GUIDED_CORRECT_STEP_RATE = 0.17 (1/6 geometri kararı olan vaka)**; 10/10 kayıtlı; ürün kodu ilk→son
+vaka arasında değişmedi.
+
+| vaka | sınıf | aday | sonuç |
+|---|---|---|---|
+| plate-pocket-vector | full_step | 45 | **verdict pass** (tek doğru; §29 sayaçları: 4 elle metin · 4 tek-tık ipucu · 36 satır tek toplu eylem) |
+| drawing-2-vector | full_step | 66 | CAD_WRONG |
+| plastic-enclosure-vector | full_step | 65 | CAD_WRONG (şekil ok, detay -) |
+| exercise-12-vector | full_step | 70 | CAD_WRONG |
+| exercise-51-raster | full_step | 26 | CAD_WRONG (göbek fragmanı) |
+| exercise-17-raster | full_step | 20 | CAD_UNSUPPORTED (üretim reddi) + EVALUATOR |
+| exercise-13-raster | full_step | 32 | CAD_UNSUPPORTED + EVALUATOR (sunucu-otoriter kontur düzeltmesiyle pilot'tan ileri gitti) |
+| my-part-raster | full_step | 49 | CONSTRAINT_UNSUPPORTED (kalibrasyon sunulmadı — uydurma yok) + EVALUATOR |
+| flange-raster | full_step | 29 | CAD_WRONG (disk okuması) + EVALUATOR |
+| flange-elbow-90-raster-noref | callout_scope_only | 27 | TRANSCRIPTION (kalibrasyon) + CONSTRAINT_UNSUPPORTED — geometric verdict yok (sınıf gereği) |
+
+Taksonomi: CAD_WRONG 5 · CAD_UNSUPPORTED 2 · EVALUATOR 4 · CONSTRAINT_UNSUPPORTED 2 · TRANSCRIPTION 1.
+
+Sürücü turları (ürün kodu sabit): v2 = UX-01 ipucu düğmesi (`#callout-hint-yes`); v3 = yavaş raster
+ingest'e karşı token yakala + yeniden bağlan. Kesintiler kanıtlı: `logs/official/abort1-plate-driver-error.log`
+(yeniden oluşturulmuş alıntı), `logs/official/abort2-*-gate900.log` (4 rasterın 900 sn kapısı düşüşü);
+4 vaka sunucudaki temiz oturumlarına token'la bağlanıp sürdürüldü (`recipes-resume/`).
+
+Kalan: G12 (generic fix loop — bulgular kayıtlı; düzeltmeler ve yeniden koşu G12'nin işi).
 
 ---
 

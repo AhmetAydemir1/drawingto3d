@@ -1,0 +1,14 @@
+$ /Users/aydemir/.hermes/cache/scratch/cdp-venv/bin/python /Users/aydemir/Desktop/drawingto3d/eval/audits/20261007-guided-g11/g11_clean.py
+pages before: 2
+kept=1 closed=1
+pages after: 1
+$ /Users/aydemir/.hermes/cache/scratch/cdp-venv/bin/python /Users/aydemir/Desktop/drawingto3d/eval/audits/20261007-guided-g11/g11_runner.py /Users/aydemir/Desktop/drawingto3d/eval/audits/20261007-guided-g11/recipes-official/my-part-raster.json
+Traceback (most recent call last):
+  File "/Users/aydemir/Desktop/drawingto3d/eval/audits/20261007-guided-g11/g11_runner.py", line 500, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/Users/aydemir/Desktop/drawingto3d/eval/audits/20261007-guided-g11/g11_runner.py", line 151, in main
+    page.wait_ev("!$('controls').hidden", timeout=900, label="session opened")
+  File "/Users/aydemir/Desktop/drawingto3d/eval/audits/20261006-guided-g3-review/cdp_client.py", line 198, in wait_ev
+    raise TimeoutError(f"condition never held: {label or body}")
+TimeoutError: condition never held: session opened

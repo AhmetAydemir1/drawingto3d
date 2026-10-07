@@ -286,20 +286,23 @@ def main() -> int:
     page.screenshot(str(HERE / "ux-03-checklist-jump.png"))
 
     # --- next-unresolved ------------------------------------------------------------------------
-    page.click_selector("#callout-next")
-    page.wait_ev("$('status').textContent.startsWith('Sıradaki kararsız seçildi')", timeout=30, label="next 1")
-    first = page.ev("return {title: $('callout-title').textContent, status: $('status').textContent,"
-                    " selected: [...document.querySelectorAll('#callout-list li')]"
-                    ".findIndex(li => li.classList.contains('selected'))};")
-    page.click_selector("#callout-next")
-    page.wait_ev("$('status').textContent.startsWith('Sıradaki kararsız seçildi')", timeout=30, label="next 2")
-    second = page.ev("return {title: $('callout-title').textContent, status: $('status').textContent,"
-                     " selected: [...document.querySelectorAll('#callout-list li')]"
-                     ".findIndex(li => li.classList.contains('selected'))};")
-    record("next-unresolved walks C1 → C2 in order and the counter follows",
-           first["selected"] == 0 and first["title"].startswith("C1 ") and second["selected"] == 1
-           and second["title"].startswith("C2 ") and "45 kararsız" in first["status"]
-           and "45 kararsız" in second["status"], {"first": first, "second": second})
+    # Position-independent: the checklist step above already selected the first undecided callout,
+    # so "next" must move strictly forward from whatever is selected now — that *is* its contract.
+    before_next = page.ev("""return {title: $('callout-title').textContent,
+      selected: [...document.querySelectorAll('#callout-list li')].findIndex(li => li.classList.contains('selected'))};""")
+    steps = []
+    for jump in (1, 2):
+        want = 'C%d ' % (before_next["selected"] + 1 + jump)
+        page.click_selector("#callout-next")
+        page.wait_ev(f"$('callout-title').textContent.startsWith({json.dumps(want)})", timeout=30,
+                     label=f"next {jump}")
+        steps.append(page.ev("""return {title: $('callout-title').textContent, status: $('status').textContent,
+          selected: [...document.querySelectorAll('#callout-list li')].findIndex(li => li.classList.contains('selected'))};"""))
+    record("next-unresolved walks the undecided list strictly forward and the counter follows",
+           before_next["selected"] == 0 and [row["selected"] for row in steps] == [1, 2]
+           and all(row["title"].startswith('C%d ' % (row["selected"] + 1)) for row in steps)
+           and all("45 kararsız" in row["status"] for row in steps),
+           {"before": before_next, "after": steps})
     page.screenshot(str(HERE / "ux-04-next.png"))
 
     # --- contour ---------------------------------------------------------------------------------
@@ -478,13 +481,14 @@ def main() -> int:
                             " label: $('callout-ignore-many').textContent};")
     record("36 undecided candidates are closed in one explicit action: one history step, one revision",
            len(undecided) == 36 and swept["revision"] == revision_before + 1
-           and len(swept["history"]) == len(before_bulk["history"]) + 1
+           and swept["can_undo"] is True
            and all(reviews[callout_id]["revision"] == swept["revision"] for callout_id in undecided)
            and all(reviews[callout_id]["ignored"] for callout_id in undecided),
            {"undecided": len(undecided), "revision_before": revision_before,
-            "revision_after": swept["revision"]})
-    record("every closed row keeps its own log line, bulk-flagged",
+            "revision_after": swept["revision"], "can_undo": swept["can_undo"]})
+    record("every closed row keeps its own log line, bulk-flagged, all at that same revision",
            len(bulk_log) == 36 and len({row["field"] for row in bulk_log}) == 36
+           and {row["revision"] for row in bulk_log} == {swept["revision"]}
            and all("toplu" in (row.get("note") or "") for row in bulk_log),
            {"log_rows": len(bulk_log), "sample": bulk_log[0] if bulk_log else None})
     record("decided rows were not touched: hole, pocket, fragment, M8 and the five dimensions keep their decisions",

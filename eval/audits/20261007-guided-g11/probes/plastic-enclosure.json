@@ -1,0 +1,1672 @@
+{
+  "case_source": "examples/pdf with steps/6/plastic enclosue.pdf",
+  "token": "4098903d2ca2458f8eb5d87ce6d7072e",
+  "candidates": [
+    {
+      "id": "2b1604dfbdbffab10101f780e97ce3388d32fb0be7e74c680009b406d9f89556",
+      "hint": "4",
+      "region": [
+        0.1841,
+        0.0186,
+        0.1968,
+        0.032
+      ]
+    },
+    {
+      "id": "25487cc1a4899de4d1c7cbf5948d809b87248d5d842d2d8114fa599323f34c4b",
+      "hint": "3",
+      "region": [
+        0.3986,
+        0.0186,
+        0.4107,
+        0.0323
+      ]
+    },
+    {
+      "id": "9a545c3fcdb09897b8873ed529497c374eb19ce29613024533fd2897491620e2",
+      "hint": "2",
+      "region": [
+        0.6365,
+        0.0186,
+        0.6488,
+        0.032
+      ]
+    },
+    {
+      "id": "977774c838ffcfb39a436396330fe80d88a97e7209279f6dcc1d1e956f3775cc",
+      "hint": "1",
+      "region": [
+        0.8536,
+        0.019,
+        0.8582,
+        0.032
+      ]
+    },
+    {
+      "id": "d84ba2a9b684b0337418b3ace44c21093bd636f1b4735c2899e02c17b8c6641a",
+      "hint": "1 20.00",
+      "region": [
+        0.5046,
+        0.0632,
+        0.5685,
+        0.0752
+      ]
+    },
+    {
+      "id": "a78f2bd69b4f6fbcda971e1783a2bcf8752adace620b181fc47878b163235f6e",
+      "hint": "1.50",
+      "region": [
+        0.6529,
+        0.0834,
+        0.6921,
+        0.0954
+      ]
+    },
+    {
+      "id": "0514b060785b83f7641ea83a201e524a0ff3558b318eb44cd951649cc543679a",
+      "hint": "F",
+      "region": [
+        0.0794,
+        0.0922,
+        0.0885,
+        0.1052
+      ]
+    },
+    {
+      "id": "2c43e7bd71d46a35e92585467372e1936887a541f9eaaa1b9d1d0ec4a98a9b0d",
+      "hint": "F",
+      "region": [
+        0.9602,
+        0.0922,
+        0.9692,
+        0.1052
+      ]
+    },
+    {
+      "id": "2f7af4aa401d90464553577cdf30255777326746a3b914106eca9acf37580791",
+      "hint": "4.80",
+      "region": [
+        0.8196,
+        0.1068,
+        0.8366,
+        0.1364
+      ]
+    },
+    {
+      "id": "21f4fef6be47e1e948367fdff4c37958b56079bcd9bfcb180feee8ceca5212ed",
+      "hint": "4.00",
+      "region": [
+        0.7625,
+        0.1075,
+        0.7795,
+        0.1371
+      ]
+    },
+    {
+      "id": "775ee60e9a7d5bfd927182e74c82a8cfa6642fce0309c131959825f18ef88d50",
+      "hint": "3.00",
+      "region": [
+        0.7339,
+        0.1084,
+        0.7509,
+        0.1378
+      ]
+    },
+    {
+      "id": "9a2027008644d98c977c559fb6024834b1c4aa2647113c32a82ce4511cbdc195",
+      "hint": "4.00",
+      "region": [
+        0.791,
+        0.1109,
+        0.808,
+        0.1405
+      ]
+    },
+    {
+      "id": "40c57826618ed4a21ba04e431b96c82ae1c286c08dd29aeebb59468eb2decedc",
+      "hint": "1.50",
+      "region": [
+        0.7054,
+        0.1151,
+        0.7223,
+        0.1428
+      ]
+    },
+    {
+      "id": "102fbef5a5a38b2687492e7f1491dc835868626d338bb138f2532df4e27a4829",
+      "hint": "1 0.00",
+      "region": [
+        0.3349,
+        0.1564,
+        0.3519,
+        0.1929
+      ]
+    },
+    {
+      "id": "55b09c42200ed4cad6a264591501197164395c5306888f7e1b6b3e791a82bcce",
+      "hint": "60.00",
+      "region": [
+        0.8767,
+        0.1644,
+        0.8937,
+        0.202
+      ]
+    },
+    {
+      "id": "5e0180e05fcef159cb68959c89f4f7a0f3005ce722a4e8606d54e178a0b2580e",
+      "hint": "1 8.00",
+      "region": [
+        0.2989,
+        0.2005,
+        0.3158,
+        0.2369
+      ]
+    },
+    {
+      "id": "3f108f70e67a548112f633cd118e0e7f4ea6c3b36a18855271c2844697aea057",
+      "hint": "E",
+      "region": [
+        0.0788,
+        0.2413,
+        0.0892,
+        0.2542
+      ]
+    },
+    {
+      "id": "3626c78f9f52564d2db76b88e1a255a02a8bdfa5f9d2e64659106afbd069c5c0",
+      "hint": "E",
+      "region": [
+        0.9595,
+        0.2413,
+        0.9699,
+        0.2542
+      ]
+    },
+    {
+      "id": "b5cc856366519978f59cb99267f201a2ba5550f71741c1000d731bcd571910e5",
+      "hint": "46.00",
+      "region": [
+        0.5962,
+        0.2532,
+        0.6504,
+        0.2652
+      ]
+    },
+    {
+      "id": "737f226f8123c357345a4226bf54e886dbe01db020a4238a37effedfef825595",
+      "hint": "R8.00",
+      "region": [
+        0.283,
+        0.269,
+        0.3329,
+        0.3042
+      ]
+    },
+    {
+      "id": "0e7c8594fe59e9f1c11114b79852b2c949f8c79ff84539f0e555797e682c183b",
+      "hint": "1 0.00",
+      "region": [
+        0.3224,
+        0.302,
+        0.3394,
+        0.3384
+      ]
+    },
+    {
+      "id": "68cc905a84aaa505651293e4acb7a667947ac206c39a0019f1d8fc83aa4eb6ca",
+      "hint": "D",
+      "region": [
+        0.0762,
+        0.4095,
+        0.0914,
+        0.4225
+      ]
+    },
+    {
+      "id": "b9a11aec2ab6815f45996c83a826af8c3d384b667b69af7734ef2599f4ac83f7",
+      "hint": "D",
+      "region": [
+        0.9569,
+        0.4095,
+        0.9721,
+        0.4225
+      ]
+    },
+    {
+      "id": "16dc9f3295489173be7cc50942f06ff4caa59bd567949d71bba8c99e3ef770c5",
+      "hint": "25.00",
+      "region": [
+        0.7054,
+        0.4347,
+        0.7223,
+        0.4729
+      ]
+    },
+    {
+      "id": "8411859a85e324196a72fea6997be15c5ea5eabc44e4979056233d05a364dd6f",
+      "hint": "C",
+      "region": [
+        0.0745,
+        0.5775,
+        0.0921,
+        0.5911
+      ]
+    },
+    {
+      "id": "0b26907e1c97ebf1f42aeda819529266b5395fae28e8c3bca31d40dbbf7a94e7",
+      "hint": "C",
+      "region": [
+        0.9552,
+        0.5775,
+        0.9729,
+        0.5911
+      ]
+    },
+    {
+      "id": "e272c089bbf8671d4c89ff59d0ba22f9cc1fdbec3aca5e0eb8e0837e61ba4ec3",
+      "hint": "B",
+      "region": [
+        0.0783,
+        0.7462,
+        0.0892,
+        0.7592
+      ]
+    },
+    {
+      "id": "34f80bbbaf1b583c4bae45af5fa440c8c8a14e698ceb6d6e1c15c262de25ac7b",
+      "hint": "B",
+      "region": [
+        0.9591,
+        0.7462,
+        0.9699,
+        0.7592
+      ]
+    },
+    {
+      "id": "7e94d4b51be7cb805aa3356ea468e7364338c9281a435c0ab4c885e0dd62abcc",
+      "hint": "DEBURR AND",
+      "region": [
+        0.4831,
+        0.7845,
+        0.5396,
+        0.7895
+      ]
+    },
+    {
+      "id": "34f56fdcdd7f2d6f4c275004bf45264a7a0a93c5f2b8962ef947ded769dc91c6",
+      "hint": "UNLESS OTHERWISE SPECIFIED:",
+      "region": [
+        0.0989,
+        0.7847,
+        0.2291,
+        0.7898
+      ]
+    },
+    {
+      "id": "2d95b2e1ba621de8d3f434cb11cd19c7b0988d214060cb80ae01326c5f9420be",
+      "hint": "FINISH:",
+      "region": [
+        0.2596,
+        0.7847,
+        0.2869,
+        0.7898
+      ]
+    },
+    {
+      "id": "07b13d187c35407bf235b810094654ac02fc0593fa58bd75918096cc498ef052",
+      "hint": "DO NOT SCALE DRAWING",
+      "region": [
+        0.6321,
+        0.7893,
+        0.7468,
+        0.7945
+      ]
+    },
+    {
+      "id": "857c14cbee85bf98e135a42f54bf30ac5bba42daad3c2ab3a7e6bed2d8804a69",
+      "hint": "REVISION",
+      "region": [
+        0.826,
+        0.79,
+        0.8651,
+        0.7951
+      ]
+    },
+    {
+      "id": "ea9a9a90b1b9526872e3fe9348d8935569ded99ff18ec59105b52313e3be48b6",
+      "hint": "BREAK SHARP",
+      "region": [
+        0.4831,
+        0.7928,
+        0.5418,
+        0.7979
+      ]
+    },
+    {
+      "id": "0343b82e877f98b68d3442a678641f9010c324d3d74558dcf6ed17695dc09458",
+      "hint": "DIMENSIONS ARE IN MILLIMETERS",
+      "region": [
+        0.0988,
+        0.7931,
+        0.2411,
+        0.7982
+      ]
+    },
+    {
+      "id": "dba102059c7ba7ba475e249e85a34860266abe649df7d69fd132949532b452d2",
+      "hint": "EDGES",
+      "region": [
+        0.4831,
+        0.8012,
+        0.5114,
+        0.8064
+      ]
+    },
+    {
+      "id": "931287cab0e6713174689c9a965329e048469341154b5c3d9e0c9aef77df4ad8",
+      "hint": "SURFACE FINISH:",
+      "region": [
+        0.0982,
+        0.8015,
+        0.169,
+        0.8066
+      ]
+    },
+    {
+      "id": "941d24be1f5991ac4c7ed1443fcb4bb94f98ca82e2c9486f1ff811ae2d7e5148",
+      "hint": "TOLERANCES:",
+      "region": [
+        0.0982,
+        0.8099,
+        0.1579,
+        0.815
+      ]
+    },
+    {
+      "id": "66af3c1f351ff4a72e2d4d4a031f0e34db4c68943b81687be79a6acfcebd5144",
+      "hint": "LINEAR:",
+      "region": [
+        0.1065,
+        0.8184,
+        0.1384,
+        0.8234
+      ]
+    },
+    {
+      "id": "49772558ccda1aaedcfebec7d643565dd2eec009c839601c4065022e3c95c207",
+      "hint": "ANGULAR:",
+      "region": [
+        0.106,
+        0.8267,
+        0.1527,
+        0.8319
+      ]
+    },
+    {
+      "id": "72374aff8b314b26534fb91b609a88f3d37f0f7bd2552ce377001a16a500b035",
+      "hint": "SIGNATURE",
+      "region": [
+        0.2383,
+        0.8431,
+        0.2871,
+        0.8482
+      ]
+    },
+    {
+      "id": "fdc627cea9f1d2add7ea0de35cc87c9fb81a91b5f30a6d3bc80381c3dace72ef",
+      "hint": "DATE",
+      "region": [
+        0.3208,
+        0.8432,
+        0.3425,
+        0.8481
+      ]
+    },
+    {
+      "id": "689b9fad4e0195652174232542ec182a3f02dd2538630fa8043fb5a69233098e",
+      "hint": "TITLE:",
+      "region": [
+        0.5719,
+        0.8432,
+        0.5928,
+        0.8482
+      ]
+    },
+    {
+      "id": "e9809065b23c55c21b9f1706bb2b7e220b3a2181e7b7c50be84f67c54202569e",
+      "hint": "NAME",
+      "region": [
+        0.1642,
+        0.8434,
+        0.1905,
+        0.8483
+      ]
+    },
+    {
+      "id": "9c77a4d08301180c543a266b9dc31f6275312c7557c43b5587445da8d8151e7f",
+      "hint": "Plastic Enclosure",
+      "region": [
+        0.6097,
+        0.8495,
+        0.9151,
+        0.8715
+      ]
+    },
+    {
+      "id": "223edc793d32d02767aa97b21d2f4f17e42d749097256c9e3d9fa2bd93b54772",
+      "hint": "Kumar",
+      "region": [
+        0.1477,
+        0.8532,
+        0.2155,
+        0.8649
+      ]
+    },
+    {
+      "id": "f2612215925d8b3a9ee4325b2e0aa2b597ec73e768abc8892f8ce2fe794b353f",
+      "hint": "DRAWN",
+      "region": [
+        0.099,
+        0.8573,
+        0.1284,
+        0.8622
+      ]
+    },
+    {
+      "id": "d31466b0b6b07e2358979239dd8b0c81cbcb6f6b824586d058f478d4eddafd0c",
+      "hint": "CHK'D",
+      "region": [
+        0.1002,
+        0.8714,
+        0.1272,
+        0.8765
+      ]
+    },
+    {
+      "id": "448795d4a9730c8dc959ff30779f7a66faa0ef332973d58913dde152f6aee9a8",
+      "hint": "APPV'D",
+      "region": [
+        0.0973,
+        0.8852,
+        0.1298,
+        0.8902
+      ]
+    },
+    {
+      "id": "2dd3526f42e217b08f75567b4e265ab45af739d40eff20896c124ae8a3fa38b2",
+      "hint": "A",
+      "region": [
+        0.0746,
+        0.8951,
+        0.092,
+        0.9081
+      ]
+    },
+    {
+      "id": "c8c4f0331d075ef71149171bcd6371eeecd77053765a3e2957ca17050224c914",
+      "hint": "A",
+      "region": [
+        0.9553,
+        0.8951,
+        0.9727,
+        0.9081
+      ]
+    },
+    {
+      "id": "adfc6fa76ef13bfefba6c4879ffb2341d6aaab36817e2cfab48f61c8298239a2",
+      "hint": "MFG",
+      "region": [
+        0.1011,
+        0.8998,
+        0.1214,
+        0.9049
+      ]
+    },
+    {
+      "id": "290fe5660d827a61eda1bd7b0e9fb8b232ee1784e7dd6cb13e4b048cf9efcb1a",
+      "hint": "DWG NO.",
+      "region": [
+        0.5719,
+        0.9124,
+        0.6146,
+        0.9175
+      ]
+    },
+    {
+      "id": "bbcec4e82568c6f7fe3617513f681d9b2bc84f693d72a1230204a28e9efdd47d",
+      "hint": "MATERIAL:",
+      "region": [
+        0.3606,
+        0.9125,
+        0.4054,
+        0.9175
+      ]
+    },
+    {
+      "id": "6db2f1f387959de53310c1352c817664a5103b5d120251e9750d864f3333b141",
+      "hint": "Q.A",
+      "region": [
+        0.1029,
+        0.914,
+        0.1198,
+        0.9194
+      ]
+    },
+    {
+      "id": "95adf4099c2fc3af8e56c187fc6082482d3d6517a00ca9eb7617395d246e3c2b",
+      "hint": "A4",
+      "region": [
+        0.9091,
+        0.9177,
+        0.9319,
+        0.9275
+      ]
+    },
+    {
+      "id": "0c2006d43ddbf2c38e21c6f497f89ff1bc8ef722f70446c046711a621531d58c",
+      "hint": "plastic enclosue",
+      "region": [
+        0.5855,
+        0.92,
+        0.8877,
+        0.9472
+      ]
+    },
+    {
+      "id": "f1c6076fdc4618a960bb08c68c980aae778f1fea079a880c507e4527dbfabacf",
+      "hint": "ABS Plastic",
+      "region": [
+        0.4242,
+        0.9274,
+        0.4988,
+        0.9357
+      ]
+    },
+    {
+      "id": "9da1e0a0052d5618739b1daa4de5e84a943efff2e2300270c56c85033d7e8542",
+      "hint": "WEIGHT:",
+      "region": [
+        0.3604,
+        0.9562,
+        0.3963,
+        0.9614
+      ]
+    },
+    {
+      "id": "0c741dc5193f45983943ec2a5a980fe6955c67258fe4fc2f4ce7f6743c06c39e",
+      "hint": "SCALE:1:2",
+      "region": [
+        0.5717,
+        0.9564,
+        0.6147,
+        0.9616
+      ]
+    },
+    {
+      "id": "cab41e195ea762c3bbd08b94d2dafbb20c764246803c8c47d33be4062ceae3d5",
+      "hint": "SHEET 1 OF 1",
+      "region": [
+        0.7831,
+        0.9564,
+        0.836,
+        0.9616
+      ]
+    },
+    {
+      "id": "1b092ec06b11ef0f8e94db18e86f4c3915e845d88a245447dddacc7acc9ddb93",
+      "hint": "4",
+      "region": [
+        0.1841,
+        0.968,
+        0.1968,
+        0.9813
+      ]
+    },
+    {
+      "id": "bc543a215ea5866bffdaa584d92d7ca1ce47a7e76ecc9ebb13b39cadf0173d51",
+      "hint": "3",
+      "region": [
+        0.3986,
+        0.968,
+        0.4107,
+        0.9816
+      ]
+    },
+    {
+      "id": "60f3547a4c6f6166f83253f1f17f3e177a6fed1b21ca5361075968bac346a205",
+      "hint": "2",
+      "region": [
+        0.6365,
+        0.968,
+        0.6488,
+        0.9813
+      ]
+    },
+    {
+      "id": "6b2f4b9f617e18898f8f6f1628b9f125870e3b7638c82dd77da3fbfa67a6ec6a",
+      "hint": "1",
+      "region": [
+        0.8536,
+        0.9683,
+        0.8582,
+        0.9813
+      ]
+    }
+  ],
+  "profiles": [
+    {
+      "id": "outline_2",
+      "points": 100,
+      "bbox": [
+        647,
+        309,
+        1124,
+        549
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "arc",
+        "line",
+        "arc",
+        "line",
+        "arc",
+        "line",
+        "arc"
+      ]
+    },
+    {
+      "id": "outline_5",
+      "points": 6,
+      "bbox": [
+        675,
+        341,
+        1091,
+        517
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "line",
+        "line",
+        "line",
+        "line",
+        "line"
+      ]
+    },
+    {
+      "id": "outline_6",
+      "points": 5,
+      "bbox": [
+        679,
+        857,
+        1092,
+        925
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "line",
+        "line",
+        "line",
+        "line"
+      ]
+    },
+    {
+      "id": "outline_7",
+      "points": 4,
+      "bbox": [
+        1270,
+        857,
+        1446,
+        925
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "line",
+        "line",
+        "line"
+      ]
+    },
+    {
+      "id": "outline_8",
+      "points": 50,
+      "bbox": [
+        699,
+        459,
+        854,
+        498
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "arc",
+        "line",
+        "arc"
+      ]
+    },
+    {
+      "id": "outline_9",
+      "points": 50,
+      "bbox": [
+        699,
+        361,
+        852,
+        400
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "arc",
+        "line",
+        "arc"
+      ]
+    },
+    {
+      "id": "outline_10",
+      "points": 4,
+      "bbox": [
+        276,
+        857,
+        452,
+        871
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "line",
+        "line",
+        "line"
+      ]
+    },
+    {
+      "id": "outline_11",
+      "points": 50,
+      "bbox": [
+        295,
+        906,
+        335,
+        938
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "arc",
+        "line",
+        "arc"
+      ]
+    },
+    {
+      "id": "circle_g63",
+      "points": 60,
+      "bbox": [
+        1002,
+        380,
+        1021,
+        399
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "circle_g76",
+      "points": 60,
+      "bbox": [
+        1002,
+        459,
+        1021,
+        478
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "circle_g61",
+      "points": 60,
+      "bbox": [
+        1004,
+        461,
+        1020,
+        477
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "circle_g59",
+      "points": 60,
+      "bbox": [
+        1004,
+        382,
+        1020,
+        398
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "circle_g60",
+      "points": 60,
+      "bbox": [
+        1004,
+        461,
+        1020,
+        477
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "circle_g57",
+      "points": 60,
+      "bbox": [
+        1004,
+        382,
+        1020,
+        398
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "circle_g62",
+      "points": 60,
+      "bbox": [
+        1006,
+        463,
+        1018,
+        475
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "circle_g58",
+      "points": 60,
+      "bbox": [
+        1006,
+        384,
+        1018,
+        396
+      ],
+      "closed": null,
+      "edges": []
+    },
+    {
+      "id": "outline_13",
+      "points": 6,
+      "bbox": [
+        994,
+        387,
+        1002,
+        393
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "line",
+        "line",
+        "line",
+        "line",
+        "line"
+      ]
+    },
+    {
+      "id": "outline_14",
+      "points": 4,
+      "bbox": [
+        1021,
+        468,
+        1028,
+        471
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "line",
+        "line",
+        "line"
+      ]
+    },
+    {
+      "id": "outline_16",
+      "points": 3,
+      "bbox": [
+        1028,
+        466,
+        1029,
+        471
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "line",
+        "line"
+      ]
+    },
+    {
+      "id": "outline_23",
+      "points": 3,
+      "bbox": [
+        1021,
+        466,
+        1028,
+        467
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "line",
+        "line"
+      ]
+    },
+    {
+      "id": "outline_17",
+      "points": 3,
+      "bbox": [
+        1021,
+        392,
+        1028,
+        392
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "line",
+        "line"
+      ]
+    },
+    {
+      "id": "outline_20",
+      "points": 3,
+      "bbox": [
+        1009,
+        479,
+        1009,
+        485
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "line",
+        "line"
+      ]
+    },
+    {
+      "id": "outline_21",
+      "points": 3,
+      "bbox": [
+        1009,
+        373,
+        1009,
+        380
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "line",
+        "line"
+      ]
+    },
+    {
+      "id": "outline_19",
+      "points": 3,
+      "bbox": [
+        1009,
+        452,
+        1009,
+        459
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "line",
+        "line"
+      ]
+    },
+    {
+      "id": "outline_3",
+      "points": 101,
+      "bbox": [
+        655,
+        318,
+        1115,
+        541
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "line",
+        "arc",
+        "line",
+        "arc",
+        "line",
+        "arc",
+        "line",
+        "arc"
+      ]
+    },
+    {
+      "id": "outline_4",
+      "points": 104,
+      "bbox": [
+        657,
+        318,
+        1115,
+        541
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "line",
+        "line",
+        "arc",
+        "line",
+        "arc",
+        "line",
+        "line",
+        "line",
+        "arc",
+        "line",
+        "arc"
+      ]
+    },
+    {
+      "id": "outline_15",
+      "points": 101,
+      "bbox": [
+        1002,
+        373,
+        1029,
+        407
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "line",
+        "line",
+        "line",
+        "line",
+        "line",
+        "line",
+        "line",
+        "line",
+        "line",
+        "line",
+        "line",
+        "arc",
+        "line",
+        "line",
+        "line",
+        "line",
+        "line",
+        "line",
+        "line",
+        "line",
+        "line",
+        "line",
+        "line",
+        "line",
+        "line",
+        "line",
+        "line",
+        "line",
+        "line",
+        "arc",
+        "arc"
+      ]
+    },
+    {
+      "id": "outline_12",
+      "points": 83,
+      "bbox": [
+        1000,
+        459,
+        1015,
+        486
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "line",
+        "line",
+        "line",
+        "line",
+        "line",
+        "line",
+        "line",
+        "line",
+        "line",
+        "line",
+        "arc",
+        "arc",
+        "arc"
+      ]
+    },
+    {
+      "id": "outline_26",
+      "points": 6,
+      "bbox": [
+        1009,
+        451,
+        1015,
+        458
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "line",
+        "line",
+        "line",
+        "line",
+        "line"
+      ]
+    },
+    {
+      "id": "outline_25",
+      "points": 5,
+      "bbox": [
+        994,
+        466,
+        1001,
+        471
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "line",
+        "line",
+        "line",
+        "line"
+      ]
+    },
+    {
+      "id": "outline_24",
+      "points": 4,
+      "bbox": [
+        994,
+        387,
+        1002,
+        388
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "line",
+        "line",
+        "line"
+      ]
+    },
+    {
+      "id": "outline_22",
+      "points": 4,
+      "bbox": [
+        995,
+        471,
+        1002,
+        471
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "line",
+        "line",
+        "line"
+      ]
+    },
+    {
+      "id": "outline_18",
+      "points": 3,
+      "bbox": [
+        1009,
+        400,
+        1009,
+        407
+      ],
+      "closed": null,
+      "edges": [
+        "line",
+        "line",
+        "line"
+      ]
+    }
+  ],
+  "circles": [
+    {
+      "id": "g57",
+      "radius": 7.87,
+      "center": [
+        1011.6,
+        389.9
+      ]
+    },
+    {
+      "id": "g58",
+      "radius": 5.9,
+      "center": [
+        1011.6,
+        389.8
+      ]
+    },
+    {
+      "id": "g59",
+      "radius": 8.06,
+      "center": [
+        1011.7,
+        389.8
+      ]
+    },
+    {
+      "id": "g60",
+      "radius": 7.88,
+      "center": [
+        1011.6,
+        468.8
+      ]
+    },
+    {
+      "id": "g61",
+      "radius": 8.09,
+      "center": [
+        1011.7,
+        468.8
+      ]
+    },
+    {
+      "id": "g62",
+      "radius": 5.92,
+      "center": [
+        1011.7,
+        468.8
+      ]
+    },
+    {
+      "id": "g63",
+      "radius": 9.46,
+      "center": [
+        1011.6,
+        389.8
+      ]
+    },
+    {
+      "id": "g76",
+      "radius": 9.43,
+      "center": [
+        1011.6,
+        468.8
+      ]
+    }
+  ],
+  "measurements": [
+    {
+      "id": "t0",
+      "text": "25.00",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t1",
+      "text": "1 0.00",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t2",
+      "text": "R8.00",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t3",
+      "text": "46.00",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t4",
+      "text": "1 20.00",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t5",
+      "text": "60.00",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t6",
+      "text": "1 0.00",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t7",
+      "text": "1 8.00",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t8",
+      "text": "3.00",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t9",
+      "text": "4.00",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t10",
+      "text": "4.80",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t11",
+      "text": "4.00",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t12",
+      "text": "1.50",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t13",
+      "text": "1.50",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t26",
+      "text": "4",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t27",
+      "text": "4",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t28",
+      "text": "3",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t29",
+      "text": "3",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t30",
+      "text": "2",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t31",
+      "text": "2",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t32",
+      "text": "1",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    },
+    {
+      "id": "t33",
+      "text": "1",
+      "keys": [
+        "bbox",
+        "char_range",
+        "confidence",
+        "count",
+        "id",
+        "kind",
+        "method",
+        "text",
+        "unit",
+        "value"
+      ]
+    }
+  ],
+  "sketch_keys": [
+    "bindings",
+    "conflicts",
+    "consistent",
+    "fit",
+    "join_gap_max_px",
+    "px_per_mm",
+    "rows",
+    "source",
+    "unbound_circles",
+    "unbound_edges"
+  ],
+  "detection": {
+    "detector_version": "callout-detector/1",
+    "diagnostics": []
+  },
+  "summary": "33 kontur · 8 daire · 22 ölçü adayı · sınıf: flat-part · kayıt 0"
+}

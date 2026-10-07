@@ -1,0 +1,18 @@
+{
+  "case_id": "plastic-enclosure-vector",
+  "source_path": "examples/pdf with steps/6/plastic enclosue.pdf",
+  "contour": {"profile_id": "outline_2"},
+  "accept_proposals": ["Ölçek"],
+  "thickness_mm": 25,
+  "acknowledge_trace": true,
+  "decisions": [
+    {"hint": "3.00", "action": "transcribe", "text": "Ø3 THRU", "target": {"kind": "circle_group", "circles": ["g58", "g62"]}}
+  ],
+  "notes": [
+    "Parça düz levha değil: iki izometrik görünüm bir kubbe/kabuk gövde gösteriyor; tek kontur + kalınlık akışının ifade edebildiği en yakın model dış kontur (outline_2, 121.5×61.18 mm iz).",
+    "Öneriler: Ölçek (basılı \"1 20.00\", menü t4, 3.92 px/mm) onaylandı. 'Cep derinliği 4 mm' önerisi onaylanmadı: çizimde 4.00 delik çapı olarak okunuyor, cep derinliği değil.",
+    "Kalınlık: yan görünümdeki toplam yükseklik 25 (C23); kubbe formu tek kalınlıkla ifade edilemez, belirsizlik kayıtta.",
+    "Yuvalar (2×, R8/10.00/18.00), havşa/cepler (4.00/4.80/1.50) modellenmedi — akışın karşılığı yok; kayıt bunu saklar.",
+    "Kalan 64 aday tek açık eylemle kapsam dışı."
+  ]
+}

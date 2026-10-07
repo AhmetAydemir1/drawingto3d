@@ -1,0 +1,64 @@
+{
+  "summary": "33 kontur · 8 daire · 22 ölçü adayı · sınıf: flat-part · kayıt 1",
+  "profile": "outline_2",
+  "proposals": [
+    "{\"field\":\"profile_id\",\"value\":\"outline_2\",\"confidence\":\"bound\",\"evidence\":{\"width_mm\":121.5,\"height_mm\":61.18,\"outline_mm\":[121.49,61.17],\"geometry_ids\":[\"g23\",\"g22\",\"g29\",\"g28\",\"g27\",\"g26\",\"g25\",\"g24\"],\"join_max_px\":0.2648155224212056}}",
+    "{\"field\":\"calibration\",\"value\":{\"first\":[649.3636073728719,421.40735301330193],\"second\":[1121.7236073728718,421.40735301330193],\"value\":120,\"unit\":\"mm\",\"span_id\":\"t4\"},\"confidence\":\"bound\",\"evidence\":{\"span_id\":\"pdf-4\",\"text\":\"1 20.00\",\"measured_mm\":120,\"drawn_mm\":120.5,\"menu_id\":\"t4\",\"px\":472.36,\"px_per_mm\":3.92,\"axis\":\"distance\",\"error_px\":1.96,\"resolved_from\":\"reading\",\"anchor_geometry_ids\":[\"g255\",\"g254\"]}}",
+    "{\"field\":\"depth\",\"value\":4,\"confidence\":\"rule\",\"alternatives\":[{\"span_id\":\"pdf-1\",\"value\":10,\"text\":\"1 0.00\"},{\"span_id\":\"pdf-5\",\"value\":60,\"text\":\"60.00\"}],\"evidence\":{\"rule\":\"kontur dışında, eksene hizalı olmayan çizgi ucu uzaklığı; kalınlıktan küçük\",\"span_id\":\"pdf-9\",\"text\":\"4.00\",\"drawn_mm\":4.04,\"anchors\":[[1257.316407372872,383.89295301330196],[1202.3188073728718,399.72975301330194]]}}"
+  ],
+  "proposal_rows": [
+    "Dış konturokumaya bağlıoutline_2 · izlenen taslakkontur 121.5×61.18 mmYalnız bunu onayla",
+    "Ölçekokumaya bağlı120 mm · menü: t4basılı \"1 20.00\" · okuma: pdf-4 · 472.36 px · 3.92 px/mm · 1.96 px sapma · çizilen 120.5 mm · okumanın kendi noktaları · menü: t4Yalnız bunu onayla",
+    "Cep derinliğikural4 mmbasılı \"4.00\" · okuma: pdf-9 · kural: kontur dışında, eksene hizalı olmayan çizgi ucu uzaklığı; kalınlıktan küçük · çizilen 4.04 mmÇizimdeki diğer basılı aday: 1 0.00 (10 mm) · 60.00 (60 mm)Yalnız bunu onayla"
+  ],
+  "sketch": {
+    "px_per_mm": null,
+    "source": null,
+    "bindings": 0,
+    "consistent": false,
+    "rows": [],
+    "conflicts": [],
+    "unbound_circles": [
+      "g57",
+      "g58",
+      "g59",
+      "g60",
+      "g61",
+      "g62",
+      "g63",
+      "g76"
+    ],
+    "unbound_edges": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "join_gap_max_px": 0.2648,
+    "fit": {
+      "px_per_mm": null,
+      "source": null,
+      "rows": [],
+      "conflicts": [],
+      "consistent": false
+    },
+    "contour": {
+      "ok": true,
+      "closure_px": 0,
+      "issues": [],
+      "edge_count": 8
+    },
+    "open_contour_px": 0,
+    "applied_move_px": 413.0799,
+    "solved_dimensions": null
+  },
+  "decisions": {
+    "profile_id": "outline_2",
+    "thickness": null,
+    "calibration": null
+  }
+}

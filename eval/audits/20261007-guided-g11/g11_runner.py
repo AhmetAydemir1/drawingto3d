@@ -165,6 +165,16 @@ def main() -> int:
                 click_image_point(page, profile["points"][len(profile["points"]) // 2])
                 page.wait_ev(f"$('profile').value === {json.dumps(profile_id)}", timeout=30, label="profile retry")
 
+    # --- contour validation issues (PLAN §7.3 UI): the user approves closing an open end ----------
+    if page.ev("!![...$('contour-fix').querySelectorAll('input[type=checkbox]')].length"):
+        if not page.ev("[...$('contour-fix').querySelectorAll('input[type=checkbox]')][0].checked"):
+            click_element(page, "#contour-fix input[type=checkbox]")
+            try:
+                UX.wait_server(page, lambda d: bool((d["decisions"].get("contour") or {}).get("approve_join")),
+                               20, "contour join")
+            except TimeoutError:
+                fail("CONSTRAINT_UNSUPPORTED", {"what": "contour join approval"})
+
     # --- calibration (skipped when the reading's own calibration proposal was accepted) ----------
     calibration = recipe.get("calibration")
     measurement = None
@@ -201,11 +211,23 @@ def main() -> int:
             fail("TRANSCRIPTION", {"what": "thickness", "value": recipe["thickness_mm"]})
 
     # --- the traced draft (a user decision, not a silent default) --------------------------------
-    if recipe.get("acknowledge_trace") and not page.ev("$('ack').checked"):
-        page.click_selector("#ack")
-        try:
-            UX.wait_server(page, lambda d: d["decisions"].get("trace_acknowledged") is True, 40, "ack")
-        except TimeoutError:
+    if recipe.get("acknowledge_trace"):
+        acked = False
+        for _attempt in range(3):
+            if (UX.server(page) or {}).get("decisions", {}).get("trace_acknowledged") is True:
+                acked = True
+                break
+            if not page.ev("$('ack').checked"):
+                page.click_selector("#ack")
+            try:
+                UX.wait_server(page, lambda d: d["decisions"].get("trace_acknowledged") is True, 15, "ack")
+                acked = True
+                break
+            except TimeoutError:
+                page.ev("location.reload(); true;")   # a fresh render re-syncs the draft state
+                page.wait_ready()
+                time.sleep(1.2)
+        if not acked:
             fail("TRANSCRIPTION", {"what": "trace acknowledgement"})
 
     # --- the view direction / sheet frame: the user confirms it before producing (PLAN §8.6) ------

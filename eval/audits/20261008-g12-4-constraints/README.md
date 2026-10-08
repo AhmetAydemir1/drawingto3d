@@ -28,8 +28,10 @@ STEP üretip yeniden açar.
 - `pytest-broad.log` — geniş regresyon (`pytest -q tests -k "not semread"`): **1590 passed / 339 deselected /
   29:31 / EXIT=0** (G12.3: 1582 → +8).
 - `plate-regression.log` — G12R Plate kabulü: **11/11** (kabul edilmiş üretim yolu bozulmadı).
-- `p4_step_artifact.py` → `p4-rectangle.step` (20173 bayt), `p4-geometry.json` (size 60 × 40 × 10, hacim
-  24000 − π·9·10, silindir r=3), `p4-provenance.json` (§57 zincirleri + §59: 6 boyut türevi, 6 izlenen).
+- `p4_step_artifact.py` → `p4-geometry.json` (size 60 × 40 × 10, hacim 24000 − π·9·10, silindir r=3, 20173
+  baytlık STEP'ten yeniden açılmıştır), `p4-provenance.json` (§57 zincirleri + §59: 6 boyut türevi,
+  6 izlenen). STEP ikilisinin kendisi `.gitignore` kuralı gereği commit'lenmez — `p4_step_artifact.py`
+  ile her zaman yeniden üretilir (bu dizinde `p4-rectangle.step` olarak durur).
 - `test_sketch_constraints.py` (+2 test) ve `test_user_dimensions.py` (+1 test) — §57/§59 sözleşmeleri.
 
 ## Dokunulmayan

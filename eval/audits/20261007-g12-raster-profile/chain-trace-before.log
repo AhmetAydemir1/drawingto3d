@@ -1,0 +1,1536 @@
+observe 254s
+önbelleğe yazıldı: /Users/aydemir/.hermes/cache/scratch/g125-51-cache.pkl
+[loops] start g0 (line) at [259.2, 339.0]
+[loops] dead end after 1 at [259.2, 294.0], nearest unused: [(119.3, 'g263'), (126.6, 'g458'), (132.9, 'g458'), (172.2, 'g49'), (193.4, 'g1')]
+[loops] start g1 (line) at [129.0, 437.0]
+[loops] dead end after 1 at [497.0, 224.0], nearest unused: [(76.0, 'g49'), (233.3, 'g203'), (243.6, 'g280'), (244.4, 'g22'), (247.8, 'g0')]
+[loops] start g2 (line) at [2697.5, 323.5]
+[loops] step1 take g3 (line) gap=17.5 turn=177.0 closing=False
+[loops] step2 take g351 (arc) gap=242.1 turn=39.7 closing=False
+[loops] LOOP area=16059 n=3 ids=['g2', 'g3', 'g351']
+[loops] start g4 (line) at [2710.2, 328.9]
+[loops] step1 take g8 (line) gap=18.1 turn=178.2 closing=False
+[loops] step2 take g389 (arc) gap=17.2 turn=47.5 closing=False
+[loops] step3 take g445 (arc) gap=163.8 turn=25.1 closing=False
+[loops] step4 take g362 (arc) gap=167.5 turn=121.3 closing=False
+[loops] step5 take g425 (arc) gap=132.8 turn=81.5 closing=True
+[loops] LOOP area=22122 n=6 ids=['g4', 'g8', 'g389', 'g445', 'g362', 'g425']
+[loops] start g5 (line) at [2721.5, 333.6]
+[loops] step1 take g6 (line) gap=19.1 turn=177.9 closing=False
+[loops] step2 take g420 (arc) gap=16.2 turn=178.1 closing=False
+[loops] step3 take g381 (arc) gap=488.6 turn=111.9 closing=True
+[loops] LOOP area=86515 n=4 ids=['g5', 'g6', 'g420', 'g381']
+[loops] start g7 (line) at [2690.6, 321.5]
+[loops] step1 take g446 (arc) gap=64.7 turn=1.6 closing=False
+[loops] step2 take g237 (line) gap=15.9 turn=3.6 closing=False
+[loops] step3 take g440 (arc) gap=14.6 turn=77.7 closing=False
+[loops] step4 take g368 (arc) gap=95.1 turn=18.9 closing=False
+[loops] step5 take g349 (arc) gap=91.1 turn=31.2 closing=False
+[loops] step6 take g357 (arc) gap=8.8 turn=1.5 closing=False
+[loops] step7 take g391 (arc) gap=376.1 turn=4.8 closing=False
+[loops] step8 take g397 (arc) gap=554.0 turn=1.6 closing=False
+[loops] step9 take g261 (line) gap=454.9 turn=2.6 closing=False
+[loops] step10 take g372 (arc) gap=85.2 turn=19.2 closing=False
+[loops] step11 take g356 (arc) gap=434.5 turn=0.7 closing=False
+[loops] step12 take g86 (line) gap=298.7 turn=23.2 closing=False
+[loops] step13 take g402 (arc) gap=117.9 turn=14.6 closing=False
+[loops] step14 take g413 (arc) gap=225.3 turn=6.5 closing=False
+[loops] step15 take g373 (arc) gap=63.3 turn=46.1 closing=False
+[loops] step16 take g385 (arc) gap=719.3 turn=83.4 closing=False
+[loops] step17 take g424 (arc) gap=547.2 turn=13.0 closing=False
+[loops] step18 take g88 (line) gap=418.3 turn=31.3 closing=False
+[loops] step19 take g365 (arc) gap=9.0 turn=134.2 closing=False
+[loops] step20 take g220 (line) gap=4.9 turn=43.8 closing=False
+[loops] step21 take g238 (line) gap=9.2 turn=26.3 closing=False
+[loops] step22 take g147 (line) gap=17.7 turn=155.7 closing=False
+[loops] step23 take g366 (arc) gap=100.0 turn=1.6 closing=False
+[loops] step24 take g360 (arc) gap=18.3 turn=106.4 closing=False
+[loops] step25 take g359 (arc) gap=166.6 turn=31.5 closing=False
+[loops] step26 take g282 (line) gap=8.5 turn=4.1 closing=False
+[loops] step27 take g306 (line) gap=5.8 turn=90.0 closing=False
+[loops] dead end after 28 at [186.0, 2006.7], nearest unused: [(76.2, 'g300'), (236.2, 'g287'), (290.7, 'g304'), (310.9, 'g300'), (318.2, 'g428')]
+[loops] start g9 (line) at [2360.0, 336.0]
+[loops] step1 take g160 (line) gap=19.0 turn=0.1 closing=False
+[loops] step2 take g365 (arc) gap=441.0 turn=44.0 closing=False
+[loops] step3 take g220 (line) gap=4.9 turn=42.0 closing=False
+[loops] step4 take g238 (line) gap=9.2 turn=26.3 closing=False
+[loops] step5 take g147 (line) gap=17.7 turn=155.7 closing=False
+[loops] step6 take g366 (arc) gap=100.0 turn=1.6 closing=False
+[loops] step7 take g360 (arc) gap=18.3 turn=106.4 closing=False
+[loops] step8 take g359 (arc) gap=166.6 turn=31.5 closing=False
+[loops] step9 take g282 (line) gap=8.5 turn=4.1 closing=False
+[loops] step10 take g306 (line) gap=5.8 turn=90.0 closing=False
+[loops] dead end after 11 at [186.0, 2006.7], nearest unused: [(76.2, 'g300'), (236.2, 'g287'), (290.7, 'g304'), (310.9, 'g300'), (318.2, 'g428')]
+[loops] start g10 (line) at [2729.0, 359.0]
+[loops] step1 take g7 (line) gap=3.0 turn=179.8 closing=False
+[loops] dead end after 2 at [2690.6, 321.5], nearest unused: [(22.9, 'g12'), (30.4, 'g348'), (30.5, 'g13'), (37.0, 'g31'), (37.0, 'g388')]
+[loops] start g11 (line) at [2539.0, 313.0]
+[loops] step1 take g377 (arc) gap=327.8 turn=1.3 closing=False
+[loops] step2 take g217 (line) gap=612.3 turn=2.1 closing=False
+[loops] step3 take g372 (arc) gap=55.3 turn=40.3 closing=False
+[loops] step4 take g261 (line) gap=84.7 turn=4.1 closing=False
+[loops] step5 take g128 (line) gap=16.7 turn=136.8 closing=True
+[loops] LOOP area=61735 n=6 ids=['g11', 'g377', 'g217', 'g372', 'g261', 'g128']
+[loops] start g12 (line) at [2668.4, 315.6]
+[loops] step1 take g347 (arc) gap=44.0 turn=65.6 closing=False
+[loops] step2 take g259 (line) gap=119.2 turn=56.0 closing=False
+[loops] step3 take g276 (line) gap=17.7 turn=13.5 closing=False
+[loops] dead end after 4 at [740.0, 1047.5], nearest unused: [(42.9, 'g273'), (93.8, 'g273'), (104.3, 'g462'), (106.6, 'g482'), (108.2, 'g471')]
+[loops] start g13 (line) at [2661.0, 314.0]
+[loops] step1 take g347 (arc) gap=47.6 turn=65.1 closing=False
+[loops] step2 take g259 (line) gap=119.2 turn=56.4 closing=False
+[loops] step3 take g276 (line) gap=17.7 turn=13.5 closing=False
+[loops] dead end after 4 at [740.0, 1047.5], nearest unused: [(42.9, 'g273'), (93.8, 'g273'), (104.3, 'g462'), (106.6, 'g482'), (108.2, 'g471')]
+[loops] start g14 (line) at [2384.1, 316.9]
+[loops] step1 take g422 (arc) gap=10.0 turn=12.5 closing=False
+[loops] step2 take g375 (arc) gap=420.7 turn=5.3 closing=False
+[loops] step3 take g400 (arc) gap=7.7 turn=5.9 closing=False
+[loops] step4 take g350 (arc) gap=1.5 turn=5.0 closing=False
+[loops] step5 take g255 (line) gap=21.5 turn=50.0 closing=False
+[loops] step6 take g79 (line) gap=2.2 turn=133.7 closing=False
+[loops] step7 take g432 (arc) gap=668.1 turn=38.9 closing=False
+[loops] step8 take g426 (arc) gap=12.4 turn=2.8 closing=False
+[loops] step9 take g228 (line) gap=101.0 turn=8.5 closing=False
+[loops] step10 take g409 (arc) gap=150.2 turn=25.3 closing=False
+[loops] step11 take g229 (line) gap=94.3 turn=26.5 closing=False
+[loops] step12 take g387 (arc) gap=148.4 turn=30.9 closing=False
+[loops] step13 take g395 (arc) gap=122.2 turn=24.8 closing=False
+[loops] step14 take g207 (line) gap=15.5 turn=21.0 closing=False
+[loops] step15 take g451 (arc) gap=13.6 turn=151.4 closing=False
+[loops] step16 take g16 (line) gap=280.8 turn=139.1 closing=True
+[loops] LOOP area=145369 n=17 ids=['g14', 'g422', 'g375', 'g400', 'g350', 'g255', 'g79', 'g432', 'g426', 'g228', 'g409', 'g229', 'g387', 'g395', 'g207', 'g451', 'g16']
+[loops] start g15 (line) at [2382.0, 319.0]
+[loops] step1 take g374 (arc) gap=38.5 turn=35.7 closing=False
+[loops] step2 take g371 (arc) gap=19.8 turn=29.5 closing=False
+[loops] step3 take g391 (arc) gap=508.0 turn=12.1 closing=False
+[loops] step4 take g378 (arc) gap=6.6 turn=0.5 closing=False
+[loops] step5 take g368 (arc) gap=105.0 turn=42.5 closing=False
+[loops] step6 take g392 (arc) gap=108.1 turn=8.0 closing=False
+[loops] step7 take g430 (arc) gap=110.4 turn=5.0 closing=False
+[loops] step8 take g397 (arc) gap=12.4 turn=75.8 closing=False
+[loops] step9 take g246 (line) gap=454.4 turn=14.0 closing=False
+[loops] step10 take g404 (arc) gap=11.0 turn=2.8 closing=False
+[loops] step11 take g140 (line) gap=109.2 turn=7.0 closing=False
+[loops] step12 take g360 (arc) gap=54.9 turn=93.1 closing=False
+[loops] step13 take g82 (line) gap=157.3 turn=25.3 closing=False
+[loops] step14 take g36 (line) gap=18.8 turn=41.0 closing=False
+[loops] step15 take g94 (line) gap=7.0 turn=139.6 closing=False
+[loops] step16 take g415 (arc) gap=45.8 turn=53.7 closing=False
+[loops] step17 take g223 (line) gap=71.1 turn=7.3 closing=False
+[loops] step18 take g170 (line) gap=1.4 turn=157.0 closing=False
+[loops] step19 take g359 (arc) gap=29.2 turn=7.2 closing=False
+[loops] step20 take g366 (arc) gap=115.8 turn=38.1 closing=False
+[loops] step21 take g71 (line) gap=102.5 turn=164.2 closing=False
+[loops] step22 take g219 (line) gap=1.0 turn=9.8 closing=False
+[loops] dead end after 23 at [2595.0, 705.0], nearest unused: [(23.8, 'g357'), (26.9, 'g175'), (27.5, 'g196'), (28.7, 'g176'), (28.7, 'g234')]
+[loops] start g17 (line) at [2461.0, 448.7]
+[loops] step1 take g383 (arc) gap=268.1 turn=154.1 closing=False
+[loops] step2 take g9 (line) gap=99.5 turn=19.4 closing=False
+[loops] step3 take g24 (line) gap=2.8 turn=162.7 closing=False
+[loops] step4 take g361 (arc) gap=73.9 turn=25.2 closing=False
+[loops] step5 take g346 (arc) gap=275.6 turn=8.7 closing=False
+[loops] step6 take g424 (arc) gap=553.9 turn=48.9 closing=True
+[loops] LOOP area=68755 n=7 ids=['g17', 'g383', 'g9', 'g24', 'g361', 'g346', 'g424']
+[loops] start g18 (line) at [2544.9, 311.1]
+[loops] step1 take g354 (arc) gap=45.1 turn=2.6 closing=False
+[loops] step2 take g430 (arc) gap=109.8 turn=60.3 closing=False
+[loops] step3 take g397 (arc) gap=12.4 turn=76.0 closing=False
+[loops] step4 take g118 (line) gap=381.1 turn=41.1 closing=True
+[loops] LOOP area=21887 n=5 ids=['g18', 'g354', 'g430', 'g397', 'g118']
+[loops] start g19 (line) at [2377.4, 321.5]
+[loops] step1 take g358 (arc) gap=5.3 turn=19.6 closing=False
+[loops] step2 take g452 (arc) gap=72.9 turn=20.4 closing=False
+[loops] step3 take g440 (arc) gap=102.8 turn=32.7 closing=False
+[loops] step4 take g258 (line) gap=133.6 turn=21.2 closing=False
+[loops] step5 take g107 (line) gap=13.8 turn=127.1 closing=False
+[loops] step6 take g363 (arc) gap=458.8 turn=29.9 closing=False
+[loops] step7 take g169 (line) gap=24.2 turn=15.1 closing=False
+[loops] step8 take g476 (arc) gap=11.4 turn=3.4 closing=False
+[loops] step9 take g263 (line) gap=48.3 turn=116.6 closing=False
+[loops] step10 take g472 (arc) gap=312.0 turn=104.3 closing=False
+[loops] step11 take g278 (line) gap=36.6 turn=32.9 closing=False
+[loops] dead end after 12 at [258.6, 1302.6], nearest unused: [(149.5, 'g262'), (150.4, 'g474'), (163.7, 'g277'), (169.1, 'g474'), (188.1, 'g473')]
+[loops] start g20 (line) at [2552.0, 312.0]
+[loops] step1 take g363 (arc) gap=57.7 turn=7.7 closing=False
+[loops] step2 take g364 (arc) gap=11.3 turn=5.1 closing=False
+[loops] step3 take g345 (arc) gap=13.9 turn=8.3 closing=False
+[loops] step4 take g456 (arc) gap=737.5 turn=13.7 closing=False
+[loops] step5 take g105 (line) gap=803.4 turn=19.9 closing=False
+[loops] step6 take g97 (line) gap=13.0 turn=179.5 closing=False
+[loops] step7 take g26 (line) gap=4.8 turn=179.5 closing=False
+[loops] step8 take g357 (arc) gap=117.7 turn=30.4 closing=False
+[loops] step9 take g438 (arc) gap=51.7 turn=17.6 closing=False
+[loops] step10 take g249 (line) gap=171.6 turn=43.5 closing=False
+[loops] step11 take g107 (line) gap=4.1 turn=175.4 closing=True
+[loops] LOOP area=63738 n=12 ids=['g20', 'g363', 'g364', 'g345', 'g456', 'g105', 'g97', 'g26', 'g357', 'g438', 'g249', 'g107']
+[loops] start g21 (line) at [2533.3, 314.7]
+[loops] step1 take g391 (arc) gap=414.8 turn=3.8 closing=False
+[loops] step2 take g382 (arc) gap=119.1 turn=7.3 closing=False
+[loops] step3 take g68 (line) gap=9.8 turn=175.4 closing=True
+[loops] LOOP area=33024 n=4 ids=['g21', 'g391', 'g382', 'g68']
+[loops] start g22 (line) at [459.0, 465.5]
+[loops] step1 take g465 (arc) gap=395.0 turn=16.5 closing=False
+[loops] step2 take g49 (line) gap=27.6 turn=43.5 closing=False
+[loops] step3 take g279 (line) gap=5.5 turn=30.0 closing=False
+[loops] step4 take g283 (line) gap=12.5 turn=90.0 closing=False
+[loops] step5 take g281 (line) gap=12.5 turn=90.0 closing=False
+[loops] dead end after 6 at [1362.5, 909.0], nearest unused: [(55.5, 'g232'), (69.6, 'g398'), (74.5, 'g485'), (76.1, 'g393'), (96.1, 'g477')]
+[loops] start g23 (line) at [2554.0, 311.0]
+[loops] step1 take g370 (arc) gap=141.0 turn=9.5 closing=False
+[loops] step2 take g200 (line) gap=16.7 turn=36.0 closing=False
+[loops] dead end after 3 at [2970.0, 629.4], nearest unused: [(33.2, 'g169'), (65.8, 'g141'), (74.8, 'g237'), (78.6, 'g236'), (78.6, 'g371')]
+[loops] start g25 (line) at [2501.0, 322.0]
+[loops] step1 take g413 (arc) gap=415.1 turn=40.1 closing=False
+[loops] step2 take g348 (arc) gap=189.4 turn=6.6 closing=False
+[loops] step3 take g374 (arc) gap=155.7 turn=22.5 closing=False
+[loops] step4 take g399 (arc) gap=7.4 turn=158.8 closing=True
+[loops] LOOP area=36779 n=5 ids=['g25', 'g413', 'g348', 'g374', 'g399']
+[loops] start g27 (line) at [2523.0, 461.0]
+[loops] step1 take g221 (line) gap=6.6 turn=0.7 closing=False
+[loops] step2 take g419 (arc) gap=316.8 turn=21.5 closing=False
+[loops] step3 take g88 (line) gap=271.8 turn=158.4 closing=True
+[loops] LOOP area=7786 n=4 ids=['g27', 'g221', 'g419', 'g88']
+[loops] start g28 (line) at [2604.1, 391.9]
+[loops] step1 take g370 (arc) gap=107.3 turn=21.9 closing=False
+[loops] step2 take g200 (line) gap=16.7 turn=23.1 closing=False
+[loops] dead end after 3 at [2970.0, 629.4], nearest unused: [(33.2, 'g169'), (65.8, 'g141'), (74.8, 'g237'), (78.6, 'g236'), (78.6, 'g371')]
+[loops] start g29 (line) at [2374.0, 323.0]
+[loops] step1 take g380 (arc) gap=374.8 turn=44.8 closing=False
+[loops] step2 take g56 (line) gap=616.8 turn=46.2 closing=False
+[loops] step3 take g206 (line) gap=14.0 turn=162.9 closing=False
+[loops] step4 take g164 (line) gap=17.0 turn=162.0 closing=False
+[loops] step5 take g231 (line) gap=12.2 turn=153.2 closing=False
+[loops] step6 take g246 (line) gap=19.7 turn=178.8 closing=False
+[loops] step7 take g349 (arc) gap=54.9 turn=76.1 closing=False
+[loops] step8 take g392 (arc) gap=104.2 turn=52.9 closing=False
+[loops] step9 take g368 (arc) gap=106.1 turn=30.0 closing=False
+[loops] step10 take g378 (arc) gap=106.4 turn=92.2 closing=False
+[loops] step11 take g89 (line) gap=42.9 turn=7.6 closing=False
+[loops] step12 take g23 (line) gap=11.1 turn=179.5 closing=False
+[loops] step13 take g370 (arc) gap=141.0 turn=9.5 closing=False
+[loops] step14 take g200 (line) gap=16.7 turn=36.0 closing=False
+[loops] dead end after 15 at [2970.0, 629.4], nearest unused: [(33.2, 'g169'), (65.8, 'g141'), (74.8, 'g237'), (78.6, 'g236'), (78.6, 'g371')]
+[loops] start g30 (line) at [2269.0, 544.0]
+[loops] step1 take g12 (line) gap=1.5 turn=128.5 closing=False
+[loops] step2 take g347 (arc) gap=203.9 turn=114.4 closing=False
+[loops] step3 take g259 (line) gap=119.2 turn=56.0 closing=False
+[loops] step4 take g276 (line) gap=17.7 turn=13.5 closing=False
+[loops] dead end after 5 at [740.0, 1047.5], nearest unused: [(42.9, 'g273'), (93.8, 'g273'), (104.3, 'g462'), (106.6, 'g482'), (108.2, 'g471')]
+[loops] start g31 (line) at [2654.7, 312.3]
+[loops] step1 take g347 (arc) gap=387.7 turn=64.7 closing=False
+[loops] step2 take g259 (line) gap=119.2 turn=56.8 closing=False
+[loops] step3 take g276 (line) gap=17.7 turn=13.5 closing=False
+[loops] dead end after 4 at [740.0, 1047.5], nearest unused: [(42.9, 'g273'), (93.8, 'g273'), (104.3, 'g462'), (106.6, 'g482'), (108.2, 'g471')]
+[loops] start g32 (line) at [2644.6, 311.4]
+[loops] step1 take g235 (line) gap=9.9 turn=175.4 closing=False
+[loops] step2 take g446 (arc) gap=7.1 turn=0.1 closing=False
+[loops] step3 take g7 (line) gap=64.9 turn=2.9 closing=False
+[loops] dead end after 4 at [2690.6, 321.5], nearest unused: [(22.9, 'g12'), (30.5, 'g13'), (37.0, 'g31'), (37.0, 'g388'), (48.0, 'g33')]
+[loops] start g33 (line) at [2643.9, 310.1]
+[loops] step1 take g356 (arc) gap=197.5 turn=128.1 closing=False
+[loops] step2 take g86 (line) gap=298.7 turn=51.3 closing=False
+[loops] step3 take g402 (arc) gap=117.9 turn=14.6 closing=False
+[loops] step4 take g394 (arc) gap=19.5 turn=53.7 closing=False
+[loops] step5 take g352 (arc) gap=129.3 turn=11.7 closing=False
+[loops] step6 take g385 (arc) gap=724.6 turn=83.5 closing=False
+[loops] step7 take g373 (arc) gap=134.0 turn=36.9 closing=False
+[loops] step8 take g112 (line) gap=17.0 turn=7.3 closing=False
+[loops] step9 take g353 (arc) gap=16.2 turn=173.7 closing=False
+[loops] step10 take g160 (line) gap=58.4 turn=6.9 closing=False
+[loops] step11 take g365 (arc) gap=99.7 turn=136.0 closing=False
+[loops] step12 take g220 (line) gap=4.9 turn=42.0 closing=False
+[loops] step13 take g238 (line) gap=9.2 turn=26.3 closing=False
+[loops] step14 take g147 (line) gap=17.7 turn=155.7 closing=False
+[loops] step15 take g366 (arc) gap=100.0 turn=1.6 closing=False
+[loops] step16 take g360 (arc) gap=18.3 turn=106.4 closing=False
+[loops] step17 take g359 (arc) gap=166.6 turn=31.5 closing=False
+[loops] step18 take g282 (line) gap=8.5 turn=4.1 closing=False
+[loops] step19 take g306 (line) gap=5.8 turn=90.0 closing=False
+[loops] dead end after 20 at [186.0, 2006.7], nearest unused: [(76.2, 'g300'), (236.2, 'g287'), (290.7, 'g304'), (310.9, 'g300'), (318.2, 'g428')]
+[loops] start g34 (line) at [2641.0, 312.0]
+[loops] step1 take g356 (arc) gap=198.2 turn=128.6 closing=False
+[loops] step2 take g86 (line) gap=298.7 turn=50.8 closing=False
+[loops] step3 take g402 (arc) gap=117.9 turn=14.6 closing=False
+[loops] step4 take g394 (arc) gap=19.5 turn=53.7 closing=False
+[loops] step5 take g352 (arc) gap=129.3 turn=11.7 closing=False
+[loops] step6 take g385 (arc) gap=724.6 turn=83.5 closing=False
+[loops] step7 take g373 (arc) gap=134.0 turn=36.9 closing=False
+[loops] step8 take g112 (line) gap=17.0 turn=7.3 closing=False
+[loops] step9 take g353 (arc) gap=16.2 turn=173.7 closing=False
+[loops] step10 take g160 (line) gap=58.4 turn=6.9 closing=False
+[loops] step11 take g365 (arc) gap=99.7 turn=136.0 closing=False
+[loops] step12 take g220 (line) gap=4.9 turn=42.0 closing=False
+[loops] step13 take g238 (line) gap=9.2 turn=26.3 closing=False
+[loops] step14 take g147 (line) gap=17.7 turn=155.7 closing=False
+[loops] step15 take g366 (arc) gap=100.0 turn=1.6 closing=False
+[loops] step16 take g360 (arc) gap=18.3 turn=106.4 closing=False
+[loops] step17 take g359 (arc) gap=166.6 turn=31.5 closing=False
+[loops] step18 take g282 (line) gap=8.5 turn=4.1 closing=False
+[loops] step19 take g306 (line) gap=5.8 turn=90.0 closing=False
+[loops] dead end after 20 at [186.0, 2006.7], nearest unused: [(76.2, 'g300'), (236.2, 'g287'), (290.7, 'g304'), (310.9, 'g300'), (318.2, 'g428')]
+[loops] start g35 (line) at [2633.7, 309.3]
+[loops] step1 take g356 (arc) gap=203.9 turn=129.2 closing=False
+[loops] step2 take g86 (line) gap=298.7 turn=50.3 closing=False
+[loops] step3 take g402 (arc) gap=117.9 turn=14.6 closing=False
+[loops] step4 take g394 (arc) gap=19.5 turn=53.7 closing=False
+[loops] step5 take g352 (arc) gap=129.3 turn=11.7 closing=False
+[loops] step6 take g385 (arc) gap=724.6 turn=83.5 closing=False
+[loops] step7 take g373 (arc) gap=134.0 turn=36.9 closing=False
+[loops] step8 take g112 (line) gap=17.0 turn=7.3 closing=False
+[loops] step9 take g353 (arc) gap=16.2 turn=173.7 closing=False
+[loops] step10 take g160 (line) gap=58.4 turn=6.9 closing=False
+[loops] step11 take g365 (arc) gap=99.7 turn=136.0 closing=False
+[loops] step12 take g220 (line) gap=4.9 turn=42.0 closing=False
+[loops] step13 take g238 (line) gap=9.2 turn=26.3 closing=False
+[loops] step14 take g147 (line) gap=17.7 turn=155.7 closing=False
+[loops] step15 take g366 (arc) gap=100.0 turn=1.6 closing=False
+[loops] step16 take g360 (arc) gap=18.3 turn=106.4 closing=False
+[loops] step17 take g359 (arc) gap=166.6 turn=31.5 closing=False
+[loops] step18 take g282 (line) gap=8.5 turn=4.1 closing=False
+[loops] step19 take g306 (line) gap=5.8 turn=90.0 closing=False
+[loops] dead end after 20 at [186.0, 2006.7], nearest unused: [(76.2, 'g300'), (236.2, 'g287'), (290.7, 'g304'), (310.9, 'g300'), (318.2, 'g428')]
+[loops] start g36 (line) at [2328.0, 509.0]
+[loops] step1 take g212 (line) gap=19.7 turn=2.5 closing=False
+[loops] step2 take g431 (arc) gap=292.8 turn=20.2 closing=False
+[loops] step3 take g187 (line) gap=8.2 turn=156.3 closing=True
+[loops] LOOP area=10618 n=4 ids=['g36', 'g212', 'g431', 'g187']
+[loops] start g37 (line) at [2629.2, 310.8]
+[loops] step1 take g405 (arc) gap=304.6 turn=150.7 closing=False
+[loops] step2 take g367 (arc) gap=755.2 turn=11.9 closing=False
+[loops] step3 take g34 (line) gap=272.4 turn=17.4 closing=True
+[loops] LOOP area=48270 n=4 ids=['g37', 'g405', 'g367', 'g34']
+[loops] start g38 (line) at [2620.9, 308.1]
+[loops] step1 take g39 (line) gap=5.2 turn=180.0 closing=False
+[loops] step2 take g42 (line) gap=7.8 turn=180.0 closing=False
+[loops] step3 take g45 (line) gap=3.8 turn=180.0 closing=True
+[loops] LOOP area=4100 n=4 ids=['g38', 'g39', 'g42', 'g45']
+[loops] start g40 (line) at [2385.2, 514.0]
+[loops] step1 take g210 (line) gap=20.0 turn=3.3 closing=False
+[loops] step2 take g153 (line) gap=16.7 turn=174.7 closing=False
+[loops] LOOP area=3223 n=3 ids=['g40', 'g210', 'g153']
+[loops] start g41 (line) at [2382.0, 318.0]
+[loops] step1 take g385 (arc) gap=580.8 turn=60.6 closing=False
+[loops] step2 take g352 (arc) gap=722.8 turn=9.3 closing=False
+[loops] step3 take g373 (arc) gap=108.7 turn=12.8 closing=False
+[loops] step4 take g388 (arc) gap=126.9 turn=5.3 closing=False
+[loops] step5 take g84 (line) gap=306.4 turn=43.9 closing=False
+[loops] step6 take g85 (line) gap=10.0 turn=180.0 closing=False
+[loops] step7 take g394 (arc) gap=17.9 turn=140.3 closing=False
+[loops] step8 take g53 (line) gap=18.2 turn=38.3 closing=False
+[loops] step9 take g440 (arc) gap=100.2 turn=57.7 closing=False
+[loops] step10 take g368 (arc) gap=95.1 turn=43.5 closing=False
+[loops] step11 take g349 (arc) gap=91.1 turn=31.2 closing=False
+[loops] step12 take g246 (line) gap=124.9 turn=21.9 closing=False
+[loops] step13 take g404 (arc) gap=11.0 turn=2.8 closing=False
+[loops] step14 take g140 (line) gap=109.2 turn=7.0 closing=False
+[loops] step15 take g360 (arc) gap=54.9 turn=93.1 closing=False
+[loops] step16 take g82 (line) gap=157.3 turn=25.3 closing=False
+[loops] step17 take g165 (line) gap=15.8 turn=132.9 closing=False
+[loops] step18 take g224 (line) gap=5.5 turn=21.3 closing=False
+[loops] step19 take g238 (line) gap=3.2 turn=0.4 closing=False
+[loops] step20 take g147 (line) gap=17.7 turn=155.7 closing=False
+[loops] step21 take g366 (arc) gap=100.0 turn=1.6 closing=False
+[loops] step22 take g359 (arc) gap=9.2 turn=138.0 closing=False
+[loops] step23 take g282 (line) gap=8.5 turn=4.1 closing=False
+[loops] step24 take g306 (line) gap=5.8 turn=90.0 closing=False
+[loops] dead end after 25 at [186.0, 2006.7], nearest unused: [(76.2, 'g300'), (236.2, 'g287'), (290.7, 'g304'), (310.9, 'g300'), (318.2, 'g428')]
+[loops] start g43 (line) at [2286.0, 519.0]
+[loops] step1 take g139 (line) gap=5.0 turn=48.9 closing=False
+[loops] step2 take g360 (arc) gap=70.7 turn=94.3 closing=False
+[loops] step3 take g82 (line) gap=157.3 turn=33.0 closing=False
+[loops] step4 take g165 (line) gap=15.8 turn=132.9 closing=False
+[loops] step5 take g224 (line) gap=5.5 turn=21.3 closing=False
+[loops] step6 take g238 (line) gap=3.2 turn=0.4 closing=False
+[loops] step7 take g147 (line) gap=17.7 turn=155.7 closing=False
+[loops] step8 take g366 (arc) gap=100.0 turn=1.6 closing=False
+[loops] step9 take g359 (arc) gap=9.2 turn=138.0 closing=False
+[loops] step10 take g282 (line) gap=8.5 turn=4.1 closing=False
+[loops] step11 take g306 (line) gap=5.8 turn=90.0 closing=False
+[loops] dead end after 12 at [186.0, 2006.7], nearest unused: [(76.2, 'g300'), (236.2, 'g287'), (290.7, 'g304'), (310.9, 'g300'), (318.2, 'g428')]
+[loops] start g44 (line) at [2398.0, 479.0]
+[loops] step1 take g239 (line) gap=8.5 turn=0.5 closing=False
+[loops] step2 take g258 (line) gap=13.2 turn=145.1 closing=False
+[loops] step3 take g127 (line) gap=4.8 turn=52.5 closing=False
+[loops] step4 take g447 (arc) gap=454.9 turn=37.6 closing=False
+[loops] step5 take g133 (line) gap=264.9 turn=37.2 closing=False
+[loops] step6 take g352 (arc) gap=17.3 turn=51.4 closing=False
+[loops] step7 take g394 (arc) gap=110.4 turn=42.3 closing=False
+[loops] step8 take g344 (arc) gap=2.9 turn=104.6 closing=False
+[loops] step9 take g61 (line) gap=28.5 turn=65.9 closing=False
+[loops] step10 take g75 (line) gap=6.3 turn=179.5 closing=False
+[loops] step11 take g74 (line) gap=15.8 turn=179.0 closing=False
+[loops] step12 take g347 (arc) gap=223.8 turn=153.1 closing=False
+[loops] step13 take g59 (line) gap=103.4 turn=25.9 closing=False
+[loops] step14 take g91 (line) gap=12.9 turn=178.5 closing=False
+[loops] step15 take g365 (arc) gap=485.6 turn=45.9 closing=False
+[loops] step16 take g220 (line) gap=4.9 turn=41.9 closing=False
+[loops] step17 take g238 (line) gap=9.2 turn=26.3 closing=False
+[loops] step18 take g154 (line) gap=10.4 turn=156.2 closing=True
+[loops] LOOP area=45702 n=19 ids=['g44', 'g239', 'g258', 'g127', 'g447', 'g133', 'g352', 'g394', 'g344', 'g61', 'g75', 'g74', 'g347', 'g59', 'g91', 'g365', 'g220', 'g238', 'g154']
+[loops] start g46 (line) at [2323.0, 508.0]
+[loops] step1 take g142 (line) gap=16.3 turn=20.1 closing=False
+[loops] step2 take g146 (line) gap=9.5 turn=148.2 closing=False
+[loops] step3 take g30 (line) gap=14.5 turn=137.8 closing=False
+[loops] step4 take g12 (line) gap=1.5 turn=128.5 closing=False
+[loops] step5 take g13 (line) gap=7.6 turn=180.0 closing=False
+[loops] dead end after 6 at [2832.0, 485.0], nearest unused: [(70.4, 'g7'), (72.9, 'g10'), (99.3, 'g141'), (105.2, 'g230'), (114.5, 'g371')]
+[loops] start g47 (line) at [2288.0, 518.0]
+[loops] step1 take g211 (line) gap=10.9 turn=8.7 closing=False
+[loops] step2 take g404 (arc) gap=149.2 turn=147.5 closing=False
+[loops] step3 take g155 (line) gap=139.4 turn=32.7 closing=True
+[loops] LOOP area=1029 n=4 ids=['g47', 'g211', 'g404', 'g155']
+[loops] start g48 (line) at [2597.8, 307.2]
+[loops] step1 take g446 (arc) gap=285.5 turn=160.3 closing=False
+[loops] step2 take g7 (line) gap=64.9 turn=18.5 closing=False
+[loops] dead end after 3 at [2690.6, 321.5], nearest unused: [(22.9, 'g12'), (30.5, 'g13'), (37.0, 'g31'), (37.0, 'g388'), (47.1, 'g32')]
+[loops] start g49 (line) at [426.0, 251.0]
+[loops] step1 take g279 (line) gap=5.5 turn=30.0 closing=False
+[loops] step2 take g283 (line) gap=12.5 turn=90.0 closing=False
+[loops] step3 take g281 (line) gap=12.5 turn=90.0 closing=False
+[loops] dead end after 4 at [1362.5, 909.0], nearest unused: [(55.5, 'g232'), (69.6, 'g398'), (74.5, 'g485'), (76.1, 'g393'), (96.1, 'g477')]
+[loops] start g50 (line) at [2278.0, 526.0]
+[loops] step1 take g198 (line) gap=19.5 turn=1.2 closing=False
+[loops] step2 take g403 (arc) gap=79.6 turn=164.1 closing=False
+[loops] step3 take g178 (line) gap=52.4 turn=9.3 closing=True
+[loops] LOOP area=1819 n=4 ids=['g50', 'g198', 'g403', 'g178']
+[loops] start g51 (line) at [2591.0, 308.0]
+[loops] step1 take g390 (arc) gap=271.0 turn=134.9 closing=False
+[loops] step2 take g52 (line) gap=598.2 turn=45.1 closing=False
+[loops] LOOP area=48488 n=3 ids=['g51', 'g390', 'g52']
+[loops] start g53 (line) at [2525.0, 318.0]
+[loops] step1 take g440 (arc) gap=100.2 turn=57.7 closing=False
+[loops] step2 take g368 (arc) gap=95.1 turn=43.5 closing=False
+[loops] step3 take g135 (line) gap=61.1 turn=80.2 closing=True
+[loops] LOOP area=14787 n=4 ids=['g53', 'g440', 'g368', 'g135']
+[loops] start g54 (line) at [2375.0, 514.0]
+[loops] dead end after 1 at [2452.0, 592.0], nearest unused: [(20.1, 'g215'), (32.6, 'g99'), (34.2, 'g102'), (36.4, 'g109'), (44.9, 'g106')]
+[loops] start g55 (line) at [2346.0, 512.0]
+[loops] step1 take g415 (arc) gap=18.2 turn=33.8 closing=False
+[loops] step2 take g223 (line) gap=71.1 turn=2.4 closing=False
+[loops] step3 take g170 (line) gap=1.4 turn=157.0 closing=False
+[loops] step4 take g359 (arc) gap=29.2 turn=7.2 closing=False
+[loops] step5 take g366 (arc) gap=115.8 turn=38.1 closing=False
+[loops] step6 take g360 (arc) gap=18.3 turn=97.7 closing=False
+[loops] step7 take g147 (line) gap=166.9 turn=72.0 closing=False
+[loops] step8 take g148 (line) gap=5.3 turn=179.5 closing=False
+[loops] step9 take g206 (line) gap=10.5 turn=162.9 closing=False
+[loops] step10 take g66 (line) gap=8.2 turn=162.9 closing=False
+[loops] step11 take g56 (line) gap=5.3 turn=180.0 closing=False
+[loops] step12 take g89 (line) gap=15.1 turn=180.0 closing=False
+[loops] step13 take g378 (arc) gap=584.9 turn=153.5 closing=False
+[loops] step14 take g392 (arc) gap=106.6 turn=31.8 closing=False
+[loops] step15 take g349 (arc) gap=105.9 turn=72.7 closing=False
+[loops] step16 take g246 (line) gap=124.9 turn=21.9 closing=False
+[loops] step17 take g353 (arc) gap=463.1 turn=33.1 closing=False
+[loops] step18 take g160 (line) gap=58.4 turn=5.6 closing=False
+[loops] dead end after 19 at [2460.9, 412.2], nearest unused: [(27.1, 'g159'), (65.7, 'g136'), (66.3, 'g388'), (69.2, 'g149'), (73.0, 'g373')]
+[loops] start g56 (line) at [2580.0, 309.0]
+[loops] step1 take g206 (line) gap=14.0 turn=162.9 closing=False
+[loops] step2 take g164 (line) gap=17.0 turn=162.0 closing=False
+[loops] step3 take g231 (line) gap=12.2 turn=153.2 closing=False
+[loops] step4 take g246 (line) gap=19.7 turn=178.8 closing=False
+[loops] step5 take g349 (arc) gap=54.9 turn=76.1 closing=False
+[loops] step6 take g380 (arc) gap=18.3 turn=89.3 closing=True
+[loops] LOOP area=26459 n=7 ids=['g56', 'g206', 'g164', 'g231', 'g246', 'g349', 'g380']
+[loops] start g57 (line) at [2362.7, 329.3]
+[loops] step1 take g67 (line) gap=18.3 turn=179.5 closing=False
+[loops] step2 take g64 (line) gap=9.4 turn=179.5 closing=False
+[loops] step3 take g136 (line) gap=16.4 turn=179.5 closing=False
+[loops] dead end after 4 at [2398.6, 391.4], nearest unused: [(35.5, 'g119'), (37.5, 'g366'), (39.9, 'g116'), (40.7, 'g359'), (40.9, 'g159')]
+[loops] start g58 (line) at [2356.2, 336.8]
+[loops] step1 take g57 (line) gap=16.3 turn=179.5 closing=False
+[loops] step2 take g19 (line) gap=16.7 turn=178.5 closing=False
+[loops] step3 take g358 (arc) gap=5.3 turn=19.6 closing=False
+[loops] step4 take g452 (arc) gap=72.9 turn=20.4 closing=False
+[loops] step5 take g378 (arc) gap=148.5 turn=41.4 closing=False
+[loops] step6 take g392 (arc) gap=106.6 turn=58.3 closing=False
+[loops] step7 take g216 (line) gap=87.5 turn=121.7 closing=False
+[loops] step8 take g402 (arc) gap=10.9 turn=0.1 closing=False
+[loops] step9 take g124 (line) gap=14.1 turn=178.2 closing=False
+[loops] step10 take g242 (line) gap=16.4 turn=156.3 closing=False
+[loops] step11 take g130 (line) gap=5.8 turn=6.2 closing=False
+[loops] step12 take g360 (arc) gap=56.3 turn=91.6 closing=False
+[loops] step13 take g82 (line) gap=157.3 turn=27.2 closing=False
+[loops] step14 take g165 (line) gap=15.8 turn=132.9 closing=False
+[loops] step15 take g224 (line) gap=5.5 turn=21.3 closing=False
+[loops] dead end after 16 at [2561.0, 690.0], nearest unused: [(23.7, 'g174'), (25.7, 'g162'), (29.2, 'g183'), (37.2, 'g219'), (39.0, 'g193')]
+[loops] start g60 (line) at [2545.0, 563.0]
+[loops] dead end after 1 at [2597.0, 549.0], nearest unused: [(45.1, 'g369'), (68.4, 'g259'), (70.9, 'g15'), (93.3, 'g19'), (94.2, 'g216')]
+[loops] start g62 (line) at [2367.1, 326.9]
+[loops] step1 take g353 (arc) gap=10.8 turn=172.7 closing=False
+[loops] step2 take g160 (line) gap=58.4 turn=6.9 closing=False
+[loops] dead end after 3 at [2460.9, 412.2], nearest unused: [(27.1, 'g159'), (65.7, 'g136'), (66.3, 'g388'), (69.2, 'g147'), (69.2, 'g149')]
+[loops] start g63 (line) at [2350.5, 353.5]
+[loops] step1 take g64 (line) gap=12.0 turn=180.0 closing=False
+[loops] step2 take g65 (line) gap=1.0 turn=179.5 closing=False
+[loops] step3 take g136 (line) gap=6.9 turn=179.9 closing=False
+[loops] dead end after 4 at [2398.6, 391.4], nearest unused: [(35.5, 'g119'), (37.5, 'g366'), (39.9, 'g116'), (40.7, 'g359'), (40.9, 'g159')]
+[loops] start g64 (line) at [2351.8, 349.2]
+[loops] step1 take g136 (line) gap=16.4 turn=179.5 closing=False
+[loops] dead end after 2 at [2398.6, 391.4], nearest unused: [(35.5, 'g119'), (37.5, 'g366'), (39.9, 'g116'), (40.7, 'g359'), (40.9, 'g159')]
+[loops] start g65 (line) at [2351.8, 348.2]
+[loops] step1 take g64 (line) gap=9.6 turn=179.5 closing=False
+[loops] step2 take g67 (line) gap=9.4 turn=179.5 closing=False
+[loops] step3 take g58 (line) gap=3.6 turn=180.0 closing=True
+[loops] LOOP area=3340 n=4 ids=['g65', 'g64', 'g67', 'g58']
+[loops] start g66 (line) at [2574.8, 308.2]
+[loops] step1 take g89 (line) gap=9.0 turn=180.0 closing=False
+[loops] step2 take g378 (arc) gap=584.9 turn=153.5 closing=False
+[loops] step3 take g101 (line) gap=57.9 turn=153.5 closing=True
+[loops] LOOP area=5238 n=4 ids=['g66', 'g89', 'g378', 'g101']
+[loops] start g69 (line) at [2349.8, 365.2]
+[loops] step1 take g110 (line) gap=18.2 turn=180.0 closing=False
+[loops] step2 take g116 (line) gap=8.8 turn=179.5 closing=False
+[loops] step3 take g366 (arc) gap=465.4 turn=41.6 closing=False
+[loops] step4 take g359 (arc) gap=118.3 turn=0.2 closing=False
+[loops] step5 take g282 (line) gap=8.5 turn=4.1 closing=False
+[loops] step6 take g306 (line) gap=5.8 turn=90.0 closing=False
+[loops] dead end after 7 at [186.0, 2006.7], nearest unused: [(76.2, 'g300'), (236.2, 'g287'), (290.7, 'g304'), (310.9, 'g300'), (318.2, 'g428')]
+[loops] start g70 (line) at [2298.0, 513.9]
+[loops] step1 take g90 (line) gap=7.1 turn=172.8 closing=False
+[loops] step2 take g106 (line) gap=8.5 turn=118.4 closing=False
+[loops] step3 take g219 (line) gap=10.4 turn=21.9 closing=False
+[loops] dead end after 4 at [2595.0, 705.0], nearest unused: [(26.9, 'g175'), (27.5, 'g196'), (28.7, 'g176'), (28.7, 'g234'), (30.0, 'g177')]
+[loops] start g71 (line) at [2403.0, 504.0]
+[loops] step1 take g219 (line) gap=1.0 turn=9.8 closing=False
+[loops] dead end after 2 at [2595.0, 705.0], nearest unused: [(26.9, 'g175'), (27.5, 'g196'), (28.7, 'g176'), (28.7, 'g234'), (30.0, 'g177')]
+[loops] start g72 (line) at [2292.1, 515.0]
+[loops] step1 take g90 (line) gap=2.1 turn=173.5 closing=False
+[loops] step2 take g106 (line) gap=8.5 turn=118.4 closing=False
+[loops] step3 take g219 (line) gap=10.4 turn=21.9 closing=False
+[loops] dead end after 4 at [2595.0, 705.0], nearest unused: [(26.9, 'g175'), (27.5, 'g196'), (28.7, 'g176'), (28.7, 'g234'), (30.0, 'g177')]
+[loops] start g73 (line) at [2396.7, 309.3]
+[loops] step1 take g85 (line) gap=13.5 turn=180.0 closing=False
+[loops] step2 take g388 (arc) gap=62.8 turn=145.0 closing=False
+[loops] step3 take g373 (arc) gap=277.7 turn=3.6 closing=False
+[loops] step4 take g385 (arc) gap=133.9 turn=22.3 closing=False
+[loops] step5 take g41 (line) gap=244.7 turn=163.7 closing=True
+[loops] LOOP area=126774 n=6 ids=['g73', 'g85', 'g388', 'g373', 'g385', 'g41']
+[loops] start g76 (line) at [2388.4, 314.6]
+[loops] step1 take g159 (line) gap=18.2 turn=178.5 closing=False
+[loops] dead end after 2 at [2439.2, 395.8], nearest unused: [(27.1, 'g160'), (40.9, 'g136'), (59.1, 'g112'), (60.5, 'g147'), (61.7, 'g149')]
+[loops] start g77 (line) at [2393.3, 311.7]
+[loops] step1 take g76 (line) gap=11.3 turn=180.0 closing=False
+[loops] step2 take g19 (line) gap=13.0 turn=178.5 closing=False
+[loops] step3 take g358 (arc) gap=5.3 turn=19.6 closing=False
+[loops] step4 take g452 (arc) gap=72.9 turn=20.4 closing=False
+[loops] step5 take g248 (line) gap=213.7 turn=41.8 closing=False
+[loops] step6 take g260 (line) gap=4.5 turn=45.4 closing=False
+[loops] step7 take g201 (line) gap=7.2 turn=135.5 closing=False
+[loops] dead end after 8 at [2630.1, 422.9], nearest unused: [(33.0, 'g402'), (40.0, 'g216'), (40.1, 'g355'), (40.4, 'g28'), (97.8, 'g355')]
+[loops] start g78 (line) at [2275.0, 529.0]
+[loops] step1 take g455 (arc) gap=15.0 turn=56.6 closing=False
+[loops] step2 take g82 (line) gap=272.4 turn=116.1 closing=False
+[loops] step3 take g165 (line) gap=15.8 turn=132.9 closing=False
+[loops] step4 take g224 (line) gap=5.5 turn=21.3 closing=False
+[loops] dead end after 5 at [2561.0, 690.0], nearest unused: [(23.7, 'g174'), (25.7, 'g162'), (29.2, 'g183'), (37.2, 'g219'), (39.0, 'g193')]
+[loops] start g80 (line) at [2274.0, 529.0]
+[loops] step1 take g213 (line) gap=18.6 turn=53.9 closing=False
+[loops] step2 take g170 (line) gap=3.8 turn=146.4 closing=False
+[loops] step3 take g359 (arc) gap=29.2 turn=7.2 closing=False
+[loops] step4 take g366 (arc) gap=115.8 turn=38.1 closing=False
+[loops] step5 take g360 (arc) gap=18.3 turn=97.7 closing=False
+[loops] step6 take g43 (line) gap=29.6 turn=148.7 closing=True
+[loops] LOOP area=6821 n=7 ids=['g80', 'g213', 'g170', 'g359', 'g366', 'g360', 'g43']
+[loops] start g81 (line) at [2299.0, 513.0]
+[loops] step1 take g415 (arc) gap=17.7 turn=3.0 closing=False
+[loops] step2 take g223 (line) gap=71.1 turn=2.4 closing=False
+[loops] step3 take g179 (line) gap=19.3 turn=178.6 closing=True
+[loops] LOOP area=2937 n=4 ids=['g81', 'g415', 'g223', 'g179']
+[loops] start g82 (line) at [2360.0, 583.0]
+[loops] step1 take g165 (line) gap=15.8 turn=132.9 closing=False
+[loops] step2 take g224 (line) gap=5.5 turn=21.3 closing=False
+[loops] dead end after 3 at [2561.0, 690.0], nearest unused: [(23.7, 'g174'), (25.7, 'g162'), (29.2, 'g183'), (37.2, 'g219'), (39.0, 'g193')]
+[loops] start g83 (line) at [2280.5, 524.0]
+[loops] step1 take g90 (line) gap=10.1 turn=174.7 closing=False
+[loops] step2 take g106 (line) gap=8.5 turn=118.4 closing=False
+[loops] step3 take g219 (line) gap=10.4 turn=21.9 closing=False
+[loops] dead end after 4 at [2595.0, 705.0], nearest unused: [(26.9, 'g175'), (27.5, 'g196'), (28.7, 'g176'), (28.7, 'g234'), (30.0, 'g177')]
+[loops] start g84 (line) at [2405.5, 304.5]
+[loops] step1 take g92 (line) gap=14.3 turn=180.0 closing=False
+[loops] step2 take g87 (line) gap=5.0 turn=180.0 closing=False
+[loops] step3 take g98 (line) gap=13.8 turn=180.0 closing=True
+[loops] LOOP area=4372 n=4 ids=['g84', 'g92', 'g87', 'g98']
+[loops] start g86 (line) at [2481.5, 329.5]
+[loops] step1 take g356 (arc) gap=298.8 turn=112.3 closing=False
+[loops] step2 take g35 (line) gap=141.1 turn=67.1 closing=False
+[loops] step3 take g358 (arc) gap=414.2 turn=45.8 closing=False
+[loops] step4 take g19 (line) gap=5.3 turn=44.3 closing=False
+[loops] step5 take g15 (line) gap=5.2 turn=177.3 closing=False
+[loops] dead end after 6 at [2551.0, 495.0], nearest unused: [(68.3, 'g60'), (70.9, 'g60'), (89.5, 'g216'), (98.7, 'g355'), (99.0, 'g402')]
+[loops] start g90 (line) at [2281.2, 522.1]
+[loops] step1 take g70 (line) gap=7.1 turn=172.8 closing=False
+[loops] step2 take g188 (line) gap=16.6 turn=127.9 closing=False
+[loops] step3 take g455 (arc) gap=158.9 turn=158.3 closing=False
+[loops] step4 take g78 (line) gap=15.0 turn=68.4 closing=True
+[loops] LOOP area=20599 n=5 ids=['g90', 'g70', 'g188', 'g455', 'g78']
+[loops] start g93 (line) at [2307.0, 523.0]
+[loops] step1 take g146 (line) gap=10.6 turn=150.8 closing=False
+[loops] step2 take g30 (line) gap=14.5 turn=137.8 closing=False
+[loops] step3 take g12 (line) gap=1.5 turn=128.5 closing=False
+[loops] step4 take g13 (line) gap=7.6 turn=180.0 closing=False
+[loops] dead end after 5 at [2832.0, 485.0], nearest unused: [(70.4, 'g7'), (72.9, 'g10'), (99.3, 'g141'), (105.2, 'g230'), (114.5, 'g371')]
+[loops] start g94 (line) at [2328.0, 516.0]
+[loops] step1 take g146 (line) gap=18.0 turn=126.3 closing=False
+[loops] step2 take g30 (line) gap=14.5 turn=137.8 closing=False
+[loops] step3 take g12 (line) gap=1.5 turn=128.5 closing=False
+[loops] step4 take g13 (line) gap=7.6 turn=180.0 closing=False
+[loops] dead end after 5 at [2832.0, 485.0], nearest unused: [(70.4, 'g7'), (72.9, 'g10'), (99.3, 'g141'), (105.2, 'g230'), (114.5, 'g371')]
+[loops] start g95 (line) at [2295.1, 513.9]
+[loops] step1 take g146 (line) gap=6.6 turn=149.9 closing=False
+[loops] step2 take g30 (line) gap=14.5 turn=137.8 closing=False
+[loops] step3 take g12 (line) gap=1.5 turn=128.5 closing=False
+[loops] step4 take g13 (line) gap=7.6 turn=180.0 closing=False
+[loops] dead end after 5 at [2832.0, 485.0], nearest unused: [(70.4, 'g7'), (72.9, 'g10'), (99.3, 'g141'), (105.2, 'g230'), (114.5, 'g371')]
+[loops] start g96 (line) at [2303.0, 523.0]
+[loops] step1 take g123 (line) gap=8.1 turn=178.9 closing=False
+[loops] step2 take g199 (line) gap=9.0 turn=136.2 closing=False
+[loops] step3 take g192 (line) gap=2.5 turn=178.2 closing=True
+[loops] LOOP area=1239 n=4 ids=['g96', 'g123', 'g199', 'g192']
+[loops] start g99 (line) at [2367.6, 512.4]
+[loops] step1 take g219 (line) gap=18.4 turn=3.3 closing=False
+[loops] dead end after 2 at [2595.0, 705.0], nearest unused: [(26.9, 'g175'), (27.5, 'g196'), (28.7, 'g176'), (28.7, 'g234'), (30.0, 'g177')]
+[loops] start g100 (line) at [2310.0, 535.0]
+[loops] step1 take g243 (line) gap=17.7 turn=26.5 closing=False
+[loops] step2 take g138 (line) gap=10.9 turn=154.4 closing=False
+[loops] step3 take g452 (arc) gap=490.5 turn=148.1 closing=False
+[loops] step4 take g248 (line) gap=213.7 turn=32.3 closing=False
+[loops] step5 take g260 (line) gap=4.5 turn=45.4 closing=False
+[loops] step6 take g201 (line) gap=7.2 turn=135.5 closing=False
+[loops] dead end after 7 at [2630.1, 422.9], nearest unused: [(33.0, 'g402'), (40.0, 'g216'), (40.1, 'g355'), (40.4, 'g28'), (97.8, 'g355')]
+[loops] start g102 (line) at [2364.0, 512.0]
+[loops] step1 take g219 (line) gap=19.4 turn=3.3 closing=False
+[loops] dead end after 2 at [2595.0, 705.0], nearest unused: [(26.9, 'g175'), (27.5, 'g196'), (28.7, 'g176'), (28.7, 'g234'), (30.0, 'g177')]
+[loops] start g103 (line) at [2368.0, 540.0]
+[loops] step1 take g140 (line) gap=14.3 turn=113.3 closing=False
+[loops] step2 take g30 (line) gap=19.0 turn=151.3 closing=False
+[loops] step3 take g12 (line) gap=1.5 turn=128.5 closing=False
+[loops] step4 take g13 (line) gap=7.6 turn=180.0 closing=False
+[loops] dead end after 5 at [2832.0, 485.0], nearest unused: [(70.4, 'g7'), (72.9, 'g10'), (99.3, 'g141'), (105.2, 'g230'), (114.5, 'g371')]
+[loops] start g104 (line) at [2426.2, 302.8]
+[loops] step1 take g108 (line) gap=11.2 turn=180.0 closing=False
+[loops] step2 take g120 (line) gap=15.8 turn=180.0 closing=False
+[loops] step3 take g132 (line) gap=7.1 turn=180.0 closing=False
+[loops] step4 take g355 (arc) gap=228.3 turn=154.3 closing=False
+[loops] step5 take g86 (line) gap=78.6 turn=25.1 closing=False
+[loops] step6 take g356 (arc) gap=298.8 turn=112.3 closing=False
+[loops] step7 take g35 (line) gap=141.1 turn=67.1 closing=False
+[loops] step8 take g358 (arc) gap=414.2 turn=45.8 closing=False
+[loops] step9 take g19 (line) gap=5.3 turn=44.3 closing=False
+[loops] step10 take g15 (line) gap=5.2 turn=177.3 closing=False
+[loops] dead end after 11 at [2551.0, 495.0], nearest unused: [(68.3, 'g60'), (70.9, 'g60'), (89.5, 'g216'), (99.0, 'g402'), (107.0, 'g201')]
+[loops] start g106 (line) at [2275.0, 528.0]
+[loops] step1 take g219 (line) gap=10.4 turn=21.9 closing=False
+[loops] dead end after 2 at [2595.0, 705.0], nearest unused: [(26.9, 'g175'), (27.5, 'g196'), (28.7, 'g176'), (28.7, 'g234'), (30.0, 'g177')]
+[loops] start g108 (line) at [2430.3, 301.7]
+[loops] step1 take g120 (line) gap=14.5 turn=180.0 closing=False
+[loops] step2 take g104 (line) gap=19.2 turn=180.0 closing=False
+[loops] dead end after 3 at [2951.8, 828.2], nearest unused: [(32.5, 'g132'), (34.8, 'g86'), (43.5, 'g144'), (44.7, 'g137'), (44.7, 'g150')]
+[loops] start g109 (line) at [2331.4, 506.7]
+[loops] dead end after 1 at [2449.6, 628.3], nearest unused: [(20.0, 'g208'), (23.3, 'g202'), (25.2, 'g102'), (25.5, 'g129'), (26.8, 'g99')]
+[loops] start g110 (line) at [2357.6, 386.4]
+[loops] step1 take g116 (line) gap=5.7 turn=179.5 closing=False
+[loops] step2 take g119 (line) gap=10.7 turn=179.5 closing=False
+[loops] step3 take g147 (line) gap=15.4 turn=179.5 closing=False
+[loops] step4 take g148 (line) gap=7.9 turn=179.5 closing=False
+[loops] step5 take g149 (line) gap=10.6 turn=179.5 closing=False
+[loops] step6 take g152 (line) gap=10.0 turn=179.5 closing=False
+[loops] step7 take g151 (line) gap=13.9 turn=180.0 closing=False
+[loops] step8 take g163 (line) gap=14.4 turn=179.1 closing=False
+[loops] step9 take g158 (line) gap=13.1 turn=178.6 closing=False
+[loops] step10 take g157 (line) gap=2.0 turn=179.1 closing=False
+[loops] step11 take g166 (line) gap=4.4 turn=179.3 closing=False
+[loops] step12 take g175 (line) gap=15.4 turn=173.7 closing=False
+[loops] step13 take g234 (line) gap=17.2 turn=147.5 closing=False
+[loops] dead end after 14 at [2418.0, 666.0], nearest unused: [(31.4, 'g386'), (33.3, 'g208'), (39.9, 'g202'), (44.3, 'g208'), (49.2, 'g109')]
+[loops] start g111 (line) at [2516.2, 317.8]
+[loops] step1 take g260 (line) gap=14.9 turn=45.0 closing=False
+[loops] step2 take g201 (line) gap=7.2 turn=135.5 closing=False
+[loops] dead end after 3 at [2630.1, 422.9], nearest unused: [(33.0, 'g402'), (40.0, 'g216'), (40.1, 'g355'), (40.4, 'g28'), (97.8, 'g355')]
+[loops] start g112 (line) at [2409.1, 345.0]
+[loops] step1 take g353 (arc) gap=16.2 turn=173.7 closing=False
+[loops] step2 take g160 (line) gap=58.4 turn=6.9 closing=False
+[loops] dead end after 3 at [2460.9, 412.2], nearest unused: [(27.1, 'g159'), (65.7, 'g136'), (69.2, 'g147'), (69.2, 'g149'), (72.6, 'g148')]
+[loops] start g113 (line) at [2305.2, 524.4]
+[loops] step1 take g146 (line) gap=0.5 turn=150.1 closing=False
+[loops] step2 take g30 (line) gap=14.5 turn=137.8 closing=False
+[loops] step3 take g12 (line) gap=1.5 turn=128.5 closing=False
+[loops] step4 take g13 (line) gap=7.6 turn=180.0 closing=False
+[loops] dead end after 5 at [2832.0, 485.0], nearest unused: [(70.4, 'g7'), (72.9, 'g10'), (99.3, 'g141'), (105.2, 'g230'), (114.5, 'g371')]
+[loops] start g114 (line) at [2280.3, 522.6]
+[loops] step1 take g202 (line) gap=6.8 turn=12.0 closing=False
+[loops] step2 take g129 (line) gap=13.9 turn=164.5 closing=False
+[loops] step3 take g94 (line) gap=10.0 turn=136.4 closing=False
+[loops] step4 take g95 (line) gap=11.4 turn=156.4 closing=True
+[loops] LOOP area=3867 n=5 ids=['g114', 'g202', 'g129', 'g94', 'g95']
+[loops] start g115 (line) at [2357.7, 510.3]
+[loops] step1 take g219 (line) gap=18.4 turn=2.9 closing=False
+[loops] dead end after 2 at [2595.0, 705.0], nearest unused: [(26.9, 'g175'), (27.5, 'g196'), (28.7, 'g176'), (28.7, 'g234'), (30.0, 'g177')]
+[loops] start g116 (line) at [2358.9, 395.2]
+[loops] step1 take g110 (line) gap=5.7 turn=179.5 closing=False
+[loops] step2 take g119 (line) gap=18.9 turn=180.0 closing=False
+[loops] step3 take g147 (line) gap=15.4 turn=179.5 closing=False
+[loops] step4 take g148 (line) gap=7.9 turn=179.5 closing=False
+[loops] step5 take g149 (line) gap=10.6 turn=179.5 closing=False
+[loops] step6 take g152 (line) gap=10.0 turn=179.5 closing=False
+[loops] step7 take g151 (line) gap=13.9 turn=180.0 closing=False
+[loops] step8 take g163 (line) gap=14.4 turn=179.1 closing=False
+[loops] step9 take g158 (line) gap=13.1 turn=178.6 closing=False
+[loops] step10 take g157 (line) gap=2.0 turn=179.1 closing=False
+[loops] step11 take g166 (line) gap=4.4 turn=179.3 closing=False
+[loops] step12 take g175 (line) gap=15.4 turn=173.7 closing=False
+[loops] step13 take g234 (line) gap=17.2 turn=147.5 closing=False
+[loops] dead end after 14 at [2418.0, 666.0], nearest unused: [(31.4, 'g386'), (33.3, 'g208'), (44.3, 'g208'), (49.2, 'g109'), (58.2, 'g156')]
+[loops] start g117 (line) at [2527.5, 315.5]
+[loops] step1 take g353 (arc) gap=239.0 turn=75.5 closing=False
+[loops] step2 take g370 (arc) gap=143.8 turn=54.5 closing=False
+[loops] step3 take g28 (line) gap=105.9 turn=51.5 closing=False
+[loops] step4 take g355 (arc) gap=17.5 turn=179.9 closing=False
+[loops] step5 take g150 (line) gap=79.4 turn=0.1 closing=False
+[loops] step6 take g260 (line) gap=19.0 turn=45.0 closing=False
+[loops] step7 take g121 (line) gap=4.3 turn=135.5 closing=True
+[loops] LOOP area=3464 n=8 ids=['g117', 'g353', 'g370', 'g28', 'g355', 'g150', 'g260', 'g121']
+[loops] start g119 (line) at [2365.2, 403.8]
+[loops] step1 take g116 (line) gap=12.1 turn=179.5 closing=False
+[loops] step2 take g110 (line) gap=8.8 turn=179.5 closing=False
+[loops] step3 take g69 (line) gap=18.2 turn=180.0 closing=False
+[loops] step4 take g63 (line) gap=11.7 turn=180.0 closing=False
+[loops] dead end after 5 at [2757.5, 760.5], nearest unused: [(28.2, 'g136'), (60.2, 'g57'), (67.1, 'g29'), (67.6, 'g149'), (72.2, 'g147')]
+[loops] start g120 (line) at [2444.7, 308.3]
+[loops] step1 take g132 (line) gap=7.1 turn=180.0 closing=False
+[loops] step2 take g144 (line) gap=14.2 turn=180.0 closing=False
+[loops] step3 take g402 (arc) gap=624.8 turn=16.2 closing=False
+[loops] step4 take g86 (line) gap=102.0 turn=15.7 closing=False
+[loops] step5 take g356 (arc) gap=298.8 turn=112.3 closing=False
+[loops] step6 take g35 (line) gap=141.1 turn=67.1 closing=False
+[loops] step7 take g358 (arc) gap=414.2 turn=45.8 closing=False
+[loops] step8 take g19 (line) gap=5.3 turn=44.3 closing=False
+[loops] step9 take g15 (line) gap=5.2 turn=177.3 closing=False
+[loops] dead end after 10 at [2551.0, 495.0], nearest unused: [(68.3, 'g60'), (70.9, 'g60'), (89.5, 'g216'), (107.0, 'g201'), (111.6, 'g369')]
+[loops] start g122 (line) at [2270.0, 544.0]
+[loops] step1 take g241 (line) gap=11.4 turn=6.9 closing=False
+[loops] step2 take g201 (line) gap=1.5 turn=154.9 closing=False
+[loops] dead end after 3 at [2630.1, 422.9], nearest unused: [(33.0, 'g402'), (40.0, 'g216'), (107.0, 'g15'), (111.1, 'g172'), (112.4, 'g32')]
+[loops] start g124 (line) at [2495.8, 324.2]
+[loops] step1 take g242 (line) gap=16.4 turn=156.3 closing=False
+[loops] step2 take g130 (line) gap=5.8 turn=6.2 closing=False
+[loops] step3 take g30 (line) gap=4.9 turn=147.9 closing=False
+[loops] step4 take g12 (line) gap=1.5 turn=128.5 closing=False
+[loops] step5 take g13 (line) gap=7.6 turn=180.0 closing=False
+[loops] dead end after 6 at [2832.0, 485.0], nearest unused: [(70.4, 'g7'), (72.9, 'g10'), (99.3, 'g141'), (105.2, 'g230'), (114.5, 'g371')]
+[loops] start g125 (line) at [2271.0, 536.0]
+[loops] step1 take g131 (line) gap=19.2 turn=131.6 closing=False
+[loops] step2 take g134 (line) gap=2.0 turn=135.0 closing=False
+[loops] step3 take g130 (line) gap=8.5 turn=160.6 closing=True
+[loops] LOOP area=592 n=4 ids=['g125', 'g131', 'g134', 'g130']
+[loops] start g126 (line) at [2333.0, 538.0]
+[loops] step1 take g146 (line) gap=3.4 turn=138.3 closing=False
+[loops] step2 take g30 (line) gap=14.5 turn=137.8 closing=False
+[loops] step3 take g12 (line) gap=1.5 turn=128.5 closing=False
+[loops] step4 take g13 (line) gap=7.6 turn=180.0 closing=False
+[loops] dead end after 5 at [2832.0, 485.0], nearest unused: [(70.4, 'g7'), (72.9, 'g10'), (99.3, 'g141'), (105.2, 'g230'), (114.5, 'g371')]
+[loops] start g132 (line) at [2462.7, 320.3]
+[loops] step1 take g172 (line) gap=19.2 turn=179.6 closing=False
+[loops] step2 take g402 (arc) gap=50.2 turn=15.0 closing=False
+[loops] step3 take g124 (line) gap=14.1 turn=163.5 closing=False
+[loops] step4 take g242 (line) gap=16.4 turn=156.3 closing=False
+[loops] step5 take g122 (line) gap=3.0 turn=6.9 closing=False
+[loops] step6 take g30 (line) gap=1.0 turn=147.1 closing=False
+[loops] step7 take g12 (line) gap=1.5 turn=128.5 closing=False
+[loops] step8 take g13 (line) gap=7.6 turn=180.0 closing=False
+[loops] dead end after 9 at [2832.0, 485.0], nearest unused: [(70.4, 'g7'), (72.9, 'g10'), (99.3, 'g141'), (105.2, 'g230'), (114.5, 'g371')]
+[loops] start g136 (line) at [2398.6, 391.4]
+[loops] dead end after 1 at [2784.1, 769.9], nearest unused: [(28.2, 'g63'), (32.0, 'g57'), (46.2, 'g62'), (47.8, 'g160'), (49.3, 'g69')]
+[loops] start g137 (line) at [2486.7, 327.3]
+[loops] step1 take g402 (arc) gap=622.0 turn=11.9 closing=False
+[loops] step2 take g86 (line) gap=102.0 turn=11.4 closing=False
+[loops] step3 take g356 (arc) gap=298.8 turn=112.3 closing=False
+[loops] step4 take g35 (line) gap=141.1 turn=67.1 closing=False
+[loops] step5 take g358 (arc) gap=414.2 turn=45.8 closing=False
+[loops] step6 take g19 (line) gap=5.3 turn=44.3 closing=False
+[loops] step7 take g15 (line) gap=5.2 turn=177.3 closing=False
+[loops] dead end after 8 at [2551.0, 495.0], nearest unused: [(68.3, 'g60'), (70.9, 'g60'), (89.5, 'g216'), (107.0, 'g201'), (111.6, 'g369')]
+[loops] start g138 (line) at [2503.6, 320.4]
+[loops] step1 take g452 (arc) gap=265.1 turn=31.9 closing=False
+[loops] step2 take g248 (line) gap=213.7 turn=32.3 closing=False
+[loops] step3 take g124 (line) gap=16.8 turn=177.8 closing=True
+[loops] LOOP area=4371 n=4 ids=['g138', 'g452', 'g248', 'g124']
+[loops] start g139 (line) at [2286.0, 560.0]
+[loops] step1 take g55 (line) gap=18.8 turn=138.0 closing=False
+[loops] step2 take g115 (line) gap=11.8 turn=144.7 closing=False
+[loops] step3 take g219 (line) gap=18.4 turn=2.9 closing=False
+[loops] dead end after 4 at [2595.0, 705.0], nearest unused: [(26.9, 'g175'), (27.5, 'g196'), (28.7, 'g176'), (28.7, 'g234'), (30.0, 'g177')]
+[loops] start g140 (line) at [2269.0, 563.0]
+[loops] step1 take g243 (line) gap=8.5 turn=2.7 closing=False
+[loops] step2 take g201 (line) gap=13.8 turn=154.9 closing=False
+[loops] dead end after 3 at [2630.1, 422.9], nearest unused: [(33.0, 'g402'), (40.0, 'g216'), (107.0, 'g15'), (111.1, 'g172'), (112.4, 'g32')]
+[loops] start g141 (line) at [2831.0, 584.3]
+[loops] dead end after 1 at [2922.0, 584.3], nearest unused: [(32.7, 'g169'), (65.8, 'g200'), (67.3, 'g200'), (71.5, 'g23'), (119.1, 'g371')]
+[loops] start g142 (line) at [2329.0, 564.0]
+[loops] step1 take g146 (line) gap=9.5 turn=148.2 closing=False
+[loops] step2 take g30 (line) gap=14.5 turn=137.8 closing=False
+[loops] step3 take g12 (line) gap=1.5 turn=128.5 closing=False
+[loops] step4 take g13 (line) gap=7.6 turn=180.0 closing=False
+[loops] dead end after 5 at [2832.0, 485.0], nearest unused: [(70.4, 'g7'), (72.9, 'g10'), (99.3, 'g141'), (105.2, 'g230'), (114.5, 'g371')]
+[loops] start g143 (line) at [2492.8, 325.2]
+[loops] step1 take g243 (line) gap=17.4 turn=154.9 closing=False
+[loops] step2 take g140 (line) gap=8.5 turn=2.7 closing=False
+[loops] step3 take g30 (line) gap=19.0 turn=151.3 closing=False
+[loops] step4 take g12 (line) gap=1.5 turn=128.5 closing=False
+[loops] step5 take g13 (line) gap=7.6 turn=180.0 closing=False
+[loops] dead end after 6 at [2832.0, 485.0], nearest unused: [(70.4, 'g7'), (72.9, 'g10'), (99.3, 'g141'), (105.2, 'g230'), (114.5, 'g371')]
+[loops] start g144 (line) at [2475.4, 326.6]
+[loops] step1 take g402 (arc) gap=624.8 turn=16.2 closing=False
+[loops] step2 take g86 (line) gap=102.0 turn=15.7 closing=False
+[loops] step3 take g356 (arc) gap=298.8 turn=112.3 closing=False
+[loops] step4 take g35 (line) gap=141.1 turn=67.1 closing=False
+[loops] step5 take g358 (arc) gap=414.2 turn=45.8 closing=False
+[loops] step6 take g19 (line) gap=5.3 turn=44.3 closing=False
+[loops] step7 take g15 (line) gap=5.2 turn=177.3 closing=False
+[loops] dead end after 8 at [2551.0, 495.0], nearest unused: [(68.3, 'g60'), (70.9, 'g60'), (89.5, 'g216'), (107.0, 'g201'), (111.6, 'g369')]
+[loops] start g145 (line) at [2490.8, 325.2]
+[loops] step1 take g392 (arc) gap=10.1 turn=114.9 closing=False
+[loops] step2 take g216 (line) gap=157.3 turn=65.1 closing=False
+[loops] step3 take g402 (arc) gap=10.9 turn=0.1 closing=True
+[loops] LOOP area=444 n=4 ids=['g145', 'g392', 'g216', 'g402']
+[loops] start g146 (line) at [2268.7, 558.5]
+[loops] step1 take g126 (line) gap=3.4 turn=138.3 closing=False
+[loops] dead end after 2 at [2333.0, 538.0], nearest unused: [(23.2, 'g100'), (26.3, 'g142'), (27.0, 'g82'), (29.1, 'g55'), (30.0, 'g93')]
+[loops] start g147 (line) at [2397.4, 439.6]
+[loops] step1 take g148 (line) gap=5.3 turn=179.5 closing=False
+[loops] step2 take g149 (line) gap=5.3 turn=179.5 closing=False
+[loops] step3 take g152 (line) gap=16.4 turn=179.5 closing=True
+[loops] LOOP area=1956 n=4 ids=['g147', 'g148', 'g149', 'g152']
+[loops] start g151 (line) at [2398.0, 459.0]
+[loops] step1 take g157 (line) gap=13.2 turn=179.6 closing=False
+[loops] step2 take g158 (line) gap=2.0 turn=179.1 closing=False
+[loops] step3 take g163 (line) gap=13.1 turn=178.6 closing=True
+[loops] LOOP area=1378 n=4 ids=['g151', 'g157', 'g158', 'g163']
+[loops] start g156 (line) at [2345.0, 572.0]
+[loops] step1 take g208 (line) gap=16.1 turn=23.9 closing=False
+[loops] dead end after 2 at [2446.0, 648.0], nearest unused: [(20.0, 'g109'), (33.3, 'g234'), (39.6, 'g102'), (39.9, 'g115'), (40.1, 'g386')]
+[loops] start g159 (line) at [2439.2, 395.8]
+[loops] step1 take g112 (line) gap=19.5 turn=177.6 closing=False
+[loops] dead end after 2 at [2409.1, 345.0], nearest unused: [(36.8, 'g76'), (36.9, 'g77'), (37.6, 'g15'), (39.4, 'g19'), (41.5, 'g29')]
+[loops] start g160 (line) at [2460.9, 412.2]
+[loops] step1 take g112 (line) gap=16.1 turn=179.5 closing=False
+[loops] dead end after 2 at [2409.1, 345.0], nearest unused: [(36.8, 'g76'), (36.9, 'g77'), (37.6, 'g15'), (39.4, 'g19'), (41.5, 'g29')]
+[loops] start g161 (line) at [2397.5, 471.5]
+[loops] step1 take g166 (line) gap=3.7 turn=179.7 closing=False
+[loops] step2 take g175 (line) gap=15.4 turn=173.7 closing=False
+[loops] step3 take g234 (line) gap=17.2 turn=147.5 closing=False
+[loops] dead end after 4 at [2418.0, 666.0], nearest unused: [(31.4, 'g386'), (33.3, 'g208'), (44.3, 'g208'), (49.2, 'g109'), (58.2, 'g156')]
+[loops] start g162 (line) at [2355.3, 508.7]
+[loops] dead end after 1 at [2535.3, 691.6], nearest unused: [(24.8, 'g165'), (25.5, 'g224'), (25.7, 'g224'), (30.4, 'g174'), (33.1, 'g182')]
+[loops] start g165 (line) at [2375.0, 533.0]
+[loops] step1 take g224 (line) gap=5.5 turn=21.3 closing=False
+[loops] dead end after 2 at [2561.0, 690.0], nearest unused: [(23.7, 'g174'), (25.7, 'g162'), (29.2, 'g183'), (37.2, 'g219'), (39.0, 'g193')]
+[loops] start g166 (line) at [2398.0, 478.0]
+[loops] step1 take g161 (line) gap=3.7 turn=179.7 closing=False
+[loops] step2 take g167 (line) gap=9.6 turn=180.0 closing=False
+[loops] step3 take g173 (line) gap=18.6 turn=179.5 closing=True
+[loops] LOOP area=2016 n=4 ids=['g166', 'g161', 'g167', 'g173']
+[loops] start g168 (line) at [2397.0, 484.0]
+[loops] step1 take g171 (line) gap=5.3 turn=180.0 closing=False
+[loops] step2 take g177 (line) gap=9.7 turn=173.0 closing=False
+[loops] step3 take g175 (line) gap=15.1 turn=179.0 closing=True
+[loops] LOOP area=1027 n=4 ids=['g168', 'g171', 'g177', 'g175']
+[loops] start g169 (line) at [321.0, 606.5]
+[loops] dead end after 1 at [2946.0, 606.5], nearest unused: [(32.7, 'g141'), (33.2, 'g200'), (77.5, 'g200'), (84.4, 'g23'), (95.7, 'g371')]
+[loops] start g172 (line) at [2528.9, 377.1]
+[loops] step1 take g137 (line) gap=8.5 turn=179.6 closing=False
+[loops] step2 take g86 (line) gap=5.7 turn=179.4 closing=False
+[loops] step3 take g356 (arc) gap=298.8 turn=112.3 closing=False
+[loops] step4 take g35 (line) gap=141.1 turn=67.1 closing=False
+[loops] step5 take g358 (arc) gap=414.2 turn=45.8 closing=False
+[loops] step6 take g19 (line) gap=5.3 turn=44.3 closing=False
+[loops] step7 take g15 (line) gap=5.2 turn=177.3 closing=False
+[loops] dead end after 8 at [2551.0, 495.0], nearest unused: [(68.3, 'g60'), (70.9, 'g60'), (107.0, 'g201'), (111.6, 'g369'), (118.9, 'g215')]
+[loops] start g174 (line) at [2356.7, 510.3]
+[loops] step1 take g386 (arc) gap=19.6 turn=155.8 closing=False
+[loops] step2 take g186 (line) gap=116.7 turn=23.3 closing=False
+[loops] step3 take g46 (line) gap=5.8 turn=136.9 closing=False
+[loops] step4 take g142 (line) gap=16.3 turn=20.1 closing=False
+[loops] step5 take g55 (line) gap=17.9 turn=168.1 closing=True
+[loops] LOOP area=4656 n=6 ids=['g174', 'g386', 'g186', 'g46', 'g142', 'g55']
+[loops] start g176 (line) at [2397.5, 498.4]
+[loops] step1 take g194 (line) gap=12.5 turn=173.4 closing=False
+[loops] step2 take g195 (line) gap=19.8 turn=175.6 closing=False
+[loops] step3 take g234 (line) gap=10.7 turn=158.0 closing=False
+[loops] dead end after 4 at [2418.0, 666.0], nearest unused: [(33.3, 'g208'), (44.3, 'g208'), (49.2, 'g109'), (58.2, 'g156'), (59.7, 'g241')]
+[loops] start g180 (line) at [2311.2, 508.8]
+[loops] step1 take g214 (line) gap=17.5 turn=177.4 closing=False
+[loops] dead end after 2 at [2407.6, 577.5], nearest unused: [(29.3, 'g240'), (30.8, 'g241'), (31.2, 'g122'), (33.8, 'g242'), (40.9, 'g103')]
+[loops] start g181 (line) at [2301.2, 510.7]
+[loops] step1 take g205 (line) gap=17.3 turn=170.8 closing=False
+[loops] step2 take g30 (line) gap=10.2 turn=138.1 closing=False
+[loops] step3 take g12 (line) gap=1.5 turn=128.5 closing=False
+[loops] step4 take g13 (line) gap=7.6 turn=180.0 closing=False
+[loops] dead end after 5 at [2832.0, 485.0], nearest unused: [(70.4, 'g7'), (72.9, 'g10'), (99.3, 'g141'), (105.2, 'g230'), (114.5, 'g371')]
+[loops] start g182 (line) at [2315.5, 508.5]
+[loops] step1 take g214 (line) gap=12.2 turn=177.4 closing=False
+[loops] dead end after 2 at [2407.6, 577.5], nearest unused: [(29.3, 'g240'), (30.8, 'g241'), (31.2, 'g122'), (33.8, 'g242'), (40.9, 'g103')]
+[loops] start g183 (line) at [2390.2, 515.0]
+[loops] step1 take g194 (line) gap=13.6 turn=174.9 closing=False
+[loops] step2 take g195 (line) gap=19.8 turn=175.6 closing=False
+[loops] step3 take g234 (line) gap=10.7 turn=158.0 closing=False
+[loops] dead end after 4 at [2418.0, 666.0], nearest unused: [(33.3, 'g208'), (44.3, 'g208'), (49.2, 'g109'), (58.2, 'g156'), (59.7, 'g241')]
+[loops] start g184 (line) at [2273.2, 530.7]
+[loops] step1 take g209 (line) gap=14.8 turn=175.1 closing=False
+[loops] step2 take g30 (line) gap=17.9 turn=138.2 closing=False
+[loops] step3 take g12 (line) gap=1.5 turn=128.5 closing=False
+[loops] step4 take g13 (line) gap=7.6 turn=180.0 closing=False
+[loops] dead end after 5 at [2832.0, 485.0], nearest unused: [(70.4, 'g7'), (72.9, 'g10'), (99.3, 'g141'), (105.2, 'g230'), (114.5, 'g371')]
+[loops] start g185 (line) at [2304.6, 510.4]
+[loops] step1 take g180 (line) gap=3.3 turn=179.5 closing=False
+[loops] step2 take g113 (line) gap=16.8 turn=159.4 closing=False
+[loops] step3 take g93 (line) gap=10.9 turn=179.3 closing=True
+[loops] LOOP area=1384 n=4 ids=['g185', 'g180', 'g113', 'g93']
+[loops] start g189 (line) at [2336.5, 507.5]
+[loops] step1 take g197 (line) gap=13.1 turn=174.2 closing=False
+[loops] step2 take g282 (line) gap=5.5 turn=141.0 closing=False
+[loops] step3 take g306 (line) gap=5.8 turn=90.0 closing=False
+[loops] dead end after 4 at [186.0, 2006.7], nearest unused: [(76.2, 'g300'), (236.2, 'g287'), (290.7, 'g304'), (310.9, 'g300'), (318.2, 'g428')]
+[loops] start g190 (line) at [2339.1, 506.9]
+[loops] step1 take g176 (line) gap=18.4 turn=173.4 closing=False
+[loops] step2 take g282 (line) gap=17.8 turn=141.6 closing=False
+[loops] step3 take g306 (line) gap=5.8 turn=90.0 closing=False
+[loops] dead end after 4 at [186.0, 2006.7], nearest unused: [(76.2, 'g300'), (236.2, 'g287'), (290.7, 'g304'), (310.9, 'g300'), (318.2, 'g428')]
+[loops] start g191 (line) at [2397.3, 509.6]
+[loops] step1 take g194 (line) gap=5.9 turn=174.0 closing=False
+[loops] step2 take g195 (line) gap=19.8 turn=175.6 closing=False
+[loops] step3 take g234 (line) gap=10.7 turn=158.0 closing=False
+[loops] dead end after 4 at [2418.0, 666.0], nearest unused: [(33.3, 'g208'), (44.3, 'g208'), (49.2, 'g109'), (58.2, 'g156'), (59.7, 'g241')]
+[loops] start g193 (line) at [2346.0, 510.0]
+[loops] step1 take g197 (line) gap=9.0 turn=174.5 closing=False
+[loops] step2 take g282 (line) gap=5.5 turn=141.0 closing=False
+[loops] step3 take g306 (line) gap=5.8 turn=90.0 closing=False
+[loops] dead end after 4 at [186.0, 2006.7], nearest unused: [(76.2, 'g300'), (236.2, 'g287'), (290.7, 'g304'), (310.9, 'g300'), (318.2, 'g428')]
+[loops] start g194 (line) at [2348.6, 509.4]
+[loops] step1 take g176 (line) gap=12.5 turn=173.4 closing=False
+[loops] step2 take g282 (line) gap=17.8 turn=141.6 closing=False
+[loops] step3 take g306 (line) gap=5.8 turn=90.0 closing=False
+[loops] dead end after 4 at [186.0, 2006.7], nearest unused: [(76.2, 'g300'), (236.2, 'g287'), (290.7, 'g304'), (310.9, 'g300'), (318.2, 'g428')]
+[loops] start g195 (line) at [2368.0, 513.0]
+[loops] step1 take g234 (line) gap=10.7 turn=158.0 closing=False
+[loops] dead end after 2 at [2418.0, 666.0], nearest unused: [(33.3, 'g208'), (44.3, 'g208'), (49.2, 'g109'), (58.2, 'g156'), (59.7, 'g241')]
+[loops] start g196 (line) at [2412.7, 510.6]
+[loops] step1 take g234 (line) gap=9.8 turn=148.7 closing=False
+[loops] dead end after 2 at [2418.0, 666.0], nearest unused: [(33.3, 'g208'), (44.3, 'g208'), (49.2, 'g109'), (58.2, 'g156'), (59.7, 'g241')]
+[loops] start g197 (line) at [2396.7, 515.6]
+[loops] step1 take g194 (line) gap=0.9 turn=174.0 closing=False
+[loops] step2 take g195 (line) gap=19.8 turn=175.6 closing=False
+[loops] step3 take g234 (line) gap=10.7 turn=158.0 closing=False
+[loops] dead end after 4 at [2418.0, 666.0], nearest unused: [(33.3, 'g208'), (44.3, 'g208'), (49.2, 'g109'), (58.2, 'g156'), (59.7, 'g241')]
+[loops] start g200 (line) at [2872.0, 629.4]
+[loops] dead end after 1 at [2970.0, 629.4], nearest unused: [(33.2, 'g169'), (65.8, 'g141'), (74.8, 'g237'), (78.6, 'g236'), (78.6, 'g371')]
+[loops] start g201 (line) at [2630.1, 422.9]
+[loops] step1 take g240 (line) gap=11.3 turn=154.4 closing=False
+[loops] step2 take g122 (line) gap=14.5 turn=7.4 closing=False
+[loops] step3 take g30 (line) gap=1.0 turn=147.1 closing=False
+[loops] step4 take g12 (line) gap=1.5 turn=128.5 closing=False
+[loops] step5 take g13 (line) gap=7.6 turn=180.0 closing=False
+[loops] dead end after 6 at [2832.0, 485.0], nearest unused: [(70.4, 'g7'), (72.9, 'g10'), (99.3, 'g141'), (105.2, 'g230'), (114.5, 'g371')]
+[loops] start g203 (line) at [457.5, 810.0]
+[loops] step1 take g22 (line) gap=11.6 turn=90.0 closing=False
+[loops] step2 take g465 (arc) gap=395.0 turn=16.5 closing=False
+[loops] step3 take g49 (line) gap=27.6 turn=43.5 closing=False
+[loops] step4 take g279 (line) gap=5.5 turn=30.0 closing=False
+[loops] step5 take g283 (line) gap=12.5 turn=90.0 closing=False
+[loops] step6 take g281 (line) gap=12.5 turn=90.0 closing=False
+[loops] dead end after 7 at [1362.5, 909.0], nearest unused: [(55.5, 'g232'), (69.6, 'g398'), (74.5, 'g485'), (76.1, 'g393'), (96.1, 'g477')]
+[loops] start g204 (line) at [2434.1, 537.9]
+[loops] step1 take g234 (line) gap=16.1 turn=153.5 closing=False
+[loops] dead end after 2 at [2418.0, 666.0], nearest unused: [(33.3, 'g208'), (44.3, 'g208'), (49.2, 'g109'), (58.2, 'g156'), (59.7, 'g241')]
+[loops] start g205 (line) at [2269.6, 554.2]
+[loops] step1 take g181 (line) gap=17.3 turn=170.8 closing=False
+[loops] step2 take g72 (line) gap=10.1 turn=137.2 closing=False
+[loops] step3 take g83 (line) gap=12.2 turn=178.7 closing=False
+[loops] step4 take g106 (line) gap=6.8 turn=113.2 closing=False
+[loops] step5 take g219 (line) gap=10.4 turn=21.9 closing=False
+[loops] dead end after 6 at [2595.0, 705.0], nearest unused: [(27.5, 'g196'), (28.7, 'g176'), (28.7, 'g234'), (30.9, 'g191'), (33.9, 'g195')]
+[loops] start g208 (line) at [2399.0, 626.0]
+[loops] dead end after 1 at [2446.0, 648.0], nearest unused: [(20.0, 'g109'), (33.3, 'g234'), (39.6, 'g102'), (39.9, 'g115'), (42.0, 'g99')]
+[loops] start g209 (line) at [2271.3, 561.7]
+[loops] step1 take g184 (line) gap=14.8 turn=175.1 closing=False
+[loops] step2 take g30 (line) gap=13.9 turn=133.3 closing=False
+[loops] step3 take g12 (line) gap=1.5 turn=128.5 closing=False
+[loops] step4 take g13 (line) gap=7.6 turn=180.0 closing=False
+[loops] dead end after 5 at [2832.0, 485.0], nearest unused: [(70.4, 'g7'), (72.9, 'g10'), (99.3, 'g141'), (105.2, 'g230'), (114.5, 'g371')]
+[loops] start g214 (line) at [2407.6, 577.5]
+[loops] step1 take g182 (line) gap=12.2 turn=177.4 closing=False
+[loops] step2 take g109 (line) gap=16.0 turn=179.2 closing=False
+[loops] dead end after 3 at [2449.6, 628.3], nearest unused: [(20.0, 'g208'), (25.2, 'g102'), (26.8, 'g99'), (32.2, 'g115'), (36.4, 'g54')]
+[loops] start g215 (line) at [2463.5, 575.5]
+[loops] step1 take g234 (line) gap=11.5 turn=154.1 closing=False
+[loops] dead end after 2 at [2418.0, 666.0], nearest unused: [(33.3, 'g208'), (44.3, 'g208'), (49.2, 'g109'), (58.2, 'g156'), (59.7, 'g241')]
+[loops] start g218 (line) at [772.0, 654.0]
+[loops] dead end after 1 at [812.0, 660.0], nearest unused: [(20.6, 'g245'), (75.3, 'g222'), (82.2, 'g222'), (105.0, 'g469'), (108.6, 'g469')]
+[loops] start g219 (line) at [2492.0, 615.0]
+[loops] dead end after 1 at [2595.0, 705.0], nearest unused: [(27.5, 'g196'), (28.7, 'g176'), (28.7, 'g234'), (30.9, 'g191'), (33.9, 'g195')]
+[loops] start g222 (line) at [772.2, 732.0]
+[loops] dead end after 1 at [772.2, 596.0], nearest unused: [(58.0, 'g218'), (61.4, 'g245'), (75.3, 'g218'), (144.4, 'g271'), (162.0, 'g442')]
+[loops] start g224 (line) at [2518.0, 673.0]
+[loops] dead end after 1 at [2561.0, 690.0], nearest unused: [(25.7, 'g162'), (29.2, 'g183'), (37.2, 'g219'), (39.0, 'g193'), (40.3, 'g189')]
+[loops] start g225 (line) at [562.1, 660.9]
+[loops] step1 take g247 (line) gap=16.5 turn=93.4 closing=False
+[loops] step2 take g251 (line) gap=1.0 turn=12.5 closing=False
+[loops] step3 take g257 (line) gap=14.0 turn=68.5 closing=False
+[loops] step4 take g488 (arc) gap=28.7 turn=25.9 closing=False
+[loops] dead end after 5 at [310.8, 824.6], nearest unused: [(55.9, 'g266'), (106.8, 'g439'), (116.4, 'g439'), (132.0, 'g254'), (144.4, 'g264')]
+[loops] start g226 (line) at [703.0, 922.0]
+[loops] step1 take g471 (arc) gap=636.8 turn=96.7 closing=False
+[loops] step2 take g482 (arc) gap=2.1 turn=64.5 closing=False
+[loops] step3 take g481 (arc) gap=13.4 turn=19.4 closing=False
+[loops] dead end after 4 at [833.3, 923.2], nearest unused: [(32.4, 'g470'), (36.1, 'g454'), (75.5, 'g454'), (88.0, 'g462'), (88.5, 'g470')]
+[loops] start g227 (line) at [2270.0, 540.0]
+[loops] step1 take g201 (line) gap=14.7 turn=155.5 closing=False
+[loops] dead end after 2 at [2630.1, 422.9], nearest unused: [(107.0, 'g15'), (111.1, 'g172'), (112.4, 'g32'), (113.2, 'g13'), (113.2, 'g31')]
+[loops] start g230 (line) at [2742.2, 539.8]
+[loops] step1 take g240 (line) gap=15.8 turn=154.5 closing=False
+[loops] step2 take g122 (line) gap=14.5 turn=7.4 closing=False
+[loops] step3 take g30 (line) gap=1.0 turn=147.1 closing=False
+[loops] step4 take g12 (line) gap=1.5 turn=128.5 closing=False
+[loops] step5 take g13 (line) gap=7.6 turn=180.0 closing=False
+[loops] dead end after 6 at [2832.0, 485.0], nearest unused: [(70.4, 'g7'), (72.9, 'g10'), (99.3, 'g141'), (114.5, 'g371'), (125.5, 'g446')]
+[loops] start g232 (line) at [1361.5, 853.5]
+[loops] dead end after 1 at [1677.5, 537.5], nearest unused: [(358.3, 'g262'), (368.4, 'g264'), (386.4, 'g245'), (388.5, 'g396'), (393.0, 'g477')]
+[loops] start g233 (line) at [2495.2, 662.9]
+[loops] step1 take g196 (line) gap=17.8 turn=159.4 closing=False
+[loops] step2 take g176 (line) gap=19.5 turn=178.3 closing=False
+[loops] step3 take g194 (line) gap=12.5 turn=173.4 closing=False
+[loops] step4 take g195 (line) gap=19.8 turn=175.6 closing=False
+[loops] step5 take g234 (line) gap=10.7 turn=158.0 closing=False
+[loops] dead end after 6 at [2418.0, 666.0], nearest unused: [(33.3, 'g208'), (44.3, 'g208'), (49.2, 'g109'), (58.2, 'g156'), (59.7, 'g241')]
+[loops] start g234 (line) at [2418.0, 666.0]
+[loops] step1 take g196 (line) gap=9.8 turn=148.7 closing=False
+[loops] step2 take g176 (line) gap=19.5 turn=178.3 closing=False
+[loops] step3 take g194 (line) gap=12.5 turn=173.4 closing=False
+[loops] step4 take g195 (line) gap=19.8 turn=175.6 closing=False
+[loops] step5 take g233 (line) gap=3.8 turn=168.7 closing=False
+[loops] dead end after 6 at [2495.2, 662.9], nearest unused: [(25.0, 'g224'), (28.6, 'g165'), (35.3, 'g115'), (44.5, 'g184'), (47.9, 'g71')]
+[loops] start g235 (line) at [3034.8, 679.3]
+[loops] step1 take g32 (line) gap=9.9 turn=175.4 closing=False
+[loops] step2 take g33 (line) gap=1.5 turn=179.6 closing=False
+[loops] step3 take g236 (line) gap=15.2 turn=176.7 closing=True
+[loops] LOOP area=1679 n=4 ids=['g235', 'g32', 'g33', 'g236']
+[loops] start g237 (line) at [3026.0, 679.0]
+[loops] step1 take g31 (line) gap=1.4 turn=176.9 closing=False
+[loops] step2 take g13 (line) gap=6.5 turn=180.0 closing=False
+[loops] step3 take g30 (line) gap=5.1 turn=128.5 closing=False
+[loops] step4 take g184 (line) gap=13.9 turn=133.3 closing=False
+[loops] step5 take g209 (line) gap=14.8 turn=175.1 closing=False
+[loops] step6 take g140 (line) gap=2.7 turn=166.9 closing=False
+[loops] step7 take g243 (line) gap=8.5 turn=2.7 closing=False
+[loops] step8 take g201 (line) gap=13.8 turn=154.9 closing=False
+[loops] dead end after 9 at [2630.1, 422.9], nearest unused: [(107.0, 'g15'), (111.1, 'g172'), (113.6, 'g35'), (113.9, 'g12'), (117.7, 'g10')]
+[loops] start g240 (line) at [2407.4, 606.7]
+[loops] step1 take g201 (line) gap=11.3 turn=154.4 closing=False
+[loops] dead end after 2 at [2630.1, 422.9], nearest unused: [(107.0, 'g15'), (111.1, 'g172'), (113.2, 'g13'), (113.2, 'g31'), (113.6, 'g35')]
+[loops] start g241 (line) at [2404.0, 608.0]
+[loops] step1 take g201 (line) gap=1.5 turn=154.9 closing=False
+[loops] dead end after 2 at [2630.1, 422.9], nearest unused: [(107.0, 'g15'), (111.1, 'g172'), (113.2, 'g13'), (113.2, 'g31'), (113.6, 'g35')]
+[loops] start g242 (line) at [2393.0, 608.0]
+[loops] step1 take g201 (line) gap=5.6 turn=154.9 closing=False
+[loops] dead end after 2 at [2630.1, 422.9], nearest unused: [(107.0, 'g15'), (111.1, 'g172'), (113.2, 'g13'), (113.2, 'g31'), (113.6, 'g35')]
+[loops] start g243 (line) at [2380.0, 608.0]
+[loops] step1 take g201 (line) gap=13.8 turn=154.9 closing=False
+[loops] dead end after 2 at [2630.1, 422.9], nearest unused: [(107.0, 'g15'), (111.1, 'g172'), (113.2, 'g13'), (113.2, 'g31'), (113.6, 'g35')]
+[loops] start g244 (line) at [2714.4, 655.6]
+[loops] step1 take g159 (line) gap=8.8 turn=178.5 closing=False
+[loops] dead end after 2 at [2439.2, 395.8], nearest unused: [(27.1, 'g160'), (40.9, 'g136'), (59.1, 'g112'), (74.4, 'g119'), (78.2, 'g144')]
+[loops] start g245 (line) at [792.2, 654.1]
+[loops] step1 take g468 (arc) gap=481.5 turn=37.2 closing=False
+[loops] step2 take g408 (arc) gap=6.8 turn=90.9 closing=False
+[loops] step3 take g262 (line) gap=19.4 turn=169.8 closing=False
+[loops] step4 take g474 (arc) gap=20.0 turn=25.6 closing=False
+[loops] step5 take g277 (line) gap=18.9 turn=123.2 closing=False
+[loops] step6 take g473 (arc) gap=102.2 turn=28.4 closing=False
+[loops] dead end after 7 at [248.8, 1085.4], nearest unused: [(115.8, 'g270'), (149.6, 'g254'), (191.2, 'g270'), (195.3, 'g461'), (201.8, 'g461')]
+[loops] start g247 (line) at [599.0, 759.0]
+[loops] step1 take g225 (line) gap=16.5 turn=93.4 closing=False
+[loops] step2 take g376 (arc) gap=4.0 turn=83.5 closing=False
+[loops] step3 take g250 (line) gap=3.2 turn=95.7 closing=False
+[loops] step4 take g251 (line) gap=1.1 turn=99.9 closing=True
+[loops] LOOP area=7269 n=5 ids=['g247', 'g225', 'g376', 'g250', 'g251']
+[loops] start g252 (line) at [1038.3, 753.9]
+[loops] step1 take g393 (arc) gap=3.0 turn=58.7 closing=False
+[loops] step2 take g398 (arc) gap=99.4 turn=7.0 closing=False
+[loops] step3 take g485 (arc) gap=73.7 turn=39.4 closing=False
+[loops] dead end after 4 at [1296.0, 875.3], nearest unused: [(37.1, 'g275'), (69.0, 'g232'), (72.4, 'g396'), (74.5, 'g281'), (113.2, 'g466')]
+[loops] start g253 (line) at [954.0, 773.0]
+[loops] dead end after 1 at [967.0, 818.0], nearest unused: [(45.3, 'g265'), (45.6, 'g256'), (46.1, 'g256'), (49.3, 'g384'), (74.3, 'g265')]
+[loops] start g254 (line) at [324.0, 956.0]
+[loops] dead end after 1 at [324.0, 658.0], nearest unused: [(51.6, 'g169'), (52.2, 'g476'), (61.4, 'g439'), (63.4, 'g476'), (75.8, 'g439')]
+[loops] start g256 (line) at [1002.2, 789.1]
+[loops] step1 take g265 (line) gap=2.9 turn=8.7 closing=False
+[loops] step2 take g421 (arc) gap=3.1 turn=21.7 closing=False
+[loops] step3 take g379 (arc) gap=69.7 turn=65.1 closing=False
+[loops] step4 take g269 (line) gap=6.1 turn=18.3 closing=False
+[loops] dead end after 5 at [1144.0, 924.0], nearest unused: [(67.0, 'g466'), (74.2, 'g466'), (84.8, 'g274'), (104.4, 'g485'), (139.3, 'g275')]
+[loops] start g257 (line) at [312.0, 820.7]
+[loops] dead end after 1 at [579.0, 822.0], nearest unused: [(58.5, 'g266'), (73.8, 'g267'), (78.0, 'g268'), (93.1, 'g414'), (102.3, 'g460')]
+[loops] start g259 (line) at [821.7, 1041.9]
+[loops] step1 take g477 (arc) gap=1242.2 turn=69.2 closing=False
+[loops] dead end after 2 at [1436.9, 848.3], nearest unused: [(53.4, 'g396'), (67.2, 'g245'), (75.6, 'g232'), (94.6, 'g398'), (96.1, 'g281')]
+[loops] start g262 (line) at [250.2, 1153.3]
+[loops] step1 take g454 (arc) gap=597.2 turn=83.4 closing=False
+[loops] step2 take g271 (line) gap=67.3 turn=2.1 closing=False
+[loops] dead end after 3 at [1105.3, 1335.5], nearest unused: [(197.3, 'g274'), (281.8, 'g283'), (286.7, 'g281'), (306.5, 'g463'), (331.1, 'g463')]
+[loops] start g263 (line) at [188.2, 389.9]
+[loops] step1 take g472 (arc) gap=312.0 turn=104.3 closing=False
+[loops] step2 take g278 (line) gap=36.6 turn=32.9 closing=False
+[loops] dead end after 3 at [258.6, 1302.6], nearest unused: [(149.5, 'g262'), (150.4, 'g474'), (163.7, 'g277'), (169.1, 'g474'), (188.1, 'g473')]
+[loops] start g264 (line) at [169.0, 851.6]
+[loops] step1 take g453 (arc) gap=1149.1 turn=95.2 closing=False
+[loops] step2 take g442 (arc) gap=9.8 turn=80.5 closing=False
+[loops] step3 take g469 (arc) gap=8.3 turn=21.0 closing=False
+[loops] step4 take g484 (arc) gap=11.8 turn=1.2 closing=False
+[loops] step5 take g459 (arc) gap=36.7 turn=58.0 closing=False
+[loops] dead end after 6 at [852.2, 799.6], nearest unused: [(44.1, 'g470'), (59.1, 'g454'), (90.3, 'g279'), (95.2, 'g49'), (96.8, 'g454')]
+[loops] start g265 (line) at [1008.0, 880.0]
+[loops] step1 take g256 (line) gap=2.9 turn=8.7 closing=False
+[loops] step2 take g384 (arc) gap=3.8 turn=54.1 closing=False
+[loops] step3 take g252 (line) gap=3.4 turn=56.7 closing=False
+[loops] step4 take g393 (arc) gap=3.0 turn=58.7 closing=False
+[loops] step5 take g398 (arc) gap=99.4 turn=7.0 closing=False
+[loops] step6 take g485 (arc) gap=73.7 turn=39.4 closing=False
+[loops] dead end after 7 at [1296.0, 875.3], nearest unused: [(37.1, 'g275'), (69.0, 'g232'), (72.4, 'g396'), (74.5, 'g281'), (113.2, 'g466')]
+[loops] start g266 (line) at [312.0, 880.5]
+[loops] step1 take g268 (line) gap=19.7 turn=68.4 closing=False
+[loops] dead end after 2 at [598.0, 943.0], nearest unused: [(50.1, 'g267'), (50.4, 'g478'), (67.2, 'g272'), (76.5, 'g278'), (87.3, 'g273')]
+[loops] start g267 (line) at [492.1, 944.3]
+[loops] step1 take g268 (line) gap=4.3 turn=96.9 closing=False
+[loops] dead end after 2 at [598.0, 943.0], nearest unused: [(50.4, 'g478'), (65.6, 'g266'), (67.2, 'g272'), (76.5, 'g278'), (87.3, 'g273')]
+[loops] start g268 (line) at [581.0, 900.0]
+[loops] dead end after 1 at [598.0, 943.0], nearest unused: [(50.1, 'g267'), (50.4, 'g478'), (65.6, 'g266'), (67.2, 'g272'), (76.5, 'g278')]
+[loops] start g269 (line) at [1055.0, 946.0]
+[loops] step1 take g379 (arc) gap=102.0 turn=114.7 closing=False
+[loops] step2 take g265 (line) gap=9.7 turn=39.8 closing=False
+[loops] step3 take g256 (line) gap=2.9 turn=8.7 closing=False
+[loops] step4 take g384 (arc) gap=3.8 turn=54.1 closing=False
+[loops] step5 take g252 (line) gap=3.4 turn=56.7 closing=False
+[loops] step6 take g393 (arc) gap=3.0 turn=58.7 closing=False
+[loops] step7 take g398 (arc) gap=99.4 turn=7.0 closing=False
+[loops] step8 take g485 (arc) gap=73.7 turn=39.4 closing=False
+[loops] dead end after 9 at [1296.0, 875.3], nearest unused: [(37.1, 'g275'), (69.0, 'g232'), (72.4, 'g396'), (74.5, 'g281'), (113.2, 'g466')]
+[loops] start g270 (line) at [182.5, 906.1]
+[loops] dead end after 1 at [194.5, 983.1], nearest unused: [(53.9, 'g277'), (82.1, 'g461'), (86.5, 'g461'), (115.8, 'g473'), (132.3, 'g254')]
+[loops] start g271 (line) at [660.9, 688.0]
+[loops] step1 take g454 (arc) gap=550.0 turn=80.3 closing=False
+[loops] step2 take g470 (arc) gap=53.1 turn=78.5 closing=False
+[loops] dead end after 3 at [866.7, 841.3], nearest unused: [(44.1, 'g459'), (63.9, 'g484'), (86.5, 'g459'), (86.6, 'g484'), (88.5, 'g481')]
+[loops] start g272 (line) at [559.9, 1044.8]
+[loops] dead end after 1 at [639.8, 995.6], nearest unused: [(20.2, 'g273'), (67.2, 'g268'), (71.1, 'g273'), (71.4, 'g478'), (91.8, 'g478')]
+[loops] start g273 (line) at [654.0, 1010.0]
+[loops] dead end after 1 at [699.0, 1035.0], nearest unused: [(42.9, 'g276'), (71.1, 'g272'), (102.5, 'g471'), (103.6, 'g462'), (106.7, 'g276')]
+[loops] start g274 (line) at [1165.3, 841.9]
+[loops] dead end after 1 at [1252.3, 1203.9], nearest unused: [(144.6, 'g463'), (155.9, 'g463'), (197.3, 'g271'), (242.9, 'g466'), (255.0, 'g466')]
+[loops] start g275 (line) at [1265.0, 855.0]
+[loops] dead end after 1 at [1602.0, 1192.0], nearest unused: [(349.9, 'g274'), (351.3, 'g283'), (358.0, 'g477'), (359.8, 'g463'), (360.9, 'g281')]
+[loops] start g276 (line) at [740.0, 1047.5]
+[loops] step1 take g259 (line) gap=17.7 turn=13.5 closing=False
+[loops] step2 take g477 (arc) gap=1242.2 turn=69.2 closing=False
+[loops] dead end after 3 at [1436.9, 848.3], nearest unused: [(53.4, 'g396'), (67.2, 'g245'), (75.6, 'g232'), (94.6, 'g398'), (96.1, 'g281')]
+[loops] start g277 (line) at [209.0, 1035.0]
+[loops] step1 take g474 (arc) gap=5.6 turn=56.8 closing=False
+[loops] step2 take g262 (line) gap=10.5 turn=154.4 closing=False
+[loops] step3 take g454 (arc) gap=597.2 turn=83.4 closing=False
+[loops] step4 take g271 (line) gap=67.3 turn=2.1 closing=False
+[loops] dead end after 5 at [1105.3, 1335.5], nearest unused: [(197.3, 'g274'), (281.8, 'g283'), (286.7, 'g281'), (306.5, 'g463'), (331.1, 'g463')]
+[loops] start g278 (line) at [258.6, 1302.6]
+[loops] step1 take g472 (arc) gap=66.4 turn=16.0 closing=False
+[loops] step2 take g479 (arc) gap=43.9 turn=42.0 closing=False
+[loops] dead end after 3 at [531.1, 1042.9], nearest unused: [(28.9, 'g272'), (31.7, 'g478'), (69.9, 'g478'), (106.1, 'g267'), (118.5, 'g272')]
+[loops] start g279 (line) at [772.5, 1462.0]
+[loops] step1 take g49 (line) gap=5.5 turn=30.0 closing=False
+[loops] step2 take g465 (arc) gap=279.0 turn=50.0 closing=False
+[loops] step3 take g490 (arc) gap=63.9 turn=33.2 closing=False
+[loops] step4 take g22 (line) gap=18.8 turn=156.8 closing=False
+[loops] dead end after 5 at [905.0, 465.5], nearest unused: [(186.2, 'g222'), (215.6, 'g218'), (219.7, 'g245'), (230.7, 'g218'), (234.2, 'g468')]
+[loops] start g280 (line) at [577.5, 1897.0]
+[loops] step1 take g428 (arc) gap=1387.7 turn=71.6 closing=False
+[loops] step2 take g427 (arc) gap=5.2 turn=27.8 closing=False
+[loops] step3 take g285 (line) gap=24.3 turn=1.3 closing=False
+[loops] dead end after 4 at [239.5, 1552.5], nearest unused: [(149.5, 'g300'), (224.4, 'g287'), (250.6, 'g278'), (369.9, 'g284'), (388.0, 'g289')]
+[loops] start g281 (line) at [1362.5, 1462.0]
+[loops] dead end after 1 at [1362.5, 909.0], nearest unused: [(55.5, 'g232'), (69.6, 'g398'), (74.5, 'g485'), (76.1, 'g393'), (96.1, 'g477')]
+[loops] start g282 (line) at [2391.2, 2006.0]
+[loops] step1 take g54 (line) gap=16.3 turn=135.4 closing=False
+[loops] dead end after 2 at [2452.0, 592.0], nearest unused: [(20.1, 'g215'), (32.6, 'g99'), (34.2, 'g102'), (36.4, 'g109'), (44.9, 'g106')]
+[loops] start g283 (line) at [773.0, 1449.5]
+[loops] step1 take g281 (line) gap=12.5 turn=90.0 closing=False
+[loops] dead end after 2 at [1362.5, 909.0], nearest unused: [(55.5, 'g232'), (69.6, 'g398'), (74.5, 'g485'), (76.1, 'g393'), (96.1, 'g477')]
+[loops] start g284 (line) at [515.3, 1857.1]
+[loops] dead end after 1 at [607.3, 1513.1], nearest unused: [(172.9, 'g279'), (177.5, 'g283'), (238.0, 'g263'), (302.2, 'g427'), (310.5, 'g289')]
+[loops] start g285 (line) at [239.5, 1552.5]
+[loops] step1 take g427 (arc) gap=85.4 turn=19.2 closing=False
+[loops] step2 take g428 (arc) gap=5.2 turn=20.6 closing=False
+[loops] step3 take g287 (line) gap=123.7 turn=84.8 closing=False
+[loops] step4 take g296 (line) gap=1.2 turn=90.0 closing=False
+[loops] step5 take g306 (line) gap=1.2 turn=90.0 closing=False
+[loops] dead end after 6 at [186.0, 2006.7], nearest unused: [(76.2, 'g300'), (290.7, 'g304'), (310.9, 'g300'), (361.7, 'g284'), (362.8, 'g289')]
+[loops] start g286 (line) at [2585.5, 1993.0]
+[loops] dead end after 1 at [2585.5, 1498.0], nearest unused: [(331.3, 'g287'), (332.3, 'g296'), (360.8, 'g290'), (384.3, 'g288'), (385.2, 'g298')]
+[loops] start g287 (line) at [186.0, 1770.4]
+[loops] step1 take g427 (arc) gap=1965.7 turn=35.8 closing=False
+[loops] step2 take g428 (arc) gap=5.2 turn=49.0 closing=False
+[loops] step3 take g280 (line) gap=117.8 turn=174.8 closing=False
+[loops] dead end after 4 at [577.5, 454.0], nearest unused: [(35.8, 'g490'), (37.2, 'g465'), (88.9, 'g465'), (103.7, 'g490'), (119.1, 'g22')]
+[loops] start g288 (line) at [818.0, 1829.5]
+[loops] step1 take g489 (arc) gap=707.2 turn=62.8 closing=False
+[loops] step2 take g307 (line) gap=37.3 turn=27.2 closing=False
+[loops] step3 take g487 (arc) gap=330.0 turn=166.2 closing=False
+[loops] step4 take g303 (line) gap=115.4 turn=103.8 closing=False
+[loops] step5 take g297 (line) gap=1.5 turn=90.5 closing=True
+[loops] LOOP area=111499 n=6 ids=['g288', 'g489', 'g307', 'g487', 'g303', 'g297']
+[loops] start g289 (line) at [516.0, 1856.0]
+[loops] dead end after 1 at [527.0, 1813.0], nearest unused: [(22.2, 'g285'), (45.6, 'g284'), (55.2, 'g427'), (59.2, 'g428'), (82.0, 'g428')]
+[loops] start g290 (line) at [2265.0, 1858.6]
+[loops] dead end after 1 at [2598.0, 1858.6], nearest unused: [(58.9, 'g301'), (135.0, 'g286'), (209.8, 'g298'), (219.5, 'g287'), (220.2, 'g296')]
+[loops] start g291 (line) at [2142.5, 1946.0]
+[loops] dead end after 1 at [2142.5, 1829.0], nearest unused: [(126.0, 'g290'), (134.8, 'g299'), (143.9, 'g301'), (151.5, 'g295'), (178.4, 'g299')]
+[loops] start g292 (line) at [969.3, 2007.0]
+[loops] dead end after 1 at [969.3, 1770.0], nearest unused: [(365.5, 'g279'), (375.9, 'g283'), (384.1, 'g304'), (411.5, 'g293'), (411.9, 'g280')]
+[loops] start g293 (line) at [1376.3, 1946.0]
+[loops] dead end after 1 at [1376.3, 1831.0], nearest unused: [(45.2, 'g294'), (123.6, 'g294'), (369.3, 'g281'), (381.7, 'g283'), (411.5, 'g292')]
+[loops] start g294 (line) at [1421.5, 1946.0]
+[loops] dead end after 1 at [1421.5, 1831.0], nearest unused: [(45.2, 'g293'), (123.6, 'g293'), (373.7, 'g281'), (386.0, 'g283'), (456.3, 'g292')]
+[loops] start g295 (line) at [2002.5, 2006.0]
+[loops] dead end after 1 at [2002.5, 1771.0], nearest unused: [(59.2, 'g299'), (151.5, 'g291'), (176.1, 'g299'), (224.1, 'g291'), (276.7, 'g290')]
+[loops] start g296 (line) at [2396.0, 2006.0]
+[loops] step1 take g287 (line) gap=1.2 turn=90.0 closing=False
+[loops] step2 take g428 (arc) gap=341.6 turn=68.4 closing=False
+[loops] step3 take g427 (arc) gap=91.9 turn=114.7 closing=False
+[loops] step4 take g285 (line) gap=24.3 turn=1.3 closing=False
+[loops] dead end after 5 at [239.5, 1552.5], nearest unused: [(149.5, 'g300'), (250.6, 'g278'), (369.9, 'g284'), (388.0, 'g289'), (399.1, 'g474')]
+[loops] start g298 (line) at [2390.2, 1830.0]
+[loops] dead end after 1 at [2391.5, 1947.0], nearest unused: [(59.0, 'g282'), (59.2, 'g296'), (59.9, 'g306'), (138.6, 'g301'), (154.3, 'g290')]
+[loops] start g299 (line) at [2007.7, 1830.0]
+[loops] dead end after 1 at [2008.7, 1947.0], nearest unused: [(59.3, 'g295'), (133.8, 'g291'), (176.1, 'g295'), (178.4, 'g291'), (249.0, 'g301')]
+[loops] start g300 (line) at [197.5, 2082.0]
+[loops] dead end after 1 at [197.5, 1696.0], nearest unused: [(75.3, 'g287'), (149.5, 'g285'), (265.9, 'g427'), (290.7, 'g428'), (294.5, 'g427')]
+[loops] start g301 (line) at [2256.0, 1917.5]
+[loops] dead end after 1 at [2598.0, 1917.5], nearest unused: [(58.9, 'g290'), (76.5, 'g286'), (208.6, 'g298'), (219.9, 'g306'), (220.5, 'g296')]
+[loops] start g302 (line) at [574.9, 1896.0]
+[loops] step1 take g305 (line) gap=13.2 turn=1.1 closing=False
+[loops] dead end after 2 at [563.0, 2007.0], nearest unused: [(86.4, 'g304'), (97.6, 'g304'), (111.0, 'g280'), (155.0, 'g428'), (157.3, 'g284')]
+[loops] start g304 (line) at [474.0, 1967.0]
+[loops] dead end after 1 at [639.0, 1966.0], nearest unused: [(62.8, 'g302'), (76.0, 'g305'), (86.4, 'g305'), (92.4, 'g280'), (94.9, 'g302')]
+[loops] start g305 (line) at [563.0, 2007.0]
+[loops] step1 take g302 (line) gap=13.2 turn=1.1 closing=False
+[loops] step2 take g280 (line) gap=2.8 turn=1.1 closing=False
+[loops] step3 take g428 (arc) gap=1387.7 turn=71.6 closing=False
+[loops] step4 take g427 (arc) gap=5.2 turn=27.8 closing=False
+[loops] step5 take g285 (line) gap=24.3 turn=1.3 closing=False
+[loops] dead end after 6 at [239.5, 1552.5], nearest unused: [(149.5, 'g300'), (224.4, 'g287'), (250.6, 'g278'), (369.9, 'g284'), (388.0, 'g289')]
+[loops] start g306 (line) at [186.0, 2006.7]
+[loops] step1 take g296 (line) gap=1.2 turn=90.0 closing=False
+[loops] step2 take g287 (line) gap=1.2 turn=90.0 closing=False
+[loops] step3 take g428 (arc) gap=341.6 turn=68.4 closing=False
+[loops] step4 take g427 (arc) gap=91.9 turn=114.7 closing=False
+[loops] step5 take g285 (line) gap=24.3 turn=1.3 closing=False
+[loops] dead end after 6 at [239.5, 1552.5], nearest unused: [(149.5, 'g300'), (250.6, 'g278'), (369.9, 'g284'), (388.0, 'g289'), (399.1, 'g474')]
+[loops] start g308 (line) at [2229.1, 2179.7]
+[loops] step1 take g441 (arc) gap=15.3 turn=69.8 closing=False
+[loops] step2 take g407 (arc) gap=67.4 turn=29.5 closing=False
+[loops] step3 take g412 (arc) gap=28.9 turn=11.1 closing=False
+[loops] step4 take g423 (arc) gap=112.0 turn=68.3 closing=True
+[loops] LOOP area=3550 n=5 ids=['g308', 'g441', 'g407', 'g412', 'g423']
+[loops] start g309 (line) at [2217.0, 2183.0]
+[loops] step1 take g313 (line) gap=18.7 turn=177.9 closing=False
+[loops] step2 take g480 (arc) gap=83.7 turn=49.2 closing=False
+[loops] step3 take g416 (arc) gap=78.8 turn=144.6 closing=True
+[loops] LOOP area=932 n=4 ids=['g309', 'g313', 'g480', 'g416']
+[loops] start g310 (line) at [2215.0, 2186.3]
+[loops] step1 take g315 (line) gap=19.8 turn=177.9 closing=False
+[loops] step2 take g411 (arc) gap=18.7 turn=60.5 closing=False
+[loops] step3 take g429 (arc) gap=30.9 turn=161.2 closing=True
+[loops] LOOP area=861 n=4 ids=['g310', 'g315', 'g411', 'g429']
+[loops] start g311 (line) at [2216.0, 2190.1]
+[loops] step1 take g435 (arc) gap=16.2 turn=87.7 closing=False
+[loops] step2 take g328 (line) gap=17.8 turn=85.9 closing=False
+[loops] step3 take g433 (arc) gap=15.2 turn=90.8 closing=True
+[loops] LOOP area=4715 n=4 ids=['g311', 'g435', 'g328', 'g433']
+[loops] start g312 (line) at [2206.0, 2196.1]
+[loops] step1 take g406 (arc) gap=90.1 turn=36.8 closing=False
+[loops] step2 take g314 (line) gap=54.8 turn=36.2 closing=False
+[loops] step3 take g401 (arc) gap=9.9 turn=127.9 closing=False
+[loops] step4 take g410 (arc) gap=12.3 turn=103.2 closing=True
+[loops] LOOP area=712 n=5 ids=['g312', 'g406', 'g314', 'g401', 'g410']
+[loops] start g316 (line) at [2209.0, 2211.7]
+[loops] step1 take g449 (arc) gap=536.4 turn=130.1 closing=False
+[loops] step2 take g436 (arc) gap=45.1 turn=7.0 closing=False
+[loops] step3 take g418 (arc) gap=45.7 turn=15.3 closing=False
+[loops] step4 take g322 (line) gap=52.9 turn=69.3 closing=False
+[loops] step5 take g483 (arc) gap=50.4 turn=52.9 closing=False
+[loops] step6 take g325 (line) gap=12.5 turn=127.1 closing=False
+[loops] step7 take g324 (line) gap=6.7 turn=179.1 closing=False
+[loops] step8 take g323 (line) gap=9.5 turn=167.6 closing=False
+[loops] step9 take g321 (line) gap=16.9 turn=167.0 closing=False
+[loops] step10 take g434 (arc) gap=47.1 turn=59.5 closing=True
+[loops] LOOP area=3819 n=11 ids=['g316', 'g449', 'g436', 'g418', 'g322', 'g483', 'g325', 'g324', 'g323', 'g321', 'g434']
+[loops] start g317 (line) at [2201.0, 2216.7]
+[loops] step1 take g320 (line) gap=13.3 turn=178.5 closing=False
+[loops] step2 take g318 (line) gap=7.8 turn=178.5 closing=False
+[loops] step3 take g319 (line) gap=8.5 turn=179.2 closing=True
+[loops] LOOP area=369 n=4 ids=['g317', 'g320', 'g318', 'g319']
+[loops] start g326 (line) at [2215.1, 2247.1]
+[loops] step1 take g329 (line) gap=13.6 turn=173.0 closing=False
+[loops] step2 take g457 (arc) gap=12.3 turn=100.3 closing=False
+[loops] step3 take g332 (line) gap=100.4 turn=75.8 closing=False
+[loops] step4 take g331 (line) gap=5.0 turn=178.3 closing=True
+[loops] LOOP area=1142 n=5 ids=['g326', 'g329', 'g457', 'g332', 'g331']
+[loops] start g327 (line) at [2216.0, 2250.6]
+[loops] step1 take g330 (line) gap=13.1 turn=175.3 closing=False
+[loops] step2 take g333 (line) gap=14.3 turn=178.3 closing=False
+[loops] step3 take g448 (arc) gap=11.3 turn=103.7 closing=False
+[loops] step4 take g443 (arc) gap=47.9 turn=25.9 closing=False
+[loops] dead end after 5 at [2247.9, 2168.7], nearest unused: [(21.6, 'g417'), (22.1, 'g475'), (25.4, 'g444'), (107.7, 'g417'), (111.9, 'g475')]
+[loops] start g330 (line) at [2219.0, 2257.0]
+[loops] step1 take g327 (line) gap=13.1 turn=175.3 closing=False
+[loops] dead end after 2 at [2216.0, 2250.6], nearest unused: [(21.4, 'g333'), (34.3, 'g417'), (37.0, 'g336'), (39.9, 'g337'), (40.9, 'g475')]
+[loops] start g333 (line) at [2225.0, 2270.0]
+[loops] step1 take g448 (arc) gap=11.3 turn=103.7 closing=False
+[loops] step2 take g443 (arc) gap=47.9 turn=25.9 closing=False
+[loops] dead end after 3 at [2247.9, 2168.7], nearest unused: [(21.6, 'g417'), (22.1, 'g475'), (25.4, 'g444'), (87.9, 'g327'), (89.0, 'g327')]
+[loops] start g334 (line) at [2264.0, 2289.0]
+[loops] step1 take g336 (line) gap=18.0 turn=166.9 closing=False
+[loops] step2 take g337 (line) gap=5.6 turn=179.8 closing=False
+[loops] LOOP area=73 n=3 ids=['g334', 'g336', 'g337']
+[loops] start g335 (line) at [2258.0, 2292.0]
+[loops] step1 take g448 (arc) gap=41.5 turn=109.9 closing=False
+[loops] step2 take g443 (arc) gap=47.9 turn=37.5 closing=False
+[loops] dead end after 3 at [2247.9, 2168.7], nearest unused: [(21.6, 'g417'), (22.1, 'g475'), (25.4, 'g444'), (87.9, 'g327'), (89.0, 'g327')]
+[loops] start g338 (line) at [3208.0, 2327.0]
+[loops] dead end after 1 at [3209.0, 2272.0], nearest unused: [(67.8, 'g339'), (86.6, 'g339'), (401.7, 'g464'), (420.1, 'g464'), (683.1, 'g286')]
+[loops] start g339 (line) at [3138.8, 2322.8]
+[loops] step1 take g338 (line) gap=12.9 turn=102.6 closing=False
+[loops] dead end after 2 at [3209.0, 2272.0], nearest unused: [(401.7, 'g464'), (420.1, 'g464'), (683.1, 'g286'), (706.4, 'g301'), (737.7, 'g290')]
+[loops] start g356 (arc) at [2711.6, 633.7]
+[loops] step1 take g35 (line) gap=141.1 turn=156.2 closing=False
+[loops] step2 take g358 (arc) gap=414.2 turn=45.8 closing=False
+[loops] step3 take g19 (line) gap=5.3 turn=44.3 closing=False
+[loops] step4 take g15 (line) gap=5.2 turn=177.3 closing=False
+[loops] dead end after 5 at [2551.0, 495.0], nearest unused: [(68.3, 'g60'), (70.9, 'g60'), (107.0, 'g201'), (111.6, 'g369'), (118.9, 'g215')]
+[loops] start g358 (arc) at [2678.1, 600.1]
+[loops] step1 take g35 (line) gap=150.7 turn=158.9 closing=False
+[loops] dead end after 2 at [2633.7, 309.3], nearest unused: [(21.2, 'g31'), (27.7, 'g13'), (35.3, 'g12'), (36.0, 'g48'), (58.2, 'g7')]
+[loops] start g369 (arc) at [2640.1, 562.2]
+[loops] step1 take g230 (line) gap=281.7 turn=18.2 closing=False
+[loops] step2 take g240 (line) gap=15.8 turn=154.5 closing=False
+[loops] step3 take g122 (line) gap=14.5 turn=7.4 closing=False
+[loops] step4 take g30 (line) gap=1.0 turn=147.1 closing=False
+[loops] step5 take g12 (line) gap=1.5 turn=128.5 closing=False
+[loops] step6 take g13 (line) gap=7.6 turn=180.0 closing=False
+[loops] dead end after 7 at [2832.0, 485.0], nearest unused: [(70.4, 'g7'), (72.9, 'g10'), (99.3, 'g141'), (114.5, 'g371'), (125.5, 'g446')]
+[loops] start g371 (arc) at [2723.0, 520.1]
+[loops] step1 take g86 (line) gap=100.1 turn=175.5 closing=False
+[loops] step2 take g137 (line) gap=5.7 turn=179.4 closing=False
+[loops] step3 take g172 (line) gap=8.5 turn=179.6 closing=False
+[loops] dead end after 4 at [2528.9, 377.1], nearest unused: [(60.7, 'g111'), (63.2, 'g143'), (70.7, 'g23'), (73.6, 'g144'), (76.5, 'g160')]
+[loops] start g379 (arc) at [1049.0, 946.9]
+[loops] step1 take g265 (line) gap=9.7 turn=37.3 closing=False
+[loops] step2 take g256 (line) gap=2.9 turn=8.7 closing=False
+[loops] step3 take g384 (arc) gap=3.8 turn=54.1 closing=False
+[loops] step4 take g252 (line) gap=3.4 turn=56.7 closing=False
+[loops] step5 take g393 (arc) gap=3.0 turn=58.7 closing=False
+[loops] step6 take g398 (arc) gap=99.4 turn=7.0 closing=False
+[loops] step7 take g485 (arc) gap=73.7 turn=39.4 closing=False
+[loops] dead end after 8 at [1296.0, 875.3], nearest unused: [(37.1, 'g275'), (69.0, 'g232'), (72.4, 'g396'), (74.5, 'g281'), (113.2, 'g466')]
+[loops] start g384 (arc) at [1004.6, 786.2]
+[loops] step1 take g252 (line) gap=3.4 turn=56.7 closing=False
+[loops] step2 take g393 (arc) gap=3.0 turn=58.7 closing=False
+[loops] step3 take g398 (arc) gap=99.4 turn=7.0 closing=False
+[loops] step4 take g485 (arc) gap=73.7 turn=39.4 closing=False
+[loops] dead end after 5 at [1296.0, 875.3], nearest unused: [(37.1, 'g275'), (69.0, 'g232'), (72.4, 'g396'), (74.5, 'g281'), (113.2, 'g466')]
+[loops] start g393 (arc) at [1286.1, 815.8]
+[loops] step1 take g398 (arc) gap=99.4 turn=7.0 closing=False
+[loops] step2 take g485 (arc) gap=73.7 turn=39.4 closing=False
+[loops] LOOP area=3733 n=3 ids=['g393', 'g398', 'g485']
+[loops] start g396 (arc) at [1325.4, 809.2]
+[loops] step1 take g245 (line) gap=13.9 turn=166.7 closing=False
+[loops] step2 take g408 (arc) gap=262.0 turn=38.9 closing=False
+[loops] step3 take g262 (line) gap=36.8 turn=4.6 closing=False
+[loops] step4 take g474 (arc) gap=20.0 turn=25.6 closing=False
+[loops] step5 take g277 (line) gap=18.9 turn=123.2 closing=False
+[loops] step6 take g473 (arc) gap=102.2 turn=28.4 closing=False
+[loops] dead end after 7 at [248.8, 1085.4], nearest unused: [(115.8, 'g270'), (149.6, 'g254'), (191.2, 'g270'), (195.3, 'g461'), (201.8, 'g461')]
+[loops] start g408 (arc) at [982.5, 740.3]
+[loops] step1 take g245 (line) gap=34.5 turn=53.7 closing=False
+[loops] step2 take g396 (arc) gap=13.9 turn=166.7 closing=False
+[loops] dead end after 3 at [1325.4, 809.2], nearest unused: [(39.3, 'g252'), (57.1, 'g232'), (75.8, 'g275'), (106.4, 'g281'), (118.1, 'g477')]
+[loops] start g414 (arc) at [534.6, 740.2]
+[loops] dead end after 1 at [509.5, 702.1], nearest unused: [(119.8, 'g203'), (138.6, 'g257'), (152.1, 'g271'), (190.7, 'g254'), (191.1, 'g266')]
+[loops] start g417 (arc) at [2229.1, 2179.3]
+[loops] step1 take g475 (arc) gap=107.8 turn=3.2 closing=False
+[loops] step2 take g444 (arc) gap=111.5 turn=29.4 closing=False
+[loops] LOOP area=3248 n=3 ids=['g417', 'g475', 'g444']
+[loops] start g421 (arc) at [1030.6, 946.8]
+[loops] step1 take g265 (line) gap=3.1 turn=21.7 closing=False
+[loops] step2 take g256 (line) gap=2.9 turn=8.7 closing=False
+[loops] step3 take g384 (arc) gap=3.8 turn=54.1 closing=False
+[loops] step4 take g252 (line) gap=3.4 turn=56.7 closing=False
+[loops] dead end after 5 at [1286.3, 812.9], nearest unused: [(39.3, 'g396'), (47.2, 'g275'), (85.5, 'g232'), (107.0, 'g245'), (114.0, 'g396')]
+[loops] start g427 (arc) at [452.2, 1772.5]
+[loops] step1 take g428 (arc) gap=5.2 turn=38.6 closing=False
+[loops] step2 take g287 (line) gap=123.7 turn=84.8 closing=False
+[loops] step3 take g296 (line) gap=1.2 turn=90.0 closing=False
+[loops] step4 take g306 (line) gap=1.2 turn=90.0 closing=False
+[loops] dead end after 5 at [186.0, 2006.7], nearest unused: [(76.2, 'g300'), (290.7, 'g304'), (310.9, 'g300'), (361.7, 'g284'), (362.8, 'g289')]
+[loops] start g428 (arc) at [477.0, 1878.0]
+[loops] step1 take g280 (line) gap=121.6 turn=5.2 closing=False
+[loops] dead end after 2 at [577.5, 454.0], nearest unused: [(35.8, 'g490'), (37.2, 'g465'), (88.9, 'g465'), (103.7, 'g490'), (119.1, 'g22')]
+[loops] start g437 (arc) at [2065.4, 2499.8]
+[loops] dead end after 1 at [2048.3, 2535.9], nearest unused: [(319.2, 'g333'), (321.6, 'g335'), (327.0, 'g330'), (330.9, 'g327'), (344.0, 'g448')]
+[loops] start g439 (arc) at [273.4, 714.4]
+[loops] dead end after 1 at [310.4, 717.9], nearest unused: [(61.4, 'g254'), (91.1, 'g488'), (102.9, 'g257'), (106.8, 'g488'), (110.1, 'g476')]
+[loops] start g442 (arc) at [729.4, 766.6]
+[loops] step1 take g469 (arc) gap=8.3 turn=21.0 closing=False
+[loops] step2 take g484 (arc) gap=11.8 turn=1.2 closing=False
+[loops] step3 take g459 (arc) gap=36.7 turn=58.0 closing=False
+[loops] dead end after 4 at [852.2, 799.6], nearest unused: [(44.1, 'g470'), (59.1, 'g454'), (90.3, 'g279'), (95.2, 'g49'), (96.8, 'g454')]
+[loops] start g443 (arc) at [2247.9, 2168.7]
+[loops] step1 take g448 (arc) gap=47.8 turn=45.4 closing=False
+[loops] step2 take g335 (line) gap=41.7 turn=98.3 closing=False
+[loops] dead end after 3 at [2258.0, 2292.0], nearest unused: [(31.8, 'g333'), (39.7, 'g333'), (43.9, 'g330'), (52.4, 'g330'), (56.2, 'g327')]
+[loops] start g446 (arc) at [3041.9, 678.8]
+[loops] step1 take g7 (line) gap=64.9 turn=2.9 closing=False
+[loops] dead end after 2 at [2690.6, 321.5], nearest unused: [(22.9, 'g12'), (30.5, 'g13'), (37.0, 'g31'), (53.7, 'g10'), (58.2, 'g35')]
+[loops] start g448 (arc) at [2270.1, 2272.9]
+[loops] step1 take g443 (arc) gap=47.9 turn=25.9 closing=False
+[loops] dead end after 2 at [2247.9, 2168.7], nearest unused: [(87.9, 'g327'), (89.0, 'g327'), (92.9, 'g330'), (98.4, 'g330'), (103.9, 'g333')]
+[loops] start g450 (arc) at [2068.9, 12.9]
+[loops] dead end after 1 at [2049.3, 45.3], nearest unused: [(423.0, 'g57'), (424.6, 'g62'), (427.2, 'g29'), (429.0, 'g19'), (430.8, 'g15')]
+[loops] start g453 (arc) at [686.9, 810.3]
+[loops] step1 take g442 (arc) gap=52.1 turn=17.3 closing=False
+[loops] step2 take g469 (arc) gap=48.4 turn=70.8 closing=False
+[loops] step3 take g484 (arc) gap=11.8 turn=1.2 closing=False
+[loops] step4 take g459 (arc) gap=36.7 turn=58.0 closing=False
+[loops] dead end after 5 at [852.2, 799.6], nearest unused: [(44.1, 'g470'), (59.1, 'g454'), (90.3, 'g279'), (95.2, 'g49'), (96.8, 'g454')]
+[loops] start g454 (arc) at [868.4, 856.4]
+[loops] step1 take g262 (line) gap=89.5 turn=44.5 closing=False
+[loops] step2 take g474 (arc) gap=20.0 turn=25.6 closing=False
+[loops] step3 take g277 (line) gap=18.9 turn=123.2 closing=False
+[loops] step4 take g473 (arc) gap=102.2 turn=28.4 closing=False
+[loops] dead end after 5 at [248.8, 1085.4], nearest unused: [(115.8, 'g270'), (149.6, 'g254'), (191.2, 'g270'), (195.3, 'g461'), (201.8, 'g461')]
+[loops] start g458 (arc) at [180.8, 401.3]
+[loops] dead end after 1 at [204.8, 408.3], nearest unused: [(24.8, 'g263'), (81.0, 'g1'), (88.1, 'g0'), (126.6, 'g0'), (215.9, 'g476')]
+[loops] start g459 (arc) at [818.8, 769.3]
+[loops] step1 take g469 (arc) gap=58.2 turn=144.1 closing=False
+[loops] step2 take g442 (arc) gap=8.3 turn=21.0 closing=False
+[loops] step3 take g453 (arc) gap=68.9 turn=10.1 closing=False
+[loops] step4 take g460 (arc) gap=48.5 turn=66.3 closing=False
+[loops] dead end after 5 at [678.1, 847.2], nearest unused: [(78.9, 'g226'), (81.8, 'g462'), (89.0, 'g49'), (94.5, 'g279'), (102.3, 'g257')]
+[loops] start g460 (arc) at [678.1, 847.2]
+[loops] step1 take g453 (arc) gap=19.6 turn=23.7 closing=False
+[loops] step2 take g442 (arc) gap=52.1 turn=17.3 closing=False
+[loops] step3 take g469 (arc) gap=48.4 turn=70.8 closing=False
+[loops] step4 take g484 (arc) gap=11.8 turn=1.2 closing=False
+[loops] step5 take g459 (arc) gap=36.7 turn=58.0 closing=False
+[loops] dead end after 6 at [852.2, 799.6], nearest unused: [(44.1, 'g470'), (59.1, 'g454'), (90.3, 'g279'), (95.2, 'g49'), (96.8, 'g454')]
+[loops] start g461 (arc) at [181.4, 902.1]
+[loops] step1 take g270 (line) gap=45.5 turn=82.5 closing=False
+[loops] dead end after 2 at [194.5, 983.1], nearest unused: [(53.9, 'g277'), (115.8, 'g473'), (132.3, 'g254'), (133.9, 'g264'), (139.7, 'g473')]
+[loops] start g462 (arc) at [747.6, 943.5]
+[loops] step1 take g226 (line) gap=6.1 turn=106.9 closing=False
+[loops] step2 take g471 (arc) gap=636.8 turn=96.7 closing=False
+[loops] LOOP area=2025 n=3 ids=['g462', 'g226', 'g471']
+[loops] start g463 (arc) at [1271.7, 1049.2]
+[loops] dead end after 1 at [1239.3, 1059.9], nearest unused: [(102.2, 'g466'), (111.1, 'g466'), (144.6, 'g274'), (166.0, 'g269'), (194.8, 'g281')]
+[loops] start g464 (arc) at [2879.4, 2501.6]
+[loops] dead end after 1 at [2881.9, 2535.6], nearest unused: [(333.6, 'g339'), (381.2, 'g339'), (387.1, 'g338'), (420.1, 'g338'), (618.3, 'g286')]
+[loops] start g465 (arc) at [490.7, 473.3]
+[loops] step1 take g22 (line) gap=37.1 turn=0.5 closing=False
+[loops] dead end after 2 at [905.0, 465.5], nearest unused: [(186.2, 'g222'), (215.6, 'g218'), (219.7, 'g245'), (230.7, 'g218'), (234.2, 'g468')]
+[loops] start g466 (arc) at [1194.5, 968.0]
+[loops] step1 take g259 (line) gap=11.8 turn=27.8 closing=False
+[loops] step2 take g477 (arc) gap=1242.2 turn=69.2 closing=False
+[loops] dead end after 3 at [1436.9, 848.3], nearest unused: [(53.4, 'g396'), (67.2, 'g245'), (75.6, 'g232'), (96.1, 'g281'), (118.1, 'g396')]
+[loops] start g467 (arc) at [2879.6, 10.5]
+[loops] dead end after 1 at [2881.9, 45.8], nearest unused: [(335.6, 'g7'), (343.6, 'g446'), (344.1, 'g12'), (347.5, 'g13'), (348.6, 'g10')]
+[loops] start g468 (arc) at [947.5, 695.8]
+[loops] step1 take g245 (line) gap=77.5 turn=44.7 closing=False
+[loops] step2 take g408 (arc) gap=371.1 turn=141.1 closing=False
+[loops] step3 take g262 (line) gap=36.8 turn=4.6 closing=False
+[loops] step4 take g474 (arc) gap=20.0 turn=25.6 closing=False
+[loops] step5 take g277 (line) gap=18.9 turn=123.2 closing=False
+[loops] step6 take g473 (arc) gap=102.2 turn=28.4 closing=False
+[loops] dead end after 7 at [248.8, 1085.4], nearest unused: [(115.8, 'g270'), (149.6, 'g254'), (191.2, 'g270'), (195.3, 'g461'), (201.8, 'g461')]
+[loops] start g469 (arc) at [770.9, 760.6]
+[loops] step1 take g484 (arc) gap=11.8 turn=1.2 closing=False
+[loops] step2 take g459 (arc) gap=36.7 turn=58.0 closing=False
+[loops] dead end after 3 at [852.2, 799.6], nearest unused: [(44.1, 'g470'), (59.1, 'g454'), (90.3, 'g279'), (95.2, 'g49'), (96.8, 'g454')]
+[loops] start g470 (arc) at [866.7, 841.3]
+[loops] step1 take g454 (arc) gap=33.7 turn=4.7 closing=False
+[loops] step2 take g262 (line) gap=89.5 turn=44.5 closing=False
+[loops] step3 take g474 (arc) gap=20.0 turn=25.6 closing=False
+[loops] step4 take g277 (line) gap=18.9 turn=123.2 closing=False
+[loops] step5 take g473 (arc) gap=102.2 turn=28.4 closing=False
+[loops] dead end after 6 at [248.8, 1085.4], nearest unused: [(115.8, 'g270'), (149.6, 'g254'), (191.2, 'g270'), (195.3, 'g461'), (201.8, 'g461')]
+[loops] start g472 (arc) at [485.4, 1057.9]
+[loops] step1 take g479 (arc) gap=43.9 turn=58.0 closing=False
+[loops] dead end after 2 at [531.1, 1042.9], nearest unused: [(28.9, 'g272'), (31.7, 'g478'), (54.9, 'g278'), (69.9, 'g478'), (106.1, 'g267')]
+[loops] start g473 (arc) at [238.7, 1115.6]
+[loops] step1 take g277 (line) gap=44.8 turn=41.0 closing=False
+[loops] dead end after 2 at [209.0, 1035.0], nearest unused: [(53.9, 'g270'), (108.0, 'g474'), (122.3, 'g474'), (125.3, 'g262'), (131.6, 'g270')]
+[loops] start g474 (arc) at [253.2, 1133.6]
+[loops] step1 take g277 (line) gap=18.9 turn=123.2 closing=False
+[loops] step2 take g473 (arc) gap=102.2 turn=28.4 closing=False
+[loops] dead end after 3 at [248.8, 1085.4], nearest unused: [(68.0, 'g262'), (115.8, 'g270'), (149.6, 'g254'), (191.2, 'g270'), (195.3, 'g461')]
+[loops] start g476 (arc) at [283.3, 609.3]
+[loops] step1 take g169 (line) gap=11.4 turn=3.4 closing=False
+[loops] dead end after 2 at [2946.0, 606.5], nearest unused: [(32.7, 'g141'), (33.2, 'g200'), (77.5, 'g200'), (84.4, 'g23'), (95.7, 'g371')]
+[loops] start g477 (arc) at [1436.9, 848.3]
+[loops] step1 take g259 (line) gap=44.1 turn=64.1 closing=False
+[loops] dead end after 2 at [2631.1, 608.3], nearest unused: [(42.8, 'g19'), (47.0, 'g369'), (47.7, 'g358'), (68.4, 'g60'), (84.4, 'g356')]
+[loops] start g478 (arc) at [550.8, 1018.1]
+[loops] dead end after 1 at [569.2, 984.4], nearest unused: [(33.1, 'g278'), (50.4, 'g268'), (57.3, 'g472'), (61.2, 'g272'), (69.9, 'g479')]
+[loops] start g479 (arc) at [492.8, 1036.6]
+[loops] dead end after 1 at [531.1, 1042.9], nearest unused: [(27.9, 'g472'), (28.9, 'g272'), (31.7, 'g478'), (48.1, 'g472'), (54.9, 'g278')]
+[loops] start g481 (arc) at [833.3, 923.2]
+[loops] step1 take g482 (arc) gap=23.5 turn=14.3 closing=False
+[loops] dead end after 2 at [776.6, 947.4], nearest unused: [(92.3, 'g470'), (95.6, 'g454'), (104.1, 'g276'), (104.7, 'g259'), (105.4, 'g279')]
+[loops] start g482 (arc) at [810.6, 939.6]
+[loops] step1 take g481 (arc) gap=14.1 turn=165.7 closing=False
+[loops] dead end after 2 at [833.3, 923.2], nearest unused: [(32.4, 'g470'), (36.1, 'g454'), (75.5, 'g454'), (88.5, 'g470'), (99.1, 'g491')]
+[loops] start g484 (arc) at [844.8, 781.2]
+[loops] step1 take g469 (arc) gap=11.8 turn=1.2 closing=False
+[loops] step2 take g442 (arc) gap=8.3 turn=21.0 closing=False
+[loops] step3 take g453 (arc) gap=68.9 turn=10.1 closing=False
+[loops] step4 take g460 (arc) gap=48.5 turn=66.3 closing=False
+[loops] dead end after 5 at [678.1, 847.2], nearest unused: [(89.0, 'g49'), (94.5, 'g279'), (102.3, 'g257'), (105.5, 'g266'), (108.2, 'g267')]
+[loops] start g486 (arc) at [915.1, 981.8]
+[loops] step1 take g491 (arc) gap=111.8 turn=156.7 closing=False
+[loops] step2 take g262 (line) gap=200.2 turn=164.5 closing=False
+[loops] step3 take g474 (arc) gap=20.0 turn=25.6 closing=False
+[loops] step4 take g277 (line) gap=18.9 turn=123.2 closing=False
+[loops] step5 take g473 (arc) gap=102.2 turn=28.4 closing=False
+[loops] dead end after 6 at [248.8, 1085.4], nearest unused: [(115.8, 'g270'), (149.6, 'g254'), (191.2, 'g270'), (195.3, 'g461'), (201.8, 'g461')]
+[loops] start g488 (arc) at [327.8, 807.3]
+[loops] step1 take g257 (line) gap=4.1 turn=134.1 closing=False
+[loops] dead end after 2 at [579.0, 822.0], nearest unused: [(58.5, 'g266'), (73.8, 'g267'), (78.0, 'g268'), (93.1, 'g414'), (102.3, 'g460')]
+[loops] start g490 (arc) at [475.8, 474.1]
+[loops] step1 take g22 (line) gap=41.8 turn=1.8 closing=False
+[loops] step2 take g465 (arc) gap=395.0 turn=16.5 closing=False
+[loops] LOOP area=567 n=3 ids=['g490', 'g22', 'g465']
+[loops] start g491 (arc) at [940.8, 947.0]
+[loops] step1 take g262 (line) gap=200.2 turn=15.5 closing=False
+[loops] step2 take g474 (arc) gap=20.0 turn=25.6 closing=False
+[loops] step3 take g277 (line) gap=18.9 turn=123.2 closing=False
+[loops] step4 take g473 (arc) gap=102.2 turn=28.4 closing=False
+[loops] dead end after 5 at [248.8, 1085.4], nearest unused: [(115.8, 'g270'), (149.6, 'g254'), (191.2, 'g270'), (195.3, 'g461'), (201.8, 'g461')]
+drawing_options 4.5s
+profiles 16
+  wire outline_4 edges 7 join_max 283.9
+  wire outline_34 edges 3 join_max 182.2
+  wire outline_30 edges 3 join_max 100.4
+  wire outline_2 edges 6 join_max 118.2
+  wire outline_3 edges 4 join_max 636.7
+  wire outline_37 edges 3 join_max 16.2
+  wire outline_20 edges 5 join_max 8.4
+  wire outline_36 edges 4 join_max 63.1
+  wire outline_26 edges 4 join_max 235.9
+  wire outline_7 edges 3 join_max 401.9
+ilkeller: 492 çeşit: ['hough-arc', 'hough-merged', 'hough-verified']
+EXIT=0

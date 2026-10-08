@@ -1,0 +1,37 @@
+== exercise-51-raster  234.7s  frame=3300x2550
+   options anahtarları: ['circles', 'frame', 'measurements', 'notes', 'primitives', 'profiles', 'sheet_frame']
+   profiles=16 circles=4 measurements=4
+   wire {"id": "outline_4", "edges": 7, "lines": 3, "arcs": 4, "join_max_px": 283.8510572374873, "closed": false, "closure_px": 0.0, "issue_kinds": ["self_intersection"], "view_id": null}
+   wire {"id": "outline_34", "edges": 3, "lines": 0, "arcs": 3, "join_max_px": 182.20128959666707, "closed": false, "closure_px": 0.0, "issue_kinds": ["arc_start_mismatch"], "view_id": null}
+   wire {"id": "outline_30", "edges": 3, "lines": 0, "arcs": 3, "join_max_px": 100.44333556228104, "closed": false, "closure_px": 0.0, "issue_kinds": ["arc_start_mismatch", "self_intersection"], "view_id": null}
+   wire {"id": "outline_2", "edges": 6, "lines": 4, "arcs": 2, "join_max_px": 118.19721470435564, "closed": false, "closure_px": 0.0, "issue_kinds": ["self_intersection"], "view_id": null}
+   ölçüler: ['40', '32.00', '80.00', '150.00']
+   sınıf: None
+== exercise-17-raster  328.9s  frame=3300x2550
+   options anahtarları: ['circles', 'frame', 'measurements', 'notes', 'primitives', 'profiles', 'sheet_frame']
+   profiles=26 circles=3 measurements=5
+   wire {"id": "outline_13", "edges": 16, "lines": 8, "arcs": 8, "join_max_px": 240.07946922760723, "closed": false, "closure_px": 0.0, "issue_kinds": ["self_intersection"], "view_id": null}
+   wire {"id": "outline_25", "edges": 20, "lines": 15, "arcs": 5, "join_max_px": 116.54960862112162, "closed": false, "closure_px": 0.0, "issue_kinds": ["endpoint_touch", "self_intersection"], "view_id": null}
+   wire {"id": "outline_41", "edges": 4, "lines": 0, "arcs": 4, "join_max_px": 129.0422251819781, "closed": false, "closure_px": 0.0, "issue_kinds": ["arc_start_mismatch"], "view_id": null}
+   wire {"id": "outline_40", "edges": 11, "lines": 8, "arcs": 3, "join_max_px": 374.9693786955118, "closed": false, "closure_px": 0.0, "issue_kinds": ["self_intersection"], "view_id": null}
+   ölçüler: ['4.00', '14.00', '10.00', '20.00', '1:1']
+   sınıf: None
+== exercise-13-raster  212.5s  frame=3300x2550
+   options anahtarları: ['circles', 'frame', 'measurements', 'notes', 'primitives', 'profiles', 'sheet_frame']
+   profiles=19 circles=4 measurements=7
+   wire {"id": "outline_9", "edges": 3, "lines": 0, "arcs": 3, "join_max_px": 290.4824114318381, "closed": false, "closure_px": 0.0, "issue_kinds": ["arc_start_mismatch"], "view_id": null}
+   wire {"id": "outline_13", "edges": 3, "lines": 0, "arcs": 3, "join_max_px": 169.95553708491147, "closed": false, "closure_px": 0.0, "issue_kinds": ["arc_start_mismatch"], "view_id": null}
+   wire {"id": "outline_31", "edges": 3, "lines": 0, "arcs": 3, "join_max_px": 57.54782693527332, "closed": false, "closure_px": 0.0, "issue_kinds": ["arc_start_mismatch"], "view_id": null}
+   wire {"id": "outline_12", "edges": 4, "lines": 2, "arcs": 2, "join_max_px": 110.46202141582067, "closed": true, "closure_px": 0.0, "issue_kinds": [], "view_id": null}
+   ölçüler: ['30.00', '170.00', '10.00', '90.00', '25.00', '240.00', '1:5']
+   sınıf: None
+== my-part-raster  354.5s  frame=2480x3509
+   options anahtarları: ['circles', 'frame', 'measurements', 'notes', 'primitives', 'profiles', 'sheet_frame']
+   profiles=24 circles=6 measurements=4
+   wire {"id": "outline_12", "edges": 13, "lines": 3, "arcs": 10, "join_max_px": 181.06054606529042, "closed": false, "closure_px": 0.0, "issue_kinds": ["self_intersection"], "view_id": null}
+   wire {"id": "outline_41", "edges": 5, "lines": 2, "arcs": 3, "join_max_px": 33.43541002493616, "closed": false, "closure_px": 0.0, "issue_kinds": ["arc_start_mismatch", "self_intersection"], "view_id": null}
+   wire {"id": "outline_16", "edges": 4, "lines": 1, "arcs": 3, "join_max_px": 188.24302584893803, "closed": true, "closure_px": 0.0, "issue_kinds": [], "view_id": null}
+   wire {"id": "outline_18", "edges": 4, "lines": 1, "arcs": 3, "join_max_px": 120.39309890098076, "closed": true, "closure_px": 0.0, "issue_kinds": [], "view_id": null}
+   ölçüler: ['2', '02.10.25', '3', '2']
+   sınıf: None
+EXIT=0

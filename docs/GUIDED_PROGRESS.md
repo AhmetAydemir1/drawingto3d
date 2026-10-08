@@ -13,7 +13,7 @@
 - Active plan (güncel): `PLAN-24-G12-CORRECTNESS` (kök `PLAN.md`, commit `5605cb5`) + devam planı `PLAN-25-G12-CONTINUATION` (kullanıcı girdisi `PLAN-21.md`: G12.1b → dondurulmuş manifest kabulü)
 - G11 baseline: **1/9** (`plate-pocket-vector`; payda sabit — PLAN-24 §75) — bu bir ölçümdür, kabul değil
 - Current task: **G12R tamamlandı** — bağımsız incelemenin (`eval/audits/20261007-guided-g12-2-independent-review`) beş bulgusu düzeltildi (R-01 değer bazlı strateji eşitliği; R-02 sunucu pinli kapsam onayı + `stale_scope_claim` + şema 5; R-03 yazılı karar listeli kabul betiği; R-04 kaynak-only varsayılan sürücü + G11 reddi; R-05 reçete alan denetimi + strateji alanı uçtan uca). Kanıt: `eval/audits/20261007-g12r-strategy-plate/` — taze Plate **11/11**, gerçek Chrome **11/11**, ilgili süit + geniş regresyon log'ları
-- Sıradaki iş: **G12.5** — raster extrude recovery (PLAN-25 §61–§64): manifest vakalarının YALNIZ çizimden sınıflandırılması (`cluster-classification.json`), izinli küme etiketleri (§62), raster kontur denetimi (§63) ve örnek-başına tolerans ayarı yasağı (§64)
+- Sıradaki iş: **G12.5 (ara durum — devam ediyor)** — raster extrude recovery (PLAN-25 §61–§64): zincir kapama ölçümü + iki jenerik kural (§64: tolerans 40, köşe erimi 48; sahte sıçrama 222→0), §61 sınıflandırma + §63 denetim kanıtlandı (`eval/audits/20261007-g12-raster-profile/`); kalan: **yay-yürüyüş yönü** (outline_23: 278,77 px sahte ek) + **§65 P5 kapısı**
 - Initial worktree changes: `?? PLAN-17-HERMES.md` (kullanıcının verdiği plan kaynağı; **korunur, stage edilmez**)
 - (tarihsel) G12.1b kapanışındaki durum: sıradaki iş G12.2 idi — `c59f814`; G12.2 artık `190a065` ile kapandı.
 

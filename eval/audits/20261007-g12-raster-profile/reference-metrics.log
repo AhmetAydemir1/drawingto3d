@@ -1,0 +1,44 @@
+# G12.5 kanıt — referans CAD künyeleri + G11 üretimlerinin değerlendirici karşılaştırması
+
+Kaynak: arka plan prosesi proc_3a606de8d9bf (exit 0), `.venv-cad` + `eval/metrics.py`
+(`metrics.describe` = donmuş evaluator ölçümü; `metrics.compare` = G11 rerun-round2 üretimlerine karşı).
+Tarih: 2026-10-08. Bu dosya salt kanıttır; üretim yolu okumaz.
+
+## Referans STEP künyeleri (değerlendirici ölçümü)
+
+```
+exercise-51-raster {"vector": [60.0, 100.0, 245.0], "volume": 471.938, "cylinders": [6.0, 7.5, 9.0, 10.0, 15.0, 16.0, 25.0, 50.0, 60.0], "faces": 43, "solids": 1}
+exercise-13-raster {"vector": [120.0, 150.0, 290.0], "volume": 2070.268, "cylinders": [10.0, 12.5, 25.0, 30.0, 50.0], "faces": 43, "solids": 1}
+exercise-17-raster {"vector": [22.0, 44.0, 44.0], "volume": 9.423, "cylinders": [8.0, 10.0, 11.0], "faces": 26, "solids": 1}
+my-part-raster {"vector": [50.0, 80.0, 134.0], "volume": 160.575, "cylinders": [10.0, 12.5, 15.0, 20.0, 25.0], "faces": 34, "solids": 1}
+flange-raster {"vector": [50.0, 100.0, 100.0], "volume": 202.093, "cylinders": [3.2, 5.5, 15.0, 30.0, 50.0], "faces": 57, "solids": 1}
+drawing-2-vector {"vector": [50.0, 80.0, 134.0], "volume": 160.575, "cylinders": [10.0, 12.5, 15.0, 20.0, 25.0], "faces": 34, "solids": 1}
+plastic-enclosure-vector {"vector": [25.0, 60.873, 120.873], "volume": 23.52, "cylinders": [1.5, 5.0, 6.0, 8.0], "faces": 113, "solids": 1}
+exercise-12-vector {"vector": [270.0, 274.0, 335.0], "volume": 4791.741, "cylinders": [9.0, 38.0, 46.0, 58.0, 60.0, 70.0, 79.0, 90.0, 110.0, 135.0], "faces": 79, "solids": 1}
+```
+
+## G11 üretimleri (rerun-round2) — P5 kapısının "öncesi" tabanı
+
+```
+== G11-built exercise-51-raster vector [15.0, 49.978, 49.978] vol 29.427 cyl [24.99]
+   verdict: pass False shape_ok False detail_ok False
+    solids True | 1 katı | 1 katı
+    valid True | True | True
+    vector False | [15, 49.978, 49.978] | [60, 100, 245] (fark [45, 50.02, 195.02])
+    volume False | 29.4 cm3 | 471.9 cm3 (%94 fark)
+    cylinders False | [24.99] | [6, 7.5, 9, 10, 15, 16, 25, 50, 60]; eksik [6, 7.5, 9, 10, 15, 16, 50, 60], fazla []
+== G11-built flange-raster vector [20.0, 30.907, 30.907] vol 15.005 cyl [15.45]
+   verdict: pass False shape_ok False detail_ok False
+    solids True | 1 katı | 1 katı
+    valid True | True | True
+    vector False | [20, 30.907, 30.907] | [50, 100, 100] (fark [30, 69.09, 69.09])
+    volume False | 15.0 cm3 | 202.1 cm3 (%93 fark)
+    cylinders False | [15.45] | [3.2, 5.5, 15, 30, 50]; eksik [3.2, 5.5, 30, 50], fazla []
+```
+
+## Notlar
+
+- 51'in referansı: 60×100×245 bbox, 9 silindir yarıçapı (6…60) — çok seviyeli levye (göbek + uç gözleri + delikler).
+- G11'de 51 ve flange, cephe dairesinin tek başına ekstrüzyonu olarak üretilmişti
+  (§108 ihlali: "daire sessizce disk olamaz") — evaluator ikisini de büyük farkla reddediyor.
+- Bu dosya §65 P5 kapısının "was wrong/blocked in G11" şartının ölçülmüş tabanıdır.

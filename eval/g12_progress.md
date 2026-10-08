@@ -150,6 +150,25 @@ G12R Plate kabulü **11/11**, geniş regresyon **1590 passed / 339 deselected / 
 `eval/metrics.py` değişmedi; ana metrik hâlâ **1/9**. Sıradaki faz: **G12.5 — raster extrude recovery**
 (§61–§64).
 
+## G12.5 — raster extrude recovery (PLAN-25 §61–§64) — WIP (ara durum)
+
+Ölçüme dayalı iki jenerik kural zincir kapamayı düzeltti (§64; örnek-başına tolerans ayarı YOK):
+`RASTER_JOIN_TOLERANCE_PX` 20→40 (gerçek ekler 1,6–37 px) + yeni `CORNER_JOIN_REACH_PX=48`
+(köşe/yay kuralları yalnız paylaşılan mürekkep eriminde; kapı gap ve meet mesafesine uygulanır,
+kapanış varyantları dahil); `guided._trace` `mid_join_px` zincirin kendi zarfına çekildi — iki
+aşama aynı zarfta (28,6 px'te kapanan sentetik teli iz eskiden 20'lik yarı-çapla atıyordu).
+Exercise_51 izinde >100 px sahte sıçrama **222→0** (en büyük 1965,7→53,8), ≥48 px adım 318→20,
+ölü uç 223→211.
+
+Kanıt: `eval/audits/20261007-g12-raster-profile/` — §61 sınıflandırma (10 vaka, yalnız kaynak;
+`cluster-classification.json`), §63 denetim (`contour-audit.json`: 5 raster vaka × en büyük 12
+profil, 11 alan), `reference-metrics.log` (referans künyeler + G11 üretim karşılaştırması:
+51 → %94, flange → %93 hacim farkı, ikisi de pass False — §65 P5 tabanı), iz + tarama
+önce/sonra logları; yeni `tests/test_g12_raster_profile.py` **3/3** (RED→GREEN); ilgili süit
+**730 passed / 20:48 / EXIT=0**; geniş regresyon **1593 passed / 339 deselected / 31:16 / EXIT=0**. Profiller 16/26/19/24 →
+48/64/31/33/44; en büyük halka 5/5 kapalı değil (yay-yürüyüş yönü sıradaki düzeltme); §65 P5
+kapısı açık. Manifest/metrics/tarihsel kanıtlar değişmedi; ana metrik hâlâ **1/9**.
+
 ## Kural hatırlatması (her faz sonu, §96)
 
 Case/file/hash dallanması yok · evaluator değeri producer'a kopyalanmaz · gerçek ölçü "gereksiz" diye

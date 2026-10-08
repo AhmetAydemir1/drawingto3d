@@ -41,12 +41,23 @@ ARC_JOIN_SNAP_PX = 16.0   # how far apart a corner and a trimmed arc end may sit
 # `1/Exercise_51.PNG` the part's own pieces sit 1.6 … 32.7 px apart where a vector reading's joins are
 # exact. The widening is a raster rule only — a vector reading's chains were measured at 3 px, and the
 # least-turn rule is what keeps the wider tolerance from walking off along a dimension line.
-# Measured sweep (2026-09-28, four real sheets): 6 px leaves 15-31 small junk wires per sheet, 36 px
-# collapses Flange to 4 wires and 52x121 px; 20 px keeps 9-17 wires with a part-scale outline on top
-# (723x718 / 730x816 / 356x568 / 427x334) and no sheet-frame box. 20 px ~ 1.6 mm on these sheets.
-# (The sweep reused one `observe` per sheet and may carry per-call state; a fresh-process re-measure
-# at 20 px follows — /tmp/guided-raster2-run8.txt.)
-RASTER_JOIN_TOLERANCE_PX = 20.0
+# Measured sweep (2026-09-28, four real sheets): 6 px leaves 15-31 small junk wires per sheet; 20 px
+# keeps 9-17 wires with a part-scale outline on top and no sheet-frame box, 36 px collapsed Flange to
+# 4 wires — but that sweep ran with the corner rule still uncapped, so a wide tolerance only widened
+# the *hops* (below).
+# G12.5 chain trace (2026-10-08, Exercise_51, 3300 px sheet): the drawing's own joints sit 1.6-37 px
+# apart (24.2 px measured on this sheet alone), and the 20 px cap refused them, leaving the front
+# view's outline in pieces; the spurious joins the same trace caught sat past 100 px (222 of 962
+# steps; max 1965.7 px). So the
+# raster tolerance has to cover the drawing's own joints — 40 px ~ 2.5 mm on these sheets — while the
+# corner rule gets its own, much tighter reach (CORNER_JOIN_REACH_PX) so a wide gap never becomes a
+# licence to hop across the sheet.
+RASTER_JOIN_TOLERANCE_PX = 40.0
+# A tangent line's ink runs on inside the arc's ring and the merge pass extends the straight stroke
+# over it: the line's recorded end can sit ~30 px past the corner while the trimmed arc end stops
+# ~10 px short. The corner join exists to close exactly that shared-ink zone, so its reach is that
+# scale — not the sheet's. Beyond it the geometry no longer means "one corner of the drawing".
+CORNER_JOIN_REACH_PX = 48.0
 
 
 def _line_arc_corner(line_start: np.ndarray, line_end: np.ndarray, meta: dict) -> np.ndarray | None:
@@ -168,7 +179,8 @@ def raster_arcs(observations) -> bool:
 
 def _loops(lines: dict[str, tuple[np.ndarray, np.ndarray]],
            arcs: dict[str, tuple[np.ndarray, float, float, float]],
-           corner_joins: bool = False, join_tolerance_px: float = LOOP_TOLERANCE_PX) -> list[dict]:
+           corner_joins: bool = False, join_tolerance_px: float = LOOP_TOLERANCE_PX,
+           corner_reach_px: float = CORNER_JOIN_REACH_PX) -> list[dict]:
     """Chain lines and arcs into closed loops by endpoint proximity; biggest first.
 
     `corner_joins` turns on the tangent-corner join (below): it is what lets a *raster* outline close —
@@ -212,8 +224,8 @@ def _loops(lines: dict[str, tuple[np.ndarray, np.ndarray]],
                     gap = float(np.linalg.norm(near - tail))
                     meet, terminal = near, far
                     if gap > join_tolerance_px:
-                        if not corner_joins:
-                            continue
+                        if not corner_joins or gap > corner_reach_px:
+                            continue   # past the shared-ink zone the corner rules do not reach
                         previous = chain[-1]
                         corner = _line_arc_corner(previous[1], previous[2], other_meta)   # candidate is the arc
                         if corner is None:
@@ -232,6 +244,8 @@ def _loops(lines: dict[str, tuple[np.ndarray, np.ndarray]],
                                 if corner is None:
                                     continue
                                 gap = float(np.linalg.norm(corner - tail)) + ARC_JOIN_PENALTY_PX
+                        if float(np.linalg.norm(meet - tail)) > corner_reach_px:
+                            continue   # the corner it claims sits beyond the chain's own reach
                     closing = float(np.linalg.norm(far - start)) <= join_tolerance_px
                     if not closing and corner_joins:
                         corner = _line_arc_corner(chain[0][1], chain[0][2], other_meta)
@@ -242,8 +256,9 @@ def _loops(lines: dict[str, tuple[np.ndarray, np.ndarray]],
                             if corner is not None and float(np.linalg.norm(corner - start)) <= ARC_JOIN_SNAP_PX:
                                 closing = True
                             else:
-                                closing = (_arc_hit(far, chain[0][3]) is not None
-                                           or _arc_hit(start, other_meta) is not None)
+                                closing = (float(np.linalg.norm(far - start)) <= corner_reach_px
+                                           and (_arc_hit(far, chain[0][3]) is not None
+                                                or _arc_hit(start, other_meta) is not None))
                     closing = closing and len(chain) >= 3   # two segments cannot be a loop
                     candidates.append((not closing, _turn_degrees(direction, terminal - meet), gap,
                                        other_index, other_id, meet, terminal, other_meta))
@@ -264,8 +279,9 @@ def _loops(lines: dict[str, tuple[np.ndarray, np.ndarray]],
                 if corner is not None and float(np.linalg.norm(corner - tail)) <= ARC_JOIN_SNAP_PX:
                     closed = True
                 else:
-                    closed = (_arc_hit(tail, chain[0][3]) is not None
-                              or _arc_hit(start, chain[-1][3]) is not None)
+                    closed = (float(np.linalg.norm(tail - start)) <= corner_reach_px
+                              and (_arc_hit(tail, chain[0][3]) is not None
+                                   or _arc_hit(start, chain[-1][3]) is not None))
             if closed and len(chain) >= 3:
                 loops.append({"entities": chain, "area_px": _loop_area(chain)})
                 claimed.update(chain_indexes)

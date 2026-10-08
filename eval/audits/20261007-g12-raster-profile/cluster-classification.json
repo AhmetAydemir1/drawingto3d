@@ -1,0 +1,94 @@
+{
+  "artifact": "G12.5 §61 — manifest sınıflandırması (YALNIZ kaynak çizime bakılarak)",
+  "rules": {
+    "source": "Sınıflandırma yalnız paftaların kendi görünüş/ölçü/çizim içeriğinden yapıldı; referans STEP ya da değerlendirici verisi kullanılmadı (PLAN-25 §61, genel kural: reference STEP/evaluator verisi producer kararına giremez).",
+    "extrude_profile": "Parçanın katısı tek bir normal boyunca eş eksenli doğrusal ekstrüzyonlardan (bir ya da daha çok seviye) + gözden geçen/kör kesimlerden kurulabilir; profiller aynı görünüşten gelir, yükseklikler basılı ölçülerdir.",
+    "axisymmetric_revolve": "Parçanın formunu kesit (section) profili + eksen tanımlar; yüzey bir dönel yüzeydir (pah/pah filetosu gibi radyal ayrıntılar ekstrüzyonla ifade edilemez).",
+    "multi_view_composite": "Parça, farklı yönlerdeki ekstrüzyon/dönel tabanların birleşimidir (eksenler dik kesişir); özellik yerleşimi ikinci bir görünüşten gelir.",
+    "advanced_operation": "Büküm/süpürme gibi ekstrüzyon ve dönel dışında bir paradigma gerektirir.",
+    "insufficient_source_information": "Pafta, referans geometri için gereken bir olguyu taşımıyor.",
+    "consumers": "Üretim bu dosyayı okumaz (PLAN-25 §62)."
+  },
+  "cases": [
+    {
+      "case_id": "plate-pocket-vector",
+      "source_observed_views": ["section_b_b (kalınlık 15.00, cep derinliği 8.00)", "front/top (100.00 x 80.00 kontur, Ø50.00 cep, 4 köşe deliği)", "isometric"],
+      "source_observed_geometry_style": "Düz levha 15 kalın, ortada Ø50 cep 8 derin, köşelerde 4 x Ø6.80 THRU (MB-6H iplik notu); tek seviye.",
+      "proposed_strategy_class": "extrude_profile",
+      "current_blocker": "Yok — G11'de tek doğru vaka (metrik 1/9).",
+      "basis": "Kontur kapalı (outline_1, 8 ilkel: 4 çizgi + 4 yay, join 0.31 px); ölçüler 100.00/80.00/60.00/60.00/15.00/8.00/Ø50.00/Ø6.80 basılı; cep = kör kesim, delikler geçen."
+    },
+    {
+      "case_id": "drawing-2-vector",
+      "source_observed_views": ["front-section (taralı; 37/20/60/35/80/57 ölçüleri)", "top (Ø20/Ø30/Ø25/Ø40, 10/26/6/20/40)", "isometric"],
+      "source_observed_geometry_style": "Sarkaç/rocker: taban gövdesi + iki silindirik göbek; kesit iki seviyeyi gösteriyor (gövdeler farklı yükseklikte); boşluklar Ø20/Ø30.",
+      "proposed_strategy_class": "extrude_profile",
+      "current_blocker": "G11: CAD_WRONG — üretilen katı yanlış; seviyeler (göbek yükseklikleri) kurulmamış.",
+      "basis": "Göbeklerin dış çapları (Ø25/Ø40) ve boşlukları (Ø20/Ø30) basılı; yükseklikler kesitte (35/80); tüm profiller aynı eksende — eş eksenli ekstrüzyon ailesi."
+    },
+    {
+      "case_id": "plastic-enclosure-vector",
+      "source_observed_views": ["top (yuvarlatılmış plaka 120 x 60, iki yarık)", "iki yan görünüş (L profilli basamak, 25.00 yükseklik)", "iki isometric"],
+      "source_observed_geometry_style": "İnce kapak: yuvarlatılmış dikdörtgen plaka + kenarında basamaklı çerçeve (L kesit); yarıklar/boşluklar kesim; tek normal boyunca seviyeler.",
+      "proposed_strategy_class": "extrude_profile",
+      "current_blocker": "G11: CAD_WRONG — kontur parçalı (en büyük teller açık, join 47 px) + basamak kurulmamış.",
+      "basis": "Ölçüler basılı (120.00/60.00/25.00/46.00/1.50/3.00/4.00/4.50/8.00); L basamak aynı eksende; yarıklar geçen/kör kesim olarak ifade edilebilir."
+    },
+    {
+      "case_id": "exercise-12-vector",
+      "source_observed_views": ["front (flanşlı gövde)", "SECTION A-A", "üst/yan", "isometric"],
+      "source_observed_geometry_style": "Flanşlı boru gövdesi; flanşlar ve dal farklı eksenlerde (Ø270/Ø220/Ø180 merkezli açıklıklar); içi boş (boru cidarı).",
+      "proposed_strategy_class": "multi_view_composite",
+      "current_blocker": "G11: CAD_WRONG — çok eksenli gövde tek ekstrüzyonla kurulamadı.",
+      "basis": "Eksenler dik kesişiyor (dal + gövde); boşluk çapları Ø270/Ø220/Ø180/Ø90/Ø76/Ø92/Ø60 basılı; yerleşim ikinci görünüşten geliyor."
+    },
+    {
+      "case_id": "exercise-51-raster",
+      "source_observed_views": ["front (dış hat + eş merkezli daireler R60/Ø50/Ø15/Ø18)", "top (R16/Ø12 göz, 150.00 açıklık)", "side (30.00/15.00)", "isometric (yükseltilmiş göbek görünür)"],
+      "source_observed_geometry_style": "Bell-crank levyesi: ince taban levhası (10.00) + yükseltilmiş silindirik göbek + uç gözleri; tüm profiller cepheden, yükseklikler basılı (10/15/30).",
+      "proposed_strategy_class": "extrude_profile",
+      "current_blocker": "G11: CAD_WRONG — üretilen katı 15 x 49.98 x 49.98 (göbek dairesi tek başına disk); cephe dış hattı rasterda parçalı (teller açık, join 100-283 px).",
+      "basis": "Yalnız cephe görünüşü gerekiyor: dış hat + göbek dairesi + uç gözlerinin daireleri aynı görünüşte; 10.00/15.00/30.00 kalınlık-yükseklikleri ve Ø50/Ø15/Ø18/R15/R16/R60/Ø100 basılı."
+    },
+    {
+      "case_id": "exercise-17-raster",
+      "source_observed_views": ["front (dirsek profili 14.00/10.00/4.00)", "ön/yan (Ø22.00/Ø20.00, 5.00)", "yan (Ø20.00, 10.00, 3.00, 4.00)", "isometric"],
+      "source_observed_geometry_style": "90° dirsek boru: dış çap Ø22, iç Ø20, iki uçta bilezik/çan; eksen çeyrek daire boyunca bükülüyor.",
+      "proposed_strategy_class": "advanced_operation",
+      "current_blocker": "G11: CAD_UNSUPPORTED + EVALUATOR — bükümlü boru hiçbir basit ekstrüzyon/dönel ile kurulamadı.",
+      "basis": "Eksen çeyrek daire (büküm); içi boş cidar Ø22/Ø20; uçlarda bilezik yükseklikleri 10.00/4.00 basılı — süpürme/büküm paradigması gerekir."
+    },
+    {
+      "case_id": "exercise-13-raster",
+      "source_observed_views": ["front (taban konturu + göbek Ø60 + delikler; 240.00/170.00/60.00/50.00/42.00/30.00/25.00/10.00)", "top (R25 uçlar, 30.00/50.00, 2 x Ø25)", "iki yan görünüş (60.00/10.00/50.00)", "isometric (yükseltilmiş göbek)"],
+      "source_observed_geometry_style": "Yatak braketi: yuvarlatılmış uçlu taban levhası (240 x 60, R25) + yükseltilmiş silindirik göbek (Ø60, Ø25 delik, R30/R50 yarımca) + tabanda 2 x Ø25 delik.",
+      "proposed_strategy_class": "extrude_profile",
+      "current_blocker": "G11: CAD_UNSUPPORTED + EVALUATOR — cephe konturu + göbek dairesi tek okumada birleşmedi.",
+      "basis": "Taban konturu ve göbek dairesi aynı (cephe) görünüşte; yükseklikler basılı (10.00 taban üstü, 50.00 toplam); Ø25/Ø60/R30/R50/R25/R10 basılı — eş eksenli seviyeler."
+    },
+    {
+      "case_id": "my-part-raster",
+      "source_observed_views": ["front-section (taralı; R20/37/20/60/35/80/57)", "top (Ø20/Ø30/Ø25/Ø40, 10/26/6/20/40)", "isometric (iki farklı yükseklikte göbek)"],
+      "source_observed_geometry_style": "Rocker: iki silindirik göbek (Ø40/Ø30 dış, Ø25/Ø20 boşluk) + bağlantı gövdesi; göbekler farklı seviyede (35/80).",
+      "proposed_strategy_class": "extrude_profile",
+      "current_blocker": "G11: EVALUATOR + CONSTRAINT_UNSUPPORTED — kalibrasyon yok (OCR yalnız artık okudu); en büyük tutarlı kontur üst görünüş gövdesi (outline_12, 243 nokta).",
+      "basis": "drawing-2-vector ile aynı parçanın rasterı (üst görünüş plan + kesit seviyeler); tüm çaplar/yükseklikler basılı — eş eksenli seviyeler."
+    },
+    {
+      "case_id": "flange-raster",
+      "source_observed_views": ["front (eş merkezli daireler Ø100 + 6 delikli cıvata çemberi)", "SECTION A-A (20.00 levha + 50.00 göbek, Ø60, Ø30, R2, 1x45°)", "isometric"],
+      "source_observed_geometry_style": "Flanş (burç): Ø100 x 20 levha + Ø60 x 50 göbek + Ø30 geçen delik + 6 x (Ø11 havşa/Ø6.40 THRU) cıvata deliği; pah ve fileto radyal ayrıntılar.",
+      "proposed_strategy_class": "axisymmetric_revolve",
+      "current_blocker": "G11: EVALUATOR + CAD_WRONG — cephe dairesi sessizce 20 x Ø31 disk olarak ekstrüde edildi (§108: daire sessizce disk olamaz).",
+      "basis": "Formu SECTION A-A profili tanımlıyor (20/50/Ø60/Ø30/R2/1x45°); cephe yalnız daire seti — §66: yalnız cephe dairesi yetmez."
+    },
+    {
+      "case_id": "flange-elbow-90-raster-noref",
+      "source_observed_views": ["front (360 x 360 kare flanş, 4 x Ø30/Ø60 delik, 4-R20)", "SECTION (R260 büküm, Ø210/Ø290, C10)", "ikinci flanş görünüşü (360, 10.00, R10)", "render"],
+      "source_observed_geometry_style": "90° flanşlı dirsek: kare flanşlar (360 x 360 x 10) + R260 bükümlü boru (Ø210/Ø290), C10 pahlar.",
+      "proposed_strategy_class": "advanced_operation",
+      "current_blocker": "G11: TRANSCRIPTION + CONSTRAINT_UNSUPPORTED — çağrı odaklı pafta (referansı yok; scope-only).",
+      "basis": "Büküm ekseni çeyrek daire (R260); flanşlar dik düzlemlerde; referans modeli olmayan scope-only vaka — geometrik PASS iddiası yapılmaz."
+    }
+  ]
+}

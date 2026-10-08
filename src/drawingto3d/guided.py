@@ -397,14 +397,15 @@ def drawing_options(observations, close_tolerance_px: float | None = None) -> di
     # A raster chain closes its outline at a much wider gap than a vector one; the trace must accept
     # the same gap, or the contour the chain just found is thrown away again (measured joins on real
     # sheets: my_part.jpg 6.6 px, Exercise_51 24.2 px, Flange 20.0 px — all past the old 5.5 px cap).
-    # Measured (run7): handing the trace the chain's own 36 px tolerance floods the menu — 45-48 wires
-    # per sheet, the sheet frame among them, where 7-11 were offered before. So the parameter stays for
-    # the sweep ahead, but the value reverts to the narrow cap: the chain's tolerance is what must be
-    # measured, not the trace's willingness to move endpoints.
-    # 20 px is the chain's business; the trace moves endpoints, so it takes half of it: at 10 px each end
-    # travels at most 5 px, and the joins measured at 14.9 and 17.0 px come home (36 px flooded the menu
-    # — run7 — so this cap never simply equals the chain's).
-    mid_join_px = max(ARC_JOIN_MIDDLE_PX, RASTER_JOIN_TOLERANCE_PX / 2.0) if raster else ARC_JOIN_MIDDLE_PX
+    # G12.5: the chain's tolerance was measured at last (its trace on Exercise_51: the drawing's own
+    # joins come 1.6-37 px, while the spurious hops the uncapped corner rule used to build sat past
+    # 100 px — 222 of 962 steps, max 1965.7 px) and the two stages have to agree on that envelope —
+    # a loop the chain closed at a 28.6 px join died here at the old half cap of 20 (synthetic sheet,
+    # tests/test_g12_raster_profile.py).
+    # So the trace takes the chain's own RASTER_JOIN_TOLERANCE_PX as its cap; each end then travels at
+    # most half of it. The run7 menu flood (45-48 wires at the 36 px cap) predates the corner-reach fix;
+    # the menu count is re-measured on the raster cases in the G12.5 audit.
+    mid_join_px = max(ARC_JOIN_MIDDLE_PX, RASTER_JOIN_TOLERANCE_PX) if raster else ARC_JOIN_MIDDLE_PX
     loops = _loops(lines, arcs, corner_joins=raster,
                    join_tolerance_px=RASTER_JOIN_TOLERANCE_PX if raster else LOOP_TOLERANCE_PX)
     frames = _frame_loops(loops, observations.frame.width, observations.frame.height)

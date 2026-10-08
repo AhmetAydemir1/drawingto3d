@@ -9,9 +9,13 @@ chain-trace-before.log). İki kural bu ayrımdan doğar:
   reddediyordu; ~40 px = bu paftalarda ~2.5 mm);
 - köşe kuralı yalnız paylaşılan mürekkebin eriminde çalışır (satır taşması ~30 px + yay
   kırpması ~10 px); ötesi, halkası zincirin ucundan geçiyor diye uzaktaki bir yayı eklemek olur.
+- iz, yay süpürmesinin işaretini giriş ucundan alır ve bunu en yakın uçla sorar; ≤90°'lik yaylarda
+  90°'lik pencere 'b' girişini 'a' sanıp yayı aynalıyordu (aynı gün düzeltildi — 4. test).
 """
 
 from pathlib import Path
+
+import math
 
 import cv2
 import numpy as np
@@ -86,3 +90,30 @@ def test_a_gapped_synthetic_sheet_still_offers_its_closed_outline(tmp_path):
         assert closed, f"{gap} px aralıkla kontur kapalı gelmeli. notlar: {options['notes']}"
         assert any(len(profile.get("edges") or []) == 4 for profile in closed), \
             f"{gap} px: kapanan teller arasında 4 kenarlı dikdörtgen olmalı"
+
+
+def test_an_arc_walked_in_from_its_far_end_keeps_the_ink_not_the_mirror():
+    """Zincir yayın `b` ucundan girdiğinde iz `a` ucunda bitmeli — ayna noktasında değil.
+
+    Exercise_51: zincir g445'e (61°'lik yay) b ucundan giriyor; 90°'lik "a'dan mı" kıstası
+    iki ucu birden kapsayınca süpürme ters çevriliyor ve yay b→b+delta ayna yayı olarak
+    çiziliyordu (hayalet uç [2260,216]; iz g68'in başlangıcını 278,77 px taşıyordu —
+    contour-audit.json, outline_23 join[7]).
+    """
+    centre = np.array([500.0, 300.0])
+    radius = 156.4
+    a_deg, b_deg = 52.29, 113.32
+    a_end = centre + radius * np.array([math.cos(math.radians(a_deg)), math.sin(math.radians(a_deg))])
+    b_end = centre + radius * np.array([math.cos(math.radians(b_deg)), math.sin(math.radians(b_deg))])
+    loop = {"entities": [
+        ("g1", np.array([400.0, 520.0]), b_end, {"kind": "line"}),
+        ("g445", b_end, a_end, {"kind": "arc", "centre": centre, "radius": radius,
+                                "start_degrees": a_deg, "end_degrees": b_deg}),
+        ("g2", a_end, np.array([400.0, 520.0]), {"kind": "line"}),
+    ], "area_px": 0.0}
+    profile = guided._trace(loop, mid_join_px=RASTER_JOIN_TOLERANCE_PX)
+    arc_edge = next(edge for edge in profile["edges"] if edge["id"] == "g445")
+    end = np.asarray(arc_edge["end"], dtype=float)
+    assert np.hypot(*(end - a_end)) <= 1.0, (
+        f"yay b ucundan girildi; iz a ucunda ({a_end[0]:.1f}, {a_end[1]:.1f}) bitmeli, "
+        f"ayna noktasına gitti: {end.tolist()}")

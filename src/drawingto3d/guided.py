@@ -303,8 +303,13 @@ def _trace(loop: dict, mid_join_px: float = ARC_JOIN_MIDDLE_PX,
             # either end, and the sketch needs the traversal it walked (a negative sweep is a clockwise
             # arc — how a right-hand bulge is built). Canonical angles are the sheet's angles negated.
             walked = math.degrees(math.atan2(start[1] - meta["centre"][1], start[0] - meta["centre"][0]))
-            at_seam = abs((walked - a + 180.0) % 360.0 - 180.0) <= 90.0
-            span = -delta if at_seam else delta
+            # G12.5: which end the chain entered decides the sweep's sign. The old "within 90° of `a`"
+            # seam read *both* ends as `a` on every arc that narrow, so a walk in from `b` swept the
+            # mirror ink (Exercise_51 g445, 61°: the exit landed 278.77 px past the true `a` end and
+            # the reflected point became the next piece's start — contour-audit.json, outline_23 join[7]).
+            to_a = abs((walked - a + 180.0) % 360.0 - 180.0)
+            to_b = abs((walked - b + 180.0) % 360.0 - 180.0)
+            span = -delta if to_a <= to_b else delta
             # Sheet y points down; the sketch y points up.
             edge.update(center=meta["centre"].tolist(), radius=float(meta["radius"]),
                         a=-walked, b=-walked + span)

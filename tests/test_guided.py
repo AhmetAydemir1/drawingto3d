@@ -68,8 +68,9 @@ def test_flange_sheet_gets_its_own_decisions_and_builds(tmp_path):
     Before this, the flow offered the title-block box as the contour and 28 holes through a plate that died
     in the geometry audit. Now: the face circle `circle_g50` is the outer size, the printed Ø20.00 (three
     of its rows) is the thickness, the stack's smallest circle (Ø76) is the bore, six Ø18 circles standing
-    on the face are its bolt holes, and the calibration comes from the face's own printed Ø270 over 425.2
-    px = 1.5747 px/mm instead of a 10 mm row resolved 3 % short. One accept leaves no question open.
+    on the face are its bolt holes, and the calibration the accept binds is the face's own printed Ø270
+    over 425.2 px = 1.5747 px/mm (the sheet's 10 mm rim row is offered too — in the reading's frame it
+    agrees within 0.58 % — but the face's own number stays the anchor). One accept leaves no question open.
     """
     store = GuidedStore(tmp_path / "store")
     opened = store.create(SHEET_10.read_bytes())

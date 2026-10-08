@@ -33,12 +33,18 @@ from drawingto3d import proposal
 PROPOSAL_VERSION = "guided-proposal-v1"
 ALIGNED_TOLERANCE_PX = 1.0
 LENGTH_TOLERANCE = 0.01
+# A row resolved in the reading's frame counts as an x/y distance only when it is drawn along that
+# axis: the across-axis part may not exceed half the span. A diagonal whose span merely equals the
+# printed length is a coincidence, not a measurement (`5/Plate With A Pocket Drawing`'s 8 mm depth
+# row: 275 px across a 63 px y span), and reading it as an axis row moved it out of the depth bucket.
+AXIS_CROSS_MAX = 0.5
 # A hole stands on a flange face when it lies inside the face's outer circle; the margin absorbs the
 # drawing's own line width, and keeps a hole of a neighbouring view (drawn just outside this face) out.
 HOLE_MARGIN_PX = 2.0
 # How far a row's own ends may sit from the reading's fitted scale and still be offered as the flow's
-# calibration anchor. Measured agreement on four sheets: 0.42-0.71 % for the ones the flow already used,
-# 2.99 % for the one row that must not be offered.
+# calibration anchor. Measured agreement on four sheets: 0.42-0.71 % for the ordinary rows. A short
+# rim-to-rim row is fuzzy by half a pixel — the flange sheet's 10 mm row measured 2.99 % while its arc
+# rims were walked the wrong way round and 0.58 % once the reading's own frame resolved it.
 CALIBRATION_AGREEMENT = 0.02
 
 
@@ -176,10 +182,28 @@ def resolve_claim(claim: dict, table: dict, px_per_mm: float | None, transform=N
         mapped = [[centre[0] + anchor["point_mm"][0] * scale, centre[1] + anchor["point_mm"][1] * scale]
                   for anchor in anchors]
         if all(_on_geometry(point, anchor.get("geometry_id", ""), table) for point, anchor in zip(mapped, anchors)):
+            # The same axis decision the search below makes: a row resolved in the reading's frame is an
+            # x/y distance when one of its spans holds the printed length and it is drawn along that
+            # axis — its two mapped ends may sit a couple of pixels across (a section view's extension
+            # lines are not always plumb), but a diagonal's span match is a coincidence; `distance`
+            # wins when the straight line fits best.
             length = float(claim.get("printed_mm", 0.0)) * px_per_mm
+            tolerance = max(2.0, LENGTH_TOLERANCE * length)
+            width = abs(mapped[0][0] - mapped[1][0])
+            height = abs(mapped[0][1] - mapped[1][1])
             straight = math.dist(mapped[0], mapped[1])
-            return {"mode": "distance" if abs(straight - length) <= max(2.0, LENGTH_TOLERANCE * length) else "projected",
-                    "error_px": round(abs(straight - length), 2), "points": mapped, "from": "reading"}
+            best = None
+            for mode, measured, across in (("distance", straight, 0.0), ("x", width, height),
+                                           ("y", height, width)):
+                if mode != "distance" and across > AXIS_CROSS_MAX * measured:
+                    continue
+                error = abs(measured - length)
+                if error <= tolerance and (best is None or error < best["error_px"]):
+                    best = {"error_px": error, "mode": mode, "points": mapped, "from": "reading"}
+            if best is None:
+                return {"mode": "projected", "error_px": round(abs(straight - length), 2),
+                        "points": mapped, "from": "reading"}
+            return {**best, "error_px": round(best["error_px"], 2)}
     length_px = float(claim.get("printed_mm", 0.0)) * px_per_mm
     tolerance = max(2.0, LENGTH_TOLERANCE * length_px)
     left, right = anchor_candidates(anchors[0], table), anchor_candidates(anchors[1], table)
@@ -291,8 +315,10 @@ def proposals(options: dict, reading: dict, archetype: dict | None = None) -> li
         # 1:5 rounds every row, and a row whose *own* ends resolve 3 % away from the consensus (a
         # 10 mm row resolved 0.5 px short between two arc rims) would hand the build a wrong scale for
         # the whole part. Measured: the plate's rows agree within 0.58-0.71 %, the plastic's within
-        # 0.53 %, `Drawing.pdf` within 0.42 % — all offered as before; `10/Exercise 12`'s single row is
-        # 2.99 % away and is left out, so the flow asks instead of guessing.
+        # 0.53 %, `Drawing.pdf` within 0.42 % — all offered as before. `10/Exercise 12`'s single row
+        # came back 0.5 px short while its rim ends were still walked the wrong way round (2.99 %); in
+        # the reading's own frame it resolves 0.58 % off and is offered — and the flange's own printed
+        # Ø270, appended after it, is the calibration the accept binds.
         def agreement(row: dict) -> float:
             if not px_per_mm:
                 return 0.0

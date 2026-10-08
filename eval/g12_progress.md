@@ -164,10 +164,23 @@ Kanıt: `eval/audits/20261007-g12-raster-profile/` — §61 sınıflandırma (10
 `cluster-classification.json`), §63 denetim (`contour-audit.json`: 5 raster vaka × en büyük 12
 profil, 11 alan), `reference-metrics.log` (referans künyeler + G11 üretim karşılaştırması:
 51 → %94, flange → %93 hacim farkı, ikisi de pass False — §65 P5 tabanı), iz + tarama
-önce/sonra logları; yeni `tests/test_g12_raster_profile.py` **3/3** (RED→GREEN); ilgili süit
-**730 passed / 20:48 / EXIT=0**; geniş regresyon **1593 passed / 339 deselected / 31:16 / EXIT=0**. Profiller 16/26/19/24 →
-48/64/31/33/44; en büyük halka 5/5 kapalı değil (yay-yürüyüş yönü sıradaki düzeltme); §65 P5
-kapısı açık. Manifest/metrics/tarihsel kanıtlar değişmedi; ana metrik hâlâ **1/9**.
+önce/sonra logları; yeni testler `tests/test_g12_raster_profile.py` **4/4** + `tests/test_advise.py`
+**2/2** (RED→GREEN); ilgili süit **741 passed / 19:48 / EXIT=0**; geniş regresyon
+**1596 passed / 339 deselected / 28:59 / EXIT=0**. Profiller 16/26/19/24 →
+48/64/31/33/44 → (yay düzeltmesi sonrası) 60/77/47/45/65; tüm wire'larda kapalı 50→74, >100 px
+ek 17→4.
+
+**Yay-yürüyüş yönü (aynı gün).** İzin "hangi uçtan girildi?" kıstası 90°'lik pencereden **en
+yakın uç** karşılaştırmasına çevrildi (§23-C14 sözleşmesi korunur: süpürmenin işaretini giriş
+ucu belirler); zincirin `b` ucundan girdiği ≤90°'lik yaylar artık ayna değil gerçek yayı çiziyor
+(Exercise_51 g445: hayalet uç [2260,216] menüden düştü, outline_23 join_max 278,77→38,23 px;
+vektör tarafta g151'in ~186 px hayalet uzantısı düştü, reading çerçevesi devreye girdi ve
+`resolve_claim`'in reading dalı eksen kararını (x/y) da üretir oldu — çapraz satır kapısıyla
+(karşı bileşen ≤ span/2; plate akışı 9 öneri) — flange kalınlığı 20,0 korundu; yeni testler
+`tests/test_advise.py`).
+Kalan: **eklerdeki küçük örtüşme sınıfı** (5 kontur dürüst-kapalı-değil; eski "kapalı" halleri
+42–187 px zorlama-taşımayla geliyordu) + **zincir kalitesi** (kendi içinde kesişen konturlar) +
+§65 P5 kapısı açık. Manifest/metrics/tarihsel kanıtlar değişmedi; ana metrik hâlâ **1/9**.
 
 ## Kural hatırlatması (her faz sonu, §96)
 

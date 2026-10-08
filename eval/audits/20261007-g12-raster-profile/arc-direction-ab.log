@@ -1,0 +1,45 @@
+== exercise-13-raster: wire 27 -> 43  (+16 / -0)
+   kapalı: 2 -> 4 | self-int: 24 -> 38 | join_max>100: 5 -> 0
+   [5 kenar, 97 nk] join_max 108.87->37.86
+   [4 kenar, 73 nk] join_max 132.81->36.34
+   [3 kenar, 72 nk] join_max 460.08->34.83
+   [4 kenar, 50 nk] KAPALI True->False | self-int False->True | join_max 165.83->34.12
+   [4 kenar, 27 nk] KAPALI True->False | self-int False->True | join_max 186.95->6.05
+   kapanan->bozulan: 2 | kapanmayan->kapanan: 0
+     örnek bozulan: 4 kenar: eski join_max=186.95 move=186.9539 | yeni join_max=6.05 move=132.9604 issues=['self_intersection']
+== exercise-17-raster: wire 61 -> 74  (+13 / -0)
+   kapalı: 18 -> 22 | self-int: 42 -> 51 | join_max>100: 3 -> 1
+   [4 kenar, 73 nk] join_max 86.43->21.26
+   [9 kenar, 55 nk] join_max 169.19->37.65
+   [8 kenar, 54 nk] join_max 118.85->16.05
+   [4 kenar, 50 nk] join_max 67.12->30.94
+   kapanan->bozulan: 0 | kapanmayan->kapanan: 0
+== exercise-51-raster: wire 44 -> 56  (+12 / -0)
+   kapalı: 13 -> 18 | self-int: 30 -> 37 | join_max>100: 2 -> 0
+   [22 kenar, 252 nk] join_max 278.77->38.23
+   [4 kenar, 50 nk] join_max 671.71->22.35
+   kapanan->bozulan: 0 | kapanmayan->kapanan: 0
+== flange-raster: wire 42 -> 63  (+21 / -0)
+   kapalı: 10 -> 21 | self-int: 27 -> 38 | join_max>100: 5 -> 1
+   [11 kenar, 126 nk] join_max 486.37->35.48
+   [4 kenar, 96 nk] self-int False->True | join_max 118.63->37.05
+   [8 kenar, 77 nk] join_max 125.08->38.32
+   [7 kenar, 76 nk] join_max 680.15->39.24
+   [4 kenar, 73 nk] KAPALI True->False | self-int False->True | join_max 42.63->26.16
+   [3 kenar, 72 nk] join_max 71.88->35.69
+   [3 kenar, 72 nk] join_max 93.26->36.04
+   [3 kenar, 26 nk] join_max 132.82->10.67
+   [3 kenar, 26 nk] join_max 97.86->12.8
+   [3 kenar, 26 nk] join_max 73.35->20.31
+   [3 kenar, 26 nk] join_max 72.6->10.66
+   kapanan->bozulan: 1 | kapanmayan->kapanan: 0
+     örnek bozulan: 4 kenar: eski join_max=42.63 move=45.2306 | yeni join_max=26.16 move=47.9071 issues=['self_intersection']
+== my-part-raster: wire 27 -> 39  (+12 / -0)
+   kapalı: 7 -> 9 | self-int: 17 -> 26 | join_max>100: 2 -> 2
+   [4 kenar, 96 nk] self-int False->True | join_max 152.71->25.85
+   [4 kenar, 73 nk] KAPALI True->False | self-int False->True
+   [3 kenar, 72 nk] join_max 45.8->62.23
+   [4 kenar, 50 nk] KAPALI False->True | self-int True->False | join_max 24.25->65.63
+   [3 kenar, 26 nk] KAPALI True->False | self-int False->True | join_max 55.27->23.7
+   kapanan->bozulan: 2 | kapanmayan->kapanan: 1
+     örnek bozulan: 4 kenar: eski join_max=136.25 move=217.0552 | yeni join_max=136.25 move=144.1938 issues=['self_intersection']

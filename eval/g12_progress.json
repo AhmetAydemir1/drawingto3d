@@ -199,16 +199,19 @@
     "iz (Exercise_51): >100 px sahte sıçrama 222→0 (en büyük 1965,7→53,8); ≥48 px adım 318→20; ölü uç 223→211; döngü 56→58",
     "§61: cluster-classification.json — 10 vaka yalnız kaynak çizimden (izinli etiketler; üretim okumaz)",
     "§63: contour-audit.json — 5 raster vaka × en büyük 12 profil; 11 alan (view_id/movement_applied_px ham okumada null)",
-    "menü: profiller 16/26/19/24 → 48/64/31/33/44; en büyük halka 5/5 kapalı değil"
+    "menü: profiller 16/26/19/24 → 48/64/31/33/44 → 60/77/47/45/65 (yay düzeltmesi sonrası); tüm wire'larda kapalı 50→74, >100 px ek 17→4",
+    "yay-yürüyüş yönü: iz kıstası 90°'lik pencereden en-yakın-uca çevrildi (≤90°'lik yaylarda 'b' girişi 'a' sayılıyordu); outline_23 278,77→38,23 px, hayalet uç [2260,216] menüden düştü (A/B: arc-direction-ab.log)",
+    "vektör yay g151'in ~186 px hayalet uzantısı düştü → 10/Exercise 12'de reading çerçevesi devreye girdi; advise.resolve_claim reading dalı eksen kararını (distance/x/y) da üretir oldu (çapraz satır kapısı: karşı bileşen ≤ span/2 — plate akışı 9 öneri korunur; flange kalınlığı 20,0; 10 mm rim satırı %0,58'le aday, bağlanan Ø270; A/B: flange-flow-before/after.log)"
    ],
    "evidence": "eval/audits/20261007-g12-raster-profile/",
    "tests": {
-    "new": "tests/test_g12_raster_profile.py (3 passed)",
-    "relevant_suite": "730 passed / 20:48 / EXIT=0 — pytest-relevant.log",
-    "broad": "1593 passed, 339 deselected / 31:16 / EXIT=0 — pytest-broad.log"
+    "new": "tests/test_g12_raster_profile.py (4 passed) + tests/test_advise.py (2 passed)",
+    "relevant_suite": "741 passed / 19:48 / EXIT=0 — pytest-relevant.log",
+    "broad": "1596 passed, 339 deselected / 28:59 / EXIT=0 — pytest-broad.log"
    },
    "open": [
-    "yay-yürüyüş yönü (outline_23: g445→g68 278,77 px sahte ek; hayalet uç [2260,216])",
+    "eklerdeki küçük örtüşme sınıfı (5 kontur: eski zorlama-kapalı, yeni küçük self-intersection)",
+    "zincir kalitesi (kendi içinde kesişen konturlar; menü kalabalığı 60/77/47/45/65)",
     "§65 P5 kapısı (STEP + reopen + shape_ok + detail_ok + verdict PASS)"
    ]
   },

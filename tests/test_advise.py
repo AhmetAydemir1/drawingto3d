@@ -138,3 +138,45 @@ def test_a_refused_reading_proposes_nothing(sheet):
     options, reading = sheet
     reading["refused"] = "pafta ölçeği okunamadı"
     assert advise.proposals(options, reading) == []
+
+
+def test_a_row_resolved_in_the_readings_frame_keeps_its_axis_decision():
+    """A row the reading resolved is an x/y distance when a span matches, not just a straight line.
+
+    `10/Exercise 12`'s three Ø20.00 rows: their mapped ends sit 3.9 px across the axis (a section
+    view's extension lines are not perfectly plumb), so `round(distance)` misses the printed 20 mm by
+    0.9 px while the y span holds it to 0.67 px — the same decision the search path makes.
+    """
+    options = {"frame": {"width": 1400, "height": 990}, "profiles": [], "circles": [],
+               "primitives": [line("g84", (857.22, 965.28), (849.44, 973.06)),
+                              line("g85", (871.39, 986.39), (861.11, 996.94))], "measurements": []}
+    claim = {"span_id": "pdf-1", "form": "distance", "resolution": "confirmed", "printed_mm": 20.0,
+             "drawn_mm": 20.43, "anchors": [{"geometry_id": "g84", "kind": "line-end", "point_mm": [-132.08, -139.25]},
+                                            {"geometry_id": "g85", "kind": "line-end", "point_mm": [-129.57, -118.82]}]}
+    resolved = advise.resolve_claim(claim, advise._geometry_points(options), 1.55, ([1061.945, 1181.724], 1.55))
+    assert resolved["from"] == "reading"
+    assert resolved["mode"] == "y"
+    assert resolved["error_px"] == pytest.approx(0.67, abs=0.01)
+    assert resolved["points"][0] == pytest.approx([857.22, 965.89], abs=0.01)
+
+
+def test_a_row_whose_axis_span_is_a_coincidence_is_not_an_axis_row():
+    """A diagonal row stays `projected`: its span match must not turn it into an axis distance.
+
+    `5/Plate With A Pocket Drawing`'s 8 mm depth row: its mapped ends sit 275.6 px apart across a
+    62.8 px y span — the y span happens to equal the printed 8 mm, but the row is not drawn along y
+    (the anchors are no extension-line pair), so it is a plain distance, exactly as before.
+    """
+    def mm(point):
+        return [round((point[0] - 1000.0) / 7.85, 4), round((point[1] - 1000.0) / 7.85, 4)]
+
+    options = {"frame": {"width": 1400, "height": 990}, "profiles": [], "circles": [],
+               "primitives": [line("ga", (1301.88, 233.63), (1311.88, 243.63)),
+                              line("gb", (1026.30, 296.42), (1036.30, 306.42))], "measurements": []}
+    claim = {"span_id": "pdf-6", "form": "distance", "resolution": "confirmed", "printed_mm": 8.0,
+             "drawn_mm": 8.0, "anchors": [{"geometry_id": "ga", "kind": "line-end", "point_mm": mm((1301.88, 233.63))},
+                                           {"geometry_id": "gb", "kind": "line-end", "point_mm": mm((1026.30, 296.42))}]}
+    resolved = advise.resolve_claim(claim, advise._geometry_points(options), 7.85, ((1000.0, 1000.0), 7.85))
+    assert resolved["from"] == "reading"
+    assert resolved["mode"] == "projected"
+    assert resolved["error_px"] == pytest.approx(219.84, abs=0.05)

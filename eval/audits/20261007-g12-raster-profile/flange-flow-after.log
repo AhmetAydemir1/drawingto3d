@@ -1,0 +1,29 @@
+== reading çerçevesi (transform): ([1061.9450000000002, 1181.7242614927975], 1.55)
+== outline eşleşmesi: [('outline_2', {'width_mm': 209.32, 'height_mm': 279.28, 'outline_mm': [209.32, 278.49]})]
+== öneriler:
+  calibration            = {"first": [956.6845000000002, 1240.1282614927975], "second": [960.0635000000002, 1255.3492614927975], "value":
+  profile_id             = "circle_g50"
+  thickness              = 20.0
+  calibration            = {"first": [134.35999999999999, 379.73], "second": [559.54, 379.73], "value": 270.0, "unit": "mm", "span_id": "
+  hole:g60               = {"circle_id": "g60", "kind": "through", "diameter": 76.0}
+  hole:g45               = {"circle_id": "g45", "kind": "through", "diameter": 18.0}
+  hole:g46               = {"circle_id": "g46", "kind": "through", "diameter": 18.0}
+  hole:g44               = {"circle_id": "g44", "kind": "through", "diameter": 18.0}
+  hole:g47               = {"circle_id": "g47", "kind": "through", "diameter": 18.0}
+  hole:g48               = {"circle_id": "g48", "kind": "through", "diameter": 18.0}
+  hole:g49               = {"circle_id": "g49", "kind": "through", "diameter": 18.0}
+== distance çözümleri (span, basılı, (mod, hata_px, kaynak)):
+   ('pdf-1', 20.0, ('y', 0.67, 'reading'))
+   ('pdf-4', 116.0, ('projected', 4.56, 'reading'))
+   ('pdf-6', 20.0, ('y', 0.67, 'reading'))
+   ('pdf-7', 19.0, ('y', 0.42, 'search'))
+   ('pdf-8', 20.0, ('projected', 432.83, 'reading'))
+   ('pdf-11', 116.0, ('projected', 2.99, 'reading'))
+   ('pdf-17', 132.0, ('projected', 5.37, 'reading'))
+   ('pdf-20', 86.0, ('projected', 4.1, 'reading'))
+   ('pdf-21', 54.0, ('projected', 423.87, 'reading'))
+   ('pdf-25', 10.0, ('distance', 0.09, 'reading'))
+   ('pdf-29', 6.0, ('projected', 57.48, 'reading'))
+   ('pdf-30', 170.0, None)
+   ('pdf-32', 88.0, ('projected', 68.08, 'reading'))
+== kalınlık kimliği: ('pdf-1', 20.0, ['pdf-1', 'pdf-6'])

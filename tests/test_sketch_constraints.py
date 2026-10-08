@@ -71,6 +71,43 @@ def test_corrupted_rectangle_obeys_dimensions_and_reports_only_gauge_assumptions
     assert_parameter_values_agree(result)
 
 
+def test_every_solved_coordinate_records_its_binding_and_equation(profile, constraints):
+    """PLAN-25 §57: a solved coordinate's provenance is structured — binding, printed value, targets, equation type.
+
+    The chain is per coordinate, not per solve: `vertex:v2`'s y is reached through the horizontal relation at
+    the datum and then the height dimension, and the record has to say exactly that.
+    """
+    result = solve(profile, constraints)
+    assert result["status"] == "constrained"
+    rows = {(row["point"], row["axis"]): row for row in result["coordinates"]}
+    assert len(rows) == 2 * len(result["points"])          # every coordinate of every point, both axes
+    width = rows[("vertex:v1", "x")]
+    assert width["source"] == "dimension" and width["value_mm"] == pytest.approx(50.0) and width["unit"] == "mm"
+    assert len(width["steps"]) == 1
+    step = width["steps"][0]
+    assert step["binding_id"] == "width" and step["equation_type"] == "x-distance"
+    assert step["printed_value"] == pytest.approx(50.0) and step["unit"] == "mm"
+    assert step["span_ids"] == ["text_width"]              # the printed measurement the binding came from
+    assert step["targets"] == ["vertex:v0", "vertex:v1"]
+    height = rows[("vertex:v2", "y")]
+    assert [item["equation_type"] for item in height["steps"]] == ["horizontal", "y-distance"]
+    assert [item["binding_id"] for item in height["steps"]] == ["r0", "height"]
+    assert [item["printed_value"] for item in height["steps"]] == [None, -30.0]
+    # The gauge coordinate is the traced datum, not a dimensioned one, and it says so with an empty chain.
+    datum = rows[("vertex:v0", "x")]
+    assert datum["source"] == "trace" and datum["steps"] == []
+
+
+def test_the_audit_splits_dimension_derived_from_trace_derived(profile, constraints):
+    """PLAN-25 §59: `dimension-derived coordinates = N`, `trace-derived coordinates = M`, counted per value."""
+    result = solve(profile, constraints)
+    assert result["audit"] == {"dimension_derived": 6, "trace_derived": 2}
+    traced = [(row["point"], row["axis"]) for row in result["coordinates"] if row["source"] == "trace"]
+    assert traced == [("vertex:v0", "x"), ("vertex:v0", "y")]
+    assert all(row["steps"] == [] and row["unit"] == "mm" for row in result["coordinates"]
+               if row["source"] == "trace")
+
+
 def test_exact_hole_center_and_reopened_step(profile, constraints, tmp_path):
     constraints["dimensions"] += [
         dimension("hole_x", "x", vertex(0), center("hole"), 12),

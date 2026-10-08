@@ -57,6 +57,22 @@ def test_a_tie_of_sixty_millimetres_makes_that_span_sixty_millimetres():
     assert report["free"] > 0 and report["dof"] is not None
 
 
+def test_the_report_counts_dimension_derived_and_trace_derived_coordinates():
+    """PLAN-25 §59: the draft's audit says how much of it is the user's dimension and how much the trace.
+
+    The 60 mm tie fixes `vertex:v1`'s x; every other coordinate value is the datum's gauge or a free
+    component's traced position — one dimension-derived value against seven traced ones.
+    """
+    profile = square()
+    report = user_dimensions(profile, {"circles": []},
+                             decisions([binding(60.0, ("vertex", "e0:start", (0, 0)), ("vertex", "e1:start", (100, 0)),
+                                                "t0")]),
+                             SCALE, ORIGIN)
+    assert report["audit"] == {"dimension_derived": 1, "trace_derived": 7}
+    traced = [row for row in report["coordinates"] if row["source"] == "trace"]
+    assert len(traced) == 7 and all(row["steps"] == [] for row in traced)
+
+
 def test_two_ties_that_cannot_both_hold_are_a_conflict_with_their_ids():
     profile = square()
     ties = [binding(60.0, ("vertex", "e0:start", (0, 0)), ("vertex", "e1:start", (100, 0)), "t0"),

@@ -171,8 +171,23 @@
   },
   {
    "id": "G12.4",
-   "title": "desteklenen 2B kısıtların tam uygulanması",
-   "status": "pending"
+   "title": "exact supported 2D constraints",
+   "plan": "PLAN-25 §55–§60",
+   "status": "done",
+   "what": [
+    "§57: her çözülen koordinat kendi kökenini taşır — bağ kimliği, basılı değer, birim, hedefler, denklem türü, basılı kaydın kimliği; datum/serbest boş zincirle trace",
+    "§59: audit — dimension_derived (N) / trace_derived (M) koordinat değeri başına; rapor, önizleme ve plan aynı kaydı okur",
+    "§58: çakışma ortalamasız reddedilir, desteklenmeyen bağ unsupported (davranış korundu, artık denetim kaydıyla)",
+    "§60: P4 sentetik kabul — 5 senaryo ürün yolundan gerçek STEP üretip yeniden açar"
+   ],
+   "evidence": "eval/audits/20261008-g12-4-constraints/",
+   "tests": {
+    "new": "tests/test_g12_p4_constraints.py (5) + test_sketch_constraints (+2) + test_user_dimensions (+1)",
+    "relevant_suite": "678 passed / 4:06 / EXIT=0 — eval/audits/20261008-g12-4-constraints/pytest-relevant.log",
+    "plate_regression": "G12R Plate kabulü 11/11 — plate-regression.log",
+    "step_artifact": "p4-rectangle.step (20173 bayt) + p4-geometry.json + p4-provenance.json",
+    "broad": "pytest -q tests -k \"not semread\" → 1590 passed, 339 deselected, 1771.83s (29:31), EXIT=0 — eval/audits/20261008-g12-4-constraints/pytest-broad.log"
+   }
   },
   {
    "id": "G12.5",

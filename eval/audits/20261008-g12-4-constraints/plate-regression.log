@@ -1,0 +1,13 @@
+PASS 0: kontur + ölçek (100,00) + kalınlık (15) + izleme onayı kaydedildi  {"revision": 1, "profile_id": "outline_1", "span_id": "t0"}
+PASS 1: reçetedeki her ipucu bu paftanın callout'larından biriyle eşleşti  {"hints": 33, "missing": [], "rows": {"6": ["b1aea745ec1f819dfc763387c51e067d1368623fa3041d511f6ecb365b7a1139", "da1baf44138661f81299d1215f6b7bb6602d4ac3aafa7f1600ff92dc4cb12b00"], "4": ["0670ce69c0ee72e81790d00424114230
+PASS 1b: reçete dışındaki satırlar yazılı listeden karara bağlandı (beklenmeyen satır yok)  {"unexpected_rows": [], "written_rows": 24}
+PASS 1c: yazılı listedeki her satır karara bağlandı — kalan satır yok  {"closed_rows": 36, "decided": 43, "groups": ["1", "2", "2026", "3", "4", "5", "6", "A", "A4", "ALLOY STEEL", "B", "C", "D", "DRAFTCRAFT", "MATERIAL:", "NAME:", "PRO", "Plate With A Pocket", "SCALE1:1", "SECTION B-B", "S
+PASS 2: kapsam kapandı — kalan tek madde ÜRETİM BİÇİMİ, hiçbir callout sorusu yok  {"categories": {"missing_build_strategy": 1}, "questions": 1}
+PASS 3: strateji yokken üretim BAŞLAMAZ (örtük extrude yok)  {"ready": false}
+PASS 4: build çağrısı strateji yokken reddedildi (adı konmuş soruyla)  {"refusal": "üretim için eksik/uyumsuz girdiler var: Parçanın ana oluşturma biçimini seçin (profil uzatma / döndürme / çok görünüş) — üretim kendiliğinden bir biçim varsaymaz."}
+PASS 5: kullanıcı üretim biçimini onayladı — sunucu anahtarı ve geometri sürümünü sabitledi  {"kind": "extrude_profile", "strategy_key": "36440db3870c…", "geometry_version": 4}
+PASS 6: üretim tamamlandı — STEP yazıldı  {"status": "complete", "solids": 1, "size": [120.01092441415202, 80.00178236964202, 15.0]}
+PASS 7: STEP yeniden açıldı ve dondurulmuş evaluator PASS (9/9 kontrol)  {"exit": 0, "checks": 9, "failed": [], "stdout": "01])\"}, \"volume\": {\"ok\": true, \"got\": \"124.8 cm3\", \"want\":\n[PASS] step_reopened: {\"ok\": true, \"detail\": \"cadquery importStep reopen (twice: features + di
+PASS 8: parça dondurulmuş toleranslarda 120 × 80 × 15, 4 delik, 1 cep  {"lengths": [120.011, 80.002, 15.0], "radii": [3.4, 3.4, 3.4, 3.4, 9.974, 9.974, 9.979, 9.991, 25.0], "holes": 4, "pockets": 1, "step_sha256": "64a4815a1afbee28dad29d490d70e72041869ae14c2b1ecea4b93255716ba276"}
+TÜMÜ GEÇTİ 11/11
+EXIT=0

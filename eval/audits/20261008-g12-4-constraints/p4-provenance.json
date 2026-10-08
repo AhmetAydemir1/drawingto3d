@@ -1,0 +1,229 @@
+{
+ "audit": {
+  "dimension_derived": 6,
+  "trace_derived": 6
+ },
+ "status": "underconstrained",
+ "coordinates": [
+  {
+   "point": "vertex:v0",
+   "axis": "x",
+   "value_mm": 0.0,
+   "unit": "mm",
+   "source": "trace",
+   "steps": []
+  },
+  {
+   "point": "vertex:v0",
+   "axis": "y",
+   "value_mm": 30.0,
+   "unit": "mm",
+   "source": "trace",
+   "steps": []
+  },
+  {
+   "point": "vertex:v1",
+   "axis": "x",
+   "value_mm": 60.0,
+   "unit": "mm",
+   "source": "dimension",
+   "steps": [
+    {
+     "binding_id": "width",
+     "equation_type": "x-distance",
+     "printed_value": 60.0,
+     "unit": "mm",
+     "span_ids": [],
+     "targets": [
+      "vertex:v0",
+      "vertex:v1"
+     ]
+    }
+   ]
+  },
+  {
+   "point": "vertex:v1",
+   "axis": "y",
+   "value_mm": 30.0,
+   "unit": "mm",
+   "source": "dimension",
+   "steps": [
+    {
+     "binding_id": "height",
+     "equation_type": "y-distance",
+     "printed_value": -40.0,
+     "unit": "mm",
+     "span_ids": [],
+     "targets": [
+      "vertex:v0",
+      "vertex:v2"
+     ]
+    },
+    {
+     "binding_id": "right_height",
+     "equation_type": "y-distance",
+     "printed_value": 40.0,
+     "unit": "mm",
+     "span_ids": [],
+     "targets": [
+      "vertex:v1",
+      "vertex:v2"
+     ]
+    }
+   ]
+  },
+  {
+   "point": "vertex:v2",
+   "axis": "x",
+   "value_mm": 60.0,
+   "unit": "mm",
+   "source": "dimension",
+   "steps": [
+    {
+     "binding_id": "width",
+     "equation_type": "x-distance",
+     "printed_value": 60.0,
+     "unit": "mm",
+     "span_ids": [],
+     "targets": [
+      "vertex:v0",
+      "vertex:v1"
+     ]
+    },
+    {
+     "binding_id": "cross_width",
+     "equation_type": "x-distance",
+     "printed_value": -60.0,
+     "unit": "mm",
+     "span_ids": [],
+     "targets": [
+      "vertex:v1",
+      "vertex:v3"
+     ]
+    },
+    {
+     "binding_id": "bottom_width",
+     "equation_type": "x-distance",
+     "printed_value": 60.0,
+     "unit": "mm",
+     "span_ids": [],
+     "targets": [
+      "vertex:v3",
+      "vertex:v2"
+     ]
+    }
+   ]
+  },
+  {
+   "point": "vertex:v2",
+   "axis": "y",
+   "value_mm": -10.0,
+   "unit": "mm",
+   "source": "dimension",
+   "steps": [
+    {
+     "binding_id": "height",
+     "equation_type": "y-distance",
+     "printed_value": -40.0,
+     "unit": "mm",
+     "span_ids": [],
+     "targets": [
+      "vertex:v0",
+      "vertex:v2"
+     ]
+    }
+   ]
+  },
+  {
+   "point": "vertex:v3",
+   "axis": "x",
+   "value_mm": 0.0,
+   "unit": "mm",
+   "source": "dimension",
+   "steps": [
+    {
+     "binding_id": "width",
+     "equation_type": "x-distance",
+     "printed_value": 60.0,
+     "unit": "mm",
+     "span_ids": [],
+     "targets": [
+      "vertex:v0",
+      "vertex:v1"
+     ]
+    },
+    {
+     "binding_id": "cross_width",
+     "equation_type": "x-distance",
+     "printed_value": -60.0,
+     "unit": "mm",
+     "span_ids": [],
+     "targets": [
+      "vertex:v1",
+      "vertex:v3"
+     ]
+    }
+   ]
+  },
+  {
+   "point": "vertex:v3",
+   "axis": "y",
+   "value_mm": -10.0,
+   "unit": "mm",
+   "source": "dimension",
+   "steps": [
+    {
+     "binding_id": "left_height",
+     "equation_type": "y-distance",
+     "printed_value": -40.0,
+     "unit": "mm",
+     "span_ids": [],
+     "targets": [
+      "vertex:v0",
+      "vertex:v3"
+     ]
+    }
+   ]
+  },
+  {
+   "point": "circle_center:c0",
+   "axis": "x",
+   "value_mm": 15.0,
+   "unit": "mm",
+   "source": "trace",
+   "steps": []
+  },
+  {
+   "point": "circle_center:c0",
+   "axis": "y",
+   "value_mm": 20.0,
+   "unit": "mm",
+   "source": "trace",
+   "steps": []
+  },
+  {
+   "point": "circle_center:c1",
+   "axis": "x",
+   "value_mm": 35.0,
+   "unit": "mm",
+   "source": "trace",
+   "steps": []
+  },
+  {
+   "point": "circle_center:c1",
+   "axis": "y",
+   "value_mm": 20.0,
+   "unit": "mm",
+   "source": "trace",
+   "steps": []
+  }
+ ],
+ "bindings": [
+  "width",
+  "bottom_width",
+  "left_height",
+  "right_height",
+  "cross_width",
+  "height"
+ ]
+}

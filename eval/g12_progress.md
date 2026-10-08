@@ -134,6 +134,22 @@ genüş regresyon **1582 passed / 339 deselected / 27:17 / EXIT=0** (`pytest-bro
 iddiası yoktur (§54). Eski kanıt dizinleri, dondurulmuş manifest ve `eval/metrics.py` değişmedi; ana
 metrik hâlâ **1/9**. Sıradaki faz: **G12.4 — exact supported 2D constraints** (§55–§60).
 
+## G12.4 — exact supported 2D constraints (PLAN-25 §55–§60) ✓
+
+Basılı ölçü artık koordinatı *belirler*: tek bir küresel ölçek uydurulmaz (§56), her çözülen koordinat
+kendi kökenini yapısal taşır (§57: bağ kimliği, basılı değer, birim, geometri hedefleri, denklem türü ve
+basılı kaydın kimliği), çözüm durumları ortalamasız raporlanır (§58), yetersiz belirlenmiş taslak yalnız
+açık izleme onayıyla üretilir ve **N/M denetimi** yazılır (§59).
+
+Kanıt: `eval/audits/20261008-g12-4-constraints/` — ürün yolundan geçen **5 P4 senaryosu** (60 × 40
+dikdörtgen tam; 30/6 mm merkez aralığı tam; Ø6 delik tam; çelişen genişlik adlarıyla reddedilir ve STEP
+üretilmez; yetersiz taslakta N=1/M=11 ve izleme onayı olmadan başlamaz), ilgili süit **678 passed / 4:06**,
+G12R Plate kabulü **11/11**, geniş regresyon **1590 passed / 339 deselected / 29:31 / EXIT=0**
+(`pytest-broad.log`; 1582 → +8). `p4-rectangle.step` (20173 bayt) +
+`p4-geometry.json` + `p4-provenance.json` kalıcı kanıt. Eski kanıt dizinleri, dondurulmuş manifest ve
+`eval/metrics.py` değişmedi; ana metrik hâlâ **1/9**. Sıradaki faz: **G12.5 — raster extrude recovery**
+(§61–§64).
+
 ## Kural hatırlatması (her faz sonu, §96)
 
 Case/file/hash dallanması yok · evaluator değeri producer'a kopyalanmaz · gerçek ölçü "gereksiz" diye

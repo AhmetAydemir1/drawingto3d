@@ -177,7 +177,10 @@ def solve_constraints(
             raise ValueError(f"ilişkinin kenarı seçili konturda yok: {relation.edge_id}")
         first, second = edge_vertices[relation.edge_id]
         axis = "y" if relation.kind == "horizontal" else "x"
-        equations[axis].append((first, second, 0.0, relation.id, None, 0))
+        equations[axis].append({"first": first, "second": second, "delta": 0.0, "id": relation.id,
+                                "parameter": None, "coefficient": 0, "targets": [first, second],
+                                "equation_type": relation.kind, "printed_value": None, "unit": None,
+                                "span_ids": []})
     for index, dimension in enumerate(constraints.dimensions):
         check_reference(dimension.first)
         check_reference(dimension.second)
@@ -190,14 +193,21 @@ def solve_constraints(
             "explanation": f"Kullanıcının {dimension.id} ölçüsü ve geometri bağı; basılı kaynağın bağını kullanıcı seçti.",
         }
         value_mm = dimension.value * (25.4 if dimension.unit == "in" else 1.0)
-        equations[dimension.axis].append((dimension.first.key, dimension.second.key,
-                                          value_mm * dimension.direction, dimension.id, name, dimension.direction))
+        equations[dimension.axis].append({"first": dimension.first.key, "second": dimension.second.key,
+                                          "delta": value_mm * dimension.direction, "id": dimension.id,
+                                          "parameter": name, "coefficient": dimension.direction,
+                                          "targets": [dimension.first.key, dimension.second.key],
+                                          "equation_type": f"{dimension.axis}-distance",
+                                          "printed_value": value_mm * dimension.direction, "unit": "mm",
+                                          "span_ids": [dimension.span_id] if dimension.span_id is not None else []})
 
     graphs = {axis: {key: [] for key in points} for axis in ("x", "y")}
     conflicts, redundant = [], []
     for axis, rows in equations.items():
         graph = graphs[axis]
-        for first, second, delta, constraint_id, parameter, coefficient in rows:
+        for row in rows:
+            first, second = row["first"], row["second"]
+            delta, constraint_id = row["delta"], row["id"]
             path = _path(graph, first, second)
             if path is not None:
                 actual = math.fsum(step["delta"] for step in path)
@@ -209,10 +219,11 @@ def solve_constraints(
                 else:
                     redundant.append(constraint_id)
                 continue
-            graph[first].append({"target": second, "delta": delta, "id": constraint_id,
-                                 "parameter": parameter, "coefficient": coefficient})
-            graph[second].append({"target": first, "delta": -delta, "id": constraint_id,
-                                  "parameter": parameter, "coefficient": -coefficient})
+            forward = dict(row)
+            graph[first].append({"target": second, **forward})
+            reverse = dict(row, delta=-delta, coefficient=-row["coefficient"],
+                           printed_value=None if row["printed_value"] is None else -row["printed_value"])
+            graph[second].append({"target": first, **reverse})
 
     notes = ["Başlangıç noktasının çizimdeki konumu yalnız koordinat sistemini sabitler; parça ölçüsü değildir."]
     if not outer_moves:
@@ -221,10 +232,12 @@ def solve_constraints(
               "dof": 0, "conflicts": conflicts, "redundant": redundant, "notes": notes,
               "outer_moves": outer_moves, "gauge": {"datum": constraints.datum.key,
                                                        "position_mm": list(points[constraints.datum.key])},
-              "free_coordinates": []}
+              "free_coordinates": [], "coordinates": [], "audit": {"dimension_derived": 0, "trace_derived": 0}}
     values = {key: [0.0, 0.0] for key in points}
     expressions = {key: ["", ""] for key in points}
     indices = {key: index for index, key in enumerate(points)}
+    chains: dict = {}
+    free_points = {"x": set(), "y": set()}
     for axis_index, axis in enumerate(("x", "y")):
         graph, visited = graphs[axis], set()
         # Visit the datum's component first so its offset is the original datum position.
@@ -233,6 +246,7 @@ def solve_constraints(
                 continue
             offsets = {root: 0.0}
             terms = {root: {}}
+            paths = {root: []}
             queue = deque([root])
             while queue:
                 point = queue.popleft()
@@ -246,6 +260,7 @@ def solve_constraints(
                     if step["parameter"] is not None:
                         name = step["parameter"]
                         terms[target][name] = terms[target].get(name, 0) + step["coefficient"]
+                    paths[target] = paths[point] + [step]
                     queue.append(target)
             anchored = root == constraints.datum.key
             root_name = f"sk_root_{axis}_{indices[root]}"
@@ -257,6 +272,7 @@ def solve_constraints(
                 root_value = math.fsum(points[key][axis_index] - offset for key, offset in offsets.items()) / len(offsets)
                 explanation = "Bu koordinat bileşeni ölçülerle belirlenmedi; çizime en yakın konumu taslak varsayımı olarak korundu."
                 result["free_coordinates"].append({"axis": axis, "root_parameter": root_name, "points": list(offsets)})
+                free_points[axis].update(offsets)
             parameters[root_name] = {"source": "assumed", "value": root_value, "unit": "mm", "explanation": explanation}
             for point, offset in offsets.items():
                 coordinate_name = f"sk_point_{indices[point]}_{axis}"
@@ -264,9 +280,27 @@ def solve_constraints(
                                               "unit": "mm", "explanation": "Kaydedilmiş koordinat ilişkileri ve kullanıcı ölçülerinden hesaplandı."}
                 values[point][axis_index] = root_value + offset
                 expressions[point][axis_index] = coordinate_name
+            for point in offsets:
+                chains[(point, axis)] = [
+                    {"binding_id": step["id"], "equation_type": step["equation_type"],
+                     "printed_value": step["printed_value"], "unit": step["unit"],
+                     "span_ids": list(step["span_ids"]), "targets": list(step["targets"])}
+                    for step in paths[point]]
     if not conflicts:
         result["points"], result["expressions"] = values, expressions
         result["status"] = "constrained" if result["dof"] == 0 else "underconstrained"
+        # PLAN-25 §57: every solved coordinate carries its own chain — the binding it came through (its printed
+        # measurement when one exists), the equation type, the targets, the value as that equation uses it.
+        # The datum and the free components keep their traced value; their chain is empty and they say `trace`.
+        result["coordinates"] = [
+            {"point": key, "axis": axis, "value_mm": values[key][index], "unit": "mm",
+             "source": "trace" if (key == constraints.datum.key or key in free_points[axis]) else "dimension",
+             "steps": chains.get((key, axis), [])}
+            for key in points for index, axis in enumerate(("x", "y"))]
+        # PLAN-25 §59: the audit the plan reports — how many coordinate values came from the user's own
+        # dimensions and how many are still the traced draft.
+        result["audit"] = {"dimension_derived": sum(1 for row in result["coordinates"] if row["source"] == "dimension"),
+                           "trace_derived": sum(1 for row in result["coordinates"] if row["source"] == "trace")}
     else:
         # Keep the submitted dimensions as evidence, but no arbitrary solution to a subset.
         result["parameters"] = {key: value for key, value in parameters.items() if key.startswith("sk_dim_")}

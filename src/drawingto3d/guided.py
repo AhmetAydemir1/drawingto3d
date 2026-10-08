@@ -1007,11 +1007,16 @@ def user_dimensions(profile: dict, options: dict, decisions: "Decisions", scale:
                                                      {b.span_id for b in bindings if b.span_id})
     except ValueError as exc:
         profile["solved_dimensions"] = {"status": "unsupported", "notes": [str(exc)], "conflicts": [],
-                                        "moved": 0, "dof": None}
+                                        "moved": 0, "dof": None, "coordinates": [],
+                                        "audit": {"dimension_derived": 0, "trace_derived": 0}}
         return profile["solved_dimensions"]
     report = {"status": solution.get("status"), "dof": solution.get("dof"),
               "conflicts": [row.get("constraint_ids") for row in solution.get("conflicts") or []],
-              "notes": list(solution.get("notes") or []), "moved": 0.0, "free": len(solution.get("free_coordinates") or [])}
+              "notes": list(solution.get("notes") or []), "moved": 0.0, "free": len(solution.get("free_coordinates") or []),
+              # PLAN-25 §57/§59: the per-coordinate provenance chain and the dimension/trace audit travel with
+              # the report, so the preview, the plan and the acceptance all read the same record.
+              "coordinates": list(solution.get("coordinates") or []),
+              "audit": dict(solution.get("audit") or {"dimension_derived": 0, "trace_derived": 0})}
     profile["solved_dimensions"] = report
     if solution.get("status") == "conflict":
         return report

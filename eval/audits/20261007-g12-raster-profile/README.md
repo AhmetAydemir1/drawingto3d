@@ -1,10 +1,11 @@
 # G12.5 — raster extrude recovery (PLAN-25 §61–§64) — ara durum (WIP)
 
-Bu dizin G12.5'in bu ana kadarki kanıtıdır. Faz **kapanmadı**: cephe dış hattı rasterda hâlâ
-kapanmıyor (kalan engeller: eklerdeki küçük örtüşme sınıfı + zincir kalitesi; yay-yürüyüş yönü
-hatası bu turda düzeltildi) ve §65 P5 kapısı (G11'de yanlış/bloklu bir `extrude_profile` vakanın
-STEP üretip verdict PASS olması) henüz koşulmadı. Bu commit bir ilerleme kaydıdır; PASS iddiası
-içermez.
+Bu dizin G12.5'in bu ana kadarki kanıtıdır. Faz **kapanmadı**: §65 P5 kapısı henüz koşulmadı.
+Bu commit bir ilerleme kaydıdır; PASS iddiası içermez. §65 için hedef vaka analizi eklendi
+(`p5-analysis.md` + `p5-evidence/`): hedef **exercise-13-raster**; yapı referanstan ölçüldü
+(taban + tek yükseltilmiş göbek + 5 delik); gereken op'lar mevcut GeneralPlan sözlüğünde
+(extrude/fuse/cut); kalan boşluklar ön iz kapanış sınıfı + daire tespiti + seviye karar/derleme
+katmanıdır.
 
 ## Ne değişti (§64 — ölçüme dayalı; örnek-başına tolerans ayarı YOK)
 - `RASTER_JOIN_TOLERANCE_PX` **20 → 40**: zincir izinde (Exercise_51) paftanın kendi ekleri
@@ -134,5 +135,10 @@ tekrarı yok). Bu fazda UI değişmedi (§97/8 gerçek-Chrome kabulü gerekmedi)
    42–187 px zorlama-taşımalarla geliyordu (kapanan→bozulan: 13'te 2, flange'te 1, my-part'ta 2).
 2. **Zincir kalitesi**: kalan self-intersection'ların çoğu zincirin uç uca eklediği parçaların
    kesişmesi (ör. g388×g445); menü kalabalığı (60/77/47/45/65) bu başlıkla birlikte.
-3. **§65 P5 kapısı**: kaynak-sınıflanmış, G11'de yanlış/bloklu bir `extrude_profile` vaka
-   üretimden geçip (STEP + reopen + `shape_ok` + `detail_ok` + verdict PASS) olmalı.
+3. **§65 P5 kapısı**: hedef vaka seçildi → **exercise-13-raster** (analiz: `p5-analysis.md` +
+   `p5-evidence/`). Gereken üretim reçetesi **mevcut** op'larla yazılabiliyor (base extrude +
+   göbek seviyesi fuse + kesimler; `geo.fuse` mevcut); kalan açık işler: (a) ön izde kalan
+   self-intersection sınıfı (düzeltme sonrası; `make_plan` denetimi, guided.py:1231), (b) daire
+   tespiti — ex13'te g251 glyph sahtesi + eksik Ø60/R50/üst Ø25, (c) `Decisions` +
+   `compile_extrude_plan` seviye (yükseltilmiş daire) ve XZ-düzlemli kesim genişletmesi,
+   (d) source-only üretim + STEP reopen + `shape_ok` + `detail_ok` + verdict PASS kabulü.

@@ -1,7 +1,7 @@
 {
  "plan": "PLAN-24-G12-CORRECTNESS + PLAN-25-G12-CONTINUATION (kullanıcı girdisi PLAN-21.md; §45+ fazlarını G12.3–G12.9 olarak yeniden numaralandırdı)",
  "root_plan": "PLAN.md (docs/PLAN-24-G12-CORRECTNESS.md byte kopya)",
- "updated_at": "2026-10-07",
+ "updated_at": "2026-10-08",
  "baseline_head": "cc36f8de62548299761a5b9c8d9a1b97320635f1",
  "metric": {
   "correct_full_step": 1,
@@ -203,6 +203,18 @@
     "yay-yürüyüş yönü: iz kıstası 90°'lik pencereden en-yakın-uca çevrildi (≤90°'lik yaylarda 'b' girişi 'a' sayılıyordu); outline_23 278,77→38,23 px, hayalet uç [2260,216] menüden düştü (A/B: arc-direction-ab.log)",
     "vektör yay g151'in ~186 px hayalet uzantısı düştü → 10/Exercise 12'de reading çerçevesi devreye girdi; advise.resolve_claim reading dalı eksen kararını (distance/x/y) da üretir oldu (çapraz satır kapısı: karşı bileşen ≤ span/2 — plate akışı 9 öneri korunur; flange kalınlığı 20,0; 10 mm rim satırı %0,58'le aday, bağlanan Ø270; A/B: flange-flow-before/after.log)"
    ],
+   "p5_analysis": {
+    "target": "exercise-13-raster",
+    "why": "Beş uygun aday referanstan ölçüldü; en sade yapı (taban + tek yükseltilmiş göbek Ø100/Ø60 z±60 + 5 delik); G11'de tamamen bloke; §61 gerekçesi bu okuma",
+    "ops": "mevcut GeneralPlan sözlüğü yeterli: extrude + fuse + cut (compile_general beş op'u geo.* çağrısına çeviriyor)",
+    "gaps": [
+     "ön izde düzeltme sonrası kalan self-intersection sınıfı (make_plan denetimi guided.py:1231)",
+     "daire tespiti: ex13'te g251 = 'Ø60.00' glyph sahtesi + eksik R50/Ø60/üst-Ø25",
+     "Decisions + compile_extrude_plan: yükseltilmiş seviye (daire→basılı yükseklik) + XZ-düzlemli kesim",
+     "source-only üretim + evaluator PASS kabulü"
+    ],
+    "evidence": "eval/audits/20261007-g12-raster-profile/p5-analysis.md + p5-evidence/ (siluet/dilim render'ları + betikler)"
+   },
    "evidence": "eval/audits/20261007-g12-raster-profile/",
    "tests": {
     "new": "tests/test_g12_raster_profile.py (4 passed) + tests/test_advise.py (2 passed)",
@@ -212,7 +224,7 @@
    "open": [
     "eklerdeki küçük örtüşme sınıfı (5 kontur: eski zorlama-kapalı, yeni küçük self-intersection)",
     "zincir kalitesi (kendi içinde kesişen konturlar; menü kalabalığı 60/77/47/45/65)",
-    "§65 P5 kapısı (STEP + reopen + shape_ok + detail_ok + verdict PASS)"
+    "§65 P5: hedef exercise-13-raster (p5-analysis.md) — (a) ön iz self-intersection sınıfı, (b) daire tespiti (glyph sahtesi + eksikler), (c) seviye+XZ-kesim karar/derleme, (d) source-only üretim + STEP reopen + shape_ok + detail_ok + verdict PASS"
    ]
   },
   {

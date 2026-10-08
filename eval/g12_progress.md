@@ -182,6 +182,19 @@ Kalan: **eklerdeki küçük örtüşme sınıfı** (5 kontur dürüst-kapalı-de
 42–187 px zorlama-taşımayla geliyordu) + **zincir kalitesi** (kendi içinde kesişen konturlar) +
 §65 P5 kapısı açık. Manifest/metrics/tarihsel kanıtlar değişmedi; ana metrik hâlâ **1/9**.
 
+**§65 P5 hedef analizi (aynı gün, ek tur).** Beş uygun aday referanslarıyla ölçüldü
+(.venv-cad: yüz dökümü + eksen dilimleri + siluet render'ları; kanıt
+`eval/audits/20261007-g12-raster-profile/p5-evidence/`, analiz `p5-analysis.md`). Hedef seçildi:
+**exercise-13-raster** — taban plakası + tek yükseltilmiş göbek (Ø100/Ø60, her yana 10 taşma;
+z ±60) + 5 delik (2 payanda Ø25 z-ekseni, 2 plaka Ø25 y-ekseni); G11'de tamamen bloke (STEP
+üretilemedi); §61 gerekçesi zaten bu okuma ("taban konturu + göbek dairesi aynı cephe
+görünüşünde"). Gereken üretim op'ları **mevcut** GeneralPlan sözlüğünde (`ExtrudeOp`, `FuseOp`,
+`CutOp`; `compile_general` beş op'u da `geo.*` çağrısına çeviriyor). Kalan boşluklar: (a) ön izde
+düzeltme sonrası kalan self-intersection sınıfı, (b) daire tespiti — ex13'te 4 daire (2 üst-Ø25 +
+1 ön-Ø25 gerçek; **g251 = "Ø60.00" glyph sahtesi**) ve eksik R50/Ø60/üst-Ø25, (c) `Decisions` +
+`compile_extrude_plan` genişletmesi (yükseltilmiş seviye + XZ-düzlemli kesim), (d) source-only
+üretim + evaluator PASS kabulü. Reçete tamamlanınca §65 koşulur; o güne kadar PASS iddiası yok.
+
 ## Kural hatırlatması (her faz sonu, §96)
 
 Case/file/hash dallanması yok · evaluator değeri producer'a kopyalanmaz · gerçek ölçü "gereksiz" diye

@@ -208,7 +208,7 @@
     "why": "Beş uygun aday referanstan ölçüldü; en sade yapı (taban + tek yükseltilmiş göbek Ø100/Ø60 z±60 + 5 delik); G11'de tamamen bloke; §61 gerekçesi bu okuma",
     "ops": "mevcut GeneralPlan sözlüğü yeterli: extrude + fuse + cut (compile_general beş op'u geo.* çağrısına çeviriyor)",
     "gaps": [
-     "ön izde düzeltme sonrası kalan self-intersection sınıfı (make_plan denetimi guided.py:1231)",
+     "ön görünüş hiç döngü kuramıyor — kök neden: zincirde iç-join/iç-kapanış eksiği (g209 deseni: üst kenar sayfa-boyu uzatma çizgisiyle birleşik; p5-loop-diagnosis.md)",
      "daire tespiti: ex13'te g251 = 'Ø60.00' glyph sahtesi + eksik R50/Ø60/üst-Ø25",
      "Decisions + compile_extrude_plan: yükseltilmiş seviye (daire→basılı yükseklik) + XZ-düzlemli kesim",
      "source-only üretim + evaluator PASS kabulü"

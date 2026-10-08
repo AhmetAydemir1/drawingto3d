@@ -136,10 +136,11 @@ tekrarı yok). Bu fazda UI değişmedi (§97/8 gerçek-Chrome kabulü gerekmedi)
 2. **Zincir kalitesi**: kalan self-intersection'ların çoğu zincirin uç uca eklediği parçaların
    kesişmesi (ör. g388×g445); menü kalabalığı (60/77/47/45/65) bu başlıkla birlikte.
 3. **§65 P5 kapısı**: hedef vaka seçildi → **exercise-13-raster** (analiz: `p5-analysis.md` +
-   `p5-evidence/`). Gereken üretim reçetesi **mevcut** op'larla yazılabiliyor (base extrude +
-   göbek seviyesi fuse + kesimler; `geo.fuse` mevcut); kalan açık işler: (a) ön izde kalan
-   self-intersection sınıfı (probe ile doğrulandı: archetype `unknown`, öneri 0; `make_plan`
-   denetimi, guided.py:1231), (b) daire
+   `p5-evidence/` + zincir tanısı `p5-loop-diagnosis.md`). Gereken üretim reçetesi **mevcut**
+   op'larla yazılabiliyor (base extrude + göbek seviyesi fuse + kesimler; `geo.fuse` mevcut);
+   kalan açık işler: (a) ön görünüş hiç döngü kuramıyor — kök neden ölçüldü: zincirde
+   **iç-join/iç-kapanış** eksiği (g209 deseni: üst kenar sayfa-boyu uzatma çizgisiyle birleşik;
+   `p5-loop-diagnosis.md`); archetype `unknown` + öneri 0 bunun sonucu, (b) daire
    tespiti — ex13'te g251 glyph sahtesi + eksik Ø60/R50/üst Ø25, (c) `Decisions` +
    `compile_extrude_plan` seviye (yükseltilmiş daire) ve XZ-düzlemli kesim genişletmesi,
    (d) source-only üretim + STEP reopen + `shape_ok` + `detail_ok` + verdict PASS kabulü.

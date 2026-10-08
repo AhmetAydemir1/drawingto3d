@@ -195,6 +195,15 @@ düzeltme sonrası kalan self-intersection sınıfı, (b) daire tespiti — ex13
 `compile_extrude_plan` genişletmesi (yükseltilmiş seviye + XZ-düzlemli kesim), (d) source-only
 üretim + evaluator PASS kabulü. Reçete tamamlanınca §65 koşulur; o güne kadar PASS iddiası yok.
 
+**Zincir tanısı (ek tur, aynı gün).** ex13'ün ön görünüşü hiç döngü kuramıyor (47 döngünün 0'ı;
+hepsi izometrik + antet hücreleri — eleme katmanı temiz). `_loops`'un kendisine geçici iz
+eklenip koşuldu (koşum sonrası geri alındı): 12 tohumun 12'si ≤4 adımda ölüyor; ölüm
+noktalarında en yakın parça 45–186 px. Kilit desen: plakanın üst kenarı sayfa-boyu uzatma
+çizgisiyle **tek parçaya birleşik** (g209: x241→2831 @1777.5) ve zincirin uç-nokta komşuluğu
+kuralı bu parçayı göremiyor — kuyruk ve baş parçanın **içinde** olmasına rağmen. Düzeltme
+adayı: **iç-join + iç-kapanış** (örnek-bağımsız; ayırma mantığıyla) — TDD ile. Ayrıntı:
+`eval/audits/20261007-g12-raster-profile/p5-loop-diagnosis.md`.
+
 ## Kural hatırlatması (her faz sonu, §96)
 
 Case/file/hash dallanması yok · evaluator değeri producer'a kopyalanmaz · gerçek ölçü "gereksiz" diye

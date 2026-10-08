@@ -101,6 +101,16 @@ planın 2276. satırındaki "mevcut generic CAD operations" ifadesinin kapsamın
 4. ex13 source-only üretim + evaluator PASS kabulü; `pytest-relevant`/`pytest-broad` güncelle;
    README/g12_progress hizala; commit.
 
+## Ek 2 — zincir tanısı (iç-join eksiği)
+
+Ayrı dosya: **`p5-loop-diagnosis.md`**. Özet: ex13'ün ön görünüşü hiç döngü kurmuyor (47 döngünün
+0'ı orada; hepsi iso + antet hücreleri); iz koşumu kök nedeni gösterdi — plakanın üst kenarı
+sayfa-boyu uzatma çizgisiyle **tek parçaya birleşik** (g209: x241→2831 @1777.5) ve zincirin
+uç-nokta komşuluğu kuralı bu parçayı göremiyor (kuyruk/baş parçanın **içinde** olmasına rağmen).
+Düzeltme adayı: **iç-join + iç-kapanış** (örnek-bağımsız; ayırma mantığıyla). Yukarıdaki
+boşluk #1'in "self-intersection" gözlemi izometrik telin (outline_1) sorunuydu — asıl engel bu
+tanıyla güncellendi.
+
 ## Bu turda değişmeyenler
 
 - `eval/metrics.py`, dondurulmuş manifest ve tarihsel G9/G11 kanıtları: **değişmedi**.

@@ -1,0 +1,108 @@
+[trace] SEED g180 kind=line start=[1194.5 1753. ] end=[1194.5  360. ]
+[trace]  step 1 take g183 kind=line gap=30.0 turn=180.0 closing=True
+[trace]  DEAD END at [1164.5 2094. ] steps=2 ids=['g180', 'g183']
+[trace]    unused g216 (line) end=[1016.  2082.5] dist=148.9
+[trace]    unused g243 (line) end=[1090.  2281.5] dist=201.8
+[trace]    unused g217 (line) end=[1090.5 2294. ] dist=213.3
+[trace]    unused g216 (line) end=[1388.  2082.5] dist=223.8
+[trace]    unused g217 (line) end=[1090.5 1879. ] dist=227.4
+[trace]    unused g210 (line) end=[1091.2 1866. ] dist=239.5
+[trace] SEED g181 kind=line start=[1866.2 1865.9] end=[1878.9  429. ]
+[trace]  step 1 take g440 kind=arc gap=10.6 turn=38.4 closing=True
+[trace]  step 2 take g529 kind=arc gap=50.1 turn=51.4 closing=True
+[trace]  DEAD END at [1771.3  362.5] steps=3 ids=['g181', 'g440', 'g529']
+[trace]    unused g54 (line) end=[1725.5  360. ] dist=45.9
+[trace]    unused g58 (line) end=[1695.9  379. ] dist=77.3
+[trace]    unused g0 (line) end=[1696.   330.5] dist=81.8
+[trace]    unused g171 (line) end=[1800.  582.] dist=221.4
+[trace]    unused g393 (arc) end=[1871.4  560.4] dist=221.8
+[trace]    unused g484 (arc) end=[1870.2  570.1] dist=230.0
+[trace] SEED g183 kind=line start=[1164.5 2094. ] end=[1164.5  360. ]
+[trace]  step 1 take g180 kind=line gap=30.0 turn=180.0 closing=True
+[trace]  step 2 take g214 kind=line gap=30.3 turn=45.0 closing=True
+[trace]  DEAD END at [1569. 2153.] steps=3 ids=['g183', 'g180', 'g214']
+[trace]    unused g213 (line) end=[1653. 2066.] dist=120.9
+[trace]    unused g216 (line) end=[1388.  2082.5] dist=194.2
+[trace]    unused g243 (line) end=[1800.  2281.5] dist=264.3
+[trace]    unused g215 (line) end=[1799.5 2294. ] dist=270.2
+[trace]    unused g206 (line) end=[1780.5 1866. ] dist=356.5
+[trace]    unused g181 (line) end=[1866.2 1865.9] dist=413.2
+[trace] SEED g186 kind=line start=[1542.7 1575.5] end=[2095.7 1256.5]
+[trace]  DEAD END at [2095.7 1256.5] steps=1 ids=['g186']
+[trace]    unused g187 (line) end=[1918. 1203.] dist=185.6
+[trace]    unused g200 (line) end=[2009. 1497.] dist=255.7
+[trace]    unused g541 (arc) end=[2297.4 1582.8] dist=383.6
+[trace]    unused g190 (line) end=[1696.5 1223. ] dist=400.6
+[trace]    unused g184 (line) end=[1695. 1235.] dist=401.3
+[trace]    unused g171 (line) end=[2062.  844.] dist=413.8
+[trace] SEED g187 kind=line start=[1486.5 1634.5] end=[1918. 1203.]
+[trace]  DEAD END at [1918. 1203.] steps=1 ids=['g187']
+[trace]    unused g186 (line) end=[2095.7 1256.5] dist=185.6
+[trace]    unused g190 (line) end=[1696.5 1223. ] dist=222.4
+[trace]    unused g184 (line) end=[1695. 1235.] dist=225.3
+[trace]    unused g200 (line) end=[2009. 1497.] dist=307.8
+[trace]    unused g171 (line) end=[2062.  844.] dist=386.8
+[trace]    unused g206 (line) end=[1780.5 1571. ] dist=392.8
+[trace] SEED g190 kind=line start=[1696.5 1758. ] end=[1696.5 1223. ]
+[trace]  step 1 take g184 kind=line gap=12.1 turn=90.0 closing=True
+[trace]  DEAD END at [1194. 1235.] steps=2 ids=['g190', 'g184']
+[trace]    unused g196 (line) end=[1017.5 1375. ] dist=225.3
+[trace]    unused g516 (arc) end=[1197.2 1477.3] dist=242.3
+[trace]    unused g185 (line) end=[ 947.2 1235.8] dist=246.8
+[trace]    unused g482 (arc) end=[1264.1 1486.3] dist=260.9
+[trace]    unused g516 (arc) end=[1225.2 1505.6] dist=272.4
+[trace]    unused g482 (arc) end=[1198.7 1547.2] dist=312.2
+[trace] SEED g195 kind=line start=[1548.7 1727. ] end=[1548.7 1417. ]
+[trace]  DEAD END at [1548.7 1417. ] steps=1 ids=['g195']
+[trace]    unused g507 (arc) end=[1554.5 1486. ] dist=69.2
+[trace]    unused g508 (arc) end=[1562.  1487.4] dist=71.6
+[trace]    unused g508 (arc) end=[1506.1 1497.2] dist=90.8
+[trace]    unused g507 (arc) end=[1601.8 1504.5] dist=102.4
+[trace]    unused g189 (line) end=[1433.  1482.5] dist=132.9
+[trace]    unused g352 (arc) end=[1631.4 1542.2] dist=150.1
+[trace] SEED g196 kind=line start=[1017.5 1866. ] end=[1017.5 1375. ]
+[trace]  DEAD END at [1017.5 1375. ] steps=1 ids=['g196']
+[trace]    unused g538 (arc) end=[ 970.1 1473.5] dist=109.3
+[trace]    unused g538 (arc) end=[1002.8 1494.6] dist=120.5
+[trace]    unused g185 (line) end=[ 947.2 1235.8] dist=155.9
+[trace]    unused g199 (line) end=[ 899. 1497.] dist=170.1
+[trace]    unused g525 (arc) end=[ 913.7 1518. ] dist=176.7
+[trace]    unused g525 (arc) end=[ 895.8 1534.3] dist=200.5
+[trace] SEED g199 kind=line start=[ 899. 1824.] end=[ 899. 1497.]
+[trace]  step 1 take g525 kind=arc gap=37.4 turn=47.9 closing=True
+[trace]  DEAD END at [ 913.7 1518. ] steps=2 ids=['g199', 'g525']
+[trace]    unused g538 (arc) end=[ 970.1 1473.5] dist=71.8
+[trace]    unused g538 (arc) end=[1002.8 1494.6] dist=92.1
+[trace]    unused g542 (arc) end=[1010.7 1605.4] dist=130.5
+[trace]    unused g532 (arc) end=[1025.1 1604.3] dist=140.9
+[trace]    unused g542 (arc) end=[1011.2 1660.5] dist=172.7
+[trace]    unused g196 (line) end=[1017.5 1375. ] dist=176.7
+[trace] SEED g205 kind=line start=[1006.  1695.5] end=[1227.  1695.5]
+[trace]  step 1 take g213 kind=line gap=39.3 turn=45.0 closing=True
+[trace]  DEAD END at [1653. 2066.] steps=2 ids=['g205', 'g213']
+[trace]    unused g214 (line) end=[1569. 2153.] dist=120.9
+[trace]    unused g206 (line) end=[1780.5 1866. ] dist=237.2
+[trace]    unused g243 (line) end=[1800.  2281.5] dist=260.9
+[trace]    unused g216 (line) end=[1388.  2082.5] dist=265.5
+[trace]    unused g215 (line) end=[1799.5 2294. ] dist=271.0
+[trace]    unused g181 (line) end=[1866.2 1865.9] dist=292.4
+[trace] SEED g206 kind=line start=[1780.5 1866. ] end=[1780.5 1571. ]
+[trace]  DEAD END at [1780.5 1571. ] steps=1 ids=['g206']
+[trace]    unused g356 (arc) end=[1689.3 1529.2] dist=100.3
+[trace]    unused g352 (arc) end=[1631.4 1542.2] dist=151.8
+[trace]    unused g507 (arc) end=[1601.8 1504.5] dist=190.7
+[trace]    unused g517 (arc) end=[1599.4 1641.7] dist=194.4
+[trace]    unused g190 (line) end=[1696.5 1758. ] dist=205.0
+[trace]    unused g215 (line) end=[1799.5 1777. ] dist=206.9
+[trace] SEED g210 kind=line start=[1089.8 1778. ] end=[1091.2 1866. ]
+[trace]  step 1 take g217 kind=line gap=13.0 turn=0.9 closing=True
+[trace]  step 2 take g243 kind=line gap=12.5 turn=90.0 closing=True
+[trace]  step 3 take g215 kind=line gap=12.5 turn=90.0 closing=True
+[trace]  DEAD END at [1799.5 1777. ] steps=4 ids=['g210', 'g217', 'g243', 'g215']
+[trace]    unused g206 (line) end=[1780.5 1866. ] dist=91.0
+[trace]    unused g190 (line) end=[1696.5 1758. ] dist=104.7
+[trace]    unused g181 (line) end=[1866.2 1865.9] dist=111.2
+[trace]    unused g206 (line) end=[1780.5 1571. ] dist=206.9
+[trace]    unused g200 (line) end=[2009. 1824.] dist=214.7
+[trace]    unused g517 (arc) end=[1599.4 1641.7] dist=241.5
+LOOPS: 47

@@ -70,8 +70,8 @@ planın 2276. satırındaki "mevcut generic CAD operations" ifadesinin kapsamın
    denetimin kapanış ölçütü 0.5 px (`contour_audit.TOLERANCE_PX`), ürün yolu ise `correct_profile`
    ile join'leri ≤40 px (`RASTER_JOIN_TOLERANCE_PX`) toleransla kapatır. Asıl ölçüt: `make_plan`'in
    düzeltme **sonrası** denetimi (guided.py:1231) + ürün akışının kendi readiness/build sonucu.
-   Bu turda `g125_ex13_flow` probe'u (create → önerileri onayla → build) başlatıldı; okuma adımı
-   uzun sürdüğü için sonucu bu dosyaya ayrı bir ek olarak işlenecek. Kalan sınıf: düzeltme sonrası
+   Bu turda `g125_ex13_flow` probe'u (create → önerileri onayla → build) koşuldu; sonucu aşağıdaki
+   **Ek** bölümünde. Kalan sınıf: düzeltme sonrası
    self-intersection (kendine değen profil).
 2. **Okuma — daireler eksik + bir sahte:** okuma 4 daire buldu: g249/g250 (üst görünüş Ø25'ler,
    gerçek), g252 (ön görünüş alt Ø25, gerçek), **g251 = SAHTE** — "Ø60.00" etiketindeki "60"
@@ -105,3 +105,22 @@ planın 2276. satırındaki "mevcut generic CAD operations" ifadesinin kapsamın
 
 - `eval/metrics.py`, dondurulmuş manifest ve tarihsel G9/G11 kanıtları: **değişmedi**.
 - Kod değişikliği **yok** — bu dosya + `p5-evidence/` yalnız ölçüm/analiz kaydıdır.
+
+## Ek — ürün akışı probe'u (`g125_ex13_flow`, bu tur, ham günlük `p5-evidence/`)
+
+Taze oturumla ex13 akışı koşuldu (create → accept-all → build; betik: `g125_ex13_flow.py`):
+
+- `create` (PNG oturumu): **1249,6 s** — pafta okuması + aday tespiti + segmentasyon ağır.
+- `archetype: unknown` — ürünün kendi cümlesi: *"ne kapalı parça konturu ne de eş merkezli
+  çap yığını okunabildi"*.
+- **`proposals: 0`** — okuma hiçbir şey öneremiyor; `accept` bu yüzden reddedildi
+  ("bu çizim için onaylanacak öneri yok").
+- `readiness`: `ready:false` — 3 × `missing_transcription` (callout kararları; kullanıcı işi).
+- `build`: readiness kapısında reddedildi — strateji/profil aşamasına hiç gelinmedi.
+- Okuma kaydı: "Okuma 8 basılı ölçüyü geometriye bağladı."
+
+**Yorum:** P5'in önündeki gerçek sıra: (1) ön iz **kapalı parça konturu** olarak okunmalı —
+archetype + öneriler (profil/kalibrasyon/kalınlık) ancak ondan sonra doğuyor; bu, yukarıdaki
+boşluk #1'i ürünün kendi cümlesiyle doğruluyor. (2) Callout çözümleri kullanıcı işidir (G11
+akışında da 32 aday `not_model_input` işaretlenmişti) — blocker değil. (3) Build yolu: strateji
+(`extrude_profile`) + seviye kararları + derleme.

@@ -1,0 +1,15 @@
+== create 1249.6s
+== archetype: {"class": "unknown", "evidence": null, "reason": "ne kapalı parça konturu ne de eş merkezli çap yığını okunabildi"}
+== proposals: 0
+== readiness (önay öncesi):
+    {"ready": false, "questions": [{"category": "missing_transcription", "callout_id": "c30cf5ec6afb3bf5ad7f1a27bd4a4b3e186bfed6f7d041a46f3ea035fb08c73c", "action": "transcribe", "reason": "needs_transcription", "text": "«c30cf5ec6afb3bf5ad7f1a27bd4a4b3e186bfed6f7d041a46f3ea035fb08c73c» için callout metnini yazın."}, {"category": "missing_transcription", "callout_id": "c19344bfb4ae07cd7c406e70e9e3757c…
+== accept-all:
+   ACCEPT HATA: ValueError bu çizim için onaylanacak öneri yok
+== readiness (onay sonrası):
+    {"ready": false, "questions": [{"category": "missing_transcription", "callout_id": "c30cf5ec6afb3bf5ad7f1a27bd4a4b3e186bfed6f7d041a46f3ea035fb08c73c", "action": "transcribe", "reason": "needs_transcription", "text": "«c30cf5ec6afb3bf5ad7f1a27bd4a4b3e186bfed6f7d041a46f3ea035fb08c73c» için callout metnini yazın."}, {"category": "missing_transcription", "callout_id": "c19344bfb4ae07cd7c406e70e9e3757ccb6defc569a6d8afb9e416950f069b14", "action": "transcribe", "reason": "needs_transcription", "text": "«c19344bfb4ae07cd7c406e70e9e3757ccb6defc569a6d8afb9e416950f069b14» için callout metnini yazın."}, {"category": "missing_transcription", "callout_id": "ef58a4a3312d324c7bb93f0ff0a543648fbebcdd4550cbd1…
+== build:
+   BUILD HATA: ValueError üretim için eksik/uyumsuz girdiler var: «c30cf5ec6afb3bf5ad7f1a27bd4a4b3e186bfed6f7d041a46f3ea035fb08c73c» için callout metnini yazın. «c19344bfb4ae07cd7c406e70e9e3757ccb6defc569a6d8afb9e416950f069b14» için callout metnini yazın. «ef58a4a3312d324c7bb93f0ff0a543648fbebcdd4550cbd1614e08e428cb1af0» için callout metnini yazın.
+== log kuyruğu (son 12):
+    {"actor": "system", "action": "open", "field": "drawing", "note": "Çizim açıldı; konturlar ve daireler hazırlandı.", "value": null}
+    {"actor": "reading", "action": "class", "field": "archetype", "note": "Parça sınıfı: unknown. ne kapalı parça konturu ne de eş merkezli çap yığını okunabildi", "value": "unknown"}
+    {"actor": "reading", "action": "reading", "field": "reading", "note": "Okuma 8 basılı ölçüyü geometriye bağladı.", "value": null}

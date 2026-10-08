@@ -138,7 +138,8 @@ tekrarı yok). Bu fazda UI değişmedi (§97/8 gerçek-Chrome kabulü gerekmedi)
 3. **§65 P5 kapısı**: hedef vaka seçildi → **exercise-13-raster** (analiz: `p5-analysis.md` +
    `p5-evidence/`). Gereken üretim reçetesi **mevcut** op'larla yazılabiliyor (base extrude +
    göbek seviyesi fuse + kesimler; `geo.fuse` mevcut); kalan açık işler: (a) ön izde kalan
-   self-intersection sınıfı (düzeltme sonrası; `make_plan` denetimi, guided.py:1231), (b) daire
+   self-intersection sınıfı (probe ile doğrulandı: archetype `unknown`, öneri 0; `make_plan`
+   denetimi, guided.py:1231), (b) daire
    tespiti — ex13'te g251 glyph sahtesi + eksik Ø60/R50/üst Ø25, (c) `Decisions` +
    `compile_extrude_plan` seviye (yükseltilmiş daire) ve XZ-düzlemli kesim genişletmesi,
    (d) source-only üretim + STEP reopen + `shape_ok` + `detail_ok` + verdict PASS kabulü.
